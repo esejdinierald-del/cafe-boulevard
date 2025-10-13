@@ -14,7 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      service_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          request_type: string
+          status: string
+          table_number: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          request_type: string
+          status?: string
+          table_number: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          request_type?: string
+          status?: string
+          table_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
