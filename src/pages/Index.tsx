@@ -3,22 +3,53 @@ import { Button } from "@/components/ui/button";
 import { Bell, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/universal-caffe-logo.png";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [tableNumber] = useState("Tavolinë");
 
-  const handleCallWaiter = () => {
-    toast.success("Thirrja u dërgua!", {
-      description: "Kamarieri do të vijë së shpejti në tavolinën tuaj.",
-      duration: 4000,
-    });
+  const handleCallWaiter = async () => {
+    try {
+      const { error } = await supabase
+        .from('service_requests')
+        .insert({
+          table_number: tableNumber,
+          request_type: 'waiter',
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast.success("Thirrja u dërgua!", {
+        description: "Kamarieri do të vijë së shpejti në tavolinën tuaj.",
+        duration: 4000,
+      });
+    } catch (error) {
+      console.error('Error calling waiter:', error);
+      toast.error("Gabim në dërgimin e thirrjes");
+    }
   };
 
-  const handleRequestBill = () => {
-    toast.success("Kërkesa u dërgua!", {
-      description: "Fatura do të përgatitet për ju.",
-      duration: 4000,
-    });
+  const handleRequestBill = async () => {
+    try {
+      const { error } = await supabase
+        .from('service_requests')
+        .insert({
+          table_number: tableNumber,
+          request_type: 'bill',
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast.success("Kërkesa u dërgua!", {
+        description: "Fatura do të përgatitet për ju.",
+        duration: 4000,
+      });
+    } catch (error) {
+      console.error('Error requesting bill:', error);
+      toast.error("Gabim në dërgimin e kërkesës");
+    }
   };
 
   return (
