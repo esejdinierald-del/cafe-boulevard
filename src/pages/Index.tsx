@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt } from "lucide-react";
+import { Bell, Receipt, LayoutDashboard } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/universal-caffe-logo.png";
 import { supabase } from "@/integrations/supabase/client";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 
 const Index = () => {
   const [searchParams] = useSearchParams();
@@ -63,6 +63,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4 sm:p-6">
+      {/* Dashboard Link for Staff */}
+      <Link 
+        to="/dashboard" 
+        className="fixed top-4 right-4 z-50"
+      >
+        <Button variant="outline" size="sm" className="gap-2">
+          <LayoutDashboard className="h-4 w-4" />
+          Dashboard
+        </Button>
+      </Link>
+
       <div className="w-full max-w-md">
         {/* Logo Container */}
         <div className="flex justify-center mb-6 sm:mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
