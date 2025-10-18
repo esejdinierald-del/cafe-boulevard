@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/universal-caffe-logo.png";
 import { supabase } from "@/integrations/supabase/client";
+import { useSearchParams } from "react-router-dom";
 
 const Index = () => {
-  const [tableNumber] = useState("Tavolinë");
+  const [searchParams] = useSearchParams();
+  const [tableNumber, setTableNumber] = useState("Tavolinë");
+
+  useEffect(() => {
+    const tableParam = searchParams.get("table");
+    if (tableParam) {
+      setTableNumber(tableParam);
+    }
+  }, [searchParams]);
 
   const handleCallWaiter = async () => {
     try {
