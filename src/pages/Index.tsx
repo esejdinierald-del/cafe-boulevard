@@ -9,7 +9,7 @@ const Index = () => {
   const [searchParams] = useSearchParams();
   const [tableNumber, setTableNumber] = useState("Tavolinë");
   useEffect(() => {
-    const tableParam = searchParams.get("table");
+    const tableParam = searchParams.get("tabela") || searchParams.get("table");
     if (tableParam) {
       setTableNumber(tableParam);
     }
