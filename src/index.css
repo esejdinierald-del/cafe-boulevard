@@ -119,3 +119,37 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+  
+  .hover-glow {
+    @apply transition-shadow duration-300 hover:shadow-[0_0_30px_rgba(var(--primary),0.3)];
+  }
+  
+  .animate-jiggle {
+    animation: jiggle 0.5s ease-in-out;
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  
+  .animate-bounce-soft {
+    animation: bounce-soft 1s ease-in-out infinite;
+  }
+  
+  .glass-effect {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+  
+  .coffee-gradient {
+    background: linear-gradient(135deg, hsl(25 65% 60%) 0%, hsl(0 45% 45%) 100%);
+  }
+  
+  .coffee-gradient-soft {
+    background: linear-gradient(135deg, hsl(30 25% 96%) 0%, hsl(25 40% 92%) 50%, hsl(30 25% 96%) 100%);
+  }
+}

@@ -19,6 +19,8 @@ const Dashboard = () => {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const repeatCountRef = useRef<Map<string, number>>(new Map());
 
   const playAudioNotification = async (requestType: string, tableNumber: string) => {
     try {
@@ -49,6 +51,44 @@ const Dashboard = () => {
     }
   };
 
+  const scheduleRepeatNotification = (requestId: string, requestType: string, tableNumber: string) => {
+    // Clear any existing timer for this request
+    const existingTimer = repeatTimersRef.current.get(requestId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    // Initialize repeat count for this request
+    const currentCount = repeatCountRef.current.get(requestId) || 0;
+    
+    if (currentCount < 3) {
+      const timer = setTimeout(() => {
+        // Check if request is still pending
+        const request = requests.find(r => r.id === requestId && r.status === 'pending');
+        if (request) {
+          playAudioNotification(requestType, tableNumber);
+          repeatCountRef.current.set(requestId, currentCount + 1);
+          scheduleRepeatNotification(requestId, requestType, tableNumber);
+        }
+      }, 30000); // 30 seconds
+
+      repeatTimersRef.current.set(requestId, timer);
+    } else {
+      // Clean up after 3 repeats
+      repeatCountRef.current.delete(requestId);
+      repeatTimersRef.current.delete(requestId);
+    }
+  };
+
+  const clearRepeatNotification = (requestId: string) => {
+    const timer = repeatTimersRef.current.get(requestId);
+    if (timer) {
+      clearTimeout(timer);
+      repeatTimersRef.current.delete(requestId);
+    }
+    repeatCountRef.current.delete(requestId);
+  };
+
   const fetchRequests = async () => {
     try {
       const { data, error } = await supabase
@@ -68,6 +108,8 @@ const Dashboard = () => {
 
   const handleComplete = async (id: string) => {
     try {
+      clearRepeatNotification(id);
+      
       const { error } = await supabase
         .from('service_requests')
         .update({ 
@@ -86,6 +128,8 @@ const Dashboard = () => {
 
   const handleCancel = async (id: string) => {
     try {
+      clearRepeatNotification(id);
+      
       const { error } = await supabase
         .from('service_requests')
         .update({ status: 'cancelled' })
@@ -116,6 +160,7 @@ const Dashboard = () => {
           setRequests(prev => [newRequest, ...prev]);
           
           playAudioNotification(newRequest.request_type, newRequest.table_number);
+          scheduleRepeatNotification(newRequest.id, newRequest.request_type, newRequest.table_number);
           
           toast.success('Kërkesë e re!', {
             description: `${newRequest.table_number} - ${
@@ -136,12 +181,21 @@ const Dashboard = () => {
           setRequests(prev =>
             prev.map(req => req.id === updatedRequest.id ? updatedRequest : req)
           );
+          
+          // Clear repeat timer if status changed from pending
+          if (updatedRequest.status !== 'pending') {
+            clearRepeatNotification(updatedRequest.id);
+          }
         }
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
+      // Clear all timers on unmount
+      repeatTimersRef.current.forEach(timer => clearTimeout(timer));
+      repeatTimersRef.current.clear();
+      repeatCountRef.current.clear();
     };
   }, []);
 
@@ -174,10 +228,10 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-6 flex flex-col">
       <audio ref={audioRef} />
       
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6 flex-1">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold text-foreground">Dashboard i Kamarierit</h1>
           <p className="text-muted-foreground">Universal Caffè - Menaxhimi i Kërkesave</p>
@@ -265,6 +319,26 @@ const Dashboard = () => {
               )}
             </div>
           </Card>
+        </div>
+      </div>
+
+      {/* Footer with expiration notice */}
+      <div className="mt-8 pt-6 border-t border-border">
+        <div className="max-w-7xl mx-auto text-center space-y-2">
+          <p className="text-sm text-muted-foreground font-medium">
+            Faqja do të jetë aktive deri <span className="text-foreground font-semibold">Dhjetor 2026</span>
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Për info:{" "}
+            <a 
+              href="https://wa.me/355674010030" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-success hover:text-success/80 font-medium underline transition-colors"
+            >
+              WhatsApp +355 67 401 0030
+            </a>
+          </p>
         </div>
       </div>
     </div>
