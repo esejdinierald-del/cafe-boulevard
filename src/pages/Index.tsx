@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, LayoutDashboard } from "lucide-react";
+import { Bell, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/universal-caffe-logo.png";
 import { supabase } from "@/integrations/supabase/client";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 const Index = () => {
   const [searchParams] = useSearchParams();
   const [tableNumber, setTableNumber] = useState("Tavolinë");
@@ -61,13 +61,6 @@ const Index = () => {
         backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--foreground)) 1px, transparent 0)`,
         backgroundSize: '32px 32px'
       }} />
-      
-      {/* Dashboard Link for Staff */}
-      <Link to="/dashboard" className="fixed top-4 right-4 z-50">
-        <Button variant="ghost" size="icon" className="rounded-full bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300">
-          <LayoutDashboard className="h-5 w-5" />
-        </Button>
-      </Link>
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo Container */}
