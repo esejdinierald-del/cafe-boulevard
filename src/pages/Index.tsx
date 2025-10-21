@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Bell, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/universal-caffe-logo.png";
+import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams } from "react-router-dom";
 const Index = () => {
@@ -53,14 +54,14 @@ const Index = () => {
     }
   };
   return <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4 sm:p-6">
-      {/* Animated Coffee Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(30,25%,96%)] via-[hsl(25,40%,92%)] to-[hsl(25,50%,88%)] animate-gradient" />
-      
-      {/* Subtle Pattern Overlay */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--foreground)) 1px, transparent 0)`,
-        backgroundSize: '32px 32px'
-      }} />
+      {/* Coffee Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${coffeeBackground})`,
+        }}
+      />
+      <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" />
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo Container */}
