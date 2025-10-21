@@ -61,7 +61,7 @@ const Index = () => {
           backgroundImage: `url(${coffeeBackground})`,
         }}
       />
-      <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px]" />
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo Container */}
