@@ -55,12 +55,9 @@ const Index = () => {
   };
   return <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4 sm:p-6">
       {/* Coffee Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${coffeeBackground})`,
-        }}
-      />
+      <div className="absolute inset-0 bg-cover bg-center" style={{
+      backgroundImage: `url(${coffeeBackground})`
+    }} />
       <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px]" />
 
       <div className="w-full max-w-md relative z-10">
@@ -90,22 +87,12 @@ const Index = () => {
 
           {/* Action Buttons */}
           <div className="space-y-4 pt-2">
-            <Button 
-              variant="waiter" 
-              size="lg" 
-              onClick={handleCallWaiter} 
-              className="w-full h-16 sm:h-18 text-lg sm:text-xl font-bold touch-manipulation group"
-            >
+            <Button variant="waiter" size="lg" onClick={handleCallWaiter} className="w-full h-16 sm:h-18 text-lg sm:text-xl font-bold touch-manipulation group">
               <Bell className="mr-3 h-6 w-6 group-hover:animate-jiggle" />
               Thirr Kamarieren
             </Button>
 
-            <Button 
-              variant="bill" 
-              size="lg" 
-              onClick={handleRequestBill} 
-              className="w-full h-16 sm:h-18 text-lg sm:text-xl font-bold touch-manipulation group"
-            >
+            <Button variant="bill" size="lg" onClick={handleRequestBill} className="w-full h-16 sm:h-18 text-lg sm:text-xl font-bold touch-manipulation group">
               <Receipt className="mr-3 h-6 w-6 group-hover:animate-shimmer" />
               Kërko Faturën
             </Button>
@@ -116,9 +103,7 @@ const Index = () => {
             <span className="px-4 py-1.5 rounded-full bg-success/10 text-success text-xs font-medium border border-success/20">
               Shërbim i Shpejtë
             </span>
-            <span className="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
-              24/7 Disponibël
-            </span>
+            
           </div>
         </div>
 
