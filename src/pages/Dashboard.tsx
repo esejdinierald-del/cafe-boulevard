@@ -25,17 +25,37 @@ const Dashboard = () => {
   const playAudioNotification = async (requestType: string, tableNumber: string) => {
     try {
       const text = requestType === 'waiter' 
-        ? `Klient në tavolinën ${tableNumber} kërkon shërbim`
-        : `Klient në tavolinën ${tableNumber} kërkon faturën`;
+        ? `Tavolinë ${tableNumber} kërkon shërbim`
+        : `Tavolinë ${tableNumber} kërkon faturën`;
 
-      // Use browser's Speech Synthesis API
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'sq-AL'; // Albanian
-      utterance.rate = 0.9; // Slightly slower for clarity
-      utterance.pitch = 1.1; // Slightly higher pitch
-      utterance.volume = 1; // Maximum volume
-      
-      window.speechSynthesis.speak(utterance);
+      console.log('Calling text-to-speech with:', text);
+
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { text }
+      });
+
+      if (error) {
+        console.error('Text-to-speech error:', error);
+        throw error;
+      }
+
+      console.log('Text-to-speech response:', data);
+
+      if (data?.audioContent) {
+        const audioBlob = new Blob(
+          [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
+          { type: 'audio/mpeg' }
+        );
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        if (audioRef.current) {
+          audioRef.current.src = audioUrl;
+          await audioRef.current.play();
+          console.log('Audio playing successfully');
+        }
+      } else {
+        console.error('No audio content in response');
+      }
     } catch (error) {
       console.error('Error playing audio:', error);
     }
