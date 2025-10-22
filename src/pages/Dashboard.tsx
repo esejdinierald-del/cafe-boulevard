@@ -37,14 +37,27 @@ const Dashboard = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const repeatCountRef = useRef<Map<string, number>>(new Map());
+  const audioEnabledRef = useRef(false);
+
+  const enableAudio = () => {
+    if (!audioEnabledRef.current && 'speechSynthesis' in window) {
+      // Initialize speech synthesis with a silent utterance
+      const utterance = new SpeechSynthesisUtterance(' ');
+      utterance.volume = 0;
+      window.speechSynthesis.speak(utterance);
+      audioEnabledRef.current = true;
+      console.log('Audio enabled');
+      toast.success('Njoftimet zanore u aktivizuan');
+    }
+  };
 
   const playAudioNotification = (requestType: string, tableNumber: string) => {
     try {
       const text = requestType === 'waiter' 
-        ? `Table ${tableNumber} requests service`
+        ? `Tavolina ${tableNumber} kërkon kamarier`
         : requestType === 'bill'
-        ? `Table ${tableNumber} requests the bill`
-        : `New order from table ${tableNumber}`;
+        ? `Tavolina ${tableNumber} kërkon faturë`
+        : `Porosi e re nga tavolina ${tableNumber}`;
 
       console.log('Playing audio notification:', text);
 
@@ -54,12 +67,12 @@ const Dashboard = () => {
         window.speechSynthesis.cancel();
         
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.85;
+        utterance.lang = 'sq-AL';
+        utterance.rate = 0.9;
         utterance.pitch = 1.0;
         utterance.volume = 1.0;
         
-        utterance.onstart = () => console.log('Audio started playing');
+        utterance.onstart = () => console.log('Audio started playing:', text);
         utterance.onend = () => console.log('Audio finished playing');
         utterance.onerror = (e) => console.error('Speech synthesis error:', e);
         
@@ -354,7 +367,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-6 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-6 flex flex-col" onClick={enableAudio}>
       <audio ref={audioRef} />
       
       <div className="max-w-7xl mx-auto space-y-6 flex-1">
