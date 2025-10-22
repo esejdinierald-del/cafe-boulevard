@@ -312,18 +312,19 @@ const Dashboard = () => {
   const pendingOrders = orders.filter(o => o.status === 'pending');
   const completedOrders = orders.filter(o => o.status === 'completed');
 
-  const handleDeleteFromHistory = async (id: string) => {
+  const handleDeleteFromHistory = async (id: string, type: 'request' | 'order') => {
     try {
+      const table = type === 'request' ? 'service_requests' : 'orders';
       const { error } = await supabase
-        .from('service_requests')
+        .from(table)
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      toast.success('Kërkesa u fshi nga historiku');
+      toast.success(type === 'request' ? 'Kërkesa u fshi nga historiku' : 'Porosia u fshi nga historiku');
     } catch (error) {
-      console.error('Error deleting request:', error);
-      toast.error('Gabim në fshirjen e kërkesës');
+      console.error('Error deleting:', error);
+      toast.error('Gabim në fshirjen');
     }
   };
 
@@ -362,28 +363,28 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Universal Caffè - Menaxhimi i Kërkesave</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Bell className="h-5 w-5 text-warning" />
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="p-8">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+              <Bell className="h-6 w-6 text-warning" />
               Kërkesa Aktive ({pendingRequests.length})
             </h2>
             
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-4 max-h-[65vh] overflow-y-auto">
               {pendingRequests.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">Nuk ka kërkesa aktive</p>
+                <p className="text-muted-foreground text-center py-12 text-lg">Nuk ka kërkesa aktive</p>
               ) : (
                 pendingRequests.map((request) => (
-                  <Card key={request.id} className="p-4 bg-card/50 border-l-4 border-l-warning">
+                  <Card key={request.id} className="p-5 bg-card/50 border-l-4 border-l-warning">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 flex-1">
                         {getRequestIcon(request.request_type)}
                         <div className="flex-1">
-                          <p className="font-semibold text-lg">{request.table_number}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="font-bold text-xl">{request.table_number}</p>
+                          <p className="text-base text-muted-foreground mt-1">
                             {request.request_type === 'waiter' ? 'Kërkon kamarier' : 'Kërkon faturë'}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-sm text-muted-foreground mt-2">
                             {new Date(request.created_at).toLocaleTimeString('sq-AL')}
                           </p>
                         </div>
@@ -391,18 +392,18 @@ const Dashboard = () => {
                       
                       <div className="flex gap-2">
                         <Button
-                          size="sm"
+                          size="lg"
                           onClick={() => handleComplete(request.id)}
                           className="bg-success hover:bg-success/90"
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <CheckCircle className="h-5 w-5" />
                         </Button>
                         <Button
-                          size="sm"
+                          size="lg"
                           variant="destructive"
                           onClick={() => handleCancel(request.id)}
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-5 w-5" />
                         </Button>
                       </div>
                     </div>
@@ -412,52 +413,52 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <UtensilsCrossed className="h-5 w-5 text-primary" />
+          <Card className="p-8">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+              <UtensilsCrossed className="h-6 w-6 text-primary" />
               Porosi Aktive ({pendingOrders.length})
             </h2>
             
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-4 max-h-[65vh] overflow-y-auto">
               {pendingOrders.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">Nuk ka porosi aktive</p>
+                <p className="text-muted-foreground text-center py-12 text-lg">Nuk ka porosi aktive</p>
               ) : (
                 pendingOrders.map((order) => (
-                  <Card key={order.id} className="p-4 bg-card/50 border-l-4 border-l-primary">
+                  <Card key={order.id} className="p-5 bg-card/50 border-l-4 border-l-primary">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className="font-semibold text-lg">{order.table_number}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="font-bold text-xl">{order.table_number}</p>
+                          <p className="text-sm text-muted-foreground mt-1">
                             {new Date(order.created_at).toLocaleTimeString('sq-AL')}
                           </p>
                         </div>
                         <div className="flex gap-2">
                           <Button
-                            size="sm"
+                            size="lg"
                             onClick={() => handleCompleteOrder(order.id)}
                             className="bg-success hover:bg-success/90"
                           >
-                            <CheckCircle className="h-4 w-4" />
+                            <CheckCircle className="h-5 w-5" />
                           </Button>
                           <Button
-                            size="sm"
+                            size="lg"
                             variant="destructive"
                             onClick={() => handleCancelOrder(order.id)}
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-5 w-5" />
                           </Button>
                         </div>
                       </div>
                       
-                      <div className="space-y-1 border-t pt-2">
+                      <div className="space-y-2 border-t pt-3">
                         {order.items.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-sm">
+                          <div key={idx} className="flex justify-between text-base">
                             <span>{item.quantity}x {item.name}</span>
                             <span className="font-semibold">{item.price * item.quantity} Lekë</span>
                           </div>
                         ))}
-                        <div className="flex justify-between font-bold text-base border-t pt-2 mt-2">
+                        <div className="flex justify-between font-bold text-lg border-t pt-3 mt-2">
                           <span>Totali:</span>
                           <span className="text-primary">{order.total_price} Lekë</span>
                         </div>
@@ -469,45 +470,77 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-success" />
-              Historiku ({completedRequests.length})
+          <Card className="p-8">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+              <CheckCircle className="h-6 w-6 text-success" />
+              Historiku ({completedRequests.length + completedOrders.length})
             </h2>
             
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-              {completedRequests.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">Nuk ka historik</p>
+            <div className="space-y-4 max-h-[65vh] overflow-y-auto">
+              {completedRequests.length === 0 && completedOrders.length === 0 ? (
+                <p className="text-muted-foreground text-center py-12 text-lg">Nuk ka historik</p>
               ) : (
-                completedRequests.slice(0, 20).map((request) => (
-                  <Card key={request.id} className="p-4 bg-muted/30">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1">
-                        {getRequestIcon(request.request_type)}
-                        <div className="flex-1">
-                          <p className="font-semibold">{request.table_number}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {request.request_type === 'waiter' ? 'Kamarier' : 'Faturë'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(request.created_at).toLocaleTimeString('sq-AL')}
-                          </p>
+                <>
+                  {completedRequests.map((request) => (
+                    <Card key={`req-${request.id}`} className="p-5 bg-muted/30">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1">
+                          {getRequestIcon(request.request_type)}
+                          <div className="flex-1">
+                            <p className="font-bold text-lg">{request.table_number}</p>
+                            <p className="text-base text-muted-foreground">
+                              {request.request_type === 'waiter' ? 'Kamarier' : 'Faturë'}
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {new Date(request.created_at).toLocaleTimeString('sq-AL')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(request.status)}
+                          <Button
+                            size="lg"
+                            variant="ghost"
+                            onClick={() => handleDeleteFromHistory(request.id, 'request')}
+                            className="h-10 w-10 p-0"
+                          >
+                            <X className="h-5 w-5" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {getStatusBadge(request.status)}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteFromHistory(request.id)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                    </Card>
+                  ))}
+                  {completedOrders.map((order) => (
+                    <Card key={`ord-${order.id}`} className="p-5 bg-muted/30">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1">
+                          <UtensilsCrossed className="h-5 w-5" />
+                          <div className="flex-1">
+                            <p className="font-bold text-lg">{order.table_number}</p>
+                            <p className="text-base text-muted-foreground">Porosi</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {new Date(order.created_at).toLocaleTimeString('sq-AL')}
+                            </p>
+                            <p className="text-sm font-semibold mt-2">
+                              Totali: {order.total_price} Lekë
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(order.status)}
+                          <Button
+                            size="lg"
+                            variant="ghost"
+                            onClick={() => handleDeleteFromHistory(order.id, 'order')}
+                            className="h-10 w-10 p-0"
+                          >
+                            <X className="h-5 w-5" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))
+                    </Card>
+                  ))}
+                </>
               )}
             </div>
           </Card>
