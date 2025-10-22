@@ -2,11 +2,39 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Plus, Minus, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Plus, Minus, ShoppingCart, Languages } from "lucide-react";
 import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useLanguage } from "@/hooks/use-language";
+
+const translations = {
+  sq: {
+    menu: "Menu",
+    table: "Tavolinë",
+    loading: "Duke ngarkuar menunë...",
+    items: "artikuj",
+    order: "Porosit",
+    successOrder: "Porosia u dërgua!",
+    successOrderDesc: "Kamarieri do ta sjellë së shpejti.",
+    error: "Gabim",
+    errorLoading: "Gabim në ngarkimin e menusë",
+    errorOrder: "Gabim në dërgimin e porosisë"
+  },
+  en: {
+    menu: "Menu",
+    table: "Table",
+    loading: "Loading menu...",
+    items: "items",
+    order: "Order",
+    successOrder: "Order sent!",
+    successOrderDesc: "The waiter will bring it shortly.",
+    error: "Error",
+    errorLoading: "Error loading menu",
+    errorOrder: "Error submitting order"
+  }
+};
 
 interface MenuItem {
   id: string;
@@ -27,7 +55,9 @@ interface Category {
 const Menu = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [tableNumber, setTableNumber] = useState("Tavolinë");
+  const { language, toggleLanguage } = useLanguage();
+  const t = translations[language];
+  const [tableNumber, setTableNumber] = useState(t.table);
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -37,8 +67,10 @@ const Menu = () => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
     if (tableParam) {
       setTableNumber(tableParam);
+    } else {
+      setTableNumber(t.table);
     }
-  }, [searchParams]);
+  }, [searchParams, t.table]);
 
   useEffect(() => {
     fetchMenuData();
@@ -64,7 +96,7 @@ const Menu = () => {
       setMenuItems(itemsData || []);
     } catch (error) {
       console.error('Error fetching menu:', error);
-      toast.error("Gabim në ngarkimin e menusë");
+      toast.error(t.errorLoading);
     } finally {
       setLoading(false);
     }
@@ -124,8 +156,8 @@ const Menu = () => {
 
       if (error) throw error;
 
-      toast.success("Porosia u dërgua!", {
-        description: "Kamarieri do ta sjellë së shpejti.",
+      toast.success(t.successOrder, {
+        description: t.successOrderDesc,
         duration: 4000
       });
 
@@ -134,7 +166,7 @@ const Menu = () => {
       navigate(`/?tabela=${tableNumber}`);
     } catch (error) {
       console.error('Error submitting order:', error);
-      toast.error("Gabim në dërgimin e porosisë");
+      toast.error(t.errorOrder);
     }
   };
 
@@ -159,16 +191,25 @@ const Menu = () => {
           <div className="flex items-center gap-4">
             <img src={logo} alt="Logo" className="h-12 w-auto" />
             <div className="text-right">
-              <p className="text-sm text-muted-foreground font-medium">Menu</p>
+              <p className="text-sm text-muted-foreground font-medium">{t.menu}</p>
               <p className="font-display font-bold text-lg">{tableNumber}</p>
             </div>
           </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleLanguage}
+            className="hover:scale-110 hover:bg-primary/10 transition-all rounded-2xl"
+          >
+            <Languages className="h-5 w-5" />
+          </Button>
         </div>
 
         {/* Menu Categories */}
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-xl font-display">Duke ngarkuar menunë...</p>
+            <p className="text-xl font-display">{t.loading}</p>
           </div>
         ) : (
           categories.map(category => {
@@ -248,12 +289,12 @@ const Menu = () => {
                     <ShoppingCart className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground font-medium">{getTotalItems()} artikuj</p>
-                    <p className="text-2xl font-display font-bold gradient-text-gold">{getTotalPrice()} Lekë</p>
+                    <p className="text-sm text-muted-foreground font-medium">{getTotalItems()} {t.items}</p>
+                    <p className="text-2xl font-display font-bold gradient-text-gold">{getTotalPrice()} {language === 'sq' ? 'Lekë' : 'ALL'}</p>
                   </div>
                 </div>
                 <Button size="lg" variant="burgundy" className="font-display font-bold text-lg" onClick={handleSubmitOrder}>
-                  Porosit
+                  {t.order}
                 </Button>
               </div>
             </Card>

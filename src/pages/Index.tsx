@@ -1,21 +1,66 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useLanguage } from "@/hooks/use-language";
+
+const translations = {
+  sq: {
+    welcome: "Mirë se vini",
+    table: "Tavolinë",
+    chooseService: "Zgjidhni shërbimin që dëshironi",
+    callWaiter: "Thirr Kamarieren",
+    requestBill: "Kërko Faturën",
+    orderMenu: "Porosit nga Menu",
+    premium: "Premium Service",
+    fast: "Fast & Elegant",
+    footer: "Boulevard Café - Where elegance meets excellence",
+    successWaiter: "Thirrja u dërgua!",
+    successWaiterDesc: "Kamarieri do të vijë së shpejti në tavolinën tuaj.",
+    successBill: "Kërkesa u dërgua!",
+    successBillDesc: "Fatura do të përgatitet për ju.",
+    error: "Gabim në dërgimin e kërkesës",
+    errorWaiter: "Gabim në dërgimin e thirrjes"
+  },
+  en: {
+    welcome: "Welcome",
+    table: "Table",
+    chooseService: "Choose the service you want",
+    callWaiter: "Call Waiter",
+    requestBill: "Request Bill",
+    orderMenu: "Order from Menu",
+    premium: "Premium Service",
+    fast: "Fast & Elegant",
+    footer: "Boulevard Café - Where elegance meets excellence",
+    successWaiter: "Call sent!",
+    successWaiterDesc: "The waiter will arrive at your table shortly.",
+    successBill: "Request sent!",
+    successBillDesc: "The bill will be prepared for you.",
+    error: "Error sending request",
+    errorWaiter: "Error sending call"
+  }
+};
+
 const Index = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [tableNumber, setTableNumber] = useState("Tavolinë");
+  const { language, toggleLanguage } = useLanguage();
+  const t = translations[language];
+  const [tableNumber, setTableNumber] = useState(t.table);
+
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
     if (tableParam) {
       setTableNumber(tableParam);
+    } else {
+      setTableNumber(t.table);
     }
-  }, [searchParams]);
+  }, [searchParams, t.table]);
+
   const handleCallWaiter = async () => {
     try {
       const {
@@ -26,15 +71,16 @@ const Index = () => {
         status: 'pending'
       });
       if (error) throw error;
-      toast.success("Thirrja u dërgua!", {
-        description: "Kamarieri do të vijë së shpejti në tavolinën tuaj.",
+      toast.success(t.successWaiter, {
+        description: t.successWaiterDesc,
         duration: 4000
       });
     } catch (error) {
       console.error('Error calling waiter:', error);
-      toast.error("Gabim në dërgimin e thirrjes");
+      toast.error(t.errorWaiter);
     }
   };
+
   const handleRequestBill = async () => {
     try {
       const {
@@ -45,21 +91,35 @@ const Index = () => {
         status: 'pending'
       });
       if (error) throw error;
-      toast.success("Kërkesa u dërgua!", {
-        description: "Fatura do të përgatitet për ju.",
+      toast.success(t.successBill, {
+        description: t.successBillDesc,
         duration: 4000
       });
     } catch (error) {
       console.error('Error requesting bill:', error);
-      toast.error("Gabim në dërgimin e kërkesës");
+      toast.error(t.error);
     }
   };
-  return <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4 sm:p-6">
+
+  return (
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4 sm:p-6">
       {/* Coffee Background Image */}
       <div className="absolute inset-0 bg-cover bg-center" style={{
-      backgroundImage: `url(${coffeeBackground})`
-    }} />
+        backgroundImage: `url(${coffeeBackground})`
+      }} />
       <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60 backdrop-blur-[1px]" />
+
+      {/* Language Toggle */}
+      <div className="absolute top-6 right-6 z-20">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleLanguage}
+          className="glass-premium hover:glass-gold transition-all duration-300 rounded-2xl"
+        >
+          <Languages className="h-5 w-5" />
+        </Button>
+      </div>
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo Container */}
@@ -74,7 +134,7 @@ const Index = () => {
           {/* Welcome Text */}
           <div className="text-center space-y-4">
             <h1 className="text-5xl sm:text-6xl font-display font-bold gradient-text-gold mb-4 tracking-tight">
-              Mirë se vini
+              {t.welcome}
             </h1>
             <div className="inline-block px-8 py-3 rounded-full glass-gold border-2 border-secondary/30 animate-pulse-glow">
               <p className="text-2xl sm:text-3xl font-display font-semibold text-foreground">
@@ -82,7 +142,7 @@ const Index = () => {
               </p>
             </div>
             <p className="text-base sm:text-lg text-muted-foreground mt-5 font-medium">
-              Zgjidhni shërbimin që dëshironi
+              {t.chooseService}
             </p>
           </div>
 
@@ -90,12 +150,12 @@ const Index = () => {
           <div className="space-y-5 pt-4">
             <Button variant="waiter" size="lg" onClick={handleCallWaiter} className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group">
               <Bell className="mr-3 h-7 w-7 group-hover:animate-jiggle" />
-              Thirr Kamarieren
+              {t.callWaiter}
             </Button>
 
             <Button variant="bill" size="lg" onClick={handleRequestBill} className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group">
               <Receipt className="mr-3 h-7 w-7 group-hover:animate-shimmer" />
-              Kërko Faturën
+              {t.requestBill}
             </Button>
 
             <Button 
@@ -105,7 +165,7 @@ const Index = () => {
               className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group"
             >
               <UtensilsCrossed className="mr-3 h-7 w-7 group-hover:rotate-12 transition-transform" />
-              Porosit nga Menu
+              {t.orderMenu}
             </Button>
           </div>
 
@@ -113,10 +173,10 @@ const Index = () => {
           <div className="space-y-4 pt-4">
             <div className="flex justify-center gap-3 flex-wrap">
               <span className="px-5 py-2 rounded-full glass-gold text-secondary text-sm font-bold border border-secondary/30">
-                Premium Service
+                {t.premium}
               </span>
               <span className="px-5 py-2 rounded-full bg-success/10 text-success text-sm font-bold border border-success/20">
-                Fast & Elegant
+                {t.fast}
               </span>
             </div>
             
@@ -145,10 +205,12 @@ const Index = () => {
         {/* Footer */}
         <div className="text-center mt-8 sm:mt-10 animate-in fade-in duration-1000 delay-300">
           <p className="text-sm text-muted-foreground font-medium drop-shadow-lg">
-            Boulevard Café - Where elegance meets excellence
+            {t.footer}
           </p>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
