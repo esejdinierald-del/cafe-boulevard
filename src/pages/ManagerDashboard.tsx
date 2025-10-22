@@ -220,83 +220,91 @@ const ManagerDashboard = () => {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${coffeeBackground})` }} />
-      <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/65 via-black/45 to-black/65 backdrop-blur-[1px]" />
 
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
-        <div className="flex items-center justify-between mb-6 glass-effect rounded-2xl p-4">
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="Logo" className="h-10 w-auto" />
-            <h1 className="text-xl font-bold">Manager Dashboard</h1>
+        <div className="flex items-center justify-between mb-8 glass-premium rounded-3xl p-6 shadow-[var(--shadow-elegant)]">
+          <div className="flex items-center gap-4">
+            <img src={logo} alt="Logo" className="h-14 w-auto drop-shadow-lg" />
+            <h1 className="text-2xl font-display font-bold gradient-text-gold">Manager Dashboard</h1>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
+          <Button variant="burgundy" onClick={handleLogout} className="font-display font-bold">
+            <LogOut className="mr-2 h-5 w-5" />
             Dil
           </Button>
         </div>
 
-        <Tabs defaultValue="categories" className="space-y-4">
-          <TabsList className="glass-effect">
-            <TabsTrigger value="categories">Kategoritë</TabsTrigger>
-            <TabsTrigger value="items">Artikujt</TabsTrigger>
+        <Tabs defaultValue="categories" className="space-y-6">
+          <TabsList className="glass-premium h-14 rounded-2xl shadow-lg">
+            <TabsTrigger value="categories" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              Kategoritë
+            </TabsTrigger>
+            <TabsTrigger value="items" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              Artikujt
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="categories" className="space-y-4">
-            <Card className="glass-effect p-4">
-              <h2 className="text-lg font-bold mb-4">Shto Kategori të Re</h2>
-              <div className="flex gap-2">
+          <TabsContent value="categories" className="space-y-5">
+            <Card className="glass-premium p-6 rounded-3xl shadow-[var(--shadow-elegant)]">
+              <h2 className="text-xl font-display font-bold mb-5 gradient-text-gold">Shto Kategori të Re</h2>
+              <div className="flex gap-3">
                 <Input
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                   placeholder="Emri i kategorisë"
-                  className="glass-effect"
+                  className="glass-premium h-12 rounded-2xl text-base"
                 />
-                <Button onClick={handleAddCategory}>
-                  <Plus className="mr-2 h-4 w-4" />
+                <Button onClick={handleAddCategory} variant="gold" size="lg" className="font-display font-bold">
+                  <Plus className="mr-2 h-5 w-5" />
                   Shto
                 </Button>
               </div>
             </Card>
 
-            <div className="grid gap-4">
+            <div className="grid gap-5">
               {categories.map((category) => (
-                <Card key={category.id} className="glass-effect p-4">
+                <Card key={category.id} className="glass-premium p-5 rounded-3xl shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-float)] transition-all duration-500">
                   <div className="flex items-center justify-between">
                     {editingCategory === category.id ? (
                       <>
                         <Input
                           defaultValue={category.name}
                           id={`cat-${category.id}`}
-                          className="glass-effect flex-1"
+                          className="glass-premium flex-1 h-12 rounded-2xl text-base"
                         />
-                        <div className="flex gap-2 ml-2">
+                        <div className="flex gap-2 ml-3">
                           <Button
                             size="icon"
+                            variant="gold"
+                            className="h-12 w-12 rounded-2xl"
                             onClick={() => {
                               const input = document.getElementById(`cat-${category.id}`) as HTMLInputElement;
                               handleUpdateCategory(category.id, input.value);
                             }}
                           >
-                            <Save className="h-4 w-4" />
+                            <Save className="h-5 w-5" />
                           </Button>
                           <Button
                             size="icon"
                             variant="outline"
+                            className="h-12 w-12 rounded-2xl"
                             onClick={() => setEditingCategory(null)}
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-5 w-5" />
                           </Button>
                         </div>
                       </>
                     ) : (
                       <>
-                        <span className="font-semibold">{category.name}</span>
+                        <span className="font-display font-bold text-lg">{category.name}</span>
                         <div className="flex gap-2">
                           <Button
                             size="icon"
-                            variant="outline"
+                            variant="premium"
+                            className="h-11 w-11 rounded-2xl"
                             onClick={() => setEditingCategory(category.id)}
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-5 w-5" />
                           </Button>
                           <Button
                             size="icon"

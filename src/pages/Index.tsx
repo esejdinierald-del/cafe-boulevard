@@ -59,69 +59,71 @@ const Index = () => {
       <div className="absolute inset-0 bg-cover bg-center" style={{
       backgroundImage: `url(${coffeeBackground})`
     }} />
-      <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60 backdrop-blur-[1px]" />
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo Container */}
-        <div className="flex justify-center mb-6 sm:mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="glass-effect rounded-3xl sm:rounded-[2rem] p-6 sm:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] hover:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.4)] transition-all duration-500 hover:scale-105">
-            <img src={logo} alt="Universal Caffè Logo" className="w-48 sm:w-64 h-auto object-contain drop-shadow-2xl" />
+        <div className="flex justify-center mb-8 sm:mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="glass-premium rounded-[2.5rem] p-8 sm:p-12 shadow-[var(--shadow-float)] hover:shadow-[var(--shadow-gold)] transition-all duration-700 hover:scale-105 animate-float">
+            <img src={logo} alt="Boulevard Café Logo" className="w-56 sm:w-72 h-auto object-contain drop-shadow-2xl" />
           </div>
         </div>
 
         {/* Main Card */}
-        <div className="glass-effect rounded-3xl sm:rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] p-6 sm:p-10 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 hover:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.4)] transition-all duration-500">
+        <div className="glass-premium rounded-[2.5rem] shadow-[var(--shadow-float)] p-8 sm:p-12 space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 hover:shadow-[var(--shadow-gold)] transition-all duration-700">
           {/* Welcome Text */}
-          <div className="text-center space-y-3">
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent mb-3 tracking-tight">
+          <div className="text-center space-y-4">
+            <h1 className="text-5xl sm:text-6xl font-display font-bold gradient-text-gold mb-4 tracking-tight">
               Mirë se vini
             </h1>
-            <div className="inline-block px-6 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
-              <p className="text-xl sm:text-2xl font-semibold text-foreground">
+            <div className="inline-block px-8 py-3 rounded-full glass-gold border-2 border-secondary/30 animate-pulse-glow">
+              <p className="text-2xl sm:text-3xl font-display font-semibold text-foreground">
                 {tableNumber}
               </p>
             </div>
-            <p className="text-sm sm:text-base text-muted-foreground mt-4">
+            <p className="text-base sm:text-lg text-muted-foreground mt-5 font-medium">
               Zgjidhni shërbimin që dëshironi
             </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="space-y-4 pt-2">
-            <Button variant="waiter" size="lg" onClick={handleCallWaiter} className="w-full h-16 sm:h-18 text-lg sm:text-xl font-bold touch-manipulation group">
-              <Bell className="mr-3 h-6 w-6 group-hover:animate-jiggle" />
+          <div className="space-y-5 pt-4">
+            <Button variant="waiter" size="lg" onClick={handleCallWaiter} className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group">
+              <Bell className="mr-3 h-7 w-7 group-hover:animate-jiggle" />
               Thirr Kamarieren
             </Button>
 
-            <Button variant="bill" size="lg" onClick={handleRequestBill} className="w-full h-16 sm:h-18 text-lg sm:text-xl font-bold touch-manipulation group">
-              <Receipt className="mr-3 h-6 w-6 group-hover:animate-shimmer" />
+            <Button variant="bill" size="lg" onClick={handleRequestBill} className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group">
+              <Receipt className="mr-3 h-7 w-7 group-hover:animate-shimmer" />
               Kërko Faturën
             </Button>
 
             <Button 
-              variant="default" 
+              variant="burgundy" 
               size="lg" 
               onClick={() => navigate(`/menu?tabela=${tableNumber}`)} 
-              className="w-full h-16 sm:h-18 text-lg sm:text-xl font-bold touch-manipulation group"
+              className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group"
             >
-              <UtensilsCrossed className="mr-3 h-6 w-6 group-hover:rotate-12 transition-transform" />
+              <UtensilsCrossed className="mr-3 h-7 w-7 group-hover:rotate-12 transition-transform" />
               Porosit nga Menu
             </Button>
           </div>
 
           {/* Feature Pills */}
-          <div className="flex justify-center gap-2 flex-wrap pt-2">
-            <span className="px-4 py-1.5 rounded-full bg-success/10 text-success text-xs font-medium border border-success/20">
-              Shërbim i Shpejtë
+          <div className="flex justify-center gap-3 flex-wrap pt-4">
+            <span className="px-5 py-2 rounded-full glass-gold text-secondary text-sm font-bold border border-secondary/30">
+              Premium Service
             </span>
-            
+            <span className="px-5 py-2 rounded-full bg-success/10 text-success text-sm font-bold border border-success/20">
+              Fast & Elegant
+            </span>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6 sm:mt-8 animate-in fade-in duration-1000 delay-300">
-          <p className="text-sm text-muted-foreground font-medium drop-shadow-sm">
-            Universal Caffè - Shërbim i shkëlqyer për ju
+        <div className="text-center mt-8 sm:mt-10 animate-in fade-in duration-1000 delay-300">
+          <p className="text-sm text-muted-foreground font-medium drop-shadow-lg">
+            Boulevard Café - Where elegance meets excellence
           </p>
         </div>
       </div>

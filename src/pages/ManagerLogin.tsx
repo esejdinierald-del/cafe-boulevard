@@ -69,27 +69,29 @@ const ManagerLogin = () => {
     <div className="min-h-screen relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${coffeeBackground})` }} />
-      <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70 backdrop-blur-[1px]" />
 
       <div className="relative z-10 container mx-auto px-4 py-12 flex items-center justify-center min-h-screen">
-        <Card className="glass-effect p-8 w-full max-w-md">
-          <div className="flex flex-col items-center mb-8">
-            <img src={logo} alt="Logo" className="h-20 w-auto mb-4" />
-            <h1 className="text-2xl font-bold">{isSignUp ? "Regjistrohu" : "Manager Login"}</h1>
-            <p className="text-muted-foreground">
-              {isSignUp ? "Krijo llogari të re" : "Hyni në panelin e menaxhimit"}
+        <Card className="glass-premium p-10 w-full max-w-md shadow-[var(--shadow-float)] rounded-[2.5rem]">
+          <div className="flex flex-col items-center mb-10">
+            <img src={logo} alt="Logo" className="h-24 w-auto mb-6 drop-shadow-2xl" />
+            <h1 className="text-3xl font-display font-bold gradient-text-gold mb-2">
+              {isSignUp ? "Regjistrohu" : "Manager Login"}
+            </h1>
+            <p className="text-muted-foreground text-center font-medium">
+              {isSignUp ? "Krijo llogari të re për menaxhim" : "Hyni në panelin premium të menaxhimit"}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <Input
                 type="email"
-                placeholder="Email"
+                placeholder="Email Address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="glass-effect"
+                className="glass-premium h-14 rounded-2xl text-base"
               />
             </div>
             <div>
@@ -99,27 +101,27 @@ const ManagerLogin = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="glass-effect"
+                className="glass-premium h-14 rounded-2xl text-base"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              <Lock className="mr-2 h-4 w-4" />
+            <Button type="submit" variant="gold" className="w-full h-14 text-lg font-display font-bold" disabled={loading}>
+              <Lock className="mr-2 h-5 w-5" />
               {loading ? (isSignUp ? "Duke krijuar..." : "Duke u kyçur...") : (isSignUp ? "Regjistrohu" : "Kyçu")}
             </Button>
           </form>
 
-          <div className="flex flex-col gap-2 mt-4">
+          <div className="flex flex-col gap-3 mt-6">
             <Button 
               variant="ghost" 
-              className="w-full"
+              className="w-full font-medium hover:bg-primary/5 rounded-2xl"
               onClick={() => setIsSignUp(!isSignUp)}
             >
               {isSignUp ? "Keni llogari? Kyçuni" : "Nuk keni llogari? Regjistrohuni"}
             </Button>
             
             <Button 
-              variant="ghost" 
-              className="w-full"
+              variant="outline" 
+              className="w-full font-medium rounded-2xl"
               onClick={() => navigate('/')}
             >
               Kthehu prapa
