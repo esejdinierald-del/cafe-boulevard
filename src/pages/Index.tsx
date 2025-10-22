@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/universal-caffe-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 const Index = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [tableNumber, setTableNumber] = useState("Tavolinë");
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
@@ -95,6 +96,16 @@ const Index = () => {
             <Button variant="bill" size="lg" onClick={handleRequestBill} className="w-full h-16 sm:h-18 text-lg sm:text-xl font-bold touch-manipulation group">
               <Receipt className="mr-3 h-6 w-6 group-hover:animate-shimmer" />
               Kërko Faturën
+            </Button>
+
+            <Button 
+              variant="default" 
+              size="lg" 
+              onClick={() => navigate(`/menu?tabela=${tableNumber}`)} 
+              className="w-full h-16 sm:h-18 text-lg sm:text-xl font-bold touch-manipulation group"
+            >
+              <UtensilsCrossed className="mr-3 h-6 w-6 group-hover:rotate-12 transition-transform" />
+              Porosit nga Menu
             </Button>
           </div>
 
