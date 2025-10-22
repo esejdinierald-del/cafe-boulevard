@@ -202,6 +202,21 @@ const Dashboard = () => {
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const completedRequests = requests.filter(r => r.status === 'completed');
 
+  const handleDeleteFromHistory = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('service_requests')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Kërkesa u fshi nga historiku');
+    } catch (error) {
+      console.error('Error deleting request:', error);
+      toast.error('Gabim në fshirjen e kërkesës');
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -312,7 +327,17 @@ const Dashboard = () => {
                           </p>
                         </div>
                       </div>
-                      {getStatusBadge(request.status)}
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(request.status)}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteFromHistory(request.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))
