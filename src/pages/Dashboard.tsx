@@ -125,7 +125,7 @@ const Dashboard = () => {
 
   const fetchRequests = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('service_requests')
         .select('*')
         .order('created_at', { ascending: false });
@@ -142,7 +142,7 @@ const Dashboard = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false });
@@ -159,7 +159,7 @@ const Dashboard = () => {
     try {
       clearRepeatNotification(id);
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('service_requests')
         .update({ 
           status: 'completed',
@@ -179,7 +179,7 @@ const Dashboard = () => {
     try {
       clearRepeatNotification(id);
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('service_requests')
         .update({ status: 'cancelled' })
         .eq('id', id);
@@ -194,7 +194,7 @@ const Dashboard = () => {
 
   const handleCompleteOrder = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('orders')
         .update({ 
           status: 'completed',
@@ -212,7 +212,7 @@ const Dashboard = () => {
 
   const handleCancelOrder = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('orders')
         .update({ status: 'cancelled' })
         .eq('id', id);
@@ -328,7 +328,7 @@ const Dashboard = () => {
   const handleDeleteFromHistory = async (id: string, type: 'request' | 'order') => {
     try {
       const table = type === 'request' ? 'service_requests' : 'orders';
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from(table)
         .delete()
         .eq('id', id);

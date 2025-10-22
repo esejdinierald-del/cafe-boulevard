@@ -42,7 +42,7 @@ const ManagerLogin = () => {
         if (error) throw error;
 
         // Check if user has manager role
-        const { data: roleData } = await supabase
+        const { data: roleData } = await (supabase as any)
           .from('user_roles')
           .select('role')
           .eq('user_id', data.user.id)

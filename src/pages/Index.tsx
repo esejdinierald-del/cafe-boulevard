@@ -20,7 +20,7 @@ const Index = () => {
     try {
       const {
         error
-      } = await supabase.from('service_requests').insert({
+      } = await (supabase as any).from('service_requests').insert({
         table_number: tableNumber,
         request_type: 'waiter',
         status: 'pending'
@@ -39,7 +39,7 @@ const Index = () => {
     try {
       const {
         error
-      } = await supabase.from('service_requests').insert({
+      } = await (supabase as any).from('service_requests').insert({
         table_number: tableNumber,
         request_type: 'bill',
         status: 'pending'
