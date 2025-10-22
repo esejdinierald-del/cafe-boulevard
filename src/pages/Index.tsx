@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, Receipt, UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
-import logo from "@/assets/universal-caffe-logo.png";
+import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";

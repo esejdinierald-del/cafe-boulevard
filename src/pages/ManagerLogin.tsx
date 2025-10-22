@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import logo from "@/assets/universal-caffe-logo.png";
+import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
 
 const ManagerLogin = () => {

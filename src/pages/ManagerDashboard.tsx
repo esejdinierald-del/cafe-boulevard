@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogOut, Plus, Trash2, Edit, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import logo from "@/assets/universal-caffe-logo.png";
+import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
 
 interface Category {
