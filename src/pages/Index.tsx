@@ -123,7 +123,7 @@ const Index = () => {
             {/* Social Media Links */}
             <div className="flex justify-center gap-4">
               <a 
-                href="https://www.facebook.com" 
+                href="https://www.facebook.com/Boulevard-CAFFE" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="p-3 rounded-full glass-premium hover:glass-gold transition-all duration-300 hover:scale-110"
@@ -131,7 +131,7 @@ const Index = () => {
                 <Facebook className="h-6 w-6 text-secondary" />
               </a>
               <a 
-                href="https://www.instagram.com" 
+                href="https://www.instagram.com/boulevard.cafe_el" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="p-3 rounded-full glass-premium hover:glass-gold transition-all duration-300 hover:scale-110"
