@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      orders: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          items: Json
+          status: string
+          table_number: string
+          total_price: number
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          items: Json
+          status?: string
+          table_number: string
+          total_price: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          status?: string
+          table_number?: string
+          total_price?: number
+        }
+        Relationships: []
+      }
       service_requests: {
         Row: {
           completed_at: string | null

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, CheckCircle, X } from "lucide-react";
+import { Bell, Receipt, CheckCircle, X, UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
 
 interface ServiceRequest {
@@ -15,8 +15,24 @@ interface ServiceRequest {
   completed_at: string | null;
 }
 
+interface Order {
+  id: string;
+  table_number: string;
+  items: Array<{
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+  }>;
+  total_price: number;
+  status: string;
+  created_at: string;
+  completed_at: string | null;
+}
+
 const Dashboard = () => {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -26,7 +42,9 @@ const Dashboard = () => {
     try {
       const text = requestType === 'waiter' 
         ? `Tavolinë ${tableNumber} kërkon shërbim`
-        : `Tavolinë ${tableNumber} kërkon faturën`;
+        : requestType === 'bill'
+        ? `Tavolinë ${tableNumber} kërkon faturën`
+        : `Porosi e re nga tavolinë ${tableNumber}`;
 
       console.log('Playing audio notification:', text);
 
@@ -109,6 +127,21 @@ const Dashboard = () => {
     }
   };
 
+  const fetchOrders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setOrders((data || []) as Order[]);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast.error('Gabim në marrjen e porosive');
+    }
+  };
+
   const handleComplete = async (id: string) => {
     try {
       clearRepeatNotification(id);
@@ -146,8 +179,42 @@ const Dashboard = () => {
     }
   };
 
+  const handleCompleteOrder = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ 
+          status: 'completed',
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Porosia u përmbyll');
+    } catch (error) {
+      console.error('Error completing order:', error);
+      toast.error('Gabim në përmbylljen e porosisë');
+    }
+  };
+
+  const handleCancelOrder = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Porosia u anulua');
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      toast.error('Gabim në anulimin e porosisë');
+    }
+  };
+
   useEffect(() => {
     fetchRequests();
+    fetchOrders();
 
     const channel = supabase
       .channel('service-requests')
@@ -193,8 +260,46 @@ const Dashboard = () => {
       )
       .subscribe();
 
+    // Subscribe to orders
+    const ordersChannel = supabase
+      .channel('orders')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'orders'
+        },
+        (payload) => {
+          const newOrder = payload.new as Order;
+          setOrders(prev => [newOrder, ...prev]);
+          
+          playAudioNotification('order', newOrder.table_number);
+          
+          toast.success('Porosi e re!', {
+            description: `${newOrder.table_number} - ${newOrder.items.length} artikuj`
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders'
+        },
+        (payload) => {
+          const updatedOrder = payload.new as Order;
+          setOrders(prev =>
+            prev.map(order => order.id === updatedOrder.id ? updatedOrder : order)
+          );
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(ordersChannel);
       // Clear all timers on unmount
       repeatTimersRef.current.forEach(timer => clearTimeout(timer));
       repeatTimersRef.current.clear();
@@ -204,6 +309,8 @@ const Dashboard = () => {
 
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const completedRequests = requests.filter(r => r.status === 'completed');
+  const pendingOrders = orders.filter(o => o.status === 'pending');
+  const completedOrders = orders.filter(o => o.status === 'completed');
 
   const handleDeleteFromHistory = async (id: string) => {
     try {
@@ -255,7 +362,7 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Universal Caffè - Menaxhimi i Kërkesave</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Bell className="h-5 w-5 text-warning" />
@@ -297,6 +404,63 @@ const Dashboard = () => {
                         >
                           <X className="h-4 w-4" />
                         </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              )}
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <UtensilsCrossed className="h-5 w-5 text-primary" />
+              Porosi Aktive ({pendingOrders.length})
+            </h2>
+            
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+              {pendingOrders.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">Nuk ka porosi aktive</p>
+              ) : (
+                pendingOrders.map((order) => (
+                  <Card key={order.id} className="p-4 bg-card/50 border-l-4 border-l-primary">
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-semibold text-lg">{order.table_number}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(order.created_at).toLocaleTimeString('sq-AL')}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleCompleteOrder(order.id)}
+                            className="bg-success hover:bg-success/90"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleCancelOrder(order.id)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1 border-t pt-2">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm">
+                            <span>{item.quantity}x {item.name}</span>
+                            <span className="font-semibold">{item.price * item.quantity} Lekë</span>
+                          </div>
+                        ))}
+                        <div className="flex justify-between font-bold text-base border-t pt-2 mt-2">
+                          <span>Totali:</span>
+                          <span className="text-primary">{order.total_price} Lekë</span>
+                        </div>
                       </div>
                     </div>
                   </Card>

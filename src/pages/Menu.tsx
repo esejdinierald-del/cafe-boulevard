@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Plus, Minus, ShoppingCart } from "lucide-react";
 import logo from "@/assets/universal-caffe-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface MenuItem {
   id: string;
@@ -69,6 +71,43 @@ const Menu = () => {
       const item = menuItems.find(i => i.id === itemId);
       return sum + (item?.price || 0) * count;
     }, 0);
+  };
+
+  const handleSubmitOrder = async () => {
+    try {
+      const orderItems = Object.entries(cart).map(([itemId, quantity]) => {
+        const item = menuItems.find(i => i.id === itemId);
+        return {
+          id: itemId,
+          name: item?.name,
+          price: item?.price,
+          quantity
+        };
+      });
+
+      const { error } = await supabase
+        .from('orders')
+        .insert({
+          table_number: tableNumber,
+          items: orderItems,
+          total_price: getTotalPrice(),
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast.success("Porosia u dërgua!", {
+        description: "Kamarieri do ta sjellë së shpejti.",
+        duration: 4000
+      });
+
+      // Clear cart and navigate back
+      setCart({});
+      navigate(`/?tabela=${tableNumber}`);
+    } catch (error) {
+      console.error('Error submitting order:', error);
+      toast.error("Gabim në dërgimin e porosisë");
+    }
   };
 
   return (
@@ -170,7 +209,7 @@ const Menu = () => {
                     <p className="text-xl font-bold">{getTotalPrice()} Lekë</p>
                   </div>
                 </div>
-                <Button size="lg" className="font-bold">
+                <Button size="lg" className="font-bold" onClick={handleSubmitOrder}>
                   Porosit
                 </Button>
               </div>
