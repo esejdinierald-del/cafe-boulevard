@@ -13,7 +13,15 @@ interface MenuItem {
   name: string;
   description: string;
   price: number;
-  category: string;
+  category_id: string;
+  image_url: string | null;
+  available: boolean;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  display_order: number;
 }
 
 const Menu = () => {
@@ -21,6 +29,9 @@ const Menu = () => {
   const navigate = useNavigate();
   const [tableNumber, setTableNumber] = useState("Tavolinë");
   const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
@@ -29,19 +40,35 @@ const Menu = () => {
     }
   }, [searchParams]);
 
-  // Sample menu items - do të integrohet me backend më vonë
-  const menuItems: MenuItem[] = [
-    { id: "1", name: "Espresso", description: "Kafe e fortë italiane", price: 80, category: "Kafe" },
-    { id: "2", name: "Cappuccino", description: "Espresso me qumësht dhe shkumë", price: 120, category: "Kafe" },
-    { id: "3", name: "Macchiato", description: "Espresso me një pikë qumësht", price: 100, category: "Kafe" },
-    { id: "4", name: "Latte", description: "Kafe me shumë qumësht", price: 130, category: "Kafe" },
-    { id: "5", name: "Coca Cola", description: "330ml", price: 150, category: "Pije" },
-    { id: "6", name: "Ujë Mineral", description: "500ml", price: 80, category: "Pije" },
-    { id: "7", name: "Croissant", description: "Brumë francez i freskët", price: 120, category: "Ëmbëlsira" },
-    { id: "8", name: "Tiramisu", description: "Ëmbëlsirë italiane klasike", price: 250, category: "Ëmbëlsira" },
-  ];
+  useEffect(() => {
+    fetchMenuData();
+  }, []);
 
-  const categories = ["Kafe", "Pije", "Ëmbëlsira"];
+  const fetchMenuData = async () => {
+    try {
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*')
+        .order('display_order');
+
+      if (categoriesError) throw categoriesError;
+
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('available', true);
+
+      if (itemsError) throw itemsError;
+
+      setCategories(categoriesData || []);
+      setMenuItems(itemsData || []);
+    } catch (error) {
+      console.error('Error fetching menu:', error);
+      toast.error("Gabim në ngarkimin e menusë");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addToCart = (itemId: string) => {
     setCart(prev => ({
@@ -81,7 +108,8 @@ const Menu = () => {
           id: itemId,
           name: item?.name,
           price: item?.price,
-          quantity
+          quantity,
+          image_url: item?.image_url
         };
       });
 
@@ -138,62 +166,77 @@ const Menu = () => {
         </div>
 
         {/* Menu Categories */}
-        {categories.map(category => {
-          const items = menuItems.filter(item => item.category === category);
-          return (
-            <div key={category} className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 glass-effect rounded-xl p-3 inline-block">
-                {category}
-              </h2>
-              <div className="grid gap-4">
-                {items.map(item => (
-                  <Card key={item.id} className="glass-effect p-4 hover:shadow-lg transition-shadow">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold">{item.name}</h3>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                        <p className="text-lg font-bold text-primary mt-2">{item.price} Lekë</p>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        {cart[item.id] ? (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => removeFromCart(item.id)}
-                              className="h-8 w-8"
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="font-bold w-8 text-center">{cart[item.id]}</span>
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-lg">Duke ngarkuar menunë...</p>
+          </div>
+        ) : (
+          categories.map(category => {
+            const items = menuItems.filter(item => item.category_id === category.id);
+            return (
+              <div key={category.id} className="mb-8">
+                <h2 className="text-2xl font-bold mb-4 glass-effect rounded-xl p-3 inline-block">
+                  {category.name}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {items.map(item => (
+                    <Card key={item.id} className="glass-effect p-4 hover:shadow-lg transition-shadow">
+                      {item.image_url && (
+                        <div className="w-full h-32 mb-3 rounded-lg overflow-hidden">
+                          <img 
+                            src={item.image_url} 
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold">{item.name}</h3>
+                          <p className="text-sm text-muted-foreground">{item.description}</p>
+                          <p className="text-lg font-bold text-primary mt-2">{item.price} Lekë</p>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 ml-2">
+                          {cart[item.id] ? (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => removeFromCart(item.id)}
+                                className="h-8 w-8"
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                              <span className="font-bold w-8 text-center">{cart[item.id]}</span>
+                              <Button
+                                variant="default"
+                                size="icon"
+                                onClick={() => addToCart(item.id)}
+                                className="h-8 w-8"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : (
                             <Button
                               variant="default"
                               size="icon"
                               onClick={() => addToCart(item.id)}
-                              className="h-8 w-8"
+                              className="h-10 w-10"
                             >
-                              <Plus className="h-4 w-4" />
+                              <Plus className="h-5 w-5" />
                             </Button>
-                          </>
-                        ) : (
-                          <Button
-                            variant="default"
-                            size="icon"
-                            onClick={() => addToCart(item.id)}
-                            className="h-10 w-10"
-                          >
-                            <Plus className="h-5 w-5" />
-                          </Button>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
 
         {/* Cart Summary - Fixed at bottom */}
         {getTotalItems() > 0 && (

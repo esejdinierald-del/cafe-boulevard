@@ -41,10 +41,10 @@ const Dashboard = () => {
   const playAudioNotification = (requestType: string, tableNumber: string) => {
     try {
       const text = requestType === 'waiter' 
-        ? `Tavolinë ${tableNumber} kërkon shërbim`
+        ? `Table ${tableNumber} requests service`
         : requestType === 'bill'
-        ? `Tavolinë ${tableNumber} kërkon faturën`
-        : `Porosi e re nga tavolinë ${tableNumber}`;
+        ? `Table ${tableNumber} requests the bill`
+        : `New order from table ${tableNumber}`;
 
       console.log('Playing audio notification:', text);
 
@@ -54,7 +54,7 @@ const Dashboard = () => {
         window.speechSynthesis.cancel();
         
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'sq-AL';
+        utterance.lang = 'en-US';
         utterance.rate = 0.85;
         utterance.pitch = 1.0;
         utterance.volume = 1.0;
