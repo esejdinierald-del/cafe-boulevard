@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, UtensilsCrossed } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
@@ -110,13 +110,35 @@ const Index = () => {
           </div>
 
           {/* Feature Pills */}
-          <div className="flex justify-center gap-3 flex-wrap pt-4">
-            <span className="px-5 py-2 rounded-full glass-gold text-secondary text-sm font-bold border border-secondary/30">
-              Premium Service
-            </span>
-            <span className="px-5 py-2 rounded-full bg-success/10 text-success text-sm font-bold border border-success/20">
-              Fast & Elegant
-            </span>
+          <div className="space-y-4 pt-4">
+            <div className="flex justify-center gap-3 flex-wrap">
+              <span className="px-5 py-2 rounded-full glass-gold text-secondary text-sm font-bold border border-secondary/30">
+                Premium Service
+              </span>
+              <span className="px-5 py-2 rounded-full bg-success/10 text-success text-sm font-bold border border-success/20">
+                Fast & Elegant
+              </span>
+            </div>
+            
+            {/* Social Media Links */}
+            <div className="flex justify-center gap-4">
+              <a 
+                href="https://www.facebook.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-3 rounded-full glass-premium hover:glass-gold transition-all duration-300 hover:scale-110"
+              >
+                <Facebook className="h-6 w-6 text-secondary" />
+              </a>
+              <a 
+                href="https://www.instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-3 rounded-full glass-premium hover:glass-gold transition-all duration-300 hover:scale-110"
+              >
+                <Instagram className="h-6 w-6 text-secondary" />
+              </a>
+            </div>
           </div>
         </div>
 

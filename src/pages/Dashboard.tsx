@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, CheckCircle, X, UtensilsCrossed } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 interface ServiceRequest {
@@ -34,11 +35,31 @@ const Dashboard = () => {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const repeatCountRef = useRef<Map<string, number>>(new Map());
   const audioEnabledRef = useRef(false);
   const selectedVoiceRef = useRef<SpeechSynthesisVoice | null>(null);
+
+  useEffect(() => {
+    const sessionPassword = sessionStorage.getItem('dashboard_auth');
+    if (sessionPassword === '2025') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === '2025') {
+      sessionStorage.setItem('dashboard_auth', '2025');
+      setIsAuthenticated(true);
+      toast.success('Qasje e lejuar');
+    } else {
+      toast.error('Fjalëkalim i gabuar');
+    }
+  };
 
   const loadPreferredVoice = () => {
     if (!('speechSynthesis' in window)) return;
@@ -343,11 +364,41 @@ const Dashboard = () => {
           );
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'orders'
+        },
+        (payload) => {
+          const deletedOrder = payload.old as Order;
+          setOrders(prev => prev.filter(order => order.id !== deletedOrder.id));
+        }
+      )
+      .subscribe();
+
+    // Listen for DELETE events on service_requests
+    const deleteChannel = supabase
+      .channel('service-requests-delete')
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'service_requests'
+        },
+        (payload) => {
+          const deletedRequest = payload.old as ServiceRequest;
+          setRequests(prev => prev.filter(req => req.id !== deletedRequest.id));
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
       supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(deleteChannel);
       // Clear all timers on unmount
       repeatTimersRef.current.forEach(timer => clearTimeout(timer));
       repeatTimersRef.current.clear();
@@ -392,6 +443,33 @@ const Dashboard = () => {
   const getRequestIcon = (type: string) => {
     return type === 'waiter' ? <Bell className="h-5 w-5" /> : <Receipt className="h-5 w-5" />;
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-6">
+        <Card className="w-full max-w-md p-8 space-y-6">
+          <div className="text-center space-y-2">
+            <Lock className="h-12 w-12 mx-auto text-muted-foreground" />
+            <h1 className="text-2xl font-bold">Dashboard i Mbrojtur</h1>
+            <p className="text-muted-foreground">Vendosni fjalëkalimin për të vazhduar</p>
+          </div>
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <Input
+              type="password"
+              placeholder="Fjalëkalimi"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="text-center text-lg"
+              autoFocus
+            />
+            <Button type="submit" className="w-full" size="lg">
+              Vazhdo
+            </Button>
+          </form>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
