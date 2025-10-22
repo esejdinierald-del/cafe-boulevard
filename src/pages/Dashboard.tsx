@@ -22,39 +22,32 @@ const Dashboard = () => {
   const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const repeatCountRef = useRef<Map<string, number>>(new Map());
 
-  const playAudioNotification = async (requestType: string, tableNumber: string) => {
+  const playAudioNotification = (requestType: string, tableNumber: string) => {
     try {
       const text = requestType === 'waiter' 
         ? `Tavolinë ${tableNumber} kërkon shërbim`
         : `Tavolinë ${tableNumber} kërkon faturën`;
 
-      console.log('Calling text-to-speech with:', text);
+      console.log('Playing audio notification:', text);
 
-      const { data, error } = await supabase.functions.invoke('text-to-speech', {
-        body: { text }
-      });
-
-      if (error) {
-        console.error('Text-to-speech error:', error);
-        throw error;
-      }
-
-      console.log('Text-to-speech response:', data);
-
-      if (data?.audioContent) {
-        const audioBlob = new Blob(
-          [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
-          { type: 'audio/mpeg' }
-        );
-        const audioUrl = URL.createObjectURL(audioBlob);
+      // Use browser's Speech Synthesis API for immediate, reliable playback
+      if ('speechSynthesis' in window) {
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
         
-        if (audioRef.current) {
-          audioRef.current.src = audioUrl;
-          await audioRef.current.play();
-          console.log('Audio playing successfully');
-        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'sq-AL';
+        utterance.rate = 0.85;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        utterance.onstart = () => console.log('Audio started playing');
+        utterance.onend = () => console.log('Audio finished playing');
+        utterance.onerror = (e) => console.error('Speech synthesis error:', e);
+        
+        window.speechSynthesis.speak(utterance);
       } else {
-        console.error('No audio content in response');
+        console.error('Speech synthesis not supported');
       }
     } catch (error) {
       console.error('Error playing audio:', error);
