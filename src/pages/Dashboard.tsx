@@ -38,16 +38,43 @@ const Dashboard = () => {
   const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const repeatCountRef = useRef<Map<string, number>>(new Map());
   const audioEnabledRef = useRef(false);
+  const selectedVoiceRef = useRef<SpeechSynthesisVoice | null>(null);
+
+  const loadPreferredVoice = () => {
+    if (!('speechSynthesis' in window)) return;
+    const voices = window.speechSynthesis.getVoices();
+    const enUs = voices.find(v => v.lang?.toLowerCase() === 'en-us');
+    const enGeneric = voices.find(v => v.lang?.toLowerCase().startsWith('en'));
+    selectedVoiceRef.current = enUs || enGeneric || null;
+    if (selectedVoiceRef.current) {
+      console.log('Selected voice:', selectedVoiceRef.current.name, selectedVoiceRef.current.lang);
+    } else {
+      console.warn('No English voice found, using default.');
+    }
+  };
+
+  // Ensure voices are loaded and selected
+  if ('speechSynthesis' in window) {
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        loadPreferredVoice();
+      };
+    } else {
+      loadPreferredVoice();
+    }
+  }
 
   const enableAudio = () => {
     if (!audioEnabledRef.current && 'speechSynthesis' in window) {
-      // Initialize speech synthesis with a silent utterance
+      // Ensure an English voice is selected
+      loadPreferredVoice();
+      // Initialize speech synthesis with a silent utterance to unlock audio
       const utterance = new SpeechSynthesisUtterance(' ');
       utterance.volume = 0;
       window.speechSynthesis.speak(utterance);
       audioEnabledRef.current = true;
       console.log('Audio enabled');
-      toast.success('Njoftimet zanore u aktivizuan');
+      toast.success('Voice alerts enabled');
     }
   };
 
@@ -71,6 +98,14 @@ const Dashboard = () => {
         utterance.rate = 0.9;
         utterance.pitch = 1.0;
         utterance.volume = 1.0;
+        // Prefer an English voice explicitly
+        if (selectedVoiceRef.current) {
+          utterance.voice = selectedVoiceRef.current;
+        } else if (window.speechSynthesis.getVoices) {
+          const voices = window.speechSynthesis.getVoices();
+          const fallback = voices.find(v => v.lang?.toLowerCase() === 'en-us') || voices.find(v => v.lang?.toLowerCase().startsWith('en'));
+          if (fallback) utterance.voice = fallback;
+        }
         
         utterance.onstart = () => console.log('Audio started playing:', text);
         utterance.onend = () => console.log('Audio finished playing');
