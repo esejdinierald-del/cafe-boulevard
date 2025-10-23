@@ -20,18 +20,21 @@ export type Database = {
           display_order: number | null
           id: string
           name: string
+          name_en: string | null
         }
         Insert: {
           created_at?: string | null
           display_order?: number | null
           id?: string
           name: string
+          name_en?: string | null
         }
         Update: {
           created_at?: string | null
           display_order?: number | null
           id?: string
           name?: string
+          name_en?: string | null
         }
         Relationships: []
       }
@@ -41,9 +44,11 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           description: string | null
+          description_en: string | null
           id: string
           image_url: string | null
           name: string
+          name_en: string | null
           price: number
         }
         Insert: {
@@ -51,9 +56,11 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
           id?: string
           image_url?: string | null
           name: string
+          name_en?: string | null
           price: number
         }
         Update: {
@@ -61,9 +68,11 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
           id?: string
           image_url?: string | null
           name?: string
+          name_en?: string | null
           price?: number
         }
         Relationships: [

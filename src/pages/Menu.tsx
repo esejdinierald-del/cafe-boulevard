@@ -39,7 +39,9 @@ const translations = {
 interface MenuItem {
   id: string;
   name: string;
+  name_en: string | null;
   description: string;
+  description_en: string | null;
   price: number;
   category_id: string;
   image_url: string | null;
@@ -49,6 +51,7 @@ interface MenuItem {
 interface Category {
   id: string;
   name: string;
+  name_en: string | null;
   display_order: number;
 }
 
@@ -217,7 +220,7 @@ const Menu = () => {
             return (
               <div key={category.id} className="mb-10">
                 <h2 className="text-3xl font-display font-bold mb-6 glass-gold rounded-2xl p-4 inline-block shadow-[var(--shadow-gold)]">
-                  {category.name}
+                  {language === 'en' && category.name_en ? category.name_en : category.name}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {items.map(item => (
@@ -233,9 +236,17 @@ const Menu = () => {
                       )}
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
-                          <h3 className="text-xl font-display font-bold mb-1">{item.name}</h3>
-                          <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
-                          <p className="text-xl font-bold gradient-text-gold">{item.price} Lekë</p>
+                          <h3 className="text-xl font-display font-bold mb-1">
+                            {language === 'en' && item.name_en ? item.name_en : item.name}
+                          </h3>
+                          {item.description && (
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {language === 'en' && item.description_en ? item.description_en : item.description}
+                            </p>
+                          )}
+                          <p className="text-xl font-bold gradient-text-gold">
+                            {item.price} {language === 'sq' ? 'Lekë' : 'ALL'}
+                          </p>
                         </div>
                         
                         <div className="flex items-center gap-2 ml-3">
