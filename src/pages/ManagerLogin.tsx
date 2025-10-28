@@ -15,13 +15,24 @@ const ManagerLogin = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isSignUp) {
+      if (isForgotPassword) {
+        // Password reset
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/manager-login`,
+        });
+
+        if (error) throw error;
+
+        toast.success("Kontrolloni email-in tuaj për link-un e rivendosjes së fjalëkalimit!");
+        setIsForgotPassword(false);
+      } else if (isSignUp) {
         // Sign up
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -76,10 +87,14 @@ const ManagerLogin = () => {
           <div className="flex flex-col items-center mb-10">
             <img src={logo} alt="Logo" className="h-24 w-auto mb-6 drop-shadow-2xl" />
             <h1 className="text-3xl font-display font-bold gradient-text-gold mb-2">
-              {isSignUp ? "Regjistrohu" : "Manager Login"}
+              {isForgotPassword ? "Rivendos Fjalëkalimin" : isSignUp ? "Regjistrohu" : "Manager Login"}
             </h1>
             <p className="text-muted-foreground text-center font-medium">
-              {isSignUp ? "Krijo llogari të re për menaxhim" : "Hyni në panelin premium të menaxhimit"}
+              {isForgotPassword 
+                ? "Shkruani email-in tuaj për të rivendosur fjalëkalimin" 
+                : isSignUp 
+                ? "Krijo llogari të re për menaxhim" 
+                : "Hyni në panelin premium të menaxhimit"}
             </p>
           </div>
 
@@ -94,27 +109,44 @@ const ManagerLogin = () => {
                 className="glass-premium h-14 rounded-2xl text-base"
               />
             </div>
-            <div>
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="glass-premium h-14 rounded-2xl text-base"
-              />
-            </div>
+            {!isForgotPassword && (
+              <div>
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="glass-premium h-14 rounded-2xl text-base"
+                />
+              </div>
+            )}
             <Button type="submit" variant="gold" className="w-full h-14 text-lg font-display font-bold" disabled={loading}>
               <Lock className="mr-2 h-5 w-5" />
-              {loading ? (isSignUp ? "Duke krijuar..." : "Duke u kyçur...") : (isSignUp ? "Regjistrohu" : "Kyçu")}
+              {loading 
+                ? (isForgotPassword ? "Duke dërguar..." : isSignUp ? "Duke krijuar..." : "Duke u kyçur...") 
+                : (isForgotPassword ? "Dërgo Link-un" : isSignUp ? "Regjistrohu" : "Kyçu")}
             </Button>
           </form>
 
           <div className="flex flex-col gap-3 mt-6">
+            {!isForgotPassword && (
+              <Button 
+                variant="ghost" 
+                className="w-full font-medium hover:bg-primary/5 rounded-2xl text-sm"
+                onClick={() => setIsForgotPassword(true)}
+              >
+                Keni harruar fjalëkalimin?
+              </Button>
+            )}
+            
             <Button 
               variant="ghost" 
               className="w-full font-medium hover:bg-primary/5 rounded-2xl"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setIsForgotPassword(false);
+              }}
             >
               {isSignUp ? "Keni llogari? Kyçuni" : "Nuk keni llogari? Regjistrohuni"}
             </Button>
@@ -122,7 +154,10 @@ const ManagerLogin = () => {
             <Button 
               variant="outline" 
               className="w-full font-medium rounded-2xl"
-              onClick={() => navigate('/')}
+              onClick={() => {
+                setIsForgotPassword(false);
+                navigate('/');
+              }}
             >
               Kthehu prapa
             </Button>
