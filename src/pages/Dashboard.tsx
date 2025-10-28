@@ -521,92 +521,85 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-6 flex flex-col" onClick={enableAudio}>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-3 flex flex-col" onClick={enableAudio}>
       <audio ref={audioRef} />
       
-      <div className="max-w-7xl mx-auto space-y-6 flex-1">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-foreground">Dashboard i Kamarierit</h1>
-          <p className="text-muted-foreground">Universal Caffè - Menaxhimi i Kërkesave</p>
+      <div className="max-w-7xl mx-auto space-y-3 flex-1 w-full">
+        <div className="text-center space-y-1">
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-xs text-muted-foreground">Universal Caffè</p>
         </div>
 
-        {/* Notification Settings */}
-        <Card className="p-4 bg-card/50 backdrop-blur">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <Bell className="h-5 w-5 text-secondary" />
-              <div>
-                <h3 className="font-semibold text-sm">Lloji i Njoftimit</h3>
-                <p className="text-xs text-muted-foreground">Zgjidhni si dëshironi të njoftoheni për thirrjet</p>
-              </div>
+        {/* Notification Settings - Compact */}
+        <Card className="p-3 bg-card/50 backdrop-blur">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Bell className="h-4 w-4 text-secondary" />
+              <span className="font-semibold text-xs">Njoftim</span>
             </div>
             <div className="flex gap-2">
               <Button
                 variant={notificationType === 'voice' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleNotificationTypeChange('voice')}
-                className="gap-2"
+                className="gap-1.5 h-9 px-3 touch-manipulation"
               >
-                <Volume2 className="h-4 w-4" />
-                Zë
+                <Volume2 className="h-3.5 w-3.5" />
+                <span className="text-xs">Zë</span>
               </Button>
               <Button
                 variant={notificationType === 'sound' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleNotificationTypeChange('sound')}
-                className="gap-2"
+                className="gap-1.5 h-9 px-3 touch-manipulation"
               >
-                <Bell className="h-4 w-4" />
-                Tingull
+                <Bell className="h-3.5 w-3.5" />
+                <span className="text-xs">Tingull</span>
               </Button>
             </div>
           </div>
-          {notificationType === 'sound' && (
-            <p className="text-xs text-muted-foreground mt-3 pl-8">
-              Tingulli do të përsëritet çdo 1 minutë nëse nuk është parë thirrja
-            </p>
-          )}
         </Card>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="p-8">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-              <Bell className="h-6 w-6 text-warning" />
-              Kërkesa Aktive ({pendingRequests.length})
+        <div className="grid gap-3 grid-cols-3">
+          <Card className="p-4">
+            <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <Bell className="h-5 w-5 text-warning" />
+              <span>Kërkesa ({pendingRequests.length})</span>
             </h2>
             
-            <div className="space-y-4 max-h-[65vh] overflow-y-auto">
+            <div className="space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
               {pendingRequests.length === 0 ? (
-                <p className="text-muted-foreground text-center py-12 text-lg">Nuk ka kërkesa aktive</p>
+                <p className="text-muted-foreground text-center py-8 text-sm">Nuk ka kërkesa</p>
               ) : (
                 pendingRequests.map((request) => (
-                  <Card key={request.id} className="p-5 bg-card/50 border-l-4 border-l-warning">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1">
+                  <Card key={request.id} className="p-3 bg-card/50 border-l-4 border-l-warning touch-manipulation">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
                         {getRequestIcon(request.request_type)}
-                        <div className="flex-1">
-                          <p className="font-bold text-xl">{request.table_number}</p>
-                          <p className="text-base text-muted-foreground mt-1">
-                            {request.request_type === 'waiter' ? 'Kërkon kamarier' : 'Kërkon faturë'}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-lg truncate">{request.table_number}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {request.request_type === 'waiter' ? 'Kamarier' : 'Faturë'}
                           </p>
-                          <p className="text-sm text-muted-foreground mt-2">
-                            {new Date(request.created_at).toLocaleTimeString('sq-AL')}
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(request.created_at).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
                       </div>
                       
-                      <div className="flex gap-2">
+                      <div className="flex gap-1.5">
                         <Button
-                          size="lg"
+                          size="sm"
                           onClick={() => handleComplete(request.id)}
-                          className="bg-success hover:bg-success/90"
+                          className="bg-success hover:bg-success/90 h-12 w-12 p-0 touch-manipulation"
                         >
                           <CheckCircle className="h-5 w-5" />
                         </Button>
                         <Button
-                          size="lg"
+                          size="sm"
                           variant="destructive"
                           onClick={() => handleCancel(request.id)}
+                          className="h-12 w-12 p-0 touch-manipulation"
                         >
                           <X className="h-5 w-5" />
                         </Button>
@@ -618,54 +611,55 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-8">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-              <UtensilsCrossed className="h-6 w-6 text-primary" />
-              Porosi Aktive ({pendingOrders.length})
+          <Card className="p-4">
+            <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <UtensilsCrossed className="h-5 w-5 text-primary" />
+              <span>Porosi ({pendingOrders.length})</span>
             </h2>
             
-            <div className="space-y-4 max-h-[65vh] overflow-y-auto">
+            <div className="space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
               {pendingOrders.length === 0 ? (
-                <p className="text-muted-foreground text-center py-12 text-lg">Nuk ka porosi aktive</p>
+                <p className="text-muted-foreground text-center py-8 text-sm">Nuk ka porosi</p>
               ) : (
                 pendingOrders.map((order) => (
-                  <Card key={order.id} className="p-5 bg-card/50 border-l-4 border-l-primary">
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="font-bold text-xl">{order.table_number}</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {new Date(order.created_at).toLocaleTimeString('sq-AL')}
+                  <Card key={order.id} className="p-3 bg-card/50 border-l-4 border-l-primary touch-manipulation">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-lg truncate">{order.table_number}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(order.created_at).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5">
                           <Button
-                            size="lg"
+                            size="sm"
                             onClick={() => handleCompleteOrder(order.id)}
-                            className="bg-success hover:bg-success/90"
+                            className="bg-success hover:bg-success/90 h-12 w-12 p-0 touch-manipulation"
                           >
                             <CheckCircle className="h-5 w-5" />
                           </Button>
                           <Button
-                            size="lg"
+                            size="sm"
                             variant="destructive"
                             onClick={() => handleCancelOrder(order.id)}
+                            className="h-12 w-12 p-0 touch-manipulation"
                           >
                             <X className="h-5 w-5" />
                           </Button>
                         </div>
                       </div>
                       
-                      <div className="space-y-2 border-t pt-3">
+                      <div className="space-y-1 border-t pt-2">
                         {order.items.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-base">
-                            <span>{item.quantity}x {item.name}</span>
-                            <span className="font-semibold">{item.price * item.quantity} Lekë</span>
+                          <div key={idx} className="flex justify-between text-xs">
+                            <span className="truncate">{item.quantity}x {item.name}</span>
+                            <span className="font-semibold whitespace-nowrap ml-2">{(item.price * item.quantity).toLocaleString()} L</span>
                           </div>
                         ))}
-                        <div className="flex justify-between font-bold text-lg border-t pt-3 mt-2">
+                        <div className="flex justify-between font-bold text-sm border-t pt-1.5 mt-1">
                           <span>Totali:</span>
-                          <span className="text-primary">{order.total_price} Lekë</span>
+                          <span className="text-primary">{order.total_price.toLocaleString()} L</span>
                         </div>
                       </div>
                     </div>
@@ -675,73 +669,73 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-8">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-              <CheckCircle className="h-6 w-6 text-success" />
-              Historiku ({completedRequests.length + completedOrders.length})
+          <Card className="p-4">
+            <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-success" />
+              <span>Historiku ({completedRequests.length + completedOrders.length})</span>
             </h2>
             
-            <div className="space-y-4 max-h-[65vh] overflow-y-auto">
+            <div className="space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
               {completedRequests.length === 0 && completedOrders.length === 0 ? (
-                <p className="text-muted-foreground text-center py-12 text-lg">Nuk ka historik</p>
+                <p className="text-muted-foreground text-center py-8 text-sm">Bosh</p>
               ) : (
                 <>
                   {completedRequests.map((request) => (
-                    <Card key={`req-${request.id}`} className="p-5 bg-muted/30">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1">
+                    <Card key={`req-${request.id}`} className="p-2.5 bg-muted/30 touch-manipulation">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
                           {getRequestIcon(request.request_type)}
-                          <div className="flex-1">
-                            <p className="font-bold text-lg">{request.table_number}</p>
-                            <p className="text-base text-muted-foreground">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <p className="font-bold text-sm truncate">{request.table_number}</p>
+                              {getStatusBadge(request.status)}
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate">
                               {request.request_type === 'waiter' ? 'Kamarier' : 'Faturë'}
                             </p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {new Date(request.created_at).toLocaleTimeString('sq-AL')}
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(request.created_at).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(request.status)}
-                          <Button
-                            size="lg"
-                            variant="ghost"
-                            onClick={() => handleDeleteFromHistory(request.id, 'request')}
-                            className="h-10 w-10 p-0"
-                          >
-                            <X className="h-5 w-5" />
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteFromHistory(request.id, 'request')}
+                          className="h-8 w-8 p-0 touch-manipulation"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </Card>
                   ))}
                   {completedOrders.map((order) => (
-                    <Card key={`ord-${order.id}`} className="p-5 bg-muted/30">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1">
-                          <UtensilsCrossed className="h-5 w-5" />
-                          <div className="flex-1">
-                            <p className="font-bold text-lg">{order.table_number}</p>
-                            <p className="text-base text-muted-foreground">Porosi</p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {new Date(order.created_at).toLocaleTimeString('sq-AL')}
+                    <Card key={`ord-${order.id}`} className="p-2.5 bg-muted/30 touch-manipulation">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <UtensilsCrossed className="h-4 w-4" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <p className="font-bold text-sm truncate">{order.table_number}</p>
+                              {getStatusBadge(order.status)}
+                            </div>
+                            <p className="text-xs text-muted-foreground">Porosi</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(order.created_at).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' })}
                             </p>
-                            <p className="text-sm font-semibold mt-2">
-                              Totali: {order.total_price} Lekë
+                            <p className="text-xs font-semibold mt-0.5">
+                              {order.total_price.toLocaleString()} L
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(order.status)}
-                          <Button
-                            size="lg"
-                            variant="ghost"
-                            onClick={() => handleDeleteFromHistory(order.id, 'order')}
-                            className="h-10 w-10 p-0"
-                          >
-                            <X className="h-5 w-5" />
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteFromHistory(order.id, 'order')}
+                          className="h-8 w-8 p-0 touch-manipulation"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </Card>
                   ))}
@@ -752,22 +746,11 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Footer with expiration notice */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <div className="max-w-7xl mx-auto text-center space-y-2">
-          <p className="text-sm text-muted-foreground font-medium">
-            Faqja do të jetë aktive deri <span className="text-foreground font-semibold">Dhjetor 2026</span>
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Për info:{" "}
-            <a 
-              href="https://wa.me/355674010030" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-success hover:text-success/80 font-medium underline transition-colors"
-            >
-              WhatsApp +355 67 401 0030
-            </a>
+      {/* Footer */}
+      <div className="mt-auto pt-3 border-t border-border">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-xs text-muted-foreground">
+            Aktive deri Dhjetor 2026 • WhatsApp: +355 67 401 0030
           </p>
         </div>
       </div>
