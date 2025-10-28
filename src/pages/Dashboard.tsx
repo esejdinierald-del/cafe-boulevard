@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock } from "lucide-react";
+import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ServiceRequest {
@@ -37,7 +37,9 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
+  const [notificationType, setNotificationType] = useState<'voice' | 'sound'>('voice');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const bellAudioRef = useRef<HTMLAudioElement | null>(null);
   const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const repeatCountRef = useRef<Map<string, number>>(new Map());
   const audioEnabledRef = useRef(false);
@@ -48,6 +50,16 @@ const Dashboard = () => {
     if (sessionPassword === '2025') {
       setIsAuthenticated(true);
     }
+    
+    // Load notification preference from localStorage
+    const savedNotificationType = localStorage.getItem('notification_type') as 'voice' | 'sound';
+    if (savedNotificationType) {
+      setNotificationType(savedNotificationType);
+    }
+    
+    // Initialize audio element for bell sound
+    bellAudioRef.current = new Audio('/notification-bell.mp3');
+    bellAudioRef.current.load();
   }, []);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -99,15 +111,34 @@ const Dashboard = () => {
     }
   };
 
+  const playBellSound = () => {
+    try {
+      if (bellAudioRef.current) {
+        bellAudioRef.current.currentTime = 0;
+        bellAudioRef.current.play().catch(error => {
+          console.error('Error playing bell sound:', error);
+        });
+      }
+    } catch (error) {
+      console.error('Error playing bell sound:', error);
+    }
+  };
+
   const playAudioNotification = (requestType: string, tableNumber: string) => {
     try {
+      if (notificationType === 'sound') {
+        console.log('Playing bell sound notification');
+        playBellSound();
+        return;
+      }
+
       const text = requestType === 'waiter' 
         ? `Table ${tableNumber} requests service`
         : requestType === 'bill'
         ? `Table ${tableNumber} requests the bill`
         : `New order from table ${tableNumber}`;
 
-      console.log('Playing audio notification:', text);
+      console.log('Playing voice notification:', text);
 
       // Use browser's Speech Synthesis API for immediate, reliable playback
       if ('speechSynthesis' in window) {
@@ -151,7 +182,7 @@ const Dashboard = () => {
     // Initialize repeat count for this request
     const currentCount = repeatCountRef.current.get(requestId) || 0;
     
-    if (currentCount < 3) {
+    if (currentCount < 5) {
       const timer = setTimeout(() => {
         // Check if request is still pending
         const request = requests.find(r => r.id === requestId && r.status === 'pending');
@@ -160,11 +191,11 @@ const Dashboard = () => {
           repeatCountRef.current.set(requestId, currentCount + 1);
           scheduleRepeatNotification(requestId, requestType, tableNumber);
         }
-      }, 30000); // 30 seconds
+      }, 60000); // 60 seconds (1 minute)
 
       repeatTimersRef.current.set(requestId, timer);
     } else {
-      // Clean up after 3 repeats
+      // Clean up after 5 repeats
       repeatCountRef.current.delete(requestId);
       repeatTimersRef.current.delete(requestId);
     }
@@ -406,6 +437,16 @@ const Dashboard = () => {
     };
   }, []);
 
+  const handleNotificationTypeChange = (type: 'voice' | 'sound') => {
+    setNotificationType(type);
+    localStorage.setItem('notification_type', type);
+    toast.success(
+      type === 'voice' 
+        ? 'Njoftimet zanore aktivizuar' 
+        : 'Njoftimet me tingull aktivizuar'
+    );
+  };
+
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const completedRequests = requests.filter(r => r.status === 'completed');
   const pendingOrders = orders.filter(o => o.status === 'pending');
@@ -488,6 +529,44 @@ const Dashboard = () => {
           <h1 className="text-4xl font-bold text-foreground">Dashboard i Kamarierit</h1>
           <p className="text-muted-foreground">Universal Caffè - Menaxhimi i Kërkesave</p>
         </div>
+
+        {/* Notification Settings */}
+        <Card className="p-4 bg-card/50 backdrop-blur">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <Bell className="h-5 w-5 text-secondary" />
+              <div>
+                <h3 className="font-semibold text-sm">Lloji i Njoftimit</h3>
+                <p className="text-xs text-muted-foreground">Zgjidhni si dëshironi të njoftoheni për thirrjet</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={notificationType === 'voice' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleNotificationTypeChange('voice')}
+                className="gap-2"
+              >
+                <Volume2 className="h-4 w-4" />
+                Zë
+              </Button>
+              <Button
+                variant={notificationType === 'sound' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleNotificationTypeChange('sound')}
+                className="gap-2"
+              >
+                <Bell className="h-4 w-4" />
+                Tingull
+              </Button>
+            </div>
+          </div>
+          {notificationType === 'sound' && (
+            <p className="text-xs text-muted-foreground mt-3 pl-8">
+              Tingulli do të përsëritet çdo 1 minutë nëse nuk është parë thirrja
+            </p>
+          )}
+        </Card>
 
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="p-8">
