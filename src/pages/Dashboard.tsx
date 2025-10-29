@@ -466,11 +466,25 @@ const Dashboard = () => {
   const handleNotificationTypeChange = (type: 'voice' | 'sound') => {
     setNotificationType(type);
     localStorage.setItem('notification_type', type);
-    toast.success(
-      type === 'voice' 
-        ? 'Njoftimet zanore aktivizuar' 
-        : 'Njoftimet me tingull aktivizuar'
-    );
+    
+    // Play test sound/voice when button is clicked
+    if (type === 'sound') {
+      playBellSound();
+      toast.success('Njoftimet me tingull aktivizuar');
+    } else {
+      // Play test voice message
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance('Voice notifications enabled');
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        if (selectedVoiceRef.current) {
+          utterance.voice = selectedVoiceRef.current;
+        }
+        window.speechSynthesis.speak(utterance);
+      }
+      toast.success('Njoftimet zanore aktivizuar');
+    }
   };
 
   const pendingRequests = requests.filter(r => r.status === 'pending');
