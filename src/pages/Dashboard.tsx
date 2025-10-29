@@ -110,32 +110,40 @@ const Dashboard = () => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Play "tring" sound 3 times with intervals
-      const playTring = (time: number) => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+      // Create a distinctive "ding dong" doorbell sound - completely different from voice
+      const playDingDong = () => {
+        // First "ding" - higher pitch
+        const oscillator1 = audioContext.createOscillator();
+        const gainNode1 = audioContext.createGain();
         
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        oscillator1.connect(gainNode1);
+        gainNode1.connect(audioContext.destination);
         
-        // Bell-like tone
-        oscillator.frequency.setValueAtTime(800, time);
-        oscillator.frequency.exponentialRampToValueAtTime(400, time + 0.1);
+        oscillator1.frequency.setValueAtTime(1200, audioContext.currentTime);
+        gainNode1.gain.setValueAtTime(0.4, audioContext.currentTime);
+        gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
         
-        // Quick fade in and out for bell effect
-        gainNode.gain.setValueAtTime(0, time);
-        gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+        oscillator1.start(audioContext.currentTime);
+        oscillator1.stop(audioContext.currentTime + 0.3);
         
-        oscillator.start(time);
-        oscillator.stop(time + 0.15);
+        // Second "dong" - lower pitch, slightly delayed
+        setTimeout(() => {
+          const oscillator2 = audioContext.createOscillator();
+          const gainNode2 = audioContext.createGain();
+          
+          oscillator2.connect(gainNode2);
+          gainNode2.connect(audioContext.destination);
+          
+          oscillator2.frequency.setValueAtTime(900, audioContext.currentTime);
+          gainNode2.gain.setValueAtTime(0.4, audioContext.currentTime);
+          gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+          
+          oscillator2.start(audioContext.currentTime);
+          oscillator2.stop(audioContext.currentTime + 0.4);
+        }, 200);
       };
       
-      // Play 3 trings with 0.3 second intervals
-      const startTime = audioContext.currentTime;
-      playTring(startTime);
-      playTring(startTime + 0.3);
-      playTring(startTime + 0.6);
+      playDingDong();
       
     } catch (error) {
       console.error('Error playing bell sound:', error);
