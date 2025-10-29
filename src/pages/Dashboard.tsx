@@ -143,7 +143,10 @@ const Dashboard = () => {
         }, 200);
       };
       
+      // Play the ding-dong sound 3 times with delays
       playDingDong();
+      setTimeout(() => playDingDong(), 1000);
+      setTimeout(() => playDingDong(), 2000);
       
     } catch (error) {
       console.error('Error playing bell sound:', error);
