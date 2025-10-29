@@ -39,7 +39,6 @@ const Dashboard = () => {
   const [password, setPassword] = useState("");
   const [notificationType, setNotificationType] = useState<'voice' | 'sound'>('voice');
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const bellAudioRef = useRef<HTMLAudioElement | null>(null);
   const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const repeatCountRef = useRef<Map<string, number>>(new Map());
   const audioEnabledRef = useRef(false);
@@ -56,10 +55,6 @@ const Dashboard = () => {
     if (savedNotificationType) {
       setNotificationType(savedNotificationType);
     }
-    
-    // Initialize audio element for bell sound
-    bellAudioRef.current = new Audio('/notification-bell.mp3');
-    bellAudioRef.current.load();
   }, []);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -113,12 +108,35 @@ const Dashboard = () => {
 
   const playBellSound = () => {
     try {
-      if (bellAudioRef.current) {
-        bellAudioRef.current.currentTime = 0;
-        bellAudioRef.current.play().catch(error => {
-          console.error('Error playing bell sound:', error);
-        });
-      }
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Play "tring" sound 3 times with intervals
+      const playTring = (time: number) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Bell-like tone
+        oscillator.frequency.setValueAtTime(800, time);
+        oscillator.frequency.exponentialRampToValueAtTime(400, time + 0.1);
+        
+        // Quick fade in and out for bell effect
+        gainNode.gain.setValueAtTime(0, time);
+        gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+        
+        oscillator.start(time);
+        oscillator.stop(time + 0.15);
+      };
+      
+      // Play 3 trings with 0.3 second intervals
+      const startTime = audioContext.currentTime;
+      playTring(startTime);
+      playTring(startTime + 0.3);
+      playTring(startTime + 0.6);
+      
     } catch (error) {
       console.error('Error playing bell sound:', error);
     }
