@@ -43,6 +43,7 @@ const Dashboard = () => {
   const repeatCountRef = useRef<Map<string, number>>(new Map());
   const audioEnabledRef = useRef(false);
   const selectedVoiceRef = useRef<SpeechSynthesisVoice | null>(null);
+  const notificationTypeRef = useRef<'voice' | 'sound'>('voice');
 
   useEffect(() => {
     const sessionPassword = sessionStorage.getItem('dashboard_auth');
@@ -54,6 +55,7 @@ const Dashboard = () => {
     const savedNotificationType = localStorage.getItem('notification_type') as 'voice' | 'sound';
     if (savedNotificationType) {
       setNotificationType(savedNotificationType);
+      notificationTypeRef.current = savedNotificationType;
     }
   }, []);
 
@@ -155,7 +157,7 @@ const Dashboard = () => {
 
   const playAudioNotification = (requestType: string, tableNumber: string) => {
     try {
-      if (notificationType === 'sound') {
+      if (notificationTypeRef.current === 'sound') {
         console.log('Playing bell sound notification');
         playBellSound();
         return;
@@ -480,6 +482,7 @@ const Dashboard = () => {
 
   const handleNotificationTypeChange = (type: 'voice' | 'sound') => {
     setNotificationType(type);
+    notificationTypeRef.current = type;
     localStorage.setItem('notification_type', type);
     
     // Play test sound/voice when button is clicked
