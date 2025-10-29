@@ -213,9 +213,11 @@ const Dashboard = () => {
     
     if (currentCount < 5) {
       const timer = setTimeout(() => {
-        // Check if request is still pending
+        // Check if request/order is still pending
         const request = requests.find(r => r.id === requestId && r.status === 'pending');
-        if (request) {
+        const order = orders.find(o => o.id === requestId && o.status === 'pending');
+        
+        if (request || order) {
           playAudioNotification(requestType, tableNumber);
           repeatCountRef.current.set(requestId, currentCount + 1);
           scheduleRepeatNotification(requestId, requestType, tableNumber);
@@ -310,6 +312,8 @@ const Dashboard = () => {
 
   const handleCompleteOrder = async (id: string) => {
     try {
+      clearRepeatNotification(id);
+      
       const { error } = await (supabase as any)
         .from('orders')
         .update({ 
@@ -328,6 +332,8 @@ const Dashboard = () => {
 
   const handleCancelOrder = async (id: string) => {
     try {
+      clearRepeatNotification(id);
+      
       const { error } = await (supabase as any)
         .from('orders')
         .update({ status: 'cancelled' })
@@ -404,6 +410,7 @@ const Dashboard = () => {
           setOrders(prev => [newOrder, ...prev]);
           
           playAudioNotification('order', newOrder.table_number);
+          scheduleRepeatNotification(newOrder.id, 'order', newOrder.table_number);
           
           toast.success('Porosi e re!', {
             description: `${newOrder.table_number} - ${newOrder.items.length} artikuj`
@@ -422,6 +429,11 @@ const Dashboard = () => {
           setOrders(prev =>
             prev.map(order => order.id === updatedOrder.id ? updatedOrder : order)
           );
+          
+          // Clear repeat timer if status changed from pending
+          if (updatedOrder.status !== 'pending') {
+            clearRepeatNotification(updatedOrder.id);
+          }
         }
       )
       .on(
