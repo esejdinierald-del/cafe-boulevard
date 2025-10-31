@@ -213,6 +213,24 @@ const ManagerDashboard = () => {
     }
   };
 
+  const handleUpdateItem = async (id: string, name: string, price: number) => {
+    try {
+      const { error } = await (supabase as any)
+        .from('menu_items')
+        .update({ name, price })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success("Artikulli u përditësua");
+      setEditingItem(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast.error("Gabim në përditësimin e artikullit");
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Duke ngarkuar...</div>;
   }
@@ -375,33 +393,87 @@ const ManagerDashboard = () => {
                 const category = categories.find(c => c.id === item.category_id);
                 return (
                   <Card key={item.id} className="glass-effect p-4">
-                    <div className="flex gap-4">
-                      {item.image_url && (
-                        <img src={item.image_url} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
-                      )}
-                      <div className="flex-1">
-                        <h3 className="font-bold">{item.name}</h3>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                        <p className="text-primary font-bold">{item.price} Lekë</p>
-                        <p className="text-xs text-muted-foreground">Kategoria: {category?.name}</p>
+                    {editingItem === item.id ? (
+                      <div className="space-y-4">
+                        <div className="flex gap-4">
+                          {item.image_url && (
+                            <img src={item.image_url} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
+                          )}
+                          <div className="flex-1 space-y-3">
+                            <Input
+                              defaultValue={item.name}
+                              id={`item-name-${item.id}`}
+                              placeholder="Emri"
+                              className="glass-effect"
+                            />
+                            <Input
+                              type="number"
+                              defaultValue={item.price}
+                              id={`item-price-${item.id}`}
+                              placeholder="Çmimi"
+                              className="glass-effect"
+                            />
+                            <p className="text-xs text-muted-foreground">Kategoria: {category?.name}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            size="sm"
+                            variant="gold"
+                            onClick={() => {
+                              const nameInput = document.getElementById(`item-name-${item.id}`) as HTMLInputElement;
+                              const priceInput = document.getElementById(`item-price-${item.id}`) as HTMLInputElement;
+                              handleUpdateItem(item.id, nameInput.value, parseInt(priceInput.value));
+                            }}
+                          >
+                            <Save className="mr-2 h-4 w-4" />
+                            Ruaj
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingItem(null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          size="sm"
-                          variant={item.available ? "default" : "outline"}
-                          onClick={() => handleToggleAvailable(item.id, item.available)}
-                        >
-                          {item.available ? "Aktiv" : "Çaktiv"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteItem(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                    ) : (
+                      <div className="flex gap-4">
+                        {item.image_url && (
+                          <img src={item.image_url} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
+                        )}
+                        <div className="flex-1">
+                          <h3 className="font-bold">{item.name}</h3>
+                          <p className="text-sm text-muted-foreground">{item.description}</p>
+                          <p className="text-primary font-bold">{item.price} Lekë</p>
+                          <p className="text-xs text-muted-foreground">Kategoria: {category?.name}</p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            size="sm"
+                            variant="premium"
+                            onClick={() => setEditingItem(item.id)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={item.available ? "default" : "outline"}
+                            onClick={() => handleToggleAvailable(item.id, item.available)}
+                          >
+                            {item.available ? "Aktiv" : "Çaktiv"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteItem(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </Card>
                 );
               })}
