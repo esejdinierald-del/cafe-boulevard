@@ -213,11 +213,11 @@ const ManagerDashboard = () => {
     }
   };
 
-  const handleUpdateItem = async (id: string, name: string, price: number) => {
+  const handleUpdateItem = async (id: string, name: string, price: number, imageUrl: string) => {
     try {
       const { error } = await (supabase as any)
         .from('menu_items')
-        .update({ name, price })
+        .update({ name, price, image_url: imageUrl || null })
         .eq('id', id);
 
       if (error) throw error;
@@ -413,6 +413,12 @@ const ManagerDashboard = () => {
                               placeholder="Çmimi"
                               className="glass-effect"
                             />
+                            <Input
+                              defaultValue={item.image_url || ""}
+                              id={`item-image-${item.id}`}
+                              placeholder="URL e fotos"
+                              className="glass-effect"
+                            />
                             <p className="text-xs text-muted-foreground">Kategoria: {category?.name}</p>
                           </div>
                         </div>
@@ -423,7 +429,8 @@ const ManagerDashboard = () => {
                             onClick={() => {
                               const nameInput = document.getElementById(`item-name-${item.id}`) as HTMLInputElement;
                               const priceInput = document.getElementById(`item-price-${item.id}`) as HTMLInputElement;
-                              handleUpdateItem(item.id, nameInput.value, parseInt(priceInput.value));
+                              const imageInput = document.getElementById(`item-image-${item.id}`) as HTMLInputElement;
+                              handleUpdateItem(item.id, nameInput.value, parseInt(priceInput.value), imageInput.value);
                             }}
                           >
                             <Save className="mr-2 h-4 w-4" />
