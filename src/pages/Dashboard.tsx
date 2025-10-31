@@ -585,7 +585,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto space-y-3 flex-1 w-full">
         <div className="text-center space-y-1">
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-xs text-muted-foreground">Universal Caffè</p>
+          <p className="text-xs text-muted-foreground">Boulevard Café Elbasan</p>
         </div>
 
         {/* Notification Settings - Compact */}
