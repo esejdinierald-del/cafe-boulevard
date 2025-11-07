@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages } from "lucide-react";
 import { toast } from "sonner";
-import logo from "@/assets/boulevard-logo.png";
+import logo from "@/assets/art-caffe-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -18,7 +18,7 @@ const translations = {
     orderMenu: "Porosit nga Menu",
     premium: "Premium Service",
     fast: "Fast & Elegant",
-    footer: "Boulevard Café Elbasan - Where elegance meets excellence",
+    footer: "Art Caffee - Where elegance meets excellence",
     successWaiter: "Thirrja u dërgua!",
     successWaiterDesc: "Kamarieri do të vijë së shpejti në tavolinën tuaj.",
     successBill: "Kërkesa u dërgua!",
@@ -35,7 +35,7 @@ const translations = {
     orderMenu: "Order from Menu",
     premium: "Premium Service",
     fast: "Fast & Elegant",
-    footer: "Boulevard Café Elbasan - Where elegance meets excellence",
+    footer: "Art Caffee - Where elegance meets excellence",
     successWaiter: "Call sent!",
     successWaiterDesc: "The waiter will arrive at your table shortly.",
     successBill: "Request sent!",
@@ -125,7 +125,7 @@ const Index = () => {
         {/* Logo Container */}
         <div className="flex justify-center mb-8 sm:mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
           <div className="glass-premium rounded-[2.5rem] p-8 sm:p-12 shadow-[var(--shadow-float)] hover:shadow-[var(--shadow-gold)] transition-all duration-700 hover:scale-105 animate-float">
-            <img src={logo} alt="Boulevard Café Logo" className="w-56 sm:w-72 h-auto object-contain drop-shadow-2xl" />
+            <img src={logo} alt="Art Caffee Logo" className="w-56 sm:w-72 h-auto object-contain drop-shadow-2xl" />
           </div>
         </div>
 
@@ -173,7 +173,7 @@ const Index = () => {
           <div className="pt-4">
             <div className="flex justify-center gap-4">
               <a 
-                href="https://www.facebook.com/Boulevard-CAFFE" 
+                href="https://www.facebook.com/artcaffee" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="p-3 rounded-full glass-premium hover:glass-gold transition-all duration-300 hover:scale-110"
@@ -181,7 +181,7 @@ const Index = () => {
                 <Facebook className="h-6 w-6 text-secondary" />
               </a>
               <a 
-                href="https://www.instagram.com/boulevard.cafe_el" 
+                href="https://www.instagram.com/artcaffee" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="p-3 rounded-full glass-premium hover:glass-gold transition-all duration-300 hover:scale-110"
