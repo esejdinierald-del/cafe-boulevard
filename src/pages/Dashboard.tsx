@@ -29,6 +29,7 @@ interface Order {
   status: string;
   created_at: string;
   completed_at: string | null;
+  notes: string | null;
 }
 
 const Dashboard = () => {
@@ -715,6 +716,12 @@ const Dashboard = () => {
                             <span className="font-semibold whitespace-nowrap ml-2">{(item.price * item.quantity).toLocaleString()} L</span>
                           </div>
                         ))}
+                        {order.notes && (
+                          <div className="border-t pt-2 mt-2">
+                            <p className="text-xs font-semibold text-muted-foreground mb-1">Shënime:</p>
+                            <p className="text-xs bg-muted/50 p-2 rounded-lg">{order.notes}</p>
+                          </div>
+                        )}
                         <div className="flex justify-between font-bold text-sm border-t pt-1.5 mt-1">
                           <span>Totali:</span>
                           <span className="text-primary">{order.total_price.toLocaleString()} L</span>
@@ -781,6 +788,11 @@ const Dashboard = () => {
                             <p className="text-xs text-muted-foreground">
                               {new Date(order.created_at).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' })}
                             </p>
+                            {order.notes && (
+                              <p className="text-xs bg-muted/50 p-1.5 rounded mt-1 italic">
+                                {order.notes}
+                              </p>
+                            )}
                             <p className="text-xs font-semibold mt-0.5">
                               {order.total_price.toLocaleString()} L
                             </p>

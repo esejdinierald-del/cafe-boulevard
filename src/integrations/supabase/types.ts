@@ -91,6 +91,7 @@ export type Database = {
           created_at: string
           id: string
           items: Json
+          notes: string | null
           status: string
           table_number: string
           total_price: number
@@ -100,6 +101,7 @@ export type Database = {
           created_at?: string
           id?: string
           items: Json
+          notes?: string | null
           status?: string
           table_number: string
           total_price: number
@@ -109,6 +111,7 @@ export type Database = {
           created_at?: string
           id?: string
           items?: Json
+          notes?: string | null
           status?: string
           table_number?: string
           total_price?: number

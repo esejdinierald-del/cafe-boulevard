@@ -169,18 +169,8 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Feature Pills */}
-          <div className="space-y-4 pt-4">
-            <div className="flex justify-center gap-3 flex-wrap">
-              <span className="px-5 py-2 rounded-full glass-gold text-secondary text-sm font-bold border border-secondary/30">
-                {t.premium}
-              </span>
-              <span className="px-5 py-2 rounded-full bg-success/10 text-success text-sm font-bold border border-success/20">
-                {t.fast}
-              </span>
-            </div>
-            
-            {/* Social Media Links */}
+          {/* Social Media Links */}
+          <div className="pt-4">
             <div className="flex justify-center gap-4">
               <a 
                 href="https://www.facebook.com/Boulevard-CAFFE" 

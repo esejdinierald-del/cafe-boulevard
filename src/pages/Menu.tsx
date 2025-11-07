@@ -20,7 +20,8 @@ const translations = {
     successOrderDesc: "Kamarieri do ta sjellë së shpejti.",
     error: "Gabim",
     errorLoading: "Gabim në ngarkimin e menusë",
-    errorOrder: "Gabim në dërgimin e porosisë"
+    errorOrder: "Gabim në dërgimin e porosisë",
+    notesPlaceholder: "Shënime shtesë për porosinë (opsionale)..."
   },
   en: {
     menu: "Menu",
@@ -32,7 +33,8 @@ const translations = {
     successOrderDesc: "The waiter will bring it shortly.",
     error: "Error",
     errorLoading: "Error loading menu",
-    errorOrder: "Error submitting order"
+    errorOrder: "Error submitting order",
+    notesPlaceholder: "Additional notes for your order (optional)..."
   }
 };
 
@@ -65,6 +67,7 @@ const Menu = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [orderNotes, setOrderNotes] = useState("");
 
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
@@ -154,7 +157,8 @@ const Menu = () => {
           table_number: tableNumber,
           items: orderItems,
           total_price: getTotalPrice(),
-          status: 'pending'
+          status: 'pending',
+          notes: orderNotes || null
         });
 
       if (error) throw error;
@@ -164,8 +168,9 @@ const Menu = () => {
         duration: 4000
       });
 
-      // Clear cart and navigate back
+      // Clear cart and notes, then navigate back
       setCart({});
+      setOrderNotes("");
       navigate(`/?tabela=${tableNumber}`);
     } catch (error) {
       console.error('Error submitting order:', error);
@@ -294,19 +299,30 @@ const Menu = () => {
         {getTotalItems() > 0 && (
           <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 z-50">
             <Card className="glass-premium p-6 shadow-[var(--shadow-float)] border-2 border-secondary/30 rounded-3xl animate-pulse-glow">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="gradient-gold rounded-full p-3 shadow-[var(--shadow-gold)]">
-                    <ShoppingCart className="h-6 w-6" />
+              <div className="space-y-4">
+                {/* Notes textarea */}
+                <textarea
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                  placeholder={t.notesPlaceholder}
+                  className="w-full h-20 rounded-2xl border border-input bg-background/50 backdrop-blur-sm px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 placeholder:text-muted-foreground"
+                />
+                
+                {/* Order summary */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="gradient-gold rounded-full p-3 shadow-[var(--shadow-gold)]">
+                      <ShoppingCart className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground font-medium">{getTotalItems()} {t.items}</p>
+                      <p className="text-2xl font-display font-bold gradient-text-gold">{getTotalPrice()} {language === 'sq' ? 'Lekë' : 'ALL'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">{getTotalItems()} {t.items}</p>
-                    <p className="text-2xl font-display font-bold gradient-text-gold">{getTotalPrice()} {language === 'sq' ? 'Lekë' : 'ALL'}</p>
-                  </div>
+                  <Button size="lg" variant="burgundy" className="font-display font-bold text-lg" onClick={handleSubmitOrder}>
+                    {t.order}
+                  </Button>
                 </div>
-                <Button size="lg" variant="burgundy" className="font-display font-bold text-lg" onClick={handleSubmitOrder}>
-                  {t.order}
-                </Button>
               </div>
             </Card>
           </div>
