@@ -68,6 +68,7 @@ const Menu = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [orderNotes, setOrderNotes] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
@@ -100,6 +101,10 @@ const Menu = () => {
 
       setCategories(categoriesData || []);
       setMenuItems(itemsData || []);
+      // Auto-select first category
+      if (categoriesData && categoriesData.length > 0) {
+        setSelectedCategoryId(categoriesData[0].id);
+      }
     } catch (error) {
       console.error('Error fetching menu:', error);
       toast.error(t.errorLoading);
@@ -214,21 +219,38 @@ const Menu = () => {
           </Button>
         </div>
 
-        {/* Menu Categories */}
+        {/* Category Tabs */}
         {loading ? (
           <div className="text-center py-12">
             <p className="text-xl font-display">{t.loading}</p>
           </div>
         ) : (
-          categories.map(category => {
-            const items = menuItems.filter(item => item.category_id === category.id);
-            return (
-              <div key={category.id} className="mb-10">
-                <h2 className="text-3xl font-display font-bold mb-6 glass-gold rounded-2xl p-4 inline-block shadow-[var(--shadow-gold)]">
-                  {language === 'en' && category.name_en ? category.name_en : category.name}
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {items.map(item => (
+          <>
+            {/* Categories horizontal scroll */}
+            <div className="mb-8 -mx-4 px-4 overflow-x-auto scrollbar-hide">
+              <div className="flex gap-3 min-w-max pb-2">
+                {categories.map(category => (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategoryId(category.id)}
+                    className={`px-6 py-3 rounded-2xl font-display font-bold text-base transition-all duration-300 whitespace-nowrap ${
+                      selectedCategoryId === category.id
+                        ? 'glass-gold shadow-[var(--shadow-gold)] scale-105'
+                        : 'glass-premium hover:scale-105 hover:shadow-[var(--shadow-elegant)]'
+                    }`}
+                  >
+                    {language === 'en' && category.name_en ? category.name_en : category.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Menu Items for selected category */}
+            {selectedCategoryId && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {menuItems
+                  .filter(item => item.category_id === selectedCategoryId)
+                  .map(item => (
                     <Card key={item.id} className="glass-premium p-5 hover:shadow-[var(--shadow-float)] hover:scale-105 transition-all duration-500 rounded-3xl">
                       {item.image_url && (
                         <div className="w-full h-36 mb-4 rounded-2xl overflow-hidden shadow-lg">
@@ -289,10 +311,9 @@ const Menu = () => {
                       </div>
                     </Card>
                   ))}
-                </div>
               </div>
-            );
-          })
+            )}
+          </>
         )}
 
         {/* Cart Summary - Fixed at bottom */}
