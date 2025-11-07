@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Plus, Minus, ShoppingCart, Languages } from "lucide-react";
-import logo from "@/assets/art-caffe-logo.png";
+import logo from "@/assets/art-coffee-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
