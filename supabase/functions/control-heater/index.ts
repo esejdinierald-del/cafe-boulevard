@@ -7,10 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SMART_LIFE_CLIENT_ID = Deno.env.get('SMART_LIFE_CLIENT_ID');
-const SMART_LIFE_CLIENT_SECRET = Deno.env.get('SMART_LIFE_CLIENT_SECRET');
-const SMART_LIFE_PROJECT_CODE = Deno.env.get('SMART_LIFE_PROJECT_CODE');
-
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -22,10 +18,9 @@ serve(async (req) => {
 
   try {
     const { tableNumber } = await req.json();
-    
     console.log('Controlling heater for table:', tableNumber);
 
-    // Get device ID from database based on table number
+    // Get device info from database
     const { data: deviceData, error: deviceError } = await supabase
       .from('table_devices')
       .select('device_id, device_name')
@@ -35,196 +30,72 @@ serve(async (req) => {
 
     if (deviceError || !deviceData) {
       console.error('Device not found for table:', tableNumber, deviceError);
-      throw new Error(`No heater configured for table ${tableNumber}`);
+      return new Response(
+        JSON.stringify({ error: `No heater configured for table ${tableNumber}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      );
     }
 
-    const deviceId = deviceData.device_id;
-    console.log('Found device:', deviceData.device_name, 'ID:', deviceId);
+    console.log('Found device:', deviceData.device_name, 'ID:', deviceData.device_id);
 
-    // Step 1: Get access token from Smart Life API using new signature method
-    const timestamp = Date.now().toString();
-    const httpMethod = 'GET';
-    const url = '/v1.0/token?grant_type=1';
-    const contentHash = await sha256(''); // Empty body for GET
+    // Use proxy server instead of direct Tuya API call
+    const proxyUrl = Deno.env.get('TUYA_PROXY_URL');
+    const proxySecret = Deno.env.get('TUYA_PROXY_SECRET');
     
-    // stringToSign = HTTPMethod + "\n" + Content-SHA256 + "\n" + "" + "\n" + URL
-    const stringToSign = `${httpMethod}\n${contentHash}\n\n${url}`;
-    const sign = await generateSignWithBody(SMART_LIFE_CLIENT_ID!, SMART_LIFE_CLIENT_SECRET!, timestamp, stringToSign);
-    
-    console.log('Token request - timestamp:', timestamp);
-    console.log('Token request - stringToSign:', stringToSign);
-    console.log('Token request - sign:', sign);
-    
-    const tokenResponse = await fetch('https://openapi.tuyaeu.com/v1.0/token?grant_type=1', {
-      method: 'GET',
-      headers: {
-        'client_id': SMART_LIFE_CLIENT_ID!,
-        'sign': sign,
-        't': timestamp,
-        'sign_method': 'HMAC-SHA256',
-      }
-    });
-
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error('Error getting token:', errorText);
-      throw new Error(`Failed to get access token: ${errorText}`);
+    if (!proxyUrl) {
+      console.error('TUYA_PROXY_URL not configured');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Proxy server not configured. Please set TUYA_PROXY_URL secret.',
+          instructions: 'Follow the setup guide in tuya-proxy-setup.md'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
     }
 
-    const tokenData = await tokenResponse.json();
-    console.log('Token API response:', JSON.stringify(tokenData));
-    
-    if (!tokenData.result || !tokenData.result.access_token) {
-      console.error('Invalid token response structure:', tokenData);
-      throw new Error(`Invalid token response: ${JSON.stringify(tokenData)}`);
-    }
-    
-    const accessToken = tokenData.result.access_token;
-    
-    console.log('Access token obtained successfully');
-
-    // Step 2: Turn on heater device using new signature method
-    const commandTimestamp = Date.now().toString();
-    const commandMethod = 'POST';
-    const commandUrl = `/v1.0/devices/${deviceId}/commands`;
-    const commandBody = JSON.stringify({
-      commands: [
-        {
-          code: 'switch_1',
-          value: true
-        }
-      ]
-    });
-    const commandContentHash = await sha256(commandBody);
-    const commandStringToSign = `${commandMethod}\n${commandContentHash}\n\n${commandUrl}`;
-    const commandSign = await generateSignWithBody(SMART_LIFE_CLIENT_ID!, SMART_LIFE_CLIENT_SECRET!, commandTimestamp, commandStringToSign, accessToken);
-    
-    const controlResponse = await fetch(`https://openapi.tuyaeu.com/v1.0/devices/${deviceId}/commands`, {
+    // Call the proxy server
+    console.log('Calling proxy server:', proxyUrl);
+    const proxyResponse = await fetch(`${proxyUrl}/control-device`, {
       method: 'POST',
       headers: {
-        'client_id': SMART_LIFE_CLIENT_ID!,
-        'access_token': accessToken,
-        'sign': commandSign,
-        't': commandTimestamp,
-        'sign_method': 'HMAC-SHA256',
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${proxySecret || 'default-secret'}`,
       },
-      body: commandBody
+      body: JSON.stringify({
+        deviceId: deviceData.device_id,
+        command: { code: 'switch_1', value: true }
+      })
     });
 
-    if (!controlResponse.ok) {
-      const errorText = await controlResponse.text();
-      console.error('Error controlling device:', errorText);
-      throw new Error(`Failed to control device: ${errorText}`);
+    if (!proxyResponse.ok) {
+      const errorText = await proxyResponse.text();
+      console.error('Proxy error:', proxyResponse.status, errorText);
+      return new Response(
+        JSON.stringify({ 
+          error: `Proxy request failed: ${errorText}`,
+          statusCode: proxyResponse.status
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
     }
 
-    const controlData = await controlResponse.json();
-    console.log('Heater control response:', controlData);
+    const result = await proxyResponse.json();
+    console.log('Proxy response:', result);
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        message: 'Heater turned on successfully',
-        data: controlData 
+        message: `Heater turned on for ${deviceData.device_name}`,
+        result 
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
-    console.error('Error in control-heater function:', error);
+    console.error('Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: errorMessage 
-      }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      JSON.stringify({ error: errorMessage }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
-
-// Helper function to compute SHA256 hash
-async function sha256(content: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(content);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex.toLowerCase();
-}
-
-// Helper function to generate signature using new signature method
-async function generateSignWithBody(clientId: string, secret: string, timestamp: string, stringToSign: string, accessToken?: string): Promise<string> {
-  const str = accessToken 
-    ? `${clientId}${accessToken}${timestamp}${stringToSign}`
-    : `${clientId}${timestamp}${stringToSign}`;
-  
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const msgData = encoder.encode(str);
-  
-  const key = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  
-  const signature = await crypto.subtle.sign('HMAC', key, msgData);
-  const hashArray = Array.from(new Uint8Array(signature));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  return hashHex.toUpperCase();
-}
-
-// Legacy helper functions (keeping for reference)
-async function generateSignToken(stringToSign: string, secret: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const msgData = encoder.encode(stringToSign);
-  
-  const key = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  
-  const signature = await crypto.subtle.sign('HMAC', key, msgData);
-  const hashArray = Array.from(new Uint8Array(signature));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  return hashHex.toUpperCase();
-}
-
-async function generateSign(clientId: string, secret: string, timestamp: string, accessToken?: string): Promise<string> {
-  const str = accessToken 
-    ? `${clientId}${accessToken}${timestamp}`
-    : `${clientId}${timestamp}`;
-  
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const msgData = encoder.encode(str);
-  
-  const key = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  
-  const signature = await crypto.subtle.sign('HMAC', key, msgData);
-  const hashArray = Array.from(new Uint8Array(signature));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  return hashHex.toUpperCase();
-}
