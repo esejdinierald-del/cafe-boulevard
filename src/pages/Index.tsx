@@ -107,6 +107,12 @@ const Index = () => {
     }
   };
 
+  // Check if table has heater (tables 1-5)
+  const hasHeater = () => {
+    const tableNum = parseInt(tableNumber.toString().match(/\d+/)?.[0] || '0');
+    return tableNum >= 1 && tableNum <= 5;
+  };
+
   const handleTurnOnHeater = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('control-heater', {
@@ -192,15 +198,17 @@ const Index = () => {
               {t.orderMenu}
             </Button>
 
-            <Button 
-              variant="default" 
-              size="lg" 
-              onClick={handleTurnOnHeater} 
-              className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group"
-            >
-              <Flame className="mr-3 h-7 w-7 group-hover:animate-pulse text-orange-500" />
-              🔥 {t.turnOnHeater}
-            </Button>
+            {hasHeater() && (
+              <Button 
+                variant="default" 
+                size="lg" 
+                onClick={handleTurnOnHeater} 
+                className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group"
+              >
+                <Flame className="mr-3 h-7 w-7 group-hover:animate-pulse text-orange-500" />
+                🔥 {t.turnOnHeater}
+              </Button>
+            )}
           </div>
 
           {/* Social Media Links */}
