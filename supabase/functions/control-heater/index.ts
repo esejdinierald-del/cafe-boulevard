@@ -42,13 +42,15 @@ serve(async (req) => {
     console.log('Found device:', deviceData.device_name, 'ID:', deviceId);
 
     // Step 1: Get access token from Smart Life API
+    const timestamp = Date.now().toString();
+    const sign = await generateSign(SMART_LIFE_CLIENT_ID!, SMART_LIFE_CLIENT_SECRET!, timestamp);
+    
     const tokenResponse = await fetch('https://openapi.tuyaeu.com/v1.0/token?grant_type=1', {
       method: 'GET',
       headers: {
         'client_id': SMART_LIFE_CLIENT_ID!,
-        'secret': SMART_LIFE_CLIENT_SECRET!,
-        'sign': await generateSign(SMART_LIFE_CLIENT_ID!, SMART_LIFE_CLIENT_SECRET!, Date.now()),
-        't': Date.now().toString(),
+        'sign': sign,
+        't': timestamp,
         'sign_method': 'HMAC-SHA256',
       }
     });
@@ -72,13 +74,16 @@ serve(async (req) => {
     console.log('Access token obtained successfully');
 
     // Step 2: Turn on heater device
+    const commandTimestamp = Date.now().toString();
+    const commandSign = await generateSign(SMART_LIFE_CLIENT_ID!, SMART_LIFE_CLIENT_SECRET!, commandTimestamp, accessToken);
+    
     const controlResponse = await fetch(`https://openapi.tuyaeu.com/v1.0/devices/${deviceId}/commands`, {
       method: 'POST',
       headers: {
         'client_id': SMART_LIFE_CLIENT_ID!,
         'access_token': accessToken,
-        'sign': await generateSign(SMART_LIFE_CLIENT_ID!, SMART_LIFE_CLIENT_SECRET!, Date.now(), accessToken),
-        't': Date.now().toString(),
+        'sign': commandSign,
+        't': commandTimestamp,
         'sign_method': 'HMAC-SHA256',
         'Content-Type': 'application/json',
       },
@@ -130,7 +135,7 @@ serve(async (req) => {
 });
 
 // Helper function to generate signature for Smart Life API
-async function generateSign(clientId: string, secret: string, timestamp: number, accessToken?: string): Promise<string> {
+async function generateSign(clientId: string, secret: string, timestamp: string, accessToken?: string): Promise<string> {
   const str = accessToken 
     ? `${clientId}${accessToken}${timestamp}`
     : `${clientId}${timestamp}`;
