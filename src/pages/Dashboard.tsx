@@ -510,8 +510,11 @@ const Dashboard = () => {
   const handleTestHeater = async (tableNumber: string) => {
     setHeaterLoading(tableNumber);
     try {
+      // Extract just the number from "Tavolina X"
+      const tableNum = tableNumber.replace('Tavolina ', '');
+      
       const { error } = await supabase.functions.invoke('control-heater', {
-        body: { tableNumber }
+        body: { tableNumber: tableNum }
       });
 
       if (error) throw error;
