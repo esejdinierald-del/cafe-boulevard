@@ -44,8 +44,7 @@ serve(async (req) => {
     console.log('Access token obtained successfully');
 
     // Step 2: Turn on heater device
-    // Note: You'll need to get the actual device_id from your Smart Life app
-    const deviceId = 'YOUR_HEATER_DEVICE_ID'; // Replace with actual device ID
+    const deviceId = 'bf4e1f7a553047a55capma'; // Device ID from Smart Life app
     
     const controlResponse = await fetch(`https://openapi.tuyaeu.com/v1.0/devices/${deviceId}/commands`, {
       method: 'POST',
