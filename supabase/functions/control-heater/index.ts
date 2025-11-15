@@ -43,7 +43,11 @@ serve(async (req) => {
 
     // Step 1: Get access token from Smart Life API
     const timestamp = Date.now().toString();
-    const sign = await generateSign(SMART_LIFE_CLIENT_ID!, SMART_LIFE_CLIENT_SECRET!, timestamp);
+    const stringToSign = `${SMART_LIFE_CLIENT_ID!}${timestamp}`;
+    const sign = await generateSignToken(stringToSign, SMART_LIFE_CLIENT_SECRET!);
+    
+    console.log('Token request - timestamp:', timestamp);
+    console.log('Token request - stringToSign:', stringToSign);
     
     const tokenResponse = await fetch('https://openapi.tuyaeu.com/v1.0/token?grant_type=1', {
       method: 'GET',
@@ -134,7 +138,28 @@ serve(async (req) => {
   }
 });
 
-// Helper function to generate signature for Smart Life API
+// Helper function to generate signature for Smart Life API token request
+async function generateSignToken(stringToSign: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+  const msgData = encoder.encode(stringToSign);
+  
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign('HMAC', key, msgData);
+  const hashArray = Array.from(new Uint8Array(signature));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  return hashHex.toUpperCase();
+}
+
+// Helper function to generate signature for Smart Life API with access token
 async function generateSign(clientId: string, secret: string, timestamp: string, accessToken?: string): Promise<string> {
   const str = accessToken 
     ? `${clientId}${accessToken}${timestamp}`
