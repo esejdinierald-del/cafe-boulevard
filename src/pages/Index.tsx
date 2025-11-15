@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
@@ -16,6 +16,7 @@ const translations = {
     callWaiter: "Thirr Kamarieren",
     requestBill: "Kërko Faturën",
     orderMenu: "Porosit nga Menu",
+    turnOnHeater: "Ndez Ngrohësen",
     premium: "Premium Service",
     fast: "Fast & Elegant",
     footer: "Boulevard Café Elbasan - Where elegance meets excellence",
@@ -23,6 +24,8 @@ const translations = {
     successWaiterDesc: "Kamarieri do të vijë së shpejti në tavolinën tuaj.",
     successBill: "Kërkesa u dërgua!",
     successBillDesc: "Fatura do të përgatitet për ju.",
+    successHeater: "Ngrohësja po ndizet!",
+    successHeaterDesc: "Ngrohësja do të ndizet për tavolinën tuaj.",
     error: "Gabim në dërgimin e kërkesës",
     errorWaiter: "Gabim në dërgimin e thirrjes"
   },
@@ -33,6 +36,7 @@ const translations = {
     callWaiter: "Call Waiter",
     requestBill: "Request Bill",
     orderMenu: "Order from Menu",
+    turnOnHeater: "Turn On Heater",
     premium: "Premium Service",
     fast: "Fast & Elegant",
     footer: "Boulevard Café Elbasan - Where elegance meets excellence",
@@ -40,6 +44,8 @@ const translations = {
     successWaiterDesc: "The waiter will arrive at your table shortly.",
     successBill: "Request sent!",
     successBillDesc: "The bill will be prepared for you.",
+    successHeater: "Heater turning on!",
+    successHeaterDesc: "The heater will be turned on for your table.",
     error: "Error sending request",
     errorWaiter: "Error sending call"
   }
@@ -99,6 +105,13 @@ const Index = () => {
       console.error('Error requesting bill:', error);
       toast.error(t.error);
     }
+  };
+
+  const handleTurnOnHeater = () => {
+    toast.success(t.successHeater, {
+      description: t.successHeaterDesc,
+      duration: 4000
+    });
   };
 
   return (
@@ -166,6 +179,16 @@ const Index = () => {
             >
               <UtensilsCrossed className="mr-3 h-7 w-7 group-hover:rotate-12 transition-transform" />
               {t.orderMenu}
+            </Button>
+
+            <Button 
+              variant="default" 
+              size="lg" 
+              onClick={handleTurnOnHeater} 
+              className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group"
+            >
+              <Flame className="mr-3 h-7 w-7 group-hover:animate-pulse text-orange-500" />
+              🔥 {t.turnOnHeater}
             </Button>
           </div>
 
