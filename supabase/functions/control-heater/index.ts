@@ -60,6 +60,13 @@ serve(async (req) => {
     }
 
     const tokenData = await tokenResponse.json();
+    console.log('Token API response:', JSON.stringify(tokenData));
+    
+    if (!tokenData.result || !tokenData.result.access_token) {
+      console.error('Invalid token response structure:', tokenData);
+      throw new Error(`Invalid token response: ${JSON.stringify(tokenData)}`);
+    }
+    
     const accessToken = tokenData.result.access_token;
     
     console.log('Access token obtained successfully');
