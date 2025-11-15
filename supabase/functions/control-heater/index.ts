@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,6 +11,10 @@ const SMART_LIFE_CLIENT_ID = Deno.env.get('SMART_LIFE_CLIENT_ID');
 const SMART_LIFE_CLIENT_SECRET = Deno.env.get('SMART_LIFE_CLIENT_SECRET');
 const SMART_LIFE_PROJECT_CODE = Deno.env.get('SMART_LIFE_PROJECT_CODE');
 
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -19,6 +24,22 @@ serve(async (req) => {
     const { tableNumber } = await req.json();
     
     console.log('Controlling heater for table:', tableNumber);
+
+    // Get device ID from database based on table number
+    const { data: deviceData, error: deviceError } = await supabase
+      .from('table_devices')
+      .select('device_id, device_name')
+      .eq('table_number', tableNumber)
+      .eq('device_type', 'heater')
+      .single();
+
+    if (deviceError || !deviceData) {
+      console.error('Device not found for table:', tableNumber, deviceError);
+      throw new Error(`No heater configured for table ${tableNumber}`);
+    }
+
+    const deviceId = deviceData.device_id;
+    console.log('Found device:', deviceData.device_name, 'ID:', deviceId);
 
     // Step 1: Get access token from Smart Life API
     const tokenResponse = await fetch('https://openapi.tuyaeu.com/v1.0/token?grant_type=1', {
@@ -44,8 +65,6 @@ serve(async (req) => {
     console.log('Access token obtained successfully');
 
     // Step 2: Turn on heater device
-    const deviceId = 'bf4e1f7a553047a55capma'; // Device ID from Smart Life app
-    
     const controlResponse = await fetch(`https://openapi.tuyaeu.com/v1.0/devices/${deviceId}/commands`, {
       method: 'POST',
       headers: {
