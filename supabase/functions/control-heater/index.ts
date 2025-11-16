@@ -1,7 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { crypto } from "https://deno.land/std@0.177.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,10 +11,17 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Set HTTP_PROXY environment variable if Fixie URL is provided
+const FIXIE_PROXY_URL = Deno.env.get('FIXIE_PROXY_URL');
 const TUYA_CLIENT_ID = Deno.env.get('SMART_LIFE_CLIENT_ID')!;
 const TUYA_CLIENT_SECRET = Deno.env.get('SMART_LIFE_CLIENT_SECRET')!;
-const FIXIE_PROXY_URL = Deno.env.get('FIXIE_PROXY_URL')!;
 const TUYA_BASE_URL = 'https://openapi.tuyaeu.com';
+
+if (FIXIE_PROXY_URL) {
+  Deno.env.set('HTTP_PROXY', FIXIE_PROXY_URL);
+  Deno.env.set('HTTPS_PROXY', FIXIE_PROXY_URL);
+  console.log('Configured Fixie proxy');
+}
 
 // Cache for access token
 let cachedToken: { access_token: string; expire_time: number } | null = null;
@@ -49,11 +55,6 @@ async function getTuyaAccessToken(): Promise<string> {
     .join('')
     .toUpperCase();
 
-  const proxyConfig: RequestInit = FIXIE_PROXY_URL ? {
-    // @ts-ignore - Deno supports proxy in fetch
-    proxy: FIXIE_PROXY_URL
-  } : {};
-
   const response = await fetch(`${TUYA_BASE_URL}/v1.0/token?grant_type=1`, {
     method: 'GET',
     headers: {
@@ -61,8 +62,7 @@ async function getTuyaAccessToken(): Promise<string> {
       'sign': sign,
       'sign_method': 'HMAC-SHA256',
       't': timestamp,
-    },
-    ...proxyConfig
+    }
   });
 
   if (!response.ok) {
@@ -111,11 +111,6 @@ async function controlTuyaDevice(deviceId: string, commands: any): Promise<any> 
     .join('')
     .toUpperCase();
 
-  const proxyConfig: RequestInit = FIXIE_PROXY_URL ? {
-    // @ts-ignore - Deno supports proxy in fetch
-    proxy: FIXIE_PROXY_URL
-  } : {};
-
   const response = await fetch(`${TUYA_BASE_URL}/v1.0/devices/${deviceId}/commands`, {
     method: 'POST',
     headers: {
@@ -126,8 +121,7 @@ async function controlTuyaDevice(deviceId: string, commands: any): Promise<any> 
       't': timestamp,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ commands }),
-    ...proxyConfig
+    body: JSON.stringify({ commands })
   });
 
   if (!response.ok) {
