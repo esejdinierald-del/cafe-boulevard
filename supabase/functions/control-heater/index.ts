@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { crypto } from "https://deno.land/std@0.177.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,140 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+const TUYA_CLIENT_ID = Deno.env.get('SMART_LIFE_CLIENT_ID')!;
+const TUYA_CLIENT_SECRET = Deno.env.get('SMART_LIFE_CLIENT_SECRET')!;
+const FIXIE_PROXY_URL = Deno.env.get('FIXIE_PROXY_URL')!;
+const TUYA_BASE_URL = 'https://openapi.tuyaeu.com';
+
+// Cache for access token
+let cachedToken: { access_token: string; expire_time: number } | null = null;
+
+async function getTuyaAccessToken(): Promise<string> {
+  // Return cached token if still valid
+  if (cachedToken && Date.now() < cachedToken.expire_time) {
+    console.log('Using cached Tuya token');
+    return cachedToken.access_token;
+  }
+
+  console.log('Fetching new Tuya access token');
+  const timestamp = Date.now().toString();
+  const signStr = TUYA_CLIENT_ID + timestamp;
+  
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(TUYA_CLIENT_SECRET);
+  const msgData = encoder.encode(signStr);
+  
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign('HMAC', key, msgData);
+  const sign = Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase();
+
+  const proxyConfig: RequestInit = FIXIE_PROXY_URL ? {
+    // @ts-ignore - Deno supports proxy in fetch
+    proxy: FIXIE_PROXY_URL
+  } : {};
+
+  const response = await fetch(`${TUYA_BASE_URL}/v1.0/token?grant_type=1`, {
+    method: 'GET',
+    headers: {
+      'client_id': TUYA_CLIENT_ID,
+      'sign': sign,
+      'sign_method': 'HMAC-SHA256',
+      't': timestamp,
+    },
+    ...proxyConfig
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Tuya token error:', error);
+    throw new Error(`Failed to get Tuya token: ${error}`);
+  }
+
+  const data = await response.json();
+  
+  if (!data.success) {
+    console.error('Tuya API error:', data);
+    throw new Error(`Tuya API error: ${data.msg || 'Unknown error'}`);
+  }
+
+  // Cache token with 2-hour expiration
+  cachedToken = {
+    access_token: data.result.access_token,
+    expire_time: Date.now() + (2 * 60 * 60 * 1000)
+  };
+
+  console.log('Successfully obtained Tuya access token');
+  return data.result.access_token;
+}
+
+async function controlTuyaDevice(deviceId: string, commands: any): Promise<any> {
+  const accessToken = await getTuyaAccessToken();
+  const timestamp = Date.now().toString();
+  
+  const signStr = TUYA_CLIENT_ID + accessToken + timestamp;
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(TUYA_CLIENT_SECRET);
+  const msgData = encoder.encode(signStr);
+  
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign('HMAC', key, msgData);
+  const sign = Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase();
+
+  const proxyConfig: RequestInit = FIXIE_PROXY_URL ? {
+    // @ts-ignore - Deno supports proxy in fetch
+    proxy: FIXIE_PROXY_URL
+  } : {};
+
+  const response = await fetch(`${TUYA_BASE_URL}/v1.0/devices/${deviceId}/commands`, {
+    method: 'POST',
+    headers: {
+      'client_id': TUYA_CLIENT_ID,
+      'access_token': accessToken,
+      'sign': sign,
+      'sign_method': 'HMAC-SHA256',
+      't': timestamp,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ commands }),
+    ...proxyConfig
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Tuya control error:', error);
+    throw new Error(`Failed to control device: ${error}`);
+  }
+
+  const data = await response.json();
+  
+  if (!data.success) {
+    console.error('Tuya API error:', data);
+    throw new Error(`Tuya API error: ${data.msg || 'Unknown error'}`);
+  }
+
+  return data.result;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -19,6 +154,14 @@ serve(async (req) => {
   try {
     const { tableNumber } = await req.json();
     console.log('Controlling heater for table:', tableNumber);
+
+    if (!FIXIE_PROXY_URL) {
+      console.error('FIXIE_PROXY_URL not configured');
+      return new Response(
+        JSON.stringify({ error: 'Fixie proxy not configured' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
 
     // Get device info from database
     const { data: deviceData, error: deviceError } = await supabase
@@ -38,49 +181,12 @@ serve(async (req) => {
 
     console.log('Found device:', deviceData.device_name, 'ID:', deviceData.device_id);
 
-    // Use proxy server instead of direct Tuya API call
-    const proxyUrl = Deno.env.get('TUYA_PROXY_URL');
-    const proxySecret = Deno.env.get('TUYA_PROXY_SECRET');
-    
-    if (!proxyUrl) {
-      console.error('TUYA_PROXY_URL not configured');
-      return new Response(
-        JSON.stringify({ 
-          error: 'Proxy server not configured. Please set TUYA_PROXY_URL secret.',
-          instructions: 'Follow the setup guide in tuya-proxy-setup.md'
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
-    }
+    // Control device via Tuya API through Fixie proxy
+    const result = await controlTuyaDevice(deviceData.device_id, [
+      { code: 'switch_1', value: true }
+    ]);
 
-    // Call the proxy server
-    console.log('Calling proxy server:', proxyUrl);
-    const proxyResponse = await fetch(`${proxyUrl}/control-device`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${proxySecret || 'default-secret'}`,
-      },
-      body: JSON.stringify({
-        deviceId: deviceData.device_id,
-        command: { code: 'switch_1', value: true }
-      })
-    });
-
-    if (!proxyResponse.ok) {
-      const errorText = await proxyResponse.text();
-      console.error('Proxy error:', proxyResponse.status, errorText);
-      return new Response(
-        JSON.stringify({ 
-          error: `Proxy request failed: ${errorText}`,
-          statusCode: proxyResponse.status
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
-    }
-
-    const result = await proxyResponse.json();
-    console.log('Proxy response:', result);
+    console.log('Successfully controlled device:', result);
 
     return new Response(
       JSON.stringify({ 
@@ -91,7 +197,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error controlling heater:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ error: errorMessage }),
