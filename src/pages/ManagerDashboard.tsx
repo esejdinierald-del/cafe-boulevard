@@ -41,6 +41,8 @@ const ManagerDashboard = () => {
     category_id: "",
     image_url: ""
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -172,6 +174,7 @@ const ManagerDashboard = () => {
 
       toast.success("Artikulli u shtua");
       setNewItem({ name: "", description: "", price: "", category_id: "", image_url: "" });
+      setImagePreview(null);
       fetchData();
     } catch (error) {
       console.error('Error adding item:', error);
@@ -210,6 +213,41 @@ const ManagerDashboard = () => {
     } catch (error) {
       console.error('Error toggling item:', error);
       toast.error("Gabim");
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      setUploadingImage(true);
+      
+      // Create unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('menu-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('menu-images')
+        .getPublicUrl(filePath);
+
+      setImagePreview(publicUrl);
+      setNewItem({ ...newItem, image_url: publicUrl });
+      toast.success("Fotoja u ngarkua me sukses");
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error("Gabim në ngarkimin e fotos");
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -363,12 +401,38 @@ const ManagerDashboard = () => {
                   placeholder="Çmimi (Lekë)"
                   className="glass-effect"
                 />
-                <Input
-                  value={newItem.image_url}
-                  onChange={(e) => setNewItem({ ...newItem, image_url: e.target.value })}
-                  placeholder="URL e fotos (opsionale)"
-                  className="glass-effect"
-                />
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold">Ngarko Foto</label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file);
+                    }}
+                    disabled={uploadingImage}
+                    className="glass-effect"
+                  />
+                  {uploadingImage && <p className="text-sm text-muted-foreground">Duke ngarkuar...</p>}
+                  {imagePreview && (
+                    <div className="relative w-32 h-32">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+                      <Button
+                        size="icon"
+                        variant="destructive"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setNewItem({ ...newItem, image_url: "" });
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
                 <select
                   value={newItem.category_id}
                   onChange={(e) => setNewItem({ ...newItem, category_id: e.target.value })}
@@ -381,7 +445,7 @@ const ManagerDashboard = () => {
                     </option>
                   ))}
                 </select>
-                <Button onClick={handleAddItem}>
+                <Button onClick={handleAddItem} disabled={uploadingImage}>
                   <Plus className="mr-2 h-4 w-4" />
                   Shto Artikull
                 </Button>
