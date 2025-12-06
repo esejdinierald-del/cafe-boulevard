@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle, Sparkles } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
+import { WelcomeGreeting } from "@/components/WelcomeGreeting";
 import { toast } from "sonner";
 import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
@@ -63,6 +64,7 @@ const Index = () => {
   const t = translations[language];
   const [tableNumber, setTableNumber] = useState(t.table);
   const [chatOpen, setChatOpen] = useState(false);
+  const [showGreeting, setShowGreeting] = useState(true);
   
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
@@ -295,6 +297,14 @@ const Index = () => {
       </div>
 
       <StaffChatDialog open={chatOpen} onOpenChange={setChatOpen} />
+      
+      {showGreeting && (
+        <WelcomeGreeting 
+          language={language} 
+          onDismiss={() => setShowGreeting(false)} 
+          onOpenChat={() => setChatOpen(true)}
+        />
+      )}
     </div>
   );
 };
