@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle } from "lucide-react";
+import { StaffChatDialog } from "@/components/StaffChatDialog";
 import { toast } from "sonner";
 import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
@@ -17,6 +18,7 @@ const translations = {
     requestBill: "Kërko Faturën",
     orderMenu: "Porosit nga Menu",
     turnOnHeater: "Ndez Ngrohësen",
+    askStaff: "Pyet Stafin",
     premium: "Premium Service",
     fast: "Fast & Elegant",
     footer: "Boulevard Café Elbasan - Where elegance meets excellence",
@@ -37,6 +39,7 @@ const translations = {
     requestBill: "Request Bill",
     orderMenu: "Order from Menu",
     turnOnHeater: "Turn On Heater",
+    askStaff: "Ask Staff",
     premium: "Premium Service",
     fast: "Fast & Elegant",
     footer: "Boulevard Café Elbasan - Where elegance meets excellence",
@@ -57,7 +60,7 @@ const Index = () => {
   const { language, toggleLanguage } = useLanguage();
   const t = translations[language];
   const [tableNumber, setTableNumber] = useState(t.table);
-
+  const [chatOpen, setChatOpen] = useState(false);
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
     if (tableParam) {
@@ -198,6 +201,16 @@ const Index = () => {
               {t.orderMenu}
             </Button>
 
+            <Button 
+              variant="gold" 
+              size="lg" 
+              onClick={() => setChatOpen(true)} 
+              className="w-full h-20 sm:h-22 text-xl sm:text-2xl font-display font-bold touch-manipulation group"
+            >
+              <MessageCircle className="mr-3 h-7 w-7 group-hover:scale-110 transition-transform" />
+              {t.askStaff}
+            </Button>
+
             {hasHeater() && (
               <Button 
                 variant="default" 
@@ -241,6 +254,8 @@ const Index = () => {
           </p>
         </div>
       </div>
+
+      <StaffChatDialog open={chatOpen} onOpenChange={setChatOpen} />
     </div>
   );
 };

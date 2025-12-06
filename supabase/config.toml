@@ -1,1 +1,10 @@
 project_id = "mpvoejfvhafbnswrqtmf"
+
+[functions.control-heater]
+verify_jwt = false
+
+[functions.text-to-speech]
+verify_jwt = false
+
+[functions.staff-chat]
+verify_jwt = false
