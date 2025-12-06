@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock, Volume2, Flame } from "lucide-react";
+import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock, Volume2, Flame, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface ServiceRequest {
@@ -40,6 +40,7 @@ const Dashboard = () => {
   const [password, setPassword] = useState("");
   const [notificationType, setNotificationType] = useState<'voice' | 'sound'>('voice');
   const [heaterLoading, setHeaterLoading] = useState<string | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const repeatCountRef = useRef<Map<string, number>>(new Map());
@@ -482,6 +483,42 @@ const Dashboard = () => {
     };
   }, []);
 
+  // Timer for elapsed time since first pending request + auto-refresh
+  useEffect(() => {
+    const updateElapsedTime = () => {
+      const pendingRequests = requests.filter(r => r.status === 'pending');
+      const pendingOrders = orders.filter(o => o.status === 'pending');
+      
+      const allPendingTimes = [
+        ...pendingRequests.map(r => new Date(r.created_at).getTime()),
+        ...pendingOrders.map(o => new Date(o.created_at).getTime())
+      ];
+      
+      if (allPendingTimes.length === 0) {
+        setElapsedTime('');
+        return;
+      }
+      
+      const oldestTime = Math.min(...allPendingTimes);
+      const now = Date.now();
+      const diffMs = now - oldestTime;
+      
+      const minutes = Math.floor(diffMs / 60000);
+      const seconds = Math.floor((diffMs % 60000) / 1000);
+      
+      if (minutes > 0) {
+        setElapsedTime(`${minutes}m ${seconds}s`);
+      } else {
+        setElapsedTime(`${seconds}s`);
+      }
+    };
+
+    updateElapsedTime();
+    const timer = setInterval(updateElapsedTime, 1000);
+
+    return () => clearInterval(timer);
+  }, [requests, orders]);
+
   const handleNotificationTypeChange = (type: 'voice' | 'sound') => {
     setNotificationType(type);
     notificationTypeRef.current = type;
@@ -611,13 +648,21 @@ const Dashboard = () => {
       
       <div className="max-w-7xl mx-auto space-y-3 flex-1 w-full">
         <div className="text-center space-y-1 relative">
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
             {(pendingRequests.length > 0 || pendingOrders.length > 0) && (
               <div className="flex items-center gap-2 animate-pulse-glow rounded-full px-3 py-1 bg-warning/20">
                 <Bell className="h-4 w-4 text-warning animate-bounce-soft" />
                 <span className="font-bold text-warning text-sm">
                   {pendingRequests.length + pendingOrders.length}
+                </span>
+              </div>
+            )}
+            {elapsedTime && (
+              <div className="flex items-center gap-1.5 rounded-full px-3 py-1 bg-destructive/20 border border-destructive/30">
+                <Clock className="h-4 w-4 text-destructive" />
+                <span className="font-mono font-bold text-destructive text-sm">
+                  {elapsedTime}
                 </span>
               </div>
             )}
