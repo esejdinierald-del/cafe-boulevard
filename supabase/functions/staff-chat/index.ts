@@ -82,6 +82,14 @@ serve(async (req) => {
 - Limonadë (2.50€)
 - Ujë mineral (1.00€)
 
+🇮🇹 ANTIPASTA ITALIANE (SPECIALITET!):
+- Tagliere Prosciutto (8.00€) - Proshutë italiane e prerë hollë, e shkrirë në gojë!
+- Tagliere Mix Djathrash (9.00€) - Parmigiano, Gorgonzola, Pecorino, Mozzarella di Bufala
+- Tagliere Completo (12.00€) - Proshutë + Mix djathrash + ullinj + bukë italiane
+- Bruschetta Classica (4.00€) - Me domate të freskëta dhe borzilok
+- Carpaccio (9.00€) - Mish viçi i prerë hollë me rucola dhe parmigiano
+- Antipasto Boulevard (15.00€) - Për 2 persona: gjithçka nga më e mira italiane!
+
 🍕 PIZZA (SHUMË TË MIRA!):
 - Pizza Margherita (5.00€) - Klasike me domate dhe mozzarella
 - Pizza Pepperoni (6.00€) - Me salcë pepperoni të shijshme
@@ -189,6 +197,14 @@ UDHËZIME:
 - Smoothies (3.50€)
 - Lemonade (2.50€)
 - Mineral water (1.00€)
+
+🇮🇹 ITALIAN ANTIPASTO (SPECIALTY!):
+- Tagliere Prosciutto (8.00€) - Thinly sliced Italian prosciutto, melts in your mouth!
+- Tagliere Mixed Cheeses (9.00€) - Parmigiano, Gorgonzola, Pecorino, Mozzarella di Bufala
+- Tagliere Completo (12.00€) - Prosciutto + Mixed cheeses + olives + Italian bread
+- Bruschetta Classica (4.00€) - With fresh tomatoes and basil
+- Carpaccio (9.00€) - Thinly sliced beef with arugula and parmigiano
+- Antipasto Boulevard (15.00€) - For 2 people: the best of Italian cuisine!
 
 🍕 PIZZA (AMAZING!):
 - Pizza Margherita (5.00€) - Classic with tomato and mozzarella
