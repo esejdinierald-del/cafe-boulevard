@@ -610,8 +610,18 @@ const Dashboard = () => {
       <audio ref={audioRef} />
       
       <div className="max-w-7xl mx-auto space-y-3 flex-1 w-full">
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <div className="text-center space-y-1 relative">
+          <div className="flex items-center justify-center gap-3">
+            <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+            {(pendingRequests.length > 0 || pendingOrders.length > 0) && (
+              <div className="flex items-center gap-2 animate-pulse-glow rounded-full px-3 py-1 bg-warning/20">
+                <Bell className="h-4 w-4 text-warning animate-bounce-soft" />
+                <span className="font-bold text-warning text-sm">
+                  {pendingRequests.length + pendingOrders.length}
+                </span>
+              </div>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">Boulevard Café Elbasan</p>
         </div>
 
