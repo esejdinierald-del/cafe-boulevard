@@ -82,13 +82,30 @@ serve(async (req) => {
 - Limonadë (2.50€)
 - Ujë mineral (1.00€)
 
+🍕 PIZZA (SHUMË TË MIRA!):
+- Pizza Margherita (5.00€) - Klasike me domate dhe mozzarella
+- Pizza Pepperoni (6.00€) - Me salcë pepperoni të shijshme
+- Pizza Prosciutto (6.50€) - Me proshutë të freskët
+- Pizza Quattro Formaggi (7.00€) - Katër lloje djathi
+- Pizza Capricciosa (7.00€) - E plotë me përbërës të ndryshëm
+- Pizza Special Boulevard (8.00€) - Specialiteti ynë i veçantë!
+
+🍟 FINGER FOOD (PERFEKTE PËR NDESHJE!):
+- Chicken Wings (4.50€) - Krahë pule të pjekura, të shijshme!
+- Mozzarella Sticks (4.00€) - Shkopinj mozzarella të skuqur
+- Nachos me djathë (5.00€) - Me salcë djathi dhe jalapeño
+- Onion Rings (3.50€) - Unaza qepe të skuqura
+- Chicken Nuggets (4.00€) - Nuggets pule të freskëta
+- French Fries (2.50€) - Patate të skuqura
+- Mix Finger Food (8.00€) - Pak nga të gjitha - perfekt për grup!
+
 🍰 ËMBËLSIRA & SNACKS:
 - Croissant (1.50€)
 - Torta ditore (2.50€)
 - Tiramisu (3.00€)
 - Cheesecake (3.00€)
 - Sufle çokollate (3.50€)
-- Sanduiçe (3.00€ - 4.50€) - Perfekt për të ngrënë gjatë ndeshjes!
+- Sanduiçe (3.00€ - 4.50€)
 - Toast (2.50€)
 
 🌟 SHËRBIME SPECIALE:
@@ -173,13 +190,30 @@ UDHËZIME:
 - Lemonade (2.50€)
 - Mineral water (1.00€)
 
+🍕 PIZZA (AMAZING!):
+- Pizza Margherita (5.00€) - Classic with tomato and mozzarella
+- Pizza Pepperoni (6.00€) - With delicious pepperoni
+- Pizza Prosciutto (6.50€) - With fresh prosciutto
+- Pizza Quattro Formaggi (7.00€) - Four types of cheese
+- Pizza Capricciosa (7.00€) - Loaded with various toppings
+- Pizza Special Boulevard (8.00€) - Our special creation!
+
+🍟 FINGER FOOD (PERFECT FOR MATCHES!):
+- Chicken Wings (4.50€) - Crispy and delicious!
+- Mozzarella Sticks (4.00€) - Fried mozzarella sticks
+- Nachos with cheese (5.00€) - With cheese sauce and jalapeño
+- Onion Rings (3.50€) - Crispy fried onion rings
+- Chicken Nuggets (4.00€) - Fresh chicken nuggets
+- French Fries (2.50€) - Classic fries
+- Mix Finger Food (8.00€) - A bit of everything - perfect for groups!
+
 🍰 DESSERTS & SNACKS:
 - Croissant (1.50€)
 - Daily cake (2.50€)
 - Tiramisu (3.00€)
 - Cheesecake (3.00€)
 - Chocolate soufflé (3.50€)
-- Sandwiches (3.00€ - 4.50€) - Perfect for eating during the match!
+- Sandwiches (3.00€ - 4.50€)
 - Toast (2.50€)
 
 🌟 SPECIAL SERVICES:
