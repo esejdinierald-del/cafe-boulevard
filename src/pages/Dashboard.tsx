@@ -483,15 +483,27 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Timer for elapsed time since first pending request + auto-refresh
+  // Auto-refresh polling every 5 seconds as backup for realtime
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const pollInterval = setInterval(() => {
+      fetchRequests();
+      fetchOrders();
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [isAuthenticated]);
+
+  // Timer for elapsed time since first pending request
   useEffect(() => {
     const updateElapsedTime = () => {
-      const pendingRequests = requests.filter(r => r.status === 'pending');
-      const pendingOrders = orders.filter(o => o.status === 'pending');
+      const pendingRequestsList = requests.filter(r => r.status === 'pending');
+      const pendingOrdersList = orders.filter(o => o.status === 'pending');
       
       const allPendingTimes = [
-        ...pendingRequests.map(r => new Date(r.created_at).getTime()),
-        ...pendingOrders.map(o => new Date(o.created_at).getTime())
+        ...pendingRequestsList.map(r => new Date(r.created_at).getTime()),
+        ...pendingOrdersList.map(o => new Date(o.created_at).getTime())
       ];
       
       if (allPendingTimes.length === 0) {
