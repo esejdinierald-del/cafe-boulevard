@@ -112,10 +112,16 @@ const Dashboard = () => {
   };
 
   const playBellSound = () => {
+    console.log('playBellSound called');
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Create a distinctive "ding dong" doorbell sound - completely different from voice
+      // Resume context if suspended (browser autoplay policy)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
+      // Create a distinctive "ding dong" doorbell sound
       const playDingDong = () => {
         // First "ding" - higher pitch
         const oscillator1 = audioContext.createOscillator();
@@ -125,7 +131,7 @@ const Dashboard = () => {
         gainNode1.connect(audioContext.destination);
         
         oscillator1.frequency.setValueAtTime(1200, audioContext.currentTime);
-        gainNode1.gain.setValueAtTime(0.4, audioContext.currentTime);
+        gainNode1.gain.setValueAtTime(0.5, audioContext.currentTime);
         gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
         
         oscillator1.start(audioContext.currentTime);
@@ -140,7 +146,7 @@ const Dashboard = () => {
           gainNode2.connect(audioContext.destination);
           
           oscillator2.frequency.setValueAtTime(900, audioContext.currentTime);
-          gainNode2.gain.setValueAtTime(0.4, audioContext.currentTime);
+          gainNode2.gain.setValueAtTime(0.5, audioContext.currentTime);
           gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
           
           oscillator2.start(audioContext.currentTime);
@@ -153,56 +159,55 @@ const Dashboard = () => {
       setTimeout(() => playDingDong(), 1000);
       setTimeout(() => playDingDong(), 2000);
       
+      console.log('Bell sound played successfully');
     } catch (error) {
       console.error('Error playing bell sound:', error);
     }
   };
 
   const playAudioNotification = (requestType: string, tableNumber: string) => {
+    console.log('playAudioNotification called:', { requestType, tableNumber, notificationType: notificationTypeRef.current });
+    
+    // Always play bell sound first as backup (works without user gesture on many browsers)
+    playBellSound();
+    
     try {
-      if (notificationTypeRef.current === 'sound') {
-        console.log('Playing bell sound notification');
-        playBellSound();
-        return;
-      }
+      // If voice mode, also try to speak
+      if (notificationTypeRef.current === 'voice') {
+        const text = requestType === 'waiter' 
+          ? `Table ${tableNumber} requests service`
+          : requestType === 'bill'
+          ? `Table ${tableNumber} requests the bill`
+          : `New order from table ${tableNumber}`;
 
-      const text = requestType === 'waiter' 
-        ? `Table ${tableNumber} requests service`
-        : requestType === 'bill'
-        ? `Table ${tableNumber} requests the bill`
-        : `New order from table ${tableNumber}`;
+        console.log('Also playing voice notification:', text);
 
-      console.log('Playing voice notification:', text);
-
-      // Use browser's Speech Synthesis API for immediate, reliable playback
-      if ('speechSynthesis' in window) {
-        // Cancel any ongoing speech
-        window.speechSynthesis.cancel();
-        
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        utterance.pitch = 1.0;
-        utterance.volume = 1.0;
-        // Prefer an English voice explicitly
-        if (selectedVoiceRef.current) {
-          utterance.voice = selectedVoiceRef.current;
-        } else if (window.speechSynthesis.getVoices) {
-          const voices = window.speechSynthesis.getVoices();
-          const fallback = voices.find(v => v.lang?.toLowerCase() === 'en-us') || voices.find(v => v.lang?.toLowerCase().startsWith('en'));
-          if (fallback) utterance.voice = fallback;
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'en-US';
+          utterance.rate = 0.9;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          
+          if (selectedVoiceRef.current) {
+            utterance.voice = selectedVoiceRef.current;
+          } else if (window.speechSynthesis.getVoices) {
+            const voices = window.speechSynthesis.getVoices();
+            const fallback = voices.find(v => v.lang?.toLowerCase() === 'en-us') || voices.find(v => v.lang?.toLowerCase().startsWith('en'));
+            if (fallback) utterance.voice = fallback;
+          }
+          
+          utterance.onstart = () => console.log('Voice started:', text);
+          utterance.onend = () => console.log('Voice finished');
+          utterance.onerror = (e) => console.error('Speech synthesis error:', e);
+          
+          window.speechSynthesis.speak(utterance);
         }
-        
-        utterance.onstart = () => console.log('Audio started playing:', text);
-        utterance.onend = () => console.log('Audio finished playing');
-        utterance.onerror = (e) => console.error('Speech synthesis error:', e);
-        
-        window.speechSynthesis.speak(utterance);
-      } else {
-        console.error('Speech synthesis not supported');
       }
     } catch (error) {
-      console.error('Error playing audio:', error);
+      console.error('Error playing audio notification:', error);
     }
   };
 
