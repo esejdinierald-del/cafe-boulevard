@@ -42,6 +42,7 @@ const Dashboard = () => {
   const [heaterLoading, setHeaterLoading] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const repeatCountRef = useRef<Map<string, number>>(new Map());
   const audioEnabledRef = useRef(false);
@@ -97,32 +98,56 @@ const Dashboard = () => {
     }
   }
 
-  const enableAudio = () => {
-    if (!audioEnabledRef.current && 'speechSynthesis' in window) {
-      // Ensure an English voice is selected
-      loadPreferredVoice();
-      // Initialize speech synthesis with a silent utterance to unlock audio
-      const utterance = new SpeechSynthesisUtterance(' ');
-      utterance.volume = 0;
-      window.speechSynthesis.speak(utterance);
-      audioEnabledRef.current = true;
-      console.log('Audio enabled');
-      toast.success('Voice alerts enabled');
+  const enableAudio = async () => {
+    console.log('enableAudio called');
+    try {
+      // Initialize shared AudioContext
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      // Resume if suspended
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+        console.log('AudioContext resumed');
+      }
+      
+      // Enable speech synthesis
+      if (!audioEnabledRef.current && 'speechSynthesis' in window) {
+        loadPreferredVoice();
+        const utterance = new SpeechSynthesisUtterance(' ');
+        utterance.volume = 0;
+        window.speechSynthesis.speak(utterance);
+        audioEnabledRef.current = true;
+        console.log('Speech synthesis enabled');
+      }
+      
+      toast.success('Audio aktivizuar!');
+    } catch (error) {
+      console.error('Error enabling audio:', error);
     }
   };
 
-  const playBellSound = () => {
+  const playBellSound = async () => {
     console.log('playBellSound called');
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Use shared AudioContext or create new one
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      const audioContext = audioContextRef.current;
       
       // Resume context if suspended (browser autoplay policy)
       if (audioContext.state === 'suspended') {
-        audioContext.resume();
+        await audioContext.resume();
+        console.log('AudioContext resumed in playBellSound');
       }
       
       // Create a distinctive "ding dong" doorbell sound
       const playDingDong = () => {
+        const currentTime = audioContext.currentTime;
+        
         // First "ding" - higher pitch
         const oscillator1 = audioContext.createOscillator();
         const gainNode1 = audioContext.createGain();
@@ -130,28 +155,27 @@ const Dashboard = () => {
         oscillator1.connect(gainNode1);
         gainNode1.connect(audioContext.destination);
         
-        oscillator1.frequency.setValueAtTime(1200, audioContext.currentTime);
-        gainNode1.gain.setValueAtTime(0.5, audioContext.currentTime);
-        gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator1.frequency.setValueAtTime(1200, currentTime);
+        gainNode1.gain.setValueAtTime(0.6, currentTime);
+        gainNode1.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.3);
         
-        oscillator1.start(audioContext.currentTime);
-        oscillator1.stop(audioContext.currentTime + 0.3);
+        oscillator1.start(currentTime);
+        oscillator1.stop(currentTime + 0.3);
         
         // Second "dong" - lower pitch, slightly delayed
-        setTimeout(() => {
-          const oscillator2 = audioContext.createOscillator();
-          const gainNode2 = audioContext.createGain();
-          
-          oscillator2.connect(gainNode2);
-          gainNode2.connect(audioContext.destination);
-          
-          oscillator2.frequency.setValueAtTime(900, audioContext.currentTime);
-          gainNode2.gain.setValueAtTime(0.5, audioContext.currentTime);
-          gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-          
-          oscillator2.start(audioContext.currentTime);
-          oscillator2.stop(audioContext.currentTime + 0.4);
-        }, 200);
+        const oscillator2 = audioContext.createOscillator();
+        const gainNode2 = audioContext.createGain();
+        
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext.destination);
+        
+        oscillator2.frequency.setValueAtTime(900, currentTime + 0.25);
+        gainNode2.gain.setValueAtTime(0.001, currentTime);
+        gainNode2.gain.setValueAtTime(0.6, currentTime + 0.25);
+        gainNode2.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.65);
+        
+        oscillator2.start(currentTime + 0.25);
+        oscillator2.stop(currentTime + 0.65);
       };
       
       // Play the ding-dong sound 3 times with delays
@@ -689,12 +713,12 @@ const Dashboard = () => {
 
         {/* Notification Settings - Compact */}
         <Card className="p-3 bg-card/50 backdrop-blur">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4 text-secondary" />
               <span className="font-semibold text-xs">Njoftim</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant={notificationType === 'voice' ? 'default' : 'outline'}
                 size="sm"
@@ -712,6 +736,18 @@ const Dashboard = () => {
               >
                 <Bell className="h-3.5 w-3.5" />
                 <span className="text-xs">Tingull</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  enableAudio();
+                  playBellSound();
+                }}
+                className="gap-1.5 h-9 px-3 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30"
+              >
+                <Volume2 className="h-3.5 w-3.5 text-success" />
+                <span className="text-xs font-bold text-success">TEST</span>
               </Button>
             </div>
           </div>
