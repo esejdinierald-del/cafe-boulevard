@@ -252,11 +252,15 @@ const Dashboard = () => {
         const order = orders.find(o => o.id === requestId && o.status === 'pending');
         
         if (request || order) {
+          console.log(`Reminder #${currentCount + 1} for ${requestType} at table ${tableNumber}`);
           playAudioNotification(requestType, tableNumber);
+          toast.warning(`⏰ Rikujtim! ${tableNumber} pret ende`, {
+            description: requestType === 'waiter' ? 'Kamarier' : requestType === 'bill' ? 'Faturë' : 'Porosi'
+          });
           repeatCountRef.current.set(requestId, currentCount + 1);
           scheduleRepeatNotification(requestId, requestType, tableNumber);
         }
-      }, 60000); // 60 seconds (1 minute)
+      }, 180000); // 180 seconds (3 minutes)
 
       repeatTimersRef.current.set(requestId, timer);
     } else {
