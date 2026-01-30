@@ -98,6 +98,35 @@ const Dashboard = () => {
     }
   }
 
+  // Request permission for system notifications
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      console.log('Notification permission:', permission);
+      return permission === 'granted';
+    }
+    return false;
+  };
+
+  // Show system notification (works even when browser is minimized)
+  const showSystemNotification = (title: string, body: string, requestType: string) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notification = new Notification(title, {
+        body,
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        tag: `${requestType}-${Date.now()}`,
+        requireInteraction: true, // Keeps notification visible until user interacts
+      });
+
+      // When notification is clicked, focus the window
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    }
+  };
+
   const enableAudio = async () => {
     console.log('enableAudio called');
     try {
@@ -122,7 +151,16 @@ const Dashboard = () => {
         console.log('Speech synthesis enabled');
       }
       
-      toast.success('Audio aktivizuar!');
+      // Request notification permission
+      const notificationGranted = await requestNotificationPermission();
+      
+      if (notificationGranted) {
+        toast.success('Audio dhe njoftimet aktivizuar!');
+      } else {
+        toast.success('Audio aktivizuar!', {
+          description: 'Lejo njoftimet për të marrë alert kur dritarja është e minimizuar'
+        });
+      }
     } catch (error) {
       console.error('Error enabling audio:', error);
     }
@@ -189,11 +227,24 @@ const Dashboard = () => {
     }
   };
 
-  const playAudioNotification = (requestType: string, tableNumber: string) => {
+  const playAudioNotification = (requestType: string, tableNumber: string, isReminder: boolean = false) => {
     console.log('playAudioNotification called:', { requestType, tableNumber, notificationType: notificationTypeRef.current });
     
     // Always play bell sound first as backup (works without user gesture on many browsers)
     playBellSound();
+    
+    // Show system notification (works when browser is minimized)
+    const notificationTitle = isReminder 
+      ? `⏰ Rikujtim - ${tableNumber}`
+      : `🔔 Kërkesë e re - ${tableNumber}`;
+    
+    const notificationBody = requestType === 'waiter' 
+      ? 'Kërkon kamarier'
+      : requestType === 'bill'
+      ? 'Kërkon faturën'
+      : 'Porosi e re';
+    
+    showSystemNotification(notificationTitle, notificationBody, requestType);
     
     try {
       // If voice mode, also try to speak
@@ -253,7 +304,7 @@ const Dashboard = () => {
         
         if (request || order) {
           console.log(`Reminder #${currentCount + 1} for ${requestType} at table ${tableNumber}`);
-          playAudioNotification(requestType, tableNumber);
+          playAudioNotification(requestType, tableNumber, true); // isReminder = true
           toast.warning(`⏰ Rikujtim! ${tableNumber} pret ende`, {
             description: requestType === 'waiter' ? 'Kamarier' : requestType === 'bill' ? 'Faturë' : 'Porosi'
           });
