@@ -67,6 +67,8 @@ const Dashboard = () => {
     e.preventDefault();
     if (password === '2025') {
       sessionStorage.setItem('dashboard_auth', '2025');
+      // Mark this device as a staff device so PWA opens dashboard on launch
+      localStorage.setItem('boulevard_staff_device', 'true');
       setIsAuthenticated(true);
       toast.success('Qasje e lejuar');
     } else {

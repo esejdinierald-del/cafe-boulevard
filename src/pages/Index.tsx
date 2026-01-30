@@ -66,6 +66,14 @@ const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(true);
   
+  // Check if this is a staff device that should go to dashboard
+  useEffect(() => {
+    const isStaffDevice = localStorage.getItem('boulevard_staff_device') === 'true';
+    if (isStaffDevice) {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
     if (tableParam) {
