@@ -301,6 +301,13 @@ const Index = () => {
           <p className="text-sm text-muted-foreground/70 italic">
             {t.footerSub}
           </p>
+          {/* Hidden manager login link - double tap on footer text */}
+          <button 
+            onClick={() => navigate('/manager-login')}
+            className="mt-4 text-xs text-muted-foreground/40 hover:text-secondary/60 transition-colors"
+          >
+            •
+          </button>
         </div>
       </div>
 
