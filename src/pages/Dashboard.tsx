@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock, Volume2, Flame, Clock } from "lucide-react";
+import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock, Volume2, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface ServiceRequest {
@@ -39,7 +39,7 @@ const Dashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [notificationType, setNotificationType] = useState<'voice' | 'sound'>('voice');
-  const [heaterLoading, setHeaterLoading] = useState<string | null>(null);
+  
   const [elapsedTime, setElapsedTime] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -680,30 +680,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleTestHeater = async (tableNumber: string) => {
-    setHeaterLoading(tableNumber);
-    try {
-      // Extract just the number from "Tavolina X"
-      const tableNum = tableNumber.replace('Tavolina ', '');
-      
-      const { error } = await supabase.functions.invoke('control-heater', {
-        body: { tableNumber: tableNum }
-      });
-
-      if (error) throw error;
-
-      toast.success('Ngrohësja u ndez!', {
-        description: `Ngrohësja për ${tableNumber} u aktivizua me sukses.`
-      });
-    } catch (error) {
-      console.error('Error controlling heater:', error);
-      toast.error('Gabim në ndezjen e ngrohëses', {
-        description: 'Ju lutem provoni përsëri.'
-      });
-    } finally {
-      setHeaterLoading(null);
-    }
-  };
 
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const completedRequests = requests.filter(r => r.status === 'completed');
@@ -848,27 +824,6 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        {/* Heater Testing Section */}
-        <Card className="p-4 bg-card/50 backdrop-blur">
-          <div className="flex items-center gap-2 mb-3">
-            <Flame className="h-5 w-5 text-orange-500" />
-            <h2 className="text-lg font-bold">Testo Ngrohëset</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {['Tavolina 1', 'Tavolina 2', 'Tavolina 3', 'Tavolina 4'].map((table) => (
-              <Button
-                key={table}
-                onClick={() => handleTestHeater(table)}
-                disabled={heaterLoading === table}
-                className="h-16 flex flex-col gap-1 touch-manipulation"
-                variant="outline"
-              >
-                <Flame className={`h-5 w-5 ${heaterLoading === table ? 'animate-pulse' : ''}`} />
-                <span className="text-xs font-semibold">{table}</span>
-              </Button>
-            ))}
-          </div>
-        </Card>
 
         <div className="grid gap-3 grid-cols-3">
           <Card className="p-4">
