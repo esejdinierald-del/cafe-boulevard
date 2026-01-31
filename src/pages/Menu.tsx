@@ -21,7 +21,8 @@ const translations = {
     error: "Gabim",
     errorLoading: "Gabim në ngarkimin e menusë",
     errorOrder: "Gabim në dërgimin e porosisë",
-    notesPlaceholder: "Shënime shtesë për porosinë (opsionale)..."
+    notesPlaceholder: "Shënime shtesë për porosinë (opsionale)...",
+    priceDisclaimer: "* Çmimet mund të jenë subjekt ndryshimesh"
   },
   en: {
     menu: "Menu",
@@ -34,7 +35,8 @@ const translations = {
     error: "Error",
     errorLoading: "Error loading menu",
     errorOrder: "Error submitting order",
-    notesPlaceholder: "Additional notes for your order (optional)..."
+    notesPlaceholder: "Additional notes for your order (optional)...",
+    priceDisclaimer: "* Prices may be subject to change"
   }
 };
 
@@ -313,6 +315,11 @@ const Menu = () => {
                   ))}
               </div>
             )}
+
+            {/* Price disclaimer */}
+            <p className="text-center text-sm text-muted-foreground mt-6 italic">
+              {t.priceDisclaimer}
+            </p>
           </>
         )}
 
