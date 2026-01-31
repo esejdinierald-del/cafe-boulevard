@@ -48,6 +48,44 @@ const Dashboard = () => {
   const audioEnabledRef = useRef(false);
   const selectedVoiceRef = useRef<SpeechSynthesisVoice | null>(null);
   const notificationTypeRef = useRef<'voice' | 'sound'>('voice');
+  const titleIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const originalTitleRef = useRef<string>('Boulevard Staff');
+
+  // Visual notification - flashing tab title with pending count
+  useEffect(() => {
+    const pendingRequests = requests.filter(r => r.status === 'pending').length;
+    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const totalPending = pendingRequests + pendingOrders;
+
+    // Clear existing interval
+    if (titleIntervalRef.current) {
+      clearInterval(titleIntervalRef.current);
+      titleIntervalRef.current = null;
+    }
+
+    if (totalPending > 0 && isAuthenticated) {
+      let isAlternate = false;
+      
+      // Flash title between count and alert
+      titleIntervalRef.current = setInterval(() => {
+        if (isAlternate) {
+          document.title = `🔔 ${totalPending} në pritje!`;
+        } else {
+          document.title = `⚠️ KËRKESË E RE!`;
+        }
+        isAlternate = !isAlternate;
+      }, 1000);
+    } else {
+      document.title = originalTitleRef.current;
+    }
+
+    return () => {
+      if (titleIntervalRef.current) {
+        clearInterval(titleIntervalRef.current);
+      }
+      document.title = originalTitleRef.current;
+    };
+  }, [requests, orders, isAuthenticated]);
 
   useEffect(() => {
     const sessionPassword = sessionStorage.getItem('dashboard_auth');
