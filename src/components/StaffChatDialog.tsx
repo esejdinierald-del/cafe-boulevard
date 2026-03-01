@@ -154,7 +154,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+        <ScrollArea className="flex-1 min-h-0 max-h-[55vh] p-4" ref={scrollRef}>
           <div className="space-y-4">
             {messages.map((msg, i) => (
               <div
