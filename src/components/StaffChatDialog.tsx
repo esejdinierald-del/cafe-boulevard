@@ -42,6 +42,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -50,9 +51,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   }, [open, t.welcome]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = async () => {
@@ -154,7 +153,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 max-h-[55vh] p-4" ref={scrollRef}>
+        <ScrollArea className="flex-1 min-h-0 max-h-[55vh] p-4">
           <div className="space-y-4">
             {messages.map((msg, i) => (
               <div
@@ -195,6 +194,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
                 </div>
               </div>
             )}
+            <div ref={bottomRef} />
           </div>
         </ScrollArea>
 
