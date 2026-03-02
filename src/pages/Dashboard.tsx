@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock, Volume2, Clock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,11 +33,11 @@ interface Order {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
   const [notificationType, setNotificationType] = useState<'voice' | 'sound'>('voice');
   
   const [elapsedTime, setElapsedTime] = useState<string>('');
@@ -87,11 +87,35 @@ const Dashboard = () => {
     };
   }, [requests, orders, isAuthenticated]);
 
+  // Check Supabase Auth session and verify manager/admin role
   useEffect(() => {
-    const sessionPassword = sessionStorage.getItem('dashboard_auth');
-    if (sessionPassword === '2025') {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/manager-login');
+        return;
+      }
+
+      // Check if user has manager or admin role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .in('role', ['manager', 'admin']);
+
+      if (!roleData || roleData.length === 0) {
+        toast.error('Nuk keni akses në dashboard');
+        await supabase.auth.signOut();
+        navigate('/manager-login');
+        return;
+      }
+
       setIsAuthenticated(true);
-    }
+      // Mark as staff device for PWA auto-redirect
+      localStorage.setItem('boulevard_staff_device', 'true');
+    };
+
+    checkAuth();
     
     // Load notification preference from localStorage
     const savedNotificationType = localStorage.getItem('notification_type') as 'voice' | 'sound';
@@ -99,20 +123,18 @@ const Dashboard = () => {
       setNotificationType(savedNotificationType);
       notificationTypeRef.current = savedNotificationType;
     }
-  }, []);
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === '2025') {
-      sessionStorage.setItem('dashboard_auth', '2025');
-      // Mark this device as a staff device so PWA opens dashboard on launch
-      localStorage.setItem('boulevard_staff_device', 'true');
-      setIsAuthenticated(true);
-      toast.success('Qasje e lejuar');
-    } else {
-      toast.error('Fjalëkalim i gabuar');
-    }
-  };
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false);
+        localStorage.removeItem('boulevard_staff_device');
+        navigate('/manager-login');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const loadPreferredVoice = () => {
     if (!('speechSynthesis' in window)) return;
@@ -725,22 +747,9 @@ const Dashboard = () => {
         <Card className="w-full max-w-md p-8 space-y-6">
           <div className="text-center space-y-2">
             <Lock className="h-12 w-12 mx-auto text-muted-foreground" />
-            <h1 className="text-2xl font-bold">Dashboard i Mbrojtur</h1>
-            <p className="text-muted-foreground">Vendosni fjalëkalimin për të vazhduar</p>
+            <h1 className="text-2xl font-bold">Duke u verifikuar...</h1>
+            <p className="text-muted-foreground">Po kontrollojmë aksesin tuaj</p>
           </div>
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <Input
-              type="password"
-              placeholder="Fjalëkalimi"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="text-center text-lg"
-              autoFocus
-            />
-            <Button type="submit" className="w-full" size="lg">
-              Vazhdo
-            </Button>
-          </form>
         </Card>
       </div>
     );
