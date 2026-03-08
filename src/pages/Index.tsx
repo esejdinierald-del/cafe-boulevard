@@ -233,7 +233,8 @@ const Index = () => {
             <Button 
               variant="bill" 
               size="lg" 
-              onClick={handleRequestBill} 
+              onClick={() => withGeoCheck(handleRequestBill)} 
+              disabled={checking}
               className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn animate-in-stagger-4 group"
             >
               <Receipt className="mr-3 h-7 w-7 scale-bounce-hover" />
