@@ -53,6 +53,70 @@ const Dashboard = () => {
   const notificationTypeRef = useRef<'voice' | 'sound'>('voice');
   const titleIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const originalTitleRef = useRef<string>('Boulevard Staff');
+  const [shiftToken, setShiftToken] = useState<string | null>(null);
+  const [showQrDialog, setShowQrDialog] = useState(false);
+
+  const generateShiftToken = async () => {
+    const now = new Date();
+    const hour = now.getHours();
+    
+    // Determine current shift boundaries
+    let shiftStart: Date, shiftEnd: Date;
+    if (hour >= 3 && hour < 15) {
+      // Morning shift: 03:00 - 15:00
+      shiftStart = new Date(now);
+      shiftStart.setHours(3, 0, 0, 0);
+      shiftEnd = new Date(now);
+      shiftEnd.setHours(15, 0, 0, 0);
+    } else {
+      // Evening shift: 15:00 - 03:00 next day
+      shiftStart = new Date(now);
+      if (hour >= 15) {
+        shiftStart.setHours(15, 0, 0, 0);
+        shiftEnd = new Date(now);
+        shiftEnd.setDate(shiftEnd.getDate() + 1);
+        shiftEnd.setHours(3, 0, 0, 0);
+      } else {
+        // 00:00 - 02:59: shift started yesterday at 15:00
+        shiftStart.setDate(shiftStart.getDate() - 1);
+        shiftStart.setHours(15, 0, 0, 0);
+        shiftEnd = new Date(now);
+        shiftEnd.setHours(3, 0, 0, 0);
+      }
+    }
+
+    // Check for existing token for this shift
+    const { data: existing } = await supabase
+      .from("shift_tokens")
+      .select("token")
+      .gte("shift_end", new Date().toISOString())
+      .lte("shift_start", new Date().toISOString())
+      .maybeSingle();
+
+    if (existing) {
+      setShiftToken(existing.token);
+      setShowQrDialog(true);
+      return;
+    }
+
+    // Generate new token
+    const token = crypto.randomUUID().replace(/-/g, "").substring(0, 12);
+    const { error } = await supabase.from("shift_tokens").insert({
+      token,
+      shift_start: shiftStart.toISOString(),
+      shift_end: shiftEnd.toISOString(),
+    });
+
+    if (error) {
+      toast.error("Gabim gjatë gjenerimit të QR");
+      return;
+    }
+    setShiftToken(token);
+    setShowQrDialog(true);
+    toast.success("QR kodi u gjenerua me sukses!");
+  };
+
+  const staffUrl = shiftToken ? `${window.location.origin}/staff?token=${shiftToken}` : "";
 
   // Visual notification - flashing tab title with pending count
   useEffect(() => {
