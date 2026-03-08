@@ -114,24 +114,6 @@ const StaffShift = () => {
     osc2.stop(now + 0.8);
   }, []);
 
-  const repeatNotification = useCallback((title: string, body: string) => {
-    // Play immediately (1st), then after 4s (2nd), then after 8s (3rd)
-    playDingDong();
-    showSystemNotification(title, body);
-
-    const t1 = setTimeout(() => {
-      playDingDong();
-      showSystemNotification(title, body);
-    }, 4000);
-
-    const t2 = setTimeout(() => {
-      playDingDong();
-      showSystemNotification(title, body);
-    }, 8000);
-
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [playDingDong, showSystemNotification]);
-
   const requestNotificationPermission = useCallback(async () => {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission();
@@ -156,6 +138,23 @@ const StaffShift = () => {
       };
     }
   }, []);
+
+  const repeatNotification = useCallback((title: string, body: string) => {
+    playDingDong();
+    showSystemNotification(title, body);
+
+    const t1 = setTimeout(() => {
+      playDingDong();
+      showSystemNotification(title, body);
+    }, 4000);
+
+    const t2 = setTimeout(() => {
+      playDingDong();
+      showSystemNotification(title, body);
+    }, 8000);
+
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [playDingDong, showSystemNotification]);
 
   const enableAudio = useCallback(async () => {
     if (audioEnabled) return;
