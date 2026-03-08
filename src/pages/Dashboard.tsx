@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock, Volume2, Clock } from "lucide-react";
+import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Lock, Volume2, Clock, QrCode } from "lucide-react";
 import { toast } from "sonner";
+import { QRCodeSVG } from "qrcode.react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface ServiceRequest {
   id: string;
