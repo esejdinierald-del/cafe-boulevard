@@ -93,7 +93,6 @@ const StaffShift = () => {
     const ctx = audioContextRef.current;
     const now = ctx.currentTime;
 
-    // Ding
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.frequency.value = 830;
@@ -104,7 +103,6 @@ const StaffShift = () => {
     osc1.start(now);
     osc1.stop(now + 0.4);
 
-    // Dong
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.frequency.value = 620;
@@ -115,6 +113,24 @@ const StaffShift = () => {
     osc2.start(now + 0.3);
     osc2.stop(now + 0.8);
   }, []);
+
+  const repeatNotification = useCallback((title: string, body: string) => {
+    // Play immediately (1st), then after 4s (2nd), then after 8s (3rd)
+    playDingDong();
+    showSystemNotification(title, body);
+
+    const t1 = setTimeout(() => {
+      playDingDong();
+      showSystemNotification(title, body);
+    }, 4000);
+
+    const t2 = setTimeout(() => {
+      playDingDong();
+      showSystemNotification(title, body);
+    }, 8000);
+
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [playDingDong, showSystemNotification]);
 
   const requestNotificationPermission = useCallback(async () => {
     if ('Notification' in window) {
