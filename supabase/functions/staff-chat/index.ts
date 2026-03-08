@@ -74,6 +74,67 @@ async function fetchFootballData(): Promise<string> {
   }
 }
 
+// Fetch latest Albanian football news from Panorama Sport
+async function fetchPanoramaSport(): Promise<string> {
+  try {
+    const urls = [
+      "https://www.panorama.com.al/sport/",
+      "https://www.panorama.com.al/sport/category/elbasani/"
+    ];
+
+    const results = await Promise.allSettled(
+      urls.map(async (url) => {
+        const res = await fetch(url, {
+          headers: { "User-Agent": "Mozilla/5.0 (compatible; BoulevardCafe/1.0)" },
+        });
+        if (!res.ok) return "";
+        return await res.text();
+      })
+    );
+
+    let articles: string[] = [];
+
+    for (const result of results) {
+      if (result.status !== "fulfilled" || !result.value) continue;
+      const html = result.value;
+
+      // Extract article titles from <h2> and <h4> tags with links
+      const titleRegex = /<(?:h2|h4)[^>]*>\s*(?:<a[^>]*>)?\s*(?:<strong>)?(.*?)(?:<\/strong>)?\s*(?:<\/a>)?\s*<\/(?:h2|h4)>/gi;
+      let match;
+      while ((match = titleRegex.exec(html)) !== null) {
+        let title = match[1]
+          .replace(/<[^>]*>/g, "") // Remove any remaining HTML tags
+          .replace(/&nbsp;/g, " ")
+          .replace(/&amp;/g, "&")
+          .replace(/&quot;/g, '"')
+          .replace(/&#8220;|&#8221;/g, '"')
+          .replace(/&#8230;/g, "...")
+          .trim();
+        if (title.length > 10 && !articles.includes(title)) {
+          articles.push(title);
+        }
+      }
+    }
+
+    if (articles.length === 0) {
+      console.warn("No articles found from Panorama Sport");
+      return "";
+    }
+
+    // Take the latest 15 articles
+    const latest = articles.slice(0, 15);
+    let info = "\n📰 LAJMET MË TË FUNDIT NGA PANORAMA SPORT (panorama.com.al/sport) - TË DHËNA REALE:\n";
+    for (const article of latest) {
+      info += `- ${article}\n`;
+    }
+    info += "\nPërdor këto tituj për t'u informuar rreth futbollit shqiptar. Janë lajme REALE nga panorama.com.al/sport. Kur pyetesh për ekipet shqiptare, referoju këtyre lajmeve dhe thuaj 'sipas panorama.com.al/sport'.";
+    return info;
+  } catch (e) {
+    console.error("Error fetching Panorama Sport:", e);
+    return "";
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -87,8 +148,11 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Fetch live football data
-    const footballData = await fetchFootballData();
+    // Fetch live football data and Panorama Sport news in parallel
+    const [footballData, panoramaData] = await Promise.all([
+      fetchFootballData(),
+      fetchPanoramaSport(),
+    ]);
 
     const systemPromptSq = `Ti je asistenti virtual i Boulevard Café Elbasan - por jo një robot i ftohtë! Je si një shok i mirë që e do lokalin dhe dëshiron që klientët të kalojnë kohë të bukur këtu.
 
