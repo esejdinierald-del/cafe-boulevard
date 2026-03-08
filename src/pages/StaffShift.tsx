@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw, QrCode, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import QrScanner from "@/components/QrScanner";
+import SplashScreen from "@/components/SplashScreen";
 import boulevardLogo from "@/assets/boulevard-logo.png";
 
 interface ServiceRequest {
