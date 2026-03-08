@@ -9,6 +9,7 @@ import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/use-language";
+import { useGeolocation } from "@/hooks/use-geolocation";
 
 const translations = {
   sq: {
@@ -65,7 +66,16 @@ const Index = () => {
   const [tableNumber, setTableNumber] = useState(t.table);
   const [chatOpen, setChatOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(true);
-  
+  const { checkLocation, checking } = useGeolocation();
+
+  const withGeoCheck = async (action: () => Promise<void>) => {
+    const result = await checkLocation(language);
+    if (result.allowed) {
+      await action();
+    } else {
+      toast.error(result.error);
+    }
+  };
 
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
@@ -212,7 +222,8 @@ const Index = () => {
             <Button 
               variant="waiter" 
               size="lg" 
-              onClick={handleCallWaiter} 
+              onClick={() => withGeoCheck(handleCallWaiter)} 
+              disabled={checking}
               className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn animate-in-stagger-3 group"
             >
               <Bell className="mr-3 h-7 w-7 scale-bounce-hover" />
@@ -222,7 +233,8 @@ const Index = () => {
             <Button 
               variant="bill" 
               size="lg" 
-              onClick={handleRequestBill} 
+              onClick={() => withGeoCheck(handleRequestBill)} 
+              disabled={checking}
               className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn animate-in-stagger-4 group"
             >
               <Receipt className="mr-3 h-7 w-7 scale-bounce-hover" />
@@ -232,7 +244,8 @@ const Index = () => {
             <Button 
               variant="burgundy" 
               size="lg" 
-              onClick={() => navigate(`/menu?tabela=${tableNumber}`)} 
+              onClick={() => withGeoCheck(async () => { navigate(`/menu?tabela=${tableNumber}`); })} 
+              disabled={checking}
               className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn animate-in-stagger-5 group"
             >
               <UtensilsCrossed className="mr-3 h-7 w-7 group-hover:rotate-12 transition-transform duration-300" />
