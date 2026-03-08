@@ -156,7 +156,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 max-h-[55vh] p-4">
+        <ScrollArea className="flex-1 min-h-0 max-h-[55vh] p-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {!loaded && (
               <div className="flex justify-center py-4">
@@ -202,7 +202,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
                 </div>
               </div>
             )}
-            <div ref={bottomRef} />
+            <div />
           </div>
         </ScrollArea>
 
