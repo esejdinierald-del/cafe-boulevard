@@ -221,6 +221,17 @@ const StaffShift = () => {
     const poll = setInterval(fetchData, 10000);
     return () => { supabase.removeChannel(channel); clearInterval(poll); };
   }, [isValid, fetchData, repeatNotification]);
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    const diff = e.changedTouches[0].clientY - touchStartY.current;
+    if (diff > 80 && window.scrollY === 0) {
+      fetchData(true);
+    }
+    pullDistance.current = 0;
+  }, [fetchData]);
 
   // Loading state
   if (isValid === null) {
@@ -247,18 +258,6 @@ const StaffShift = () => {
   }
 
   const totalPending = requests.length + orders.length;
-
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
-  }, []);
-
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
-    const diff = e.changedTouches[0].clientY - touchStartY.current;
-    if (diff > 80 && window.scrollY === 0) {
-      fetchData(true);
-    }
-    pullDistance.current = 0;
-  }, [fetchData]);
 
   return (
     <div
