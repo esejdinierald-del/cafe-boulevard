@@ -114,7 +114,7 @@ const Index = () => {
 
   const hasHeater = () => {
     const tableNum = parseInt(tableNumber.toString().match(/\d+/)?.[0] || '0');
-    return tableNum >= 1 && tableNum <= 5;
+    return tableNum === 5;
   };
 
   const handleTurnOnHeater = async () => {
