@@ -62,6 +62,11 @@ const StaffShift = () => {
   const [timeLeft, setTimeLeft] = useState("");
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const [showScanner, setShowScanner] = useState(false);
+  const [showSplash, setShowSplash] = useState(() => {
+    // Show splash only once per session
+    const shown = sessionStorage.getItem("staff_splash_shown");
+    return !shown;
+  });
   const [isRefreshing, setIsRefreshing] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const touchStartY = useRef(0);
