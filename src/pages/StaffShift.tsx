@@ -116,13 +116,45 @@ const StaffShift = () => {
     osc2.stop(now + 0.8);
   }, []);
 
-  const enableAudio = useCallback(() => {
+  const requestNotificationPermission = useCallback(async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+    return false;
+  }, []);
+
+  const showSystemNotification = useCallback((title: string, body: string) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notification = new Notification(title, {
+        body,
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        tag: `staff-${Date.now()}`,
+        requireInteraction: true,
+        vibrate: [200, 100, 200],
+      } as NotificationOptions);
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    }
+  }, []);
+
+  const enableAudio = useCallback(async () => {
     if (audioEnabled) return;
     try {
-      audioContextRef.current = new AudioContext();
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      const notifGranted = await requestNotificationPermission();
       setAudioEnabled(true);
+      if (!notifGranted) {
+        console.log('System notifications not granted');
+      }
     } catch {}
-  }, [audioEnabled]);
+  }, [audioEnabled, requestNotificationPermission]);
 
   // Fetch data
   const fetchData = useCallback(async () => {
