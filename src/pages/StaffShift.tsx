@@ -116,13 +116,45 @@ const StaffShift = () => {
     osc2.stop(now + 0.8);
   }, []);
 
-  const enableAudio = useCallback(() => {
+  const requestNotificationPermission = useCallback(async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+    return false;
+  }, []);
+
+  const showSystemNotification = useCallback((title: string, body: string) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notification = new Notification(title, {
+        body,
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        tag: `staff-${Date.now()}`,
+        requireInteraction: true,
+        vibrate: [200, 100, 200],
+      } as NotificationOptions);
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    }
+  }, []);
+
+  const enableAudio = useCallback(async () => {
     if (audioEnabled) return;
     try {
-      audioContextRef.current = new AudioContext();
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      const notifGranted = await requestNotificationPermission();
       setAudioEnabled(true);
+      if (!notifGranted) {
+        console.log('System notifications not granted');
+      }
     } catch {}
-  }, [audioEnabled]);
+  }, [audioEnabled, requestNotificationPermission]);
 
   // Fetch data
   const fetchData = useCallback(async () => {
@@ -141,14 +173,21 @@ const StaffShift = () => {
 
     const channel = supabase
       .channel("staff-shift-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "service_requests" }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "service_requests" }, (payload) => {
         fetchData();
         playDingDong();
+        const r = payload.new as any;
+        const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
+        showSystemNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
         fetchData();
         playDingDong();
+        const o = payload.new as any;
+        showSystemNotification(`🛒 Porosi - ${o.table_number}`, `Porosi e re ${o.total_price} L nga ${o.table_number}`);
       })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_requests" }, () => fetchData())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, () => fetchData())
       .subscribe();
 
     const poll = setInterval(fetchData, 10000);
@@ -157,7 +196,7 @@ const StaffShift = () => {
       supabase.removeChannel(channel);
       clearInterval(poll);
     };
-  }, [isValid, fetchData, playDingDong]);
+  }, [isValid, fetchData, playDingDong, showSystemNotification]);
 
   // Invalid / expired token
   if (isValid === null) {
