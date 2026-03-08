@@ -78,7 +78,7 @@ async function fetchFootballData(): Promise<string> {
 async function fetchPanoramaSport(): Promise<string> {
   try {
     const urls = [
-      "https://www.panorama.com.al/sport/",
+      "https://www.betexplorer.com/football/albania/abissnet-superiore/",
       "https://www.panorama.com.al/sport/category/kategoria-superiore/",
       "https://www.panorama.com.al/sport/category/elbasani/"
     ];
