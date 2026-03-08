@@ -41,10 +41,15 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   const { messages, setMessages, saveMessages, loaded } = useChatSession(t.welcome);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      requestAnimationFrame(() => {
+        viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
+      });
+    }
   }, [messages]);
 
   const sendMessage = async () => {
@@ -151,7 +156,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 max-h-[55vh] p-4">
+        <ScrollArea className="flex-1 min-h-0 max-h-[55vh] p-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {!loaded && (
               <div className="flex justify-center py-4">
@@ -197,7 +202,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
                 </div>
               </div>
             )}
-            <div ref={bottomRef} />
+            <div />
           </div>
         </ScrollArea>
 
