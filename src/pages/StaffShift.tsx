@@ -196,7 +196,7 @@ const StaffShift = () => {
       supabase.removeChannel(channel);
       clearInterval(poll);
     };
-  }, [isValid, fetchData, playDingDong]);
+  }, [isValid, fetchData, playDingDong, showSystemNotification]);
 
   // Invalid / expired token
   if (isValid === null) {
