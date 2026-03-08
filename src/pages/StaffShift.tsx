@@ -1,10 +1,10 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, TouchEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
+import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 interface ServiceRequest {
@@ -148,14 +148,22 @@ const StaffShift = () => {
     } catch {}
   }, [audioEnabled, requestNotificationPermission]);
 
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const touchStartY = useRef(0);
+  const pullDistance = useRef(0);
+
   // Fetch data
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (showIndicator = false) => {
+    if (showIndicator) setIsRefreshing(true);
     const [reqRes, ordRes] = await Promise.all([
       supabase.from("service_requests").select("*").eq("status", "pending").order("created_at", { ascending: true }),
       supabase.from("orders").select("*").eq("status", "pending").order("created_at", { ascending: true }),
     ]);
     if (reqRes.data) setRequests(reqRes.data as ServiceRequest[]);
     if (ordRes.data) setOrders(ordRes.data as unknown as Order[]);
+    setLastRefresh(new Date());
+    if (showIndicator) setTimeout(() => setIsRefreshing(false), 300);
   }, []);
 
   // Complete a service request
@@ -213,6 +221,17 @@ const StaffShift = () => {
     const poll = setInterval(fetchData, 10000);
     return () => { supabase.removeChannel(channel); clearInterval(poll); };
   }, [isValid, fetchData, repeatNotification]);
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    const diff = e.changedTouches[0].clientY - touchStartY.current;
+    if (diff > 80 && window.scrollY === 0) {
+      fetchData(true);
+    }
+    pullDistance.current = 0;
+  }, [fetchData]);
 
   // Loading state
   if (isValid === null) {
@@ -241,8 +260,19 @@ const StaffShift = () => {
   const totalPending = requests.length + orders.length;
 
   return (
-    <div className="min-h-screen bg-background p-3 pb-8" onClick={enableAudio}>
+    <div
+      className="min-h-screen bg-background p-3 pb-8"
+      onClick={enableAudio}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="max-w-lg mx-auto space-y-3">
+        {/* Pull-to-refresh indicator */}
+        {isRefreshing && (
+          <div className="flex justify-center py-2">
+            <RefreshCw className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        )}
         {/* Header */}
         <div className="text-center space-y-1.5">
           <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
