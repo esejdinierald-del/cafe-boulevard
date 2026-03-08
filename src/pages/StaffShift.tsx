@@ -1,10 +1,10 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, TouchEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
+import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 interface ServiceRequest {
