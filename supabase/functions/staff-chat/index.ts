@@ -145,8 +145,11 @@ async function fetchPanoramaSport(): Promise<string> {
     for (const article of latest) {
       info += `- ${article}\n`;
     }
-    info += "\n⚠️ RREGULL: Këto tituj janë fakte REALE. Përdori për të informuar klientët. Nëse pyeten për renditje apo pikë specifike që NUK gjenden në tituj, thuaj sinqerisht 'Nuk kam detaje të sakta për renditjen, por sipas lajmeve të fundit...' dhe referoju titujve. KURRË mos shpik numra pikësh!";
-    return info;
+    info += "\n⚠️ RREGULL: Këto tituj janë fakte REALE nga panorama.com.al/sport. Përdori kështu:\n";
+    info += "- Nëse pyeten për Elbasanin, shiko titujt që përmendin 'Elbasani' dhe përgjigju bazuar në to\n";
+    info += "- Nëse pyeten për renditje/pikë specifike që NUK gjenden në tituj, thuaj: 'Nuk kam pikë të sakta tani, por sipas lajmeve të fundit nga panorama.com.al/sport...' dhe referoju titujve\n";
+    info += "- KURRË mos shpik numra pikësh ose renditje!\n";
+    info += "- Elbasani luan në ABISSNET SUPERIORE (liga e parë e Shqipërisë) - JO në kategori të ulëta!";
     return info;
   } catch (e) {
     console.error("Error fetching Panorama Sport:", e);
