@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw, QrCode, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import QrScanner from "@/components/QrScanner";
+import boulevardLogo from "@/assets/boulevard-logo.png";
 
 interface ServiceRequest {
   id: string;
@@ -288,7 +289,7 @@ const StaffShift = () => {
         <div className="max-w-sm w-full text-center space-y-8">
            {/* Logo */}
            <div className="space-y-2">
-             <img src="/pwa-192x192.png" alt="Boulevard Café Logo" className="w-20 h-20 mx-auto rounded-2xl shadow-lg" />
+             <img src={boulevardLogo} alt="Boulevard Café Logo" className="w-24 h-24 mx-auto rounded-2xl shadow-lg object-contain" />
              <h1 className="text-2xl font-bold text-foreground">Boulevard Café</h1>
             <p className="text-muted-foreground text-sm">Stafi — Thirrjet Live</p>
           </div>
