@@ -131,7 +131,7 @@ const StaffShift = () => {
       supabase.from("orders").select("*").eq("status", "pending").order("created_at", { ascending: true }),
     ]);
     if (reqRes.data) setRequests(reqRes.data as ServiceRequest[]);
-    if (ordRes.data) setOrders(ordRes.data as Order[]);
+    if (ordRes.data) setOrders(ordRes.data as unknown as Order[]);
   }, []);
 
   // Realtime + polling
