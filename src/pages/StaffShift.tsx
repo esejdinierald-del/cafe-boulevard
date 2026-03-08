@@ -280,12 +280,10 @@ const StaffShift = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
         <div className="max-w-sm w-full text-center space-y-8">
-          {/* Logo */}
-          <div className="space-y-2">
-            <div className="w-20 h-20 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Bell className="h-10 w-10 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground">Boulevard Café</h1>
+           {/* Logo */}
+           <div className="space-y-2">
+             <img src="/pwa-192x192.png" alt="Boulevard Café Logo" className="w-20 h-20 mx-auto rounded-2xl shadow-lg" />
+             <h1 className="text-2xl font-bold text-foreground">Boulevard Café</h1>
             <p className="text-muted-foreground text-sm">Stafi — Thirrjet Live</p>
           </div>
 
