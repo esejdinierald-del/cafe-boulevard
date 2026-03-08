@@ -158,12 +158,18 @@ const StaffShift = () => {
     }
   }, []);
 
+  const triggerVibration = useCallback(() => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate([300, 100, 300, 100, 300]);
+    }
+  }, []);
+
   const repeatNotification = useCallback((title: string, body: string) => {
-    playDingDong(); showSystemNotification(title, body);
-    const t1 = setTimeout(() => { playDingDong(); showSystemNotification(title, body); }, 4000);
-    const t2 = setTimeout(() => { playDingDong(); showSystemNotification(title, body); }, 8000);
+    playDingDong(); showSystemNotification(title, body); triggerVibration();
+    const t1 = setTimeout(() => { playDingDong(); showSystemNotification(title, body); triggerVibration(); }, 4000);
+    const t2 = setTimeout(() => { playDingDong(); showSystemNotification(title, body); triggerVibration(); }, 8000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [playDingDong, showSystemNotification]);
+  }, [playDingDong, showSystemNotification, triggerVibration]);
 
   const enableAudio = useCallback(async () => {
     if (audioEnabled) return;
