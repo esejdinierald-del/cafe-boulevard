@@ -148,14 +148,22 @@ const StaffShift = () => {
     } catch {}
   }, [audioEnabled, requestNotificationPermission]);
 
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const touchStartY = useRef(0);
+  const pullDistance = useRef(0);
+
   // Fetch data
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (showIndicator = false) => {
+    if (showIndicator) setIsRefreshing(true);
     const [reqRes, ordRes] = await Promise.all([
       supabase.from("service_requests").select("*").eq("status", "pending").order("created_at", { ascending: true }),
       supabase.from("orders").select("*").eq("status", "pending").order("created_at", { ascending: true }),
     ]);
     if (reqRes.data) setRequests(reqRes.data as ServiceRequest[]);
     if (ordRes.data) setOrders(ordRes.data as unknown as Order[]);
+    setLastRefresh(new Date());
+    if (showIndicator) setTimeout(() => setIsRefreshing(false), 300);
   }, []);
 
   // Complete a service request
