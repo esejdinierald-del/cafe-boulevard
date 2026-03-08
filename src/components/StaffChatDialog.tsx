@@ -41,10 +41,15 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   const { messages, setMessages, saveMessages, loaded } = useChatSession(t.welcome);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      requestAnimationFrame(() => {
+        viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
+      });
+    }
   }, [messages]);
 
   const sendMessage = async () => {
