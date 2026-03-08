@@ -95,40 +95,58 @@ async function fetchPanoramaSport(): Promise<string> {
 
     let articles: string[] = [];
 
-    for (const result of results) {
-      if (result.status !== "fulfilled" || !result.value) continue;
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      if (result.status !== "fulfilled" || !result.value) {
+        console.warn(`Panorama fetch ${i} failed:`, result.status === "rejected" ? result.reason : "empty");
+        continue;
+      }
       const html = result.value;
+      console.log(`Panorama fetch ${i}: got ${html.length} chars`);
 
-      // Extract article titles from <h2> and <h4> tags with links
-      const titleRegex = /<(?:h2|h4)[^>]*>\s*(?:<a[^>]*>)?\s*(?:<strong>)?(.*?)(?:<\/strong>)?\s*(?:<\/a>)?\s*<\/(?:h2|h4)>/gi;
-      let match;
-      while ((match = titleRegex.exec(html)) !== null) {
-        let title = match[1]
-          .replace(/<[^>]*>/g, "") // Remove any remaining HTML tags
-          .replace(/&nbsp;/g, " ")
-          .replace(/&amp;/g, "&")
-          .replace(/&quot;/g, '"')
-          .replace(/&#8220;|&#8221;/g, '"')
-          .replace(/&#8230;/g, "...")
-          .trim();
-        if (title.length > 10 && !articles.includes(title)) {
-          articles.push(title);
+      // Extract titles from multiple patterns
+      // Pattern 1: <h2><a href="...">Title</a></h2>
+      // Pattern 2: <h2><a href="..."><strong>Title</strong></a></h2>  
+      // Pattern 3: <h4> variants
+      const patterns = [
+        /<(?:h2|h4)[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>\s*<\/(?:h2|h4)>/gi,
+        /<(?:h2|h4)[^>]*>([\s\S]*?)<\/(?:h2|h4)>/gi,
+      ];
+
+      for (const regex of patterns) {
+        let match;
+        while ((match = regex.exec(html)) !== null) {
+          let title = match[1]
+            .replace(/<[^>]*>/g, "") // Remove HTML tags
+            .replace(/&nbsp;/g, " ")
+            .replace(/&amp;/g, "&")
+            .replace(/&quot;/g, '"')
+            .replace(/&#8220;|&#8221;/g, '"')
+            .replace(/&#8230;/g, "...")
+            .replace(/\s+/g, " ")
+            .trim();
+          if (title.length > 15 && !articles.includes(title)) {
+            articles.push(title);
+          }
         }
       }
     }
+
+    console.log(`Panorama Sport: found ${articles.length} articles total`);
 
     if (articles.length === 0) {
       console.warn("No articles found from Panorama Sport");
       return "";
     }
 
-    // Take the latest 15 articles
-    const latest = articles.slice(0, 15);
-    let info = "\n📰 LAJMET MË TË FUNDIT NGA PANORAMA SPORT (panorama.com.al/sport) - TË DHËNA REALE:\n";
+    // Take the latest 20 articles
+    const latest = articles.slice(0, 20);
+    let info = "\n📰 LAJMET MË TË FUNDIT NGA PANORAMA SPORT (panorama.com.al/sport) - TË DHËNA 100% REALE:\n";
     for (const article of latest) {
       info += `- ${article}\n`;
     }
-    info += "\nPërdor këto tituj për t'u informuar rreth futbollit shqiptar. Janë lajme REALE nga panorama.com.al/sport. Kur pyetesh për ekipet shqiptare, referoju këtyre lajmeve dhe thuaj 'sipas panorama.com.al/sport'.";
+    info += "\n⚠️ RREGULL: Këto tituj janë fakte REALE. Përdori për të informuar klientët. Nëse pyeten për renditje apo pikë specifike që NUK gjenden në tituj, thuaj sinqerisht 'Nuk kam detaje të sakta për renditjen, por sipas lajmeve të fundit...' dhe referoju titujve. KURRË mos shpik numra pikësh!";
+    return info;
     return info;
   } catch (e) {
     console.error("Error fetching Panorama Sport:", e);
