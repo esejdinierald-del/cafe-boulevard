@@ -885,9 +885,40 @@ const Dashboard = () => {
                 <Volume2 className="h-3.5 w-3.5 text-success" />
                 <span className="text-xs font-bold text-success">TEST</span>
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={generateShiftToken}
+                className="gap-1.5 h-9 px-3 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30"
+              >
+                <QrCode className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-bold text-primary">QR</span>
+              </Button>
             </div>
           </div>
         </Card>
+
+        {/* QR Code Dialog */}
+        <Dialog open={showQrDialog} onOpenChange={setShowQrDialog}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="text-center">QR Kodi i Turnit</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center gap-4 py-4">
+              {staffUrl && (
+                <div className="bg-white p-4 rounded-xl">
+                  <QRCodeSVG value={staffUrl} size={200} />
+                </div>
+              )}
+              <p className="text-sm text-muted-foreground text-center">
+                Kamarierët e skanojnë këtë kod me telefon për të marrë njoftimet e turnit.
+              </p>
+              <p className="text-xs text-muted-foreground text-center">
+                Kodi skadon automatikisht në fund të turnit.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
 
 
         <div className="grid gap-3 grid-cols-3">
