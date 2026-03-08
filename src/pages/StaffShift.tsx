@@ -271,6 +271,11 @@ const StaffShift = () => {
     toast.info("Turni u mbyll");
   }, []);
 
+  // Splash screen
+  if (showSplash) {
+    return <SplashScreen onFinish={() => { setShowSplash(false); sessionStorage.setItem("staff_splash_shown", "1"); }} />;
+  }
+
   // QR Scanner overlay
   if (showScanner) {
     return <QrScanner onScan={handleQrScan} onClose={() => setShowScanner(false)} />;
