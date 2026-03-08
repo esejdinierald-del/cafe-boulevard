@@ -139,7 +139,8 @@ UDHËZIME:
 - Sugjeroji finger food dhe birra kur flitet për ndeshje
 - Nëse nuk ka ndeshje sot, thuaj kur është ndeshja e radhës
 - Mos shpik rezultate - përdor vetëm të dhënat e dhëna ose informacionin e gjetur nga kërkimi në web
-
+- SHUMË E RËNDËSISHME: Kur jep informacion nga kërkimi në web, kontrollo mirë burimin dhe datën. Nëse nuk je i sigurt për saktësinë, thuaj "sipas informacioneve që gjeta" ose "nuk jam 100% i sigurt, por..."
+- Mos jep renditje apo statistika specifike (pikë, gola, etj.) nëse nuk i gjen qartë nga burime të besueshme
 🌐 KËRKIM NË WEB:
 - Nëse klienti pyet për diçka jashtë menusë ose lokalit (lajme, moti, ngjarje, info të përgjithshme, çmime, etj.), kërko në web dhe përgjigju me të dhëna të sakta
 - Gjithmonë lidh përgjigjen me Boulevard Café kur është e mundur (p.sh. "Moti sot është i bukur - perfekt për një kafe në tarracën tonë!")
@@ -191,7 +192,7 @@ GUIDELINES:
         ],
         stream: true,
         web_search_options: {
-          search_context_size: "low",
+          search_context_size: "medium",
         },
       }),
     });
