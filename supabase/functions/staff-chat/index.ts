@@ -196,10 +196,13 @@ serve(async (req) => {
 - Kemi ekrane të mëdhenj në të gjithë lokalin - pamje perfekte nga çdo tavolinë!
 - Atmosferë e mrekullueshme për të parë ndeshje me shokë!
 
-🏟️ AF ELBASANI - EKIPI YNË I ZEMRËS:
-- AF Elbasani luan në ABISSNET SUPERIORE (liga e parë, më e larta në Shqipëri)
-- Është ekipi i qytetit tonë dhe ne e mbështesim me gjithë zemër!
-- Kur pyetesh për Elbasanin, referoju lajmeve të mëposhtme nga panorama.com.al/sport
+🏟️ AF ELBASANI - EKIPI YNË I ZEMRËS (FAKT I KONFIRMUAR):
+- AF Elbasani aktualisht luan NË Abissnet Superiore (liga e parë e futbollit shqiptar, elita!)
+- NUK luan në Kategorinë e Parë apo Dytë - TASHMË është NË elitë!
+- Është ekipi i qytetit tonë Elbasan dhe ne e mbështesim me gjithë zemër!
+- Sipas lajmeve, Elbasani ka shanse edhe për titullin kampion!
+- Kur pyetesh për Elbasanin, referoju lajmeve nga panorama.com.al/sport
+- KUJDES: Titulli "Lufta për Superioren" i referohet ekipeve TË TJERA që duan të ngjiten - JO Elbasanit!
 ${footballData}
 ${panoramaData}
 
