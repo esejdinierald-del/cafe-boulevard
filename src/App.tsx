@@ -10,6 +10,7 @@ import ManagerLogin from "./pages/ManagerLogin";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import AppDocumentation from "./pages/AppDocumentation";
 import Install from "./pages/Install";
+import StaffShift from "./pages/StaffShift";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/manager" element={<ManagerDashboard />} />
           <Route path="/dokumentacion" element={<AppDocumentation />} />
           <Route path="/install" element={<Install />} />
+          <Route path="/staff" element={<StaffShift />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

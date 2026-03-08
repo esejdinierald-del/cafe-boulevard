@@ -169,6 +169,30 @@ export type Database = {
         }
         Relationships: []
       }
+      shift_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          shift_end: string
+          shift_start: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          shift_end: string
+          shift_start: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          shift_end?: string
+          shift_start?: string
+          token?: string
+        }
+        Relationships: []
+      }
       table_devices: {
         Row: {
           created_at: string
