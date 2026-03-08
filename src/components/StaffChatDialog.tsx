@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Bot, User, Loader2 } from "lucide-react";
+import { Send, Bot, User, Loader2, RotateCcw } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { useChatSession } from "@/hooks/use-chat-session";
 
@@ -14,6 +14,7 @@ const translations = {
     placeholder: "Shkruaj pyetjen tënde...",
     send: "Dërgo",
     thinking: "Po mendoj...",
+    newChat: "Bisedë e re",
     welcome: "Përshëndetje! Jam asistenti virtual i Boulevard Café. Si mund t'ju ndihmoj?",
     error: "Ndodhi një gabim. Ju lutem provoni përsëri.",
     resumed: "📝 Biseda e mëparshme u rifillua",
@@ -23,6 +24,7 @@ const translations = {
     placeholder: "Type your question...",
     send: "Send",
     thinking: "Thinking...",
+    newChat: "New Chat",
     welcome: "Hello! I'm the virtual assistant of Boulevard Café. How can I help you?",
     error: "An error occurred. Please try again.",
     resumed: "📝 Previous conversation resumed",
@@ -37,7 +39,7 @@ interface StaffChatDialogProps {
 export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   const { language } = useLanguage();
   const t = translations[language];
-  const { messages, setMessages, saveMessages, loaded } = useChatSession(t.welcome);
+  const { messages, setMessages, saveMessages, resetSession, loaded } = useChatSession(t.welcome);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -149,11 +151,23 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col p-0 gap-0 bg-background/95 backdrop-blur-xl border-secondary/20">
-        <DialogHeader className="p-4 pb-2 border-b border-border/50">
+        <DialogHeader className="p-4 pb-2 border-b border-border/50 flex flex-row items-center justify-between">
           <DialogTitle className="flex items-center gap-2 text-xl font-display gradient-text-gold">
             <Bot className="h-6 w-6 text-secondary" />
             {t.title}
           </DialogTitle>
+          {messages.length > 1 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetSession}
+              disabled={isLoading}
+              className="text-xs text-muted-foreground hover:text-foreground gap-1"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              {t.newChat}
+            </Button>
+          )}
         </DialogHeader>
 
         <div className="flex-1 min-h-0 max-h-[55vh] p-4 overflow-y-auto" ref={scrollAreaRef}>
