@@ -188,6 +188,9 @@ GUIDELINES:
           ...messages,
         ],
         stream: true,
+        web_search_options: {
+          search_context_size: "low",
+        },
       }),
     });
 
