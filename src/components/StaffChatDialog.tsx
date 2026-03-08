@@ -43,13 +43,17 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const scrollToBottom = useRef<() => void>();
+  
+  scrollToBottom.current = () => {
     const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
     if (viewport) {
-      requestAnimationFrame(() => {
-        viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
-      });
+      viewport.scrollTop = viewport.scrollHeight;
     }
+  };
+
+  useEffect(() => {
+    requestAnimationFrame(() => scrollToBottom.current?.());
   }, [messages]);
 
   const sendMessage = async () => {
