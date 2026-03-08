@@ -66,7 +66,16 @@ const Index = () => {
   const [tableNumber, setTableNumber] = useState(t.table);
   const [chatOpen, setChatOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(true);
-  
+  const { checkLocation, checking } = useGeolocation();
+
+  const withGeoCheck = async (action: () => Promise<void>) => {
+    const result = await checkLocation(language);
+    if (result.allowed) {
+      await action();
+    } else {
+      toast.error(result.error);
+    }
+  };
 
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
