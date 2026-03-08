@@ -78,7 +78,7 @@ async function fetchFootballData(): Promise<string> {
 async function fetchPanoramaSport(): Promise<string> {
   try {
     const urls = [
-      "https://www.panorama.com.al/sport/",
+      "https://www.betexplorer.com/football/albania/abissnet-superiore/",
       "https://www.panorama.com.al/sport/category/kategoria-superiore/",
       "https://www.panorama.com.al/sport/category/elbasani/"
     ];
@@ -95,40 +95,61 @@ async function fetchPanoramaSport(): Promise<string> {
 
     let articles: string[] = [];
 
-    for (const result of results) {
-      if (result.status !== "fulfilled" || !result.value) continue;
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      if (result.status !== "fulfilled" || !result.value) {
+        console.warn(`Panorama fetch ${i} failed:`, result.status === "rejected" ? result.reason : "empty");
+        continue;
+      }
       const html = result.value;
+      console.log(`Panorama fetch ${i}: got ${html.length} chars`);
 
-      // Extract article titles from <h2> and <h4> tags with links
-      const titleRegex = /<(?:h2|h4)[^>]*>\s*(?:<a[^>]*>)?\s*(?:<strong>)?(.*?)(?:<\/strong>)?\s*(?:<\/a>)?\s*<\/(?:h2|h4)>/gi;
-      let match;
-      while ((match = titleRegex.exec(html)) !== null) {
-        let title = match[1]
-          .replace(/<[^>]*>/g, "") // Remove any remaining HTML tags
-          .replace(/&nbsp;/g, " ")
-          .replace(/&amp;/g, "&")
-          .replace(/&quot;/g, '"')
-          .replace(/&#8220;|&#8221;/g, '"')
-          .replace(/&#8230;/g, "...")
-          .trim();
-        if (title.length > 10 && !articles.includes(title)) {
-          articles.push(title);
+      // Extract titles from multiple patterns
+      // Pattern 1: <h2><a href="...">Title</a></h2>
+      // Pattern 2: <h2><a href="..."><strong>Title</strong></a></h2>  
+      // Pattern 3: <h4> variants
+      const patterns = [
+        /<(?:h2|h4)[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>\s*<\/(?:h2|h4)>/gi,
+        /<(?:h2|h4)[^>]*>([\s\S]*?)<\/(?:h2|h4)>/gi,
+      ];
+
+      for (const regex of patterns) {
+        let match;
+        while ((match = regex.exec(html)) !== null) {
+          let title = match[1]
+            .replace(/<[^>]*>/g, "") // Remove HTML tags
+            .replace(/&nbsp;/g, " ")
+            .replace(/&amp;/g, "&")
+            .replace(/&quot;/g, '"')
+            .replace(/&#8220;|&#8221;/g, '"')
+            .replace(/&#8230;/g, "...")
+            .replace(/\s+/g, " ")
+            .trim();
+          if (title.length > 15 && !articles.includes(title)) {
+            articles.push(title);
+          }
         }
       }
     }
+
+    console.log(`Panorama Sport: found ${articles.length} articles total`);
 
     if (articles.length === 0) {
       console.warn("No articles found from Panorama Sport");
       return "";
     }
 
-    // Take the latest 15 articles
-    const latest = articles.slice(0, 15);
-    let info = "\n📰 LAJMET MË TË FUNDIT NGA PANORAMA SPORT (panorama.com.al/sport) - TË DHËNA REALE:\n";
+    // Take the latest 20 articles
+    const latest = articles.slice(0, 20);
+    let info = "\n📰 LAJMET MË TË FUNDIT NGA PANORAMA SPORT (panorama.com.al/sport) - TË DHËNA 100% REALE:\n";
     for (const article of latest) {
       info += `- ${article}\n`;
     }
-    info += "\nPërdor këto tituj për t'u informuar rreth futbollit shqiptar. Janë lajme REALE nga panorama.com.al/sport. Kur pyetesh për ekipet shqiptare, referoju këtyre lajmeve dhe thuaj 'sipas panorama.com.al/sport'.";
+    info += "\n⚠️ RREGULL: Këto tituj janë fakte REALE nga panorama.com.al/sport. Përdori kështu:\n";
+    info += "- Nëse pyeten për Elbasanin, shiko titujt që përmendin 'Elbasani' dhe përgjigju bazuar në to\n";
+    info += "- Nëse pyeten për renditje/pikë specifike që NUK gjenden në tituj, thuaj: 'Nuk kam pikë të sakta tani, por sipas lajmeve të fundit nga panorama.com.al/sport...' dhe referoju titujve\n";
+    info += "- KURRË mos shpik numra pikësh ose renditje!\n";
+    info += "- Elbasani luan në ABISSNET SUPERIORE (liga e parë e Shqipërisë) - JO në kategori të ulëta!";
     return info;
   } catch (e) {
     console.error("Error fetching Panorama Sport:", e);
@@ -174,6 +195,14 @@ serve(async (req) => {
 - Transmetojmë TË GJITHA ndeshjet e mëdha të futbollit (Champions League, Europa League, Kampionate Europiane)
 - Kemi ekrane të mëdhenj në të gjithë lokalin - pamje perfekte nga çdo tavolinë!
 - Atmosferë e mrekullueshme për të parë ndeshje me shokë!
+
+🏟️ AF ELBASANI - EKIPI YNË I ZEMRËS (FAKT I KONFIRMUAR):
+- AF Elbasani aktualisht luan NË Abissnet Superiore (liga e parë e futbollit shqiptar, elita!)
+- NUK luan në Kategorinë e Parë apo Dytë - TASHMË është NË elitë!
+- Është ekipi i qytetit tonë Elbasan dhe ne e mbështesim me gjithë zemër!
+- Sipas lajmeve, Elbasani ka shanse edhe për titullin kampion!
+- Kur pyetesh për Elbasanin, referoju lajmeve nga panorama.com.al/sport
+- KUJDES: Titulli "Lufta për Superioren" i referohet ekipeve TË TJERA që duan të ngjiten - JO Elbasanit!
 ${footballData}
 ${panoramaData}
 
