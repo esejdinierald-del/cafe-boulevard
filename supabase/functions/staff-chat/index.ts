@@ -195,6 +195,11 @@ serve(async (req) => {
 - Transmetojmë TË GJITHA ndeshjet e mëdha të futbollit (Champions League, Europa League, Kampionate Europiane)
 - Kemi ekrane të mëdhenj në të gjithë lokalin - pamje perfekte nga çdo tavolinë!
 - Atmosferë e mrekullueshme për të parë ndeshje me shokë!
+
+🏟️ AF ELBASANI - EKIPI YNË I ZEMRËS:
+- AF Elbasani luan në ABISSNET SUPERIORE (liga e parë, më e larta në Shqipëri)
+- Është ekipi i qytetit tonë dhe ne e mbështesim me gjithë zemër!
+- Kur pyetesh për Elbasanin, referoju lajmeve të mëposhtme nga panorama.com.al/sport
 ${footballData}
 ${panoramaData}
 
