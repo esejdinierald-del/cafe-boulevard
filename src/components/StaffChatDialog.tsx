@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
+import { useChatSession } from "@/hooks/use-chat-session";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -16,6 +17,7 @@ const translations = {
     thinking: "Po mendoj...",
     welcome: "Përshëndetje! Jam asistenti virtual i Boulevard Café. Si mund t'ju ndihmoj?",
     error: "Ndodhi një gabim. Ju lutem provoni përsëri.",
+    resumed: "📝 Biseda e mëparshme u rifillua",
   },
   en: {
     title: "Ask Staff",
@@ -24,6 +26,7 @@ const translations = {
     thinking: "Thinking...",
     welcome: "Hello! I'm the virtual assistant of Boulevard Café. How can I help you?",
     error: "An error occurred. Please try again.",
+    resumed: "📝 Previous conversation resumed",
   },
 };
 
@@ -35,20 +38,10 @@ interface StaffChatDialogProps {
 export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   const { language } = useLanguage();
   const t = translations[language];
-  
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: t.welcome }
-  ]);
+  const { messages, setMessages, saveMessages, loaded } = useChatSession(t.welcome);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (open) {
-      setMessages([{ role: "assistant", content: t.welcome }]);
-    }
-  }, [open, t.welcome]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,7 +51,8 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { role: "user", content: input.trim() };
-    setMessages((prev) => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput("");
     setIsLoading(true);
 
@@ -74,7 +68,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
-            messages: [...messages, userMessage].filter(m => m.role !== "assistant" || messages.indexOf(m) > 0).map(m => ({
+            messages: newMessages.filter(m => m.role !== "assistant" || messages.indexOf(m) > 0).map(m => ({
               role: m.role,
               content: m.content
             })),
@@ -128,6 +122,10 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
           }
         }
       }
+
+      // Save complete conversation to database
+      const finalMessages = [...newMessages, { role: "assistant" as const, content: assistantContent }];
+      await saveMessages(finalMessages);
     } catch (error) {
       console.error("Chat error:", error);
       setMessages((prev) => [...prev, { role: "assistant", content: t.error }]);
@@ -155,7 +153,12 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
 
         <ScrollArea className="flex-1 min-h-0 max-h-[55vh] p-4">
           <div className="space-y-4">
-            {messages.map((msg, i) => (
+            {!loaded && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {loaded && messages.map((msg, i) => (
               <div
                 key={i}
                 className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -205,12 +208,12 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder={t.placeholder}
-              disabled={isLoading}
+              disabled={isLoading || !loaded}
               className="flex-1 bg-muted/30 border-border/50 focus:border-secondary/50"
             />
             <Button
               onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || !loaded}
               size="icon"
               className="bg-secondary hover:bg-secondary/80 text-secondary-foreground"
             >
