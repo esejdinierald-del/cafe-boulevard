@@ -190,16 +190,14 @@ const StaffShift = () => {
       .channel("staff-shift-realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "service_requests" }, (payload) => {
         fetchData();
-        playDingDong();
         const r = payload.new as any;
         const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
-        showSystemNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
+        repeatNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
         fetchData();
-        playDingDong();
         const o = payload.new as any;
-        showSystemNotification(`🛒 Porosi - ${o.table_number}`, `Porosi e re ${o.total_price} L nga ${o.table_number}`);
+        repeatNotification(`🛒 Porosi - ${o.table_number}`, `Porosi e re ${o.total_price} L nga ${o.table_number}`);
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_requests" }, () => fetchData())
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, () => fetchData())
@@ -211,7 +209,7 @@ const StaffShift = () => {
       supabase.removeChannel(channel);
       clearInterval(poll);
     };
-  }, [isValid, fetchData, playDingDong, showSystemNotification]);
+  }, [isValid, fetchData, repeatNotification]);
 
   // Invalid / expired token
   if (isValid === null) {
