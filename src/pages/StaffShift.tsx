@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw, QrCode, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import QrScanner from "@/components/QrScanner";
+import SplashScreen from "@/components/SplashScreen";
 import boulevardLogo from "@/assets/boulevard-logo.png";
 
 interface ServiceRequest {
@@ -61,6 +62,11 @@ const StaffShift = () => {
   const [timeLeft, setTimeLeft] = useState("");
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const [showScanner, setShowScanner] = useState(false);
+  const [showSplash, setShowSplash] = useState(() => {
+    // Show splash only once per session
+    const shown = sessionStorage.getItem("staff_splash_shown");
+    return !shown;
+  });
   const [isRefreshing, setIsRefreshing] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const touchStartY = useRef(0);
@@ -264,6 +270,11 @@ const StaffShift = () => {
     localStorage.removeItem("staff_shift_token");
     toast.info("Turni u mbyll");
   }, []);
+
+  // Splash screen
+  if (showSplash) {
+    return <SplashScreen onFinish={() => { setShowSplash(false); sessionStorage.setItem("staff_splash_shown", "1"); }} />;
+  }
 
   // QR Scanner overlay
   if (showScanner) {
