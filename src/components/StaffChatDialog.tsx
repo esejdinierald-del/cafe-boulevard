@@ -42,18 +42,15 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = useRef<() => void>();
-  
-  scrollToBottom.current = () => {
-    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-    if (viewport) {
-      viewport.scrollTop = viewport.scrollHeight;
+  const scrollToBottom = useCallback(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
-  };
+  }, []);
 
   useEffect(() => {
-    requestAnimationFrame(() => scrollToBottom.current?.());
-  }, [messages]);
+    requestAnimationFrame(() => scrollToBottom());
+  }, [messages, scrollToBottom]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -159,7 +156,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 max-h-[55vh] p-4" ref={scrollAreaRef}>
+        <div className="flex-1 min-h-0 max-h-[55vh] p-4 overflow-y-auto" ref={scrollAreaRef}>
           <div className="space-y-4">
             {!loaded && (
               <div className="flex justify-center py-4">
@@ -207,7 +204,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
             )}
             <div />
           </div>
-        </ScrollArea>
+        </div>
 
         <div className="p-4 pt-2 border-t border-border/50">
           <div className="flex gap-2">
