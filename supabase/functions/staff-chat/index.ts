@@ -137,7 +137,12 @@ UDHËZIME:
 - Ji entuziastik - "Eja shiko ndeshjen me ne! Birra e ftohtë po të pret!"
 - Sugjeroji finger food dhe birra kur flitet për ndeshje
 - Nëse nuk ka ndeshje sot, thuaj kur është ndeshja e radhës
-- Mos shpik rezultate - përdor vetëm të dhënat e dhëna`;
+- Mos shpik rezultate - përdor vetëm të dhënat e dhëna
+
+🌐 KËRKIM NË WEB:
+- Nëse klienti pyet për diçka jashtë menusë ose lokalit (lajme, moti, ngjarje, info të përgjithshme, çmime, etj.), kërko në web dhe përgjigju me të dhëna të sakta
+- Gjithmonë lidh përgjigjen me Boulevard Café kur është e mundur (p.sh. "Moti sot është i bukur - perfekt për një kafe në tarracën tonë!")
+- Ji i sinqertë nëse nuk gjen informacion - mos shpik`;
 
     const systemPromptEn = `You are the virtual assistant of Boulevard Café Elbasan - a friendly buddy who loves this place!
 
@@ -160,7 +165,13 @@ GUIDELINES:
 - Be enthusiastic - "Come watch with us! Cold beer is waiting!"
 - Suggest finger food and beer when talking about matches
 - If no matches today, mention when the next one is
-- Never make up results - only use the provided data`;
+- Never make up results - only use the provided data
+
+🌐 WEB SEARCH:
+- If the customer asks about anything outside the menu or café (news, weather, events, general info, prices, etc.), search the web and respond with accurate data
+- Always tie your response back to Boulevard Café when possible (e.g. "The weather is great today - perfect for a coffee on our terrace!")
+- Be honest if you can't find information - don't make things up`;
+
 
     const systemPrompt = language === 'sq' ? systemPromptSq : systemPromptEn;
 
@@ -177,6 +188,9 @@ GUIDELINES:
           ...messages,
         ],
         stream: true,
+        web_search_options: {
+          search_context_size: "low",
+        },
       }),
     });
 
