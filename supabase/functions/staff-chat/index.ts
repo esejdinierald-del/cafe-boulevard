@@ -192,7 +192,7 @@ GUIDELINES:
         ],
         stream: true,
         web_search_options: {
-          search_context_size: "low",
+          search_context_size: "medium",
         },
       }),
     });
