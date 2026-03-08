@@ -248,9 +248,32 @@ const StaffShift = () => {
 
   const totalPending = requests.length + orders.length;
 
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    const diff = e.changedTouches[0].clientY - touchStartY.current;
+    if (diff > 80 && window.scrollY === 0) {
+      fetchData(true);
+    }
+    pullDistance.current = 0;
+  }, [fetchData]);
+
   return (
-    <div className="min-h-screen bg-background p-3 pb-8" onClick={enableAudio}>
+    <div
+      className="min-h-screen bg-background p-3 pb-8"
+      onClick={enableAudio}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="max-w-lg mx-auto space-y-3">
+        {/* Pull-to-refresh indicator */}
+        {isRefreshing && (
+          <div className="flex justify-center py-2">
+            <RefreshCw className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        )}
         {/* Header */}
         <div className="text-center space-y-1.5">
           <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
