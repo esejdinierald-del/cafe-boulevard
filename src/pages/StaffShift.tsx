@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef, useCallback, TouchEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
+import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw, QrCode, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import QrScanner from "@/components/QrScanner";
 
 interface ServiceRequest {
   id: string;
@@ -32,19 +33,25 @@ const getElapsedMinutes = (createdAt: string) => {
 
 const ElapsedBadge = ({ createdAt }: { createdAt: string }) => {
   const [mins, setMins] = useState(getElapsedMinutes(createdAt));
-
   useEffect(() => {
     const interval = setInterval(() => setMins(getElapsedMinutes(createdAt)), 15000);
     return () => clearInterval(interval);
   }, [createdAt]);
-
   const color = mins >= 5 ? "bg-destructive/20 text-destructive" : mins >= 2 ? "bg-warning/20 text-warning" : "bg-muted text-muted-foreground";
   return <Badge className={`${color} text-[10px] font-medium`}>{mins} min</Badge>;
 };
 
 const StaffShift = () => {
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const urlToken = searchParams.get("token");
+
+  // Try saved token from localStorage, fallback to URL token
+  const [activeToken, setActiveToken] = useState<string | null>(() => {
+    const saved = localStorage.getItem("staff_shift_token");
+    return urlToken || saved || null;
+  });
+
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [shiftEnd, setShiftEnd] = useState<Date | null>(null);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
@@ -52,33 +59,56 @@ const StaffShift = () => {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
+  const [showScanner, setShowScanner] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const touchStartY = useRef(0);
+
+  // When URL has token, save it and clean URL
+  useEffect(() => {
+    if (urlToken) {
+      setActiveToken(urlToken);
+      localStorage.setItem("staff_shift_token", urlToken);
+      // Clean URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [urlToken, setSearchParams]);
 
   // Validate token
   useEffect(() => {
-    if (!token) { setIsValid(false); return; }
+    if (!activeToken) { setIsValid(false); return; }
     const validate = async () => {
       const now = new Date().toISOString();
       const { data, error } = await supabase
         .from("shift_tokens")
         .select("*")
-        .eq("token", token)
+        .eq("token", activeToken)
         .gte("shift_end", now)
         .lte("shift_start", now)
         .maybeSingle();
-      if (error || !data) { setIsValid(false); return; }
+      if (error || !data) {
+        setIsValid(false);
+        localStorage.removeItem("staff_shift_token");
+        return;
+      }
       setIsValid(true);
       setShiftEnd(new Date(data.shift_end));
     };
     validate();
-  }, [token]);
+  }, [activeToken]);
 
   // Countdown timer
   useEffect(() => {
     if (!shiftEnd) return;
     const update = () => {
       const diff = shiftEnd.getTime() - Date.now();
-      if (diff <= 0) { setIsValid(false); setTimeLeft("Turni ka mbaruar"); return false; }
+      if (diff <= 0) {
+        setIsValid(false);
+        setActiveToken(null);
+        localStorage.removeItem("staff_shift_token");
+        setTimeLeft("Turni ka mbaruar");
+        return false;
+      }
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       setTimeLeft(`${h}h ${m}m`);
@@ -100,7 +130,6 @@ const StaffShift = () => {
     gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
     osc1.connect(gain1).connect(ctx.destination);
     osc1.start(now); osc1.stop(now + 0.4);
-
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.frequency.value = 620; osc2.type = "sine";
@@ -148,12 +177,6 @@ const StaffShift = () => {
     } catch {}
   }, [audioEnabled, requestNotificationPermission]);
 
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const touchStartY = useRef(0);
-  const pullDistance = useRef(0);
-
-  // Fetch data
   const fetchData = useCallback(async (showIndicator = false) => {
     if (showIndicator) setIsRefreshing(true);
     const [reqRes, ordRes] = await Promise.all([
@@ -162,39 +185,28 @@ const StaffShift = () => {
     ]);
     if (reqRes.data) setRequests(reqRes.data as ServiceRequest[]);
     if (ordRes.data) setOrders(ordRes.data as unknown as Order[]);
-    setLastRefresh(new Date());
     if (showIndicator) setTimeout(() => setIsRefreshing(false), 300);
   }, []);
 
-  // Complete a service request
   const handleCompleteRequest = useCallback(async (id: string, tableNumber: string) => {
     setCompletingIds(prev => new Set(prev).add(id));
     const { error } = await supabase
       .from("service_requests")
       .update({ status: "completed", completed_at: new Date().toISOString() })
       .eq("id", id);
-    if (error) {
-      toast.error("Gabim në përditësim");
-    } else {
-      toast.success(`✅ ${tableNumber} — U krye!`);
-      setRequests(prev => prev.filter(r => r.id !== id));
-    }
+    if (error) toast.error("Gabim në përditësim");
+    else { toast.success(`✅ ${tableNumber} — U krye!`); setRequests(prev => prev.filter(r => r.id !== id)); }
     setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
   }, []);
 
-  // Complete an order
   const handleCompleteOrder = useCallback(async (id: string, tableNumber: string) => {
     setCompletingIds(prev => new Set(prev).add(id));
     const { error } = await supabase
       .from("orders")
       .update({ status: "completed", completed_at: new Date().toISOString() })
       .eq("id", id);
-    if (error) {
-      toast.error("Gabim në përditësim");
-    } else {
-      toast.success(`✅ Porosia ${tableNumber} — U krye!`);
-      setOrders(prev => prev.filter(o => o.id !== id));
-    }
+    if (error) toast.error("Gabim në përditësim");
+    else { toast.success(`✅ Porosia ${tableNumber} — U krye!`); setOrders(prev => prev.filter(o => o.id !== id)); }
     setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
   }, []);
 
@@ -221,42 +233,91 @@ const StaffShift = () => {
     const poll = setInterval(fetchData, 10000);
     return () => { supabase.removeChannel(channel); clearInterval(poll); };
   }, [isValid, fetchData, repeatNotification]);
+
   const handleTouchStart = useCallback((e: TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
   }, []);
 
   const handleTouchEnd = useCallback((e: TouchEvent) => {
     const diff = e.changedTouches[0].clientY - touchStartY.current;
-    if (diff > 80 && window.scrollY === 0) {
-      fetchData(true);
-    }
-    pullDistance.current = 0;
+    if (diff > 80 && window.scrollY === 0) fetchData(true);
   }, [fetchData]);
 
+  const handleQrScan = useCallback((scannedToken: string) => {
+    setShowScanner(false);
+    setActiveToken(scannedToken);
+    localStorage.setItem("staff_shift_token", scannedToken);
+    setIsValid(null); // trigger re-validation
+    toast.success("QR u skanua! Duke verifikuar turnin...");
+  }, []);
+
+  const handleEndShift = useCallback(() => {
+    setActiveToken(null);
+    setIsValid(false);
+    localStorage.removeItem("staff_shift_token");
+    toast.info("Turni u mbyll");
+  }, []);
+
+  // QR Scanner overlay
+  if (showScanner) {
+    return <QrScanner onScan={handleQrScan} onClose={() => setShowScanner(false)} />;
+  }
+
   // Loading state
-  if (isValid === null) {
+  if (isValid === null && activeToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <div className="text-center space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground text-sm">Duke verifikuar turnin...</p>
+        </div>
       </div>
     );
   }
 
-  // Expired / invalid
-  if (!isValid) {
+  // No active shift — show scan home screen
+  if (!isValid || !activeToken) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="p-8 text-center space-y-4 max-w-sm w-full">
-          <AlertTriangle className="h-12 w-12 mx-auto text-warning" />
-          <h1 className="text-xl font-bold">Turni ka mbaruar</h1>
-          <p className="text-muted-foreground text-sm">
-            Ky kod QR ka skaduar ose nuk është i vlefshëm. Skanoni kodin e ri të turnit nga dashboard-i.
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+        <div className="max-w-sm w-full text-center space-y-8">
+          {/* Logo */}
+          <div className="space-y-2">
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Bell className="h-10 w-10 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">Boulevard Café</h1>
+            <p className="text-muted-foreground text-sm">Stafi — Thirrjet Live</p>
+          </div>
+
+          {/* Scan button */}
+          <Button
+            size="lg"
+            onClick={() => setShowScanner(true)}
+            className="w-full h-16 text-lg gap-3 bg-primary hover:bg-primary/90"
+          >
+            <QrCode className="h-6 w-6" />
+            Skano QR-në e Turnit
+          </Button>
+
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            Skano kodin QR të turnit që gjendet në dashboard për të aktivizuar njoftimet e thirrjeve.
           </p>
-        </Card>
+
+          {/* Expired message if coming from expired shift */}
+          {isValid === false && activeToken === null && (
+            <Card className="p-4 border-warning/30 bg-warning/5">
+              <div className="flex items-center gap-2 text-warning text-sm">
+                <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                Turni i mëparshëm ka skaduar. Skano QR-në e re.
+              </div>
+            </Card>
+          )}
+        </div>
       </div>
     );
   }
 
+  // Active shift — live notifications view
   const totalPending = requests.length + orders.length;
 
   return (
@@ -267,12 +328,12 @@ const StaffShift = () => {
       onTouchEnd={handleTouchEnd}
     >
       <div className="max-w-lg mx-auto space-y-3">
-        {/* Pull-to-refresh indicator */}
         {isRefreshing && (
           <div className="flex justify-center py-2">
             <RefreshCw className="h-5 w-5 animate-spin text-primary" />
           </div>
         )}
+
         {/* Header */}
         <div className="text-center space-y-1.5">
           <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
@@ -284,7 +345,7 @@ const StaffShift = () => {
               </Badge>
             )}
           </h1>
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             <Badge variant="outline" className="gap-1">
               <Clock className="h-3 w-3" />
               {timeLeft}
@@ -300,6 +361,15 @@ const StaffShift = () => {
                 Aktiv
               </Badge>
             )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleEndShift}
+              className="gap-1 h-7 text-xs text-muted-foreground hover:text-destructive"
+            >
+              <LogOut className="h-3 w-3" />
+              Dil
+            </Button>
           </div>
         </div>
 

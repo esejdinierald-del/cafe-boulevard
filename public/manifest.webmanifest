@@ -1,8 +1,8 @@
 {
-  "name": "Boulevard Café - Staff Dashboard",
+  "name": "Boulevard Café - Stafi",
   "short_name": "Boulevard Staff",
-  "description": "Staff dashboard for Boulevard Café Elbasan",
-  "start_url": "/dashboard",
+  "description": "Njoftimet e thirrjeve live për stafin e Boulevard Café",
+  "start_url": "/staff",
   "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#1a1a1a",
