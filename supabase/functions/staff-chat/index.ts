@@ -174,6 +174,7 @@ serve(async (req) => {
 - Kemi ekrane të mëdhenj në të gjithë lokalin - pamje perfekte nga çdo tavolinë!
 - Atmosferë e mrekullueshme për të parë ndeshje me shokë!
 ${footballData}
+${panoramaData}
 
 📍 INFORMACIONE BAZË:
 - Emri: Boulevard Café Elbasan
@@ -217,6 +218,7 @@ UDHËZIME:
 🎯 YOUR PERSONALITY: Talk like a friend, use emojis, be enthusiastic about matches and food!
 
 ${footballData}
+${panoramaData}
 
 📍 INFO: Boulevard Café Elbasan | Mon-Sun 07:00-24:00 | Center of Elbasan | Free Wi-Fi
 
