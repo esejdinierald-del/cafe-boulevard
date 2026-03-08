@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 
 // Boulevard Café Elbasan approximate coordinates
-const CAFE_LAT = 41.114871;
-const CAFE_LNG = 20.088804;
-const MAX_DISTANCE_METERS = 100;
+const CAFE_LAT = 41.117817;
+const CAFE_LNG = 20.088455;
+const MAX_DISTANCE_METERS = 75;
 
 function getDistanceInMeters(
   lat1: number, lon1: number,
