@@ -9,6 +9,7 @@ import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/use-language";
+import { useGeolocation } from "@/hooks/use-geolocation";
 
 const translations = {
   sq: {
