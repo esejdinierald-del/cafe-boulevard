@@ -71,6 +71,17 @@ const StaffShift = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const touchStartY = useRef(0);
 
+  // Override manifest for staff PWA install
+  useEffect(() => {
+    const link = document.querySelector('link[rel="manifest"]');
+    if (link) {
+      link.setAttribute('href', '/staff-manifest.webmanifest');
+    }
+    return () => {
+      if (link) link.setAttribute('href', '/manifest.webmanifest');
+    };
+  }, []);
+
   // When URL has token, save it and clean URL
   useEffect(() => {
     if (urlToken) {
