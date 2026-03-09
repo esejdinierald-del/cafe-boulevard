@@ -11,6 +11,13 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
 
+// Redirect staff PWA users to /staff
+const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches 
+  || (window.navigator as any).standalone === true;
+if (isStandaloneMode && localStorage.getItem("staff_shift_token")) {
+  window.location.replace("/staff");
+}
+
 const translations = {
   sq: {
     welcome: "Mirë se vini",
