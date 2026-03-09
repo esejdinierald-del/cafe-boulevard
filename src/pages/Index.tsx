@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle, Sparkles } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
@@ -10,6 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
+
+// Redirect staff PWA users to /staff
+const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches 
+  || (window.navigator as any).standalone === true;
+if (isStandaloneMode && localStorage.getItem("staff_shift_token")) {
+  window.location.replace("/staff");
+}
 
 const translations = {
   sq: {
