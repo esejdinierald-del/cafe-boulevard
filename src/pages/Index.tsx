@@ -230,6 +230,8 @@ const Index = () => {
                 onUpdate={(val) => setTableNumber(val)}
               />
             )}
+
+            <p className="text-base sm:text-lg text-muted-foreground/90 font-medium pt-2">
               {t.chooseService}
             </p>
           </div>
