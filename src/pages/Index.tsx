@@ -221,8 +221,15 @@ const Index = () => {
                 </p>
               </div>
             </div>
-            
-            <p className="text-base sm:text-lg text-muted-foreground/90 font-medium pt-2">
+
+            {isGenericTable && (
+              <TableIdentifier
+                language={language}
+                tableNumber={tableNumber}
+                isGeneric={isGenericTable}
+                onUpdate={(val) => setTableNumber(val)}
+              />
+            )}
               {t.chooseService}
             </p>
           </div>
