@@ -85,6 +85,8 @@ const Index = () => {
     }
   };
 
+  const isGenericTable = !searchParams.get("tabela") && !searchParams.get("table");
+
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
     if (tableParam) {
