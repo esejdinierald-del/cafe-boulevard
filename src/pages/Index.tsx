@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle, Sparkles } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
+import { TableIdentifier } from "@/components/TableIdentifier";
 import { WelcomeGreeting } from "@/components/WelcomeGreeting";
 import { toast } from "sonner";
 import logo from "@/assets/boulevard-logo.png";
@@ -83,6 +84,8 @@ const Index = () => {
       toast.error(result.error);
     }
   };
+
+  const isGenericTable = !searchParams.get("tabela") && !searchParams.get("table");
 
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
@@ -218,7 +221,16 @@ const Index = () => {
                 </p>
               </div>
             </div>
-            
+
+            {isGenericTable && (
+              <TableIdentifier
+                language={language}
+                tableNumber={tableNumber}
+                isGeneric={isGenericTable}
+                onUpdate={(val) => setTableNumber(val)}
+              />
+            )}
+
             <p className="text-base sm:text-lg text-muted-foreground/90 font-medium pt-2">
               {t.chooseService}
             </p>
