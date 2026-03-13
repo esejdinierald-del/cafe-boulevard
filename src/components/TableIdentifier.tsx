@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, Check, Pencil } from "lucide-react";
+import { MapPin, Check, Pencil, Hash } from "lucide-react";
 
 interface TableIdentifierProps {
   language: "sq" | "en";
@@ -12,16 +12,16 @@ interface TableIdentifierProps {
 
 const translations = {
   sq: {
-    placeholder: "Nr. tavolinës ose vendndodhja juaj",
-    hint: "Shkruani nr. e tavolinës ose një përshkrim (p.sh. 'pranë dritares')",
-    save: "Ruaj",
+    placeholder: "Nr. ose vendndodhja",
+    hint: "Shkruani nr. tavolinës ose ku ndodheni",
     edit: "Ndrysho",
+    label: "Identifikohu",
   },
   en: {
-    placeholder: "Table number or your location",
-    hint: "Enter table number or a description (e.g. 'near the window')",
-    save: "Save",
-    edit: "Edit",
+    placeholder: "Nr. or location",
+    hint: "Enter table nr. or where you are",
+    edit: "Change",
+    label: "Identify yourself",
   },
 };
 
@@ -43,7 +43,7 @@ export const TableIdentifier = ({ language, tableNumber, isGeneric, onUpdate }: 
     return (
       <button
         onClick={() => setEditing(true)}
-        className="flex items-center gap-1.5 text-sm text-secondary/70 hover:text-secondary transition-colors"
+        className="flex items-center gap-1.5 text-sm text-secondary/70 hover:text-secondary transition-colors mx-auto"
       >
         <Pencil className="w-3.5 h-3.5" />
         {t.edit}
@@ -52,30 +52,32 @@ export const TableIdentifier = ({ language, tableNumber, isGeneric, onUpdate }: 
   }
 
   return (
-    <div className="space-y-2 w-full">
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary/60" />
-          <Input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={t.placeholder}
-            maxLength={50}
-            className="pl-9 bg-white/10 border-secondary/30 text-foreground placeholder:text-muted-foreground/50 rounded-xl h-11 text-base"
-            onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            autoFocus
-          />
-        </div>
+    <div className="w-full max-w-xs mx-auto space-y-2">
+      <p className="text-xs font-medium text-secondary/80 uppercase tracking-wider text-center">
+        <Hash className="w-3 h-3 inline mr-1" />
+        {t.label}
+      </p>
+      <div className="flex items-center gap-2 glass-gold rounded-full border-2 border-secondary/40 shadow-[var(--shadow-gold)] px-4 py-2">
+        <MapPin className="w-5 h-5 text-secondary/70 shrink-0" />
+        <Input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={t.placeholder}
+          maxLength={40}
+          className="border-0 bg-transparent text-center text-lg font-display font-bold text-foreground placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-10 px-0"
+          onKeyDown={(e) => e.key === "Enter" && handleSave()}
+          autoFocus
+        />
         <Button
           size="icon"
           onClick={handleSave}
           disabled={!value.trim()}
-          className="h-11 w-11 rounded-xl bg-secondary/20 hover:bg-secondary/40 border border-secondary/30 shrink-0"
+          className="h-9 w-9 rounded-full bg-secondary/20 hover:bg-secondary/40 border border-secondary/30 shrink-0"
         >
-          <Check className="w-5 h-5 text-secondary" />
+          <Check className="w-4 h-4 text-secondary" />
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground/60 text-center">{t.hint}</p>
+      <p className="text-[11px] text-muted-foreground/50 text-center">{t.hint}</p>
     </div>
   );
 };
