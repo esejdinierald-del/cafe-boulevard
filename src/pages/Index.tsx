@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle, Sparkles } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle, Sparkles, Wifi } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
 import { TableIdentifier } from "@/components/TableIdentifier";
 import { WelcomeGreeting } from "@/components/WelcomeGreeting";
