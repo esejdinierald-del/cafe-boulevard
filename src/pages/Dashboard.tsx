@@ -46,7 +46,7 @@ const Dashboard = () => {
   const [elapsedTime, setElapsedTime] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const repeatTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const repeatTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const repeatCountRef = useRef<Map<string, number>>(new Map());
   const audioEnabledRef = useRef(false);
   const selectedVoiceRef = useRef<SpeechSynthesisVoice | null>(null);
