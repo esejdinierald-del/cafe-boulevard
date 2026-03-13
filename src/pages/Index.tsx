@@ -213,22 +213,32 @@ const Index = () => {
               {t.welcome}
             </h1>
             
-            {/* Table number badge - Enhanced */}
-            <div className="inline-block badge-float">
-              <div className="px-10 py-4 rounded-full glass-gold border-2 border-secondary/40 shadow-[var(--shadow-gold)]">
-                <p className="text-2xl sm:text-3xl font-display font-bold text-foreground">
-                  {tableNumber}
-                </p>
-              </div>
-            </div>
-
-            {isGenericTable && (
+            {/* Table number badge or identifier input */}
+            {isGenericTable && tableNumber === t.table ? (
               <TableIdentifier
                 language={language}
                 tableNumber={tableNumber}
                 isGeneric={isGenericTable}
                 onUpdate={(val) => setTableNumber(val)}
               />
+            ) : (
+              <>
+                <div className="inline-block badge-float">
+                  <div className="px-10 py-4 rounded-full glass-gold border-2 border-secondary/40 shadow-[var(--shadow-gold)]">
+                    <p className="text-2xl sm:text-3xl font-display font-bold text-foreground">
+                      {tableNumber}
+                    </p>
+                  </div>
+                </div>
+                {isGenericTable && (
+                  <TableIdentifier
+                    language={language}
+                    tableNumber={tableNumber}
+                    isGeneric={false}
+                    onUpdate={(val) => setTableNumber(val)}
+                  />
+                )}
+              </>
             )}
 
             <p className="text-base sm:text-lg text-muted-foreground/90 font-medium pt-2">
