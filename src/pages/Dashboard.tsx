@@ -51,7 +51,7 @@ const Dashboard = () => {
   const audioEnabledRef = useRef(false);
   const selectedVoiceRef = useRef<SpeechSynthesisVoice | null>(null);
   const notificationTypeRef = useRef<'voice' | 'sound'>('voice');
-  const titleIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const titleIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const originalTitleRef = useRef<string>('Boulevard Staff');
   const [shiftToken, setShiftToken] = useState<string | null>(null);
   const [showQrDialog, setShowQrDialog] = useState(false);
