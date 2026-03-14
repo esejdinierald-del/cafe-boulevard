@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle, Sparkles, Wifi } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
@@ -12,12 +12,16 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
 
-// Redirect staff PWA users to /staff
-const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches 
-  || (window.navigator as any).standalone === true;
-if (isStandaloneMode && localStorage.getItem("staff_shift_token")) {
-  window.location.replace("/staff");
-}
+const STAFF_PWA_PREFERRED_KEY = "staff_pwa_preferred";
+
+const isStandaloneMode = () =>
+  window.matchMedia("(display-mode: standalone)").matches ||
+  (window.navigator as any).standalone === true;
+
+const shouldRedirectToStaff = () =>
+  isStandaloneMode() &&
+  (Boolean(localStorage.getItem("staff_shift_token")) ||
+    localStorage.getItem(STAFF_PWA_PREFERRED_KEY) === "1");
 
 const translations = {
   sq: {
@@ -86,6 +90,12 @@ const Index = () => {
   };
 
   const isGenericTable = !searchParams.get("tabela") && !searchParams.get("table");
+
+  useEffect(() => {
+    if (shouldRedirectToStaff()) {
+      window.location.replace("/staff");
+    }
+  }, []);
 
   useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");

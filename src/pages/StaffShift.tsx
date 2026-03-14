@@ -43,6 +43,8 @@ const ElapsedBadge = ({ createdAt }: { createdAt: string }) => {
   return <Badge className={`${color} text-[10px] font-medium`}>{mins} min</Badge>;
 };
 
+const STAFF_PWA_PREFERRED_KEY = "staff_pwa_preferred";
+
 const StaffShift = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -70,6 +72,10 @@ const StaffShift = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const touchStartY = useRef(0);
+
+  useEffect(() => {
+    localStorage.setItem(STAFF_PWA_PREFERRED_KEY, "1");
+  }, []);
 
   // Override manifest for staff PWA install
   useEffect(() => {

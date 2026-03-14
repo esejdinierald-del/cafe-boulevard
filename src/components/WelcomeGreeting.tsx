@@ -95,10 +95,10 @@ export const WelcomeGreeting = ({ language, onDismiss, onOpenChat }: WelcomeGree
             <h3 className="text-lg font-display font-bold text-foreground">
               {t.title}
             </h3>
-            <p className="text-sm text-foreground/90 leading-relaxed">
+            <p className="text-sm font-medium text-foreground/90 leading-relaxed">
               {t.message}
             </p>
-            <p className="text-xs text-muted-foreground italic">
+            <p className="text-xs font-medium text-muted-foreground italic">
               {t.tip}
             </p>
           </div>
