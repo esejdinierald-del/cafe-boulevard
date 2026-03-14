@@ -19,9 +19,8 @@ const isStandaloneMode = () =>
   (window.navigator as any).standalone === true;
 
 const shouldRedirectToStaff = () =>
-  isStandaloneMode() &&
-  (Boolean(localStorage.getItem("staff_shift_token")) ||
-    localStorage.getItem(STAFF_PWA_PREFERRED_KEY) === "1");
+  Boolean(localStorage.getItem("staff_shift_token")) ||
+  localStorage.getItem(STAFF_PWA_PREFERRED_KEY) === "1";
 
 const translations = {
   sq: {
