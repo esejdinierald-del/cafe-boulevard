@@ -73,6 +73,10 @@ const StaffShift = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const touchStartY = useRef(0);
 
+  useEffect(() => {
+    localStorage.setItem(STAFF_PWA_PREFERRED_KEY, "1");
+  }, []);
+
   // Override manifest for staff PWA install
   useEffect(() => {
     const link = document.querySelector('link[rel="manifest"]');
