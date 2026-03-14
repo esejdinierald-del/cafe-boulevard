@@ -316,14 +316,14 @@ const Index = () => {
                 type="button"
               >
                 <Wifi className="mr-3 h-7 w-7 scale-bounce-hover" />
-                {language === 'sq' ? 'Përdor WiFi Falas (10 min)' : 'Free WiFi (10 min)'}
+                {language === 'sq' ? 'Përdor WiFi Falas' : 'Free WiFi'}
               </Button>
             </a>
 
             <p className="text-center text-xs text-muted-foreground/70 mt-1 px-2">
               {language === 'sq' 
-                ? 'Lidhu me WiFi tonë falas për 10 minuta. Kliko butonin më lart!' 
-                : 'Connect to our free WiFi for 10 minutes. Click the button above!'}
+                ? 'Lidhu me WiFi tonë falas. Kliko butonin më lart!' 
+                : 'Connect to our free WiFi. Click the button above!'}
             </p>
           </div>
 
