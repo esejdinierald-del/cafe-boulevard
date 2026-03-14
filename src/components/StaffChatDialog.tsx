@@ -191,10 +191,10 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
                   className={`max-w-[80%] px-4 py-2.5 rounded-2xl ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-muted/50 text-foreground rounded-bl-md"
+                      : "bg-muted/50 text-foreground rounded-bl-md font-medium"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                 </div>
                 {msg.role === "user" && (
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">

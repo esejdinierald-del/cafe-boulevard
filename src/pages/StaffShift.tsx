@@ -43,6 +43,8 @@ const ElapsedBadge = ({ createdAt }: { createdAt: string }) => {
   return <Badge className={`${color} text-[10px] font-medium`}>{mins} min</Badge>;
 };
 
+const STAFF_PWA_PREFERRED_KEY = "staff_pwa_preferred";
+
 const StaffShift = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();

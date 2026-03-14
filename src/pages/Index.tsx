@@ -92,6 +92,12 @@ const Index = () => {
   const isGenericTable = !searchParams.get("tabela") && !searchParams.get("table");
 
   useEffect(() => {
+    if (shouldRedirectToStaff()) {
+      window.location.replace("/staff");
+    }
+  }, []);
+
+  useEffect(() => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
     if (tableParam) {
       setTableNumber(tableParam);
