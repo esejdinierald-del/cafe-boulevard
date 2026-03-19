@@ -313,7 +313,7 @@ const Index = () => {
             )}
 
             <a
-              href="http://192.168.50.1/login?dst=https://kamarier.lovable.app/&username=trial"
+              href="http://192.168.50.1/login?dst=http://kamarier.lovable.app/&username=trial"
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full"
