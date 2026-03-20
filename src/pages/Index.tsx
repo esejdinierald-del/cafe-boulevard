@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle, Sparkles, Wifi } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle, Sparkles } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
 import { TableIdentifier } from "@/components/TableIdentifier";
 import { WelcomeGreeting } from "@/components/WelcomeGreeting";
@@ -312,28 +312,6 @@ const Index = () => {
               </Button>
             )}
 
-            <a
-              href="http://192.168.50.1/login?dst=http://kamarier.lovable.app/&username=trial"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full"
-            >
-              <Button 
-                variant="premium" 
-                size="lg" 
-                className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn animate-in-stagger-6 group pointer-events-none"
-                type="button"
-              >
-                <Wifi className="mr-3 h-7 w-7 scale-bounce-hover" />
-                {language === 'sq' ? 'Përdor WiFi Falas' : 'Free WiFi'}
-              </Button>
-            </a>
-
-            <p className="text-center text-xs text-muted-foreground/70 mt-1 px-2">
-              {language === 'sq' 
-                ? 'Lidhu me WiFi tonë falas. Kliko butonin më lart!' 
-                : 'Connect to our free WiFi. Click the button above!'}
-            </p>
           </div>
 
           {/* Social Media Links - Premium style */}
