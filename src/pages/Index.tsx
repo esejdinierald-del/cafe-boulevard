@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle, Sparkles } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
 import { TableIdentifier } from "@/components/TableIdentifier";
 import { WelcomeGreeting } from "@/components/WelcomeGreeting";
@@ -210,14 +210,6 @@ const Index = () => {
           
           {/* Welcome Section */}
           <div className="text-center space-y-5">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5 text-secondary animate-pulse" />
-              <span className="text-sm font-medium text-secondary/80 uppercase tracking-widest">
-                {t.premium}
-              </span>
-              <Sparkles className="w-5 h-5 text-secondary animate-pulse" />
-            </div>
-            
             <h1 className="text-5xl sm:text-6xl font-display font-bold gradient-text-gold tracking-tight">
               {t.welcome}
             </h1>
@@ -249,6 +241,10 @@ const Index = () => {
                 )}
               </>
             )}
+
+            <p className="text-lg font-display font-semibold text-secondary/90 tracking-wide">
+              Boulevard Café Elbasan
+            </p>
 
             <p className="text-base sm:text-lg text-muted-foreground/90 font-medium pt-2">
               {t.chooseService}
