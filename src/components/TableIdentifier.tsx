@@ -57,7 +57,7 @@ export const TableIdentifier = ({ language, tableNumber, isGeneric, onUpdate }: 
         <Hash className="w-3 h-3 inline mr-1" />
         {t.label}
       </p>
-      <div className="flex items-center gap-2 glass-gold rounded-full border-2 border-secondary/40 shadow-[var(--shadow-gold)] px-4 py-2">
+      <div className="flex items-center gap-2 glass-gold rounded-full border-2 border-secondary/40 shadow-[var(--shadow-gold)] px-4 py-2 animate-pulse">
         <MapPin className="w-5 h-5 text-secondary/70 shrink-0" />
         <Input
           value={value}
