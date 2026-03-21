@@ -270,6 +270,15 @@ const Index = () => {
               {t.askStaff}
             </Button>
 
+            <Button 
+              variant="premium" 
+              size="lg" 
+              onClick={() => setFeedbackOpen(true)} 
+              className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn animate-in-stagger-6 group"
+            >
+              <Star className="mr-3 h-7 w-7 scale-bounce-hover" />
+              {language === 'sq' ? 'Na Vlerëso' : 'Rate Us'}
+            </Button>
 
           </div>
 
