@@ -269,8 +269,16 @@ const StaffShift = () => {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "service_requests" }, (payload) => {
         fetchData();
         const r = payload.new as any;
-        const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
-        repeatNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
+        if (r.request_type === "kitchen_ready") {
+          repeatNotification(`🍽️ POROSIA GATI!`, `Klient në banakun — hajde merr!`, true);
+          // Auto-complete after 15s so it doesn't stay in the list
+          setTimeout(async () => {
+            await supabase.from("service_requests").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", r.id);
+          }, 15000);
+        } else {
+          const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
+          repeatNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
+        }
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
         fetchData();
