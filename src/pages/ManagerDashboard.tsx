@@ -36,6 +36,14 @@ interface KnowledgeEntry {
   content: string;
 }
 
+interface FeedbackEntry {
+  id: string;
+  table_number: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
 const ManagerDashboard = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
