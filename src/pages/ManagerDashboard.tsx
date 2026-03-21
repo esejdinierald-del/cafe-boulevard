@@ -184,7 +184,7 @@ const ManagerDashboard = () => {
 
   const handleDeleteItem = async (id: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_items')
         .delete()
         .eq('id', id);
