@@ -77,7 +77,7 @@ export const TableIdentifier = ({ language, tableNumber, isGeneric, onUpdate }: 
           <Check className="w-4 h-4 text-secondary" />
         </Button>
       </div>
-      <p className="text-[11px] text-muted-foreground/50 text-center">{t.hint}</p>
+      <p className="text-xs font-semibold text-muted-foreground/70 text-center">{t.hint}</p>
     </div>
   );
 };
