@@ -58,8 +58,6 @@ const translations = {
     successWaiterDesc: "The waiter will arrive at your table shortly.",
     successBill: "Request sent!",
     successBillDesc: "The bill will be prepared for you.",
-    successHeater: "Heater turning on!",
-    successHeaterDesc: "The heater will be turned on for your table.",
     error: "Error sending request",
     errorWaiter: "Error sending call"
   }
