@@ -269,6 +269,8 @@ serve(async (req) => {
 ${offersData}
 ${footballData}
 ${panoramaData}
+
+📍 INFORMACIONE BAZË:
 - Emri: Boulevard Café Elbasan
 - Orari: E hënë - E diel, 07:00 - 24:00
 - Vendndodhja: Në qendër të Elbasanit, pranë sheshit kryesor
