@@ -87,7 +87,7 @@ const Menu = () => {
 
   const fetchMenuData = async () => {
     try {
-      const { data: categoriesData, error: categoriesError } = await (supabase as any)
+      const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
         .order('display_order');
