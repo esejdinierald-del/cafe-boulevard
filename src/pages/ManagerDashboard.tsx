@@ -361,6 +361,10 @@ const ManagerDashboard = () => {
             <TabsTrigger value="items" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
               Artikujt
             </TabsTrigger>
+            <TabsTrigger value="knowledge" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              <Brain className="mr-1 h-4 w-4" />
+              AI
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-5">
