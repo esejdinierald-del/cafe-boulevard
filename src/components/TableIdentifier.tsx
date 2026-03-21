@@ -53,10 +53,6 @@ export const TableIdentifier = ({ language, tableNumber, isGeneric, onUpdate }: 
 
   return (
     <div className="w-full max-w-xs mx-auto space-y-2">
-      <p className="text-xs font-medium text-secondary/80 uppercase tracking-wider text-center">
-        <Hash className="w-3 h-3 inline mr-1" />
-        {t.label}
-      </p>
       <div className="flex items-center gap-2 glass-gold rounded-full border-2 border-secondary/40 shadow-[var(--shadow-gold)] px-4 py-2 animate-[breathe_1.5s_ease-in-out_infinite] ring-2 ring-secondary/50 ring-offset-2 ring-offset-transparent">
         <MapPin className="w-5 h-5 text-secondary/70 shrink-0" />
         <Input
