@@ -102,15 +102,13 @@ const ManagerLogin = () => {
           <div className="flex flex-col items-center mb-10">
             <img src={logo} alt="Logo" className="h-24 w-auto mb-6 drop-shadow-2xl" />
             <h1 className="text-3xl font-display font-bold gradient-text-gold mb-2">
-              {isResetPassword ? "Ndrysho Fjalëkalimin" : isForgotPassword ? "Rivendos Fjalëkalimin" : isSignUp ? "Regjistrohu" : "Manager Login"}
+              {isResetPassword ? "Ndrysho Fjalëkalimin" : isForgotPassword ? "Rivendos Fjalëkalimin" : "Manager Login"}
             </h1>
             <p className="text-muted-foreground text-center font-medium">
               {isResetPassword
                 ? "Shkruani fjalëkalimin tuaj të ri"
                 : isForgotPassword 
                 ? "Shkruani email-in tuaj për të rivendosur fjalëkalimin" 
-                : isSignUp 
-                ? "Krijo llogari të re për menaxhim" 
                 : "Hyni në panelin premium të menaxhimit"}
             </p>
           </div>
