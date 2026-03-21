@@ -376,6 +376,10 @@ const ManagerDashboard = () => {
               <Brain className="mr-1 h-4 w-4" />
               AI
             </TabsTrigger>
+            <TabsTrigger value="feedback" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              <Star className="mr-1 h-4 w-4" />
+              Feedback
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-5">
