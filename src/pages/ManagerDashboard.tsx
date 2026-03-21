@@ -47,6 +47,9 @@ const ManagerDashboard = () => {
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [knowledgeEntries, setKnowledgeEntries] = useState<KnowledgeEntry[]>([]);
+  const [newKnowledge, setNewKnowledge] = useState({ title: "", content: "" });
+  const [editingKnowledge, setEditingKnowledge] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
