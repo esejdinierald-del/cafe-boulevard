@@ -440,8 +440,13 @@ const Dashboard = () => {
   const completedOrders = orders.filter(o => o.status === 'completed');
 
   const handleDeleteFromHistory = async (id: string, type: 'request' | 'order') => {
-    const table = type === 'request' ? 'service_requests' : 'orders';
-    const { error } = await (supabase as any).from(table).delete().eq('id', id);
+    if (type === 'request') {
+      const { error } = await supabase.from('service_requests').delete().eq('id', id);
+      if (error) { toast.error('Gabim'); return; }
+    } else {
+      const { error } = await supabase.from('orders').delete().eq('id', id);
+      if (error) { toast.error('Gabim'); return; }
+    }
     if (error) toast.error('Gabim');
     else toast.success('U fshi nga historiku');
   };
