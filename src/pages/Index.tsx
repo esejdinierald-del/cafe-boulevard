@@ -249,8 +249,7 @@ const Index = () => {
             <Button 
               variant="burgundy" 
               size="lg" 
-              onClick={() => withGeoCheck(async () => { navigate(`/menu?tabela=${tableNumber}`); })} 
-              disabled={checking}
+              onClick={() => navigate(`/menu?tabela=${tableNumber}`)} 
               className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn animate-in-stagger-5 group"
             >
               <UtensilsCrossed className="mr-3 h-7 w-7 group-hover:rotate-12 transition-transform duration-300" />
