@@ -119,7 +119,7 @@ const ManagerDashboard = () => {
 
   const handleDeleteCategory = async (id: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('categories')
         .delete()
         .eq('id', id);
