@@ -221,7 +221,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
         </div>
 
         <div className="p-4 pt-2 border-t border-border/50">
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -234,9 +234,9 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
               onClick={sendMessage}
               disabled={!input.trim() || isLoading || !loaded}
               size="icon"
-              className="bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+              className="shrink-0 w-11 h-11 rounded-full bg-secondary hover:bg-secondary/80 text-secondary-foreground shadow-md"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-5 w-5" />
             </Button>
           </div>
         </div>
