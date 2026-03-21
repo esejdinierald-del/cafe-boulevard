@@ -266,10 +266,9 @@ serve(async (req) => {
 - Sipas lajmeve, Elbasani ka shanse edhe për titullin kampion!
 - Kur pyetesh për Elbasanin, referoju lajmeve nga panorama.com.al/sport
 - KUJDES: Titulli "Lufta për Superioren" i referohet ekipeve TË TJERA që duan të ngjiten - JO Elbasanit!
+${offersData}
 ${footballData}
 ${panoramaData}
-
-📍 INFORMACIONE BAZË:
 - Emri: Boulevard Café Elbasan
 - Orari: E hënë - E diel, 07:00 - 24:00
 - Vendndodhja: Në qendër të Elbasanit, pranë sheshit kryesor
