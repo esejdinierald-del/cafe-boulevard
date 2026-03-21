@@ -267,17 +267,6 @@ const Index = () => {
               {t.askStaff}
             </Button>
 
-            {hasHeater() && (
-              <Button 
-                variant="default" 
-                size="lg" 
-                onClick={handleTurnOnHeater} 
-                className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn group bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 border-orange-400/30"
-              >
-                <Flame className="mr-3 h-7 w-7 text-orange-200 group-hover:animate-pulse" />
-                {t.turnOnHeater}
-              </Button>
-            )}
 
           </div>
 
