@@ -64,6 +64,7 @@ const ManagerDashboard = () => {
   const [knowledgeEntries, setKnowledgeEntries] = useState<KnowledgeEntry[]>([]);
   const [newKnowledge, setNewKnowledge] = useState({ title: "", content: "" });
   const [editingKnowledge, setEditingKnowledge] = useState<string | null>(null);
+  const [feedbackEntries, setFeedbackEntries] = useState<FeedbackEntry[]>([]);
 
   useEffect(() => {
     checkAuth();
