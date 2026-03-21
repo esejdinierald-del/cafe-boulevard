@@ -163,7 +163,7 @@ const Install = () => {
               Hap këtë faqe në celularin tënd për të instaluar aplikacionin
             </p>
             <div className="p-4 bg-muted rounded-lg">
-              <p className="font-mono text-sm break-all">kamarier.lovable.app/install</p>
+              <p className="font-mono text-sm break-all">cafe-boulevard.lovable.app/install</p>
             </div>
           </div>
         )}
