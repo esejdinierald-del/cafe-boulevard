@@ -447,8 +447,7 @@ const Dashboard = () => {
       const { error } = await supabase.from('orders').delete().eq('id', id);
       if (error) { toast.error('Gabim'); return; }
     }
-    if (error) toast.error('Gabim');
-    else toast.success('U fshi nga historiku');
+    toast.success('U fshi nga historiku');
   };
 
   const getStatusBadge = (status: string) => {
