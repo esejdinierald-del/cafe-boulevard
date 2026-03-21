@@ -206,12 +206,14 @@ const StaffShift = () => {
     }
   }, []);
 
-  const repeatNotification = useCallback((title: string, body: string) => {
-    playDingDong(); showSystemNotification(title, body); triggerVibration();
-    const t1 = setTimeout(() => { playDingDong(); showSystemNotification(title, body); triggerVibration(); }, 4000);
-    const t2 = setTimeout(() => { playDingDong(); showSystemNotification(title, body); triggerVibration(); }, 8000);
+  const repeatNotification = useCallback((title: string, body: string, useKitchenAlarm = false) => {
+    const sound = useKitchenAlarm ? playKitchenAlarm : playDingDong;
+    const vibPattern = useKitchenAlarm ? [500, 150, 500, 150, 500] : [300, 100, 300, 100, 300];
+    sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern);
+    const t1 = setTimeout(() => { sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern); }, 4000);
+    const t2 = setTimeout(() => { sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern); }, 8000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [playDingDong, showSystemNotification, triggerVibration]);
+  }, [playDingDong, playKitchenAlarm, showSystemNotification]);
 
   const enableAudio = useCallback(async () => {
     if (audioEnabled) return;
