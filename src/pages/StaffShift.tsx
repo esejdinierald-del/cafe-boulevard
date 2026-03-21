@@ -273,12 +273,19 @@ const StaffShift = () => {
     if (diff > 80 && window.scrollY === 0) fetchData(true);
   }, [fetchData]);
 
-  const handleQrScan = useCallback((scannedToken: string) => {
+  const handleQrScan = useCallback(async (scannedToken: string) => {
     setShowScanner(false);
     setActiveToken(scannedToken);
     localStorage.setItem("staff_shift_token", scannedToken);
     setIsValid(null); // trigger re-validation
-    toast.success("QR u skanua! Duke verifikuar turnin...");
+
+    // Unlock dashboard curtain
+    await supabase
+      .from("shift_tokens")
+      .update({ unlocked: true } as any)
+      .eq("token", scannedToken);
+
+    toast.success("QR u skanua! Dashboard u zhbllokua!");
   }, []);
 
   const handleEndShift = useCallback(() => {

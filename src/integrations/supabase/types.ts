@@ -176,6 +176,7 @@ export type Database = {
           shift_end: string
           shift_start: string
           token: string
+          unlocked: boolean
         }
         Insert: {
           created_at?: string
@@ -183,6 +184,7 @@ export type Database = {
           shift_end: string
           shift_start: string
           token: string
+          unlocked?: boolean
         }
         Update: {
           created_at?: string
@@ -190,6 +192,7 @@ export type Database = {
           shift_end?: string
           shift_start?: string
           token?: string
+          unlocked?: boolean
         }
         Relationships: []
       }
