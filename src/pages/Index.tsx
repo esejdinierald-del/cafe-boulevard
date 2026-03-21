@@ -209,11 +209,15 @@ const Index = () => {
         <div className="glass-premium rounded-[3rem] shadow-[var(--shadow-float)] p-8 sm:p-12 space-y-8 animate-in-stagger-2 hover:shadow-[var(--shadow-gold)] transition-all duration-700 border-secondary/10">
           
           {/* Welcome Section */}
-          <div className="text-center space-y-5">
+          <div className="text-center space-y-4">
             <h1 className="text-5xl sm:text-6xl font-display font-bold gradient-text-gold tracking-tight">
               {t.welcome}
             </h1>
             
+            <p className="text-base sm:text-lg font-display font-bold text-secondary/90 tracking-wide">
+              Boulevard Café Elbasan
+            </p>
+
             {/* Table number badge or identifier input */}
             {isGenericTable && tableNumber === t.table ? (
               <TableIdentifier
@@ -241,10 +245,6 @@ const Index = () => {
                 )}
               </>
             )}
-
-            <p className="text-lg font-display font-semibold text-secondary/90 tracking-wide">
-              Boulevard Café Elbasan
-            </p>
 
             <p className="text-base sm:text-lg text-muted-foreground/90 font-medium pt-2">
               {t.chooseService}

@@ -12,13 +12,13 @@ interface TableIdentifierProps {
 
 const translations = {
   sq: {
-    placeholder: "Nr. ose vendndodhja",
+    placeholder: "Nr. Tavolinës",
     hint: "Shkruani nr. tavolinës ose ku ndodheni",
     edit: "Ndrysho",
     label: "Identifikohu",
   },
   en: {
-    placeholder: "Nr. or location",
+    placeholder: "Table Nr.",
     hint: "Enter table nr. or where you are",
     edit: "Change",
     label: "Identify yourself",
@@ -77,7 +77,7 @@ export const TableIdentifier = ({ language, tableNumber, isGeneric, onUpdate }: 
           <Check className="w-4 h-4 text-secondary" />
         </Button>
       </div>
-      <p className="text-[11px] text-muted-foreground/50 text-center">{t.hint}</p>
+      <p className="text-xs font-semibold text-muted-foreground/70 text-center">{t.hint}</p>
     </div>
   );
 };
