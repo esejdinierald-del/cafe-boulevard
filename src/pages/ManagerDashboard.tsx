@@ -136,7 +136,7 @@ const ManagerDashboard = () => {
 
   const handleUpdateCategory = async (id: string, name: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('categories')
         .update({ name })
         .eq('id', id);
