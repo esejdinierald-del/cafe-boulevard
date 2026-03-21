@@ -94,7 +94,7 @@ const Menu = () => {
 
       if (categoriesError) throw categoriesError;
 
-      const { data: itemsData, error: itemsError } = await (supabase as any)
+      const { data: itemsData, error: itemsError } = await supabase
         .from('menu_items')
         .select('*')
         .eq('available', true);
