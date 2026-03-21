@@ -39,8 +39,6 @@ const translations = {
     successWaiterDesc: "Kamarieri do të vijë së shpejti në tavolinën tuaj.",
     successBill: "Kërkesa u dërgua!",
     successBillDesc: "Fatura do të përgatitet për ju.",
-    successHeater: "Ngrohësja po ndizet!",
-    successHeaterDesc: "Ngrohësja do të ndizet për tavolinën tuaj.",
     error: "Gabim në dërgimin e kërkesës",
     errorWaiter: "Gabim në dërgimin e thirrjes"
   },
