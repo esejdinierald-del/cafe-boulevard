@@ -303,7 +303,7 @@ const Dashboard = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data, error } = await (supabase as any).from('orders').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setOrders((data || []) as Order[]);
     } catch { toast.error('Gabim në marrjen e porosive'); }
