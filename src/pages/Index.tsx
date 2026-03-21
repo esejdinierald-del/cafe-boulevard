@@ -214,7 +214,7 @@ const Index = () => {
               {t.welcome}
             </h1>
             
-            <p className="text-base sm:text-lg font-display font-bold text-secondary/90 tracking-wide">
+            <p className="text-2xl sm:text-3xl font-display font-extrabold text-foreground tracking-wide">
               Boulevard Café Elbasan
             </p>
 
