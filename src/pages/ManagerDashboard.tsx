@@ -99,7 +99,7 @@ const ManagerDashboard = () => {
     if (!newCategory.trim()) return;
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('categories')
         .insert({ 
           name: newCategory,
