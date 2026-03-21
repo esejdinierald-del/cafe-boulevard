@@ -318,7 +318,7 @@ const Dashboard = () => {
 
   const handleCancel = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await (supabase as any).from('service_requests').update({ status: 'cancelled' }).eq('id', id);
+    const { error } = await supabase.from('service_requests').update({ status: 'cancelled' }).eq('id', id);
     if (error) toast.error('Gabim');
     else toast.success('Kërkesa u anulua');
   };
