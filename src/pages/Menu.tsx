@@ -332,22 +332,49 @@ const Menu = () => {
         {/* Cart Summary */}
         {getTotalItems() > 0 && (
           <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 z-50">
-            <Card className="glass-premium p-6 shadow-[var(--shadow-float)] border-2 border-secondary/30 rounded-3xl animate-pulse-glow">
-              <div className="space-y-4">
-                <textarea
-                  value={orderNotes}
-                  onChange={(e) => setOrderNotes(e.target.value)}
-                  placeholder={t.notesPlaceholder}
-                  className="w-full h-20 rounded-2xl border border-input bg-background/50 backdrop-blur-sm px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 placeholder:text-muted-foreground"
-                />
+            <Card className="glass-premium p-5 shadow-[var(--shadow-float)] border-2 border-secondary/30 rounded-3xl animate-pulse-glow">
+              <div className="space-y-3">
+                {/* Cart items list */}
+                <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
+                  {Object.entries(cart).map(([itemId, qty]) => {
+                    const item = menuItems.find(i => i.id === itemId);
+                    if (!item) return null;
+                    const price = getActivePrice(item);
+                    return (
+                      <div key={itemId} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span className="font-medium truncate">
+                            {language === 'en' && item.name_en ? item.name_en : item.name}
+                          </span>
+                          <span className="text-muted-foreground">×{qty}</span>
+                        </div>
+                        <div className="flex items-center gap-2 ml-2">
+                          <span className="font-bold whitespace-nowrap">{price * qty} {t.currency}</span>
+                          <Button variant="ghost" size="icon" onClick={() => removeFromCart(itemId)} className="h-7 w-7 rounded-lg hover:bg-destructive/20">
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="border-t border-border/30 pt-3">
+                  <textarea
+                    value={orderNotes}
+                    onChange={(e) => setOrderNotes(e.target.value)}
+                    placeholder={t.notesPlaceholder}
+                    className="w-full h-16 rounded-2xl border border-input bg-background/50 backdrop-blur-sm px-4 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 placeholder:text-muted-foreground"
+                  />
+                </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="gradient-gold rounded-full p-3 shadow-[var(--shadow-gold)]">
-                      <ShoppingCart className="h-6 w-6" />
+                  <div className="flex items-center gap-3">
+                    <div className="gradient-gold rounded-full p-2.5 shadow-[var(--shadow-gold)]">
+                      <ShoppingCart className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium">{getTotalItems()} {t.items}</p>
-                      <p className="text-2xl font-display font-bold gradient-text-gold">{getTotalPrice()} {t.currency}</p>
+                      <p className="text-xs text-muted-foreground font-medium">{getTotalItems()} {t.items}</p>
+                      <p className="text-xl font-display font-bold gradient-text-gold">{getTotalPrice()} {t.currency}</p>
                     </div>
                   </div>
                   <Button size="lg" variant="burgundy" className="font-display font-bold text-lg" onClick={handleSubmitOrder} disabled={checking}>
