@@ -77,7 +77,7 @@ const ManagerDashboard = () => {
         .select('*')
         .order('display_order');
 
-      const { data: itemsData } = await (supabase as any)
+      const { data: itemsData } = await supabase
         .from('menu_items')
         .select('*');
 
