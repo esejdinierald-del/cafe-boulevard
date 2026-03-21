@@ -264,8 +264,8 @@ const Menu = () => {
                     return (
                       <Card key={item.id} className="glass-premium p-3 hover:shadow-[var(--shadow-float)] transition-all duration-500 rounded-2xl">
                         {item.image_url && (
-                          <div className="w-full h-36 mb-4 rounded-2xl overflow-hidden shadow-lg">
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
+                          <div className="w-full h-24 mb-2 rounded-xl overflow-hidden shadow-md">
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           </div>
                         )}
                         <div className="flex justify-between items-start mb-3">
