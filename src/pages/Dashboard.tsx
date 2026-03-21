@@ -102,8 +102,12 @@ const Dashboard = () => {
   // On mount: generate token and listen for unlock via realtime
   useEffect(() => {
     ensureShiftToken();
+  }, []);
 
-    // Listen for shift_tokens UPDATE (unlocked = true)
+  // Separate effect for realtime listener that re-subscribes when shiftToken changes
+  useEffect(() => {
+    if (!shiftToken) return;
+
     const unlockChannel = supabase
       .channel("shift-unlock")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "shift_tokens" }, (payload) => {
