@@ -244,8 +244,8 @@ const Menu = () => {
                     onClick={() => setSelectedCategoryId(category.id)}
                     className={`px-6 py-3 rounded-2xl font-display font-bold text-base transition-all duration-300 whitespace-nowrap ${
                       selectedCategoryId === category.id
-                        ? 'glass-gold shadow-[var(--shadow-gold)] scale-105'
-                        : 'glass-premium hover:scale-105 hover:shadow-[var(--shadow-elegant)]'
+                        ? 'bg-white text-foreground shadow-[var(--shadow-gold)] scale-105'
+                        : 'bg-white/80 text-foreground hover:scale-105 hover:shadow-[var(--shadow-elegant)]'
                     }`}
                   >
                     {language === 'en' && category.name_en ? category.name_en : category.name}
