@@ -332,7 +332,7 @@ const Dashboard = () => {
 
   const handleCancelOrder = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await (supabase as any).from('orders').update({ status: 'cancelled' }).eq('id', id);
+    const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', id);
     if (error) toast.error('Gabim');
     else toast.success('Porosia u anulua');
   };
