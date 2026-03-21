@@ -210,12 +210,12 @@ const Index = () => {
           
           {/* Welcome Section */}
           <div className="text-center space-y-4">
-            <h1 className="text-5xl sm:text-6xl font-display font-bold gradient-text-gold tracking-tight">
-              {t.welcome}
+            <h1 className="text-3xl sm:text-4xl font-display font-extrabold gradient-text-gold tracking-wide uppercase">
+              Boulevard Café Elbasan
             </h1>
             
-            <p className="text-2xl sm:text-3xl font-display font-extrabold text-foreground tracking-wide">
-              Boulevard Café Elbasan
+            <p className="text-2xl sm:text-3xl font-display font-extrabold text-foreground">
+              {t.welcome}
             </p>
 
             {/* Table number badge or identifier input */}
@@ -246,7 +246,7 @@ const Index = () => {
               </>
             )}
 
-            <p className="text-base sm:text-lg text-muted-foreground/90 font-medium pt-2">
+            <p className="text-lg sm:text-xl text-muted-foreground font-bold pt-2">
               {t.chooseService}
             </p>
           </div>
