@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Plus, Trash2, Edit, Save, X, Brain } from "lucide-react";
+import { LogOut, Plus, Trash2, Edit, Save, X, Brain, Star } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +36,14 @@ interface KnowledgeEntry {
   content: string;
 }
 
+interface FeedbackEntry {
+  id: string;
+  table_number: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
 const ManagerDashboard = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -56,6 +64,7 @@ const ManagerDashboard = () => {
   const [knowledgeEntries, setKnowledgeEntries] = useState<KnowledgeEntry[]>([]);
   const [newKnowledge, setNewKnowledge] = useState({ title: "", content: "" });
   const [editingKnowledge, setEditingKnowledge] = useState<string | null>(null);
+  const [feedbackEntries, setFeedbackEntries] = useState<FeedbackEntry[]>([]);
 
   useEffect(() => {
     checkAuth();
@@ -85,15 +94,17 @@ const ManagerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }] = await Promise.all([
+      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }, { data: feedbackData }] = await Promise.all([
         supabase.from('categories').select('*').order('display_order'),
         supabase.from('menu_items').select('*'),
         supabase.from('ai_knowledge').select('*').order('created_at', { ascending: false }),
+        supabase.from('feedback' as any).select('*').order('created_at', { ascending: false }).limit(50),
       ]);
 
       setCategories(categoriesData || []);
       setMenuItems(itemsData || []);
       setKnowledgeEntries(knowledgeData || []);
+      setFeedbackEntries((feedbackData as any) || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -364,6 +375,10 @@ const ManagerDashboard = () => {
             <TabsTrigger value="knowledge" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
               <Brain className="mr-1 h-4 w-4" />
               AI
+            </TabsTrigger>
+            <TabsTrigger value="feedback" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              <Star className="mr-1 h-4 w-4" />
+              Feedback
             </TabsTrigger>
           </TabsList>
 
@@ -747,6 +762,65 @@ const ManagerDashboard = () => {
                   Asnjë njohuri e shtuar ende. Shto informacione që AI të mësojë!
                 </p>
               )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="feedback" className="space-y-5">
+            {/* Stats Card */}
+            <Card className="glass-premium p-6 rounded-3xl shadow-[var(--shadow-elegant)]">
+              <h2 className="text-xl font-display font-bold mb-4 gradient-text-gold">Statistika Feedback</h2>
+              {feedbackEntries.length > 0 ? (
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-3xl font-bold text-secondary">
+                      {(feedbackEntries.reduce((sum, f) => sum + f.rating, 0) / feedbackEntries.length).toFixed(1)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Mesatare</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-foreground">{feedbackEntries.length}</p>
+                    <p className="text-sm text-muted-foreground">Total</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-foreground">
+                      {feedbackEntries.filter(f => f.rating >= 4).length}
+                    </p>
+                    <p className="text-sm text-muted-foreground">4-5 ★</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center">Asnjë feedback ende.</p>
+              )}
+            </Card>
+
+            {/* Feedback List */}
+            <div className="grid gap-4">
+              {feedbackEntries.map((fb) => (
+                <Card key={fb.id} className="glass-premium p-5 rounded-3xl shadow-[var(--shadow-elegant)]">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star key={s} className={`h-5 w-5 ${s <= fb.rating ? 'fill-secondary text-secondary' : 'text-muted-foreground/20'}`} />
+                          ))}
+                        </div>
+                        <span className="text-sm text-muted-foreground">Tavolinë: {fb.table_number}</span>
+                      </div>
+                      {fb.comment && <p className="text-foreground">{fb.comment}</p>}
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(fb.created_at).toLocaleDateString('sq-AL', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                    <Button size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={async () => {
+                      await supabase.from('feedback' as any).delete().eq('id', fb.id);
+                      fetchData();
+                    }}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
             </div>
           </TabsContent>
         </Tabs>

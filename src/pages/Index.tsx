@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, MessageCircle } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, MessageCircle, Star } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
+import { FeedbackDialog } from "@/components/FeedbackDialog";
 import { TableIdentifier } from "@/components/TableIdentifier";
 import { WelcomeGreeting } from "@/components/WelcomeGreeting";
 import { toast } from "sonner";
@@ -72,6 +73,7 @@ const Index = () => {
   const t = translations[language];
   const [tableNumber, setTableNumber] = useState(t.table);
   const [chatOpen, setChatOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(true);
   const { checkLocation, checking } = useGeolocation();
 
@@ -268,6 +270,15 @@ const Index = () => {
               {t.askStaff}
             </Button>
 
+            <Button 
+              variant="premium" 
+              size="lg" 
+              onClick={() => setFeedbackOpen(true)} 
+              className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn animate-in-stagger-6 group"
+            >
+              <Star className="mr-3 h-7 w-7 scale-bounce-hover" />
+              {language === 'sq' ? 'Na Vlerëso' : 'Rate Us'}
+            </Button>
 
           </div>
 
@@ -313,6 +324,7 @@ const Index = () => {
       </div>
 
       <StaffChatDialog open={chatOpen} onOpenChange={setChatOpen} />
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} tableNumber={tableNumber} language={language} />
       
       {showGreeting && (
         <WelcomeGreeting 
