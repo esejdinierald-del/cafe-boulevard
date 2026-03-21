@@ -566,6 +566,11 @@ const ManagerDashboard = () => {
                           <h3 className="font-bold">{item.name}</h3>
                           <p className="text-sm text-muted-foreground">{item.description}</p>
                           <p className="text-primary font-bold">{item.price} Lekë</p>
+                          {item.offer_price && (
+                            <p className="text-xs text-destructive font-semibold">
+                              🔥 Ofertë: {item.offer_price} Lekë ({item.offer_start_time?.slice(0, 5)} - {item.offer_end_time?.slice(0, 5)})
+                            </p>
+                          )}
                           <p className="text-xs text-muted-foreground">Kategoria: {category?.name}</p>
                         </div>
                         <div className="flex flex-col gap-2">
