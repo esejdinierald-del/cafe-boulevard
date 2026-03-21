@@ -163,6 +163,24 @@ const StaffShift = () => {
     osc2.start(now + 0.3); osc2.stop(now + 0.8);
   }, []);
 
+  // Loud urgent alarm for kitchen_ready — 5 rapid high-pitched beeps
+  const playKitchenAlarm = useCallback(() => {
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    for (let i = 0; i < 5; i++) {
+      const t = ctx.currentTime + i * 0.25;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = 1400;
+      osc.type = "square";
+      gain.gain.setValueAtTime(0.7, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.15);
+    }
+  }, []);
+
   const requestNotificationPermission = useCallback(async () => {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission();
@@ -188,12 +206,14 @@ const StaffShift = () => {
     }
   }, []);
 
-  const repeatNotification = useCallback((title: string, body: string) => {
-    playDingDong(); showSystemNotification(title, body); triggerVibration();
-    const t1 = setTimeout(() => { playDingDong(); showSystemNotification(title, body); triggerVibration(); }, 4000);
-    const t2 = setTimeout(() => { playDingDong(); showSystemNotification(title, body); triggerVibration(); }, 8000);
+  const repeatNotification = useCallback((title: string, body: string, useKitchenAlarm = false) => {
+    const sound = useKitchenAlarm ? playKitchenAlarm : playDingDong;
+    const vibPattern = useKitchenAlarm ? [500, 150, 500, 150, 500] : [300, 100, 300, 100, 300];
+    sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern);
+    const t1 = setTimeout(() => { sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern); }, 4000);
+    const t2 = setTimeout(() => { sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern); }, 8000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [playDingDong, showSystemNotification, triggerVibration]);
+  }, [playDingDong, playKitchenAlarm, showSystemNotification]);
 
   const enableAudio = useCallback(async () => {
     if (audioEnabled) return;
@@ -210,7 +230,7 @@ const StaffShift = () => {
   const fetchData = useCallback(async (showIndicator = false) => {
     if (showIndicator) setIsRefreshing(true);
     const [reqRes, ordRes] = await Promise.all([
-      supabase.from("service_requests").select("*").eq("status", "pending").order("created_at", { ascending: true }),
+      supabase.from("service_requests").select("*").eq("status", "pending").neq("request_type", "kitchen_ready").order("created_at", { ascending: true }),
       supabase.from("orders").select("*").eq("status", "pending").order("created_at", { ascending: true }),
     ]);
     if (reqRes.data) setRequests(reqRes.data as ServiceRequest[]);
@@ -249,8 +269,16 @@ const StaffShift = () => {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "service_requests" }, (payload) => {
         fetchData();
         const r = payload.new as any;
-        const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
-        repeatNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
+        if (r.request_type === "kitchen_ready") {
+          repeatNotification(`🍽️ POROSIA GATI!`, `Klient në banakun — hajde merr!`, true);
+          // Auto-complete after 15s so it doesn't stay in the list
+          setTimeout(async () => {
+            await supabase.from("service_requests").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", r.id);
+          }, 15000);
+        } else {
+          const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
+          repeatNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
+        }
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
         fetchData();
