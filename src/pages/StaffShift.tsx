@@ -230,7 +230,7 @@ const StaffShift = () => {
   const fetchData = useCallback(async (showIndicator = false) => {
     if (showIndicator) setIsRefreshing(true);
     const [reqRes, ordRes] = await Promise.all([
-      supabase.from("service_requests").select("*").eq("status", "pending").order("created_at", { ascending: true }),
+      supabase.from("service_requests").select("*").eq("status", "pending").neq("request_type", "kitchen_ready").order("created_at", { ascending: true }),
       supabase.from("orders").select("*").eq("status", "pending").order("created_at", { ascending: true }),
     ]);
     if (reqRes.data) setRequests(reqRes.data as ServiceRequest[]);
