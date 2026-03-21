@@ -542,6 +542,19 @@ const Dashboard = () => {
                 className="gap-1.5 h-9 px-3 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30">
                 <QrCode className="h-3.5 w-3.5 text-primary" /><span className="text-xs font-bold text-primary">QR</span>
               </Button>
+              <Button variant="outline" size="sm"
+                onClick={async () => {
+                  const { error } = await supabase.from('service_requests').insert({
+                    table_number: 'Banaku',
+                    request_type: 'kitchen_ready',
+                    status: 'pending',
+                  });
+                  if (error) toast.error('Gabim në dërgim');
+                  else toast.success('🔔 Thirrja u dërgua te kamarieri!');
+                }}
+                className="gap-1.5 h-9 px-3 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
+                <UtensilsCrossed className="h-3.5 w-3.5 text-accent-foreground" /><span className="text-xs font-bold text-accent-foreground">Porosia Gati 🔔</span>
+              </Button>
             </div>
           </div>
         </Card>

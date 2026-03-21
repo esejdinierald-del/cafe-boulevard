@@ -163,6 +163,24 @@ const StaffShift = () => {
     osc2.start(now + 0.3); osc2.stop(now + 0.8);
   }, []);
 
+  // Loud urgent alarm for kitchen_ready — 5 rapid high-pitched beeps
+  const playKitchenAlarm = useCallback(() => {
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    for (let i = 0; i < 5; i++) {
+      const t = ctx.currentTime + i * 0.25;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = 1400;
+      osc.type = "square";
+      gain.gain.setValueAtTime(0.7, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.15);
+    }
+  }, []);
+
   const requestNotificationPermission = useCallback(async () => {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission();
