@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Plus, Trash2, Edit, Save, X } from "lucide-react";
+import { LogOut, Plus, Trash2, Edit, Save, X, Brain } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/boulevard-logo.png";
@@ -29,6 +30,12 @@ interface MenuItem {
   offer_end_time: string | null;
 }
 
+interface KnowledgeEntry {
+  id: string;
+  title: string;
+  content: string;
+}
+
 const ManagerDashboard = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -46,6 +53,9 @@ const ManagerDashboard = () => {
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [knowledgeEntries, setKnowledgeEntries] = useState<KnowledgeEntry[]>([]);
+  const [newKnowledge, setNewKnowledge] = useState({ title: "", content: "" });
+  const [editingKnowledge, setEditingKnowledge] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -75,17 +85,15 @@ const ManagerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const { data: categoriesData } = await supabase
-        .from('categories')
-        .select('*')
-        .order('display_order');
-
-      const { data: itemsData } = await supabase
-        .from('menu_items')
-        .select('*');
+      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }] = await Promise.all([
+        supabase.from('categories').select('*').order('display_order'),
+        supabase.from('menu_items').select('*'),
+        supabase.from('ai_knowledge').select('*').order('created_at', { ascending: false }),
+      ]);
 
       setCategories(categoriesData || []);
       setMenuItems(itemsData || []);
+      setKnowledgeEntries(knowledgeData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -279,6 +287,51 @@ const ManagerDashboard = () => {
     }
   };
 
+  const handleAddKnowledge = async () => {
+    if (!newKnowledge.title.trim() || !newKnowledge.content.trim()) {
+      toast.error("Plotësoni titullin dhe përmbajtjen");
+      return;
+    }
+    try {
+      const { error } = await supabase.from('ai_knowledge').insert({
+        title: newKnowledge.title,
+        content: newKnowledge.content,
+      });
+      if (error) throw error;
+      toast.success("Njohuria u shtua! AI do ta dijë tani.");
+      setNewKnowledge({ title: "", content: "" });
+      fetchData();
+    } catch (error) {
+      console.error('Error adding knowledge:', error);
+      toast.error("Gabim në shtimin e njohurisë");
+    }
+  };
+
+  const handleUpdateKnowledge = async (id: string, title: string, content: string) => {
+    try {
+      const { error } = await supabase.from('ai_knowledge').update({ title, content, updated_at: new Date().toISOString() }).eq('id', id);
+      if (error) throw error;
+      toast.success("Njohuria u përditësua");
+      setEditingKnowledge(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error updating knowledge:', error);
+      toast.error("Gabim në përditësim");
+    }
+  };
+
+  const handleDeleteKnowledge = async (id: string) => {
+    try {
+      const { error } = await supabase.from('ai_knowledge').delete().eq('id', id);
+      if (error) throw error;
+      toast.success("Njohuria u fshi");
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting knowledge:', error);
+      toast.error("Gabim në fshirje");
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Duke ngarkuar...</div>;
   }
@@ -307,6 +360,10 @@ const ManagerDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="items" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
               Artikujt
+            </TabsTrigger>
+            <TabsTrigger value="knowledge" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              <Brain className="mr-1 h-4 w-4" />
+              AI
             </TabsTrigger>
           </TabsList>
 
@@ -601,6 +658,95 @@ const ManagerDashboard = () => {
                   </Card>
                 );
               })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="knowledge" className="space-y-5">
+            <Card className="glass-premium p-6 rounded-3xl shadow-[var(--shadow-elegant)]">
+              <h2 className="text-xl font-display font-bold mb-2 gradient-text-gold flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Mëso AI-në
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Shkruaj informacione që AI të mësojë: linke, kalendare ndeshjesh, rezultate, shënime, çfarëdo!
+              </p>
+              <div className="space-y-3">
+                <Input
+                  value={newKnowledge.title}
+                  onChange={(e) => setNewKnowledge({ ...newKnowledge, title: e.target.value })}
+                  placeholder="Titulli (p.sh. 'Kalendari i ndeshjeve', 'Info lokali')"
+                  className="glass-premium h-12 rounded-2xl text-base"
+                />
+                <Textarea
+                  value={newKnowledge.content}
+                  onChange={(e) => setNewKnowledge({ ...newKnowledge, content: e.target.value })}
+                  placeholder="Shkruaj përmbajtjen këtu... (linke, tekst, rezultate, çdo info)"
+                  className="glass-premium rounded-2xl text-base min-h-[120px]"
+                />
+                <Button onClick={handleAddKnowledge} variant="gold" size="lg" className="font-display font-bold w-full">
+                  <Plus className="mr-2 h-5 w-5" />
+                  Shto Njohuri
+                </Button>
+              </div>
+            </Card>
+
+            <div className="grid gap-4">
+              {knowledgeEntries.map((entry) => (
+                <Card key={entry.id} className="glass-premium p-5 rounded-3xl shadow-[var(--shadow-elegant)]">
+                  {editingKnowledge === entry.id ? (
+                    <div className="space-y-3">
+                      <Input
+                        defaultValue={entry.title}
+                        id={`know-title-${entry.id}`}
+                        placeholder="Titulli"
+                        className="glass-premium h-12 rounded-2xl text-base"
+                      />
+                      <Textarea
+                        defaultValue={entry.content}
+                        id={`know-content-${entry.id}`}
+                        className="glass-premium rounded-2xl text-base min-h-[100px]"
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          size="sm"
+                          variant="gold"
+                          onClick={() => {
+                            const t = (document.getElementById(`know-title-${entry.id}`) as HTMLInputElement).value;
+                            const c = (document.getElementById(`know-content-${entry.id}`) as HTMLTextAreaElement).value;
+                            handleUpdateKnowledge(entry.id, t, c);
+                          }}
+                        >
+                          <Save className="mr-1 h-4 w-4" />
+                          Ruaj
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingKnowledge(null)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-display font-bold text-lg">{entry.title}</h3>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">{entry.content}</p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button size="icon" variant="premium" className="h-10 w-10 rounded-xl" onClick={() => setEditingKnowledge(entry.id)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="destructive" className="h-10 w-10 rounded-xl" onClick={() => handleDeleteKnowledge(entry.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              ))}
+              {knowledgeEntries.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  Asnjë njohuri e shtuar ende. Shto informacione që AI të mësojë!
+                </p>
+              )}
             </div>
           </TabsContent>
         </Tabs>
