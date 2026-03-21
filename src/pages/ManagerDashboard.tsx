@@ -85,17 +85,15 @@ const ManagerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const { data: categoriesData } = await supabase
-        .from('categories')
-        .select('*')
-        .order('display_order');
-
-      const { data: itemsData } = await supabase
-        .from('menu_items')
-        .select('*');
+      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }] = await Promise.all([
+        supabase.from('categories').select('*').order('display_order'),
+        supabase.from('menu_items').select('*'),
+        supabase.from('ai_knowledge').select('*').order('created_at', { ascending: false }),
+      ]);
 
       setCategories(categoriesData || []);
       setMenuItems(itemsData || []);
+      setKnowledgeEntries(knowledgeData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
