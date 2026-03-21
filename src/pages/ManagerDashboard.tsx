@@ -159,7 +159,7 @@ const ManagerDashboard = () => {
     }
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_items')
         .insert({
           name: newItem.name,
