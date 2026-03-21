@@ -311,6 +311,7 @@ UDHËZIME:
 
 🎯 YOUR PERSONALITY: Talk like a friend, use emojis, be enthusiastic about matches and food!
 
+${offersData}
 ${footballData}
 ${panoramaData}
 
