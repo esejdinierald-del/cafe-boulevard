@@ -287,6 +287,51 @@ const ManagerDashboard = () => {
     }
   };
 
+  const handleAddKnowledge = async () => {
+    if (!newKnowledge.title.trim() || !newKnowledge.content.trim()) {
+      toast.error("Plotësoni titullin dhe përmbajtjen");
+      return;
+    }
+    try {
+      const { error } = await supabase.from('ai_knowledge').insert({
+        title: newKnowledge.title,
+        content: newKnowledge.content,
+      });
+      if (error) throw error;
+      toast.success("Njohuria u shtua! AI do ta dijë tani.");
+      setNewKnowledge({ title: "", content: "" });
+      fetchData();
+    } catch (error) {
+      console.error('Error adding knowledge:', error);
+      toast.error("Gabim në shtimin e njohurisë");
+    }
+  };
+
+  const handleUpdateKnowledge = async (id: string, title: string, content: string) => {
+    try {
+      const { error } = await supabase.from('ai_knowledge').update({ title, content, updated_at: new Date().toISOString() }).eq('id', id);
+      if (error) throw error;
+      toast.success("Njohuria u përditësua");
+      setEditingKnowledge(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error updating knowledge:', error);
+      toast.error("Gabim në përditësim");
+    }
+  };
+
+  const handleDeleteKnowledge = async (id: string) => {
+    try {
+      const { error } = await supabase.from('ai_knowledge').delete().eq('id', id);
+      if (error) throw error;
+      toast.success("Njohuria u fshi");
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting knowledge:', error);
+      toast.error("Gabim në fshirje");
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Duke ngarkuar...</div>;
   }
