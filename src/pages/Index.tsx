@@ -49,7 +49,6 @@ const translations = {
     callWaiter: "Call Waiter",
     requestBill: "Request Bill",
     orderMenu: "Order from Menu",
-    turnOnHeater: "Turn On Heater",
     askStaff: "Ask Staff",
     premium: "Premium Service",
     fast: "Fast & Elegant",
