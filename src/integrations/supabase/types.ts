@@ -86,6 +86,30 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          table_number: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          table_number: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          table_number?: string
+        }
+        Relationships: []
+      }
       menu_items: {
         Row: {
           available: boolean | null
