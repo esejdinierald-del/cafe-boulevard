@@ -94,10 +94,11 @@ const ManagerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }] = await Promise.all([
+      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }, { data: feedbackData }] = await Promise.all([
         supabase.from('categories').select('*').order('display_order'),
         supabase.from('menu_items').select('*'),
         supabase.from('ai_knowledge').select('*').order('created_at', { ascending: false }),
+        supabase.from('feedback' as any).select('*').order('created_at', { ascending: false }).limit(50),
       ]);
 
       setCategories(categoriesData || []);
