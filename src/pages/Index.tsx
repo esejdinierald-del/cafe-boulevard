@@ -135,27 +135,6 @@ const Index = () => {
     }
   };
 
-  const hasHeater = () => {
-    return false;
-  };
-
-  const handleTurnOnHeater = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('control-heater', {
-        body: { tableNumber }
-      });
-
-      if (error) throw error;
-
-      toast.success(t.successHeater, {
-        description: t.successHeaterDesc,
-        duration: 4000
-      });
-    } catch (error) {
-      console.error('Error controlling heater:', error);
-      toast.error(t.error);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4 sm:p-6">
