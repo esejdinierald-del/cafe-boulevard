@@ -274,7 +274,7 @@ const Menu = () => {
                               {language === 'en' && item.name_en ? item.name_en : item.name}
                             </h3>
                             {item.description && (
-                              <p className="text-sm text-muted-foreground mb-2">
+                              <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
                                 {language === 'en' && item.description_en ? item.description_en : item.description}
                               </p>
                             )}
