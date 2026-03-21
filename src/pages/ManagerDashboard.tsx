@@ -72,7 +72,7 @@ const ManagerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const { data: categoriesData } = await (supabase as any)
+      const { data: categoriesData } = await supabase
         .from('categories')
         .select('*')
         .order('display_order');
