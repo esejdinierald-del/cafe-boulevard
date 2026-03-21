@@ -12,13 +12,13 @@ interface TableIdentifierProps {
 
 const translations = {
   sq: {
-    placeholder: "Nr. ose vendndodhja",
+    placeholder: "Nr. Tavolinës",
     hint: "Shkruani nr. tavolinës ose ku ndodheni",
     edit: "Ndrysho",
     label: "Identifikohu",
   },
   en: {
-    placeholder: "Nr. or location",
+    placeholder: "Table Nr.",
     hint: "Enter table nr. or where you are",
     edit: "Change",
     label: "Identify yourself",
