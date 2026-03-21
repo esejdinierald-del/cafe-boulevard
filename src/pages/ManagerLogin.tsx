@@ -155,8 +155,8 @@ const ManagerLogin = () => {
             <Button type="submit" variant="gold" className="w-full h-14 text-lg font-display font-bold" disabled={loading}>
               <Lock className="mr-2 h-5 w-5" />
               {loading 
-                ? (isResetPassword ? "Duke ndryshuar..." : isForgotPassword ? "Duke dërguar..." : isSignUp ? "Duke krijuar..." : "Duke u kyçur...") 
-                : (isResetPassword ? "Ndrysho Fjalëkalimin" : isForgotPassword ? "Dërgo Link-un" : isSignUp ? "Regjistrohu" : "Kyçu")}
+                ? (isResetPassword ? "Duke ndryshuar..." : isForgotPassword ? "Duke dërguar..." : "Duke u kyçur...") 
+                : (isResetPassword ? "Ndrysho Fjalëkalimin" : isForgotPassword ? "Dërgo Link-un" : "Kyçu")}
             </Button>
           </form>
 
