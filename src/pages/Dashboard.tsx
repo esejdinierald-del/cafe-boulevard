@@ -122,7 +122,7 @@ const Dashboard = () => {
     return () => { supabase.removeChannel(unlockChannel); };
   }, [shiftToken]);
 
-  // Poll for unlock status every 5 seconds as backup
+  // Backup poll only while curtain is active (removed once unlocked)
   useEffect(() => {
     if (!curtainActive || !shiftToken) return;
     const poll = setInterval(async () => {
@@ -135,7 +135,7 @@ const Dashboard = () => {
         setCurtainActive(false);
         toast.success("🔓 Turni u aktivizua!");
       }
-    }, 5000);
+    }, 10000);
     return () => clearInterval(poll);
   }, [curtainActive, shiftToken]);
 
