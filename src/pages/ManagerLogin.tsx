@@ -171,16 +171,15 @@ const ManagerLogin = () => {
               </Button>
             )}
             
-            <Button 
-              variant="ghost" 
-              className="w-full font-medium hover:bg-primary/5 rounded-2xl"
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                setIsForgotPassword(false);
-              }}
-            >
-              {isSignUp ? "Keni llogari? Kyçuni" : "Nuk keni llogari? Regjistrohuni"}
-            </Button>
+            {isForgotPassword && (
+              <Button 
+                variant="ghost" 
+                className="w-full font-medium hover:bg-primary/5 rounded-2xl"
+                onClick={() => setIsForgotPassword(false)}
+              >
+                Kthehu te kyçja
+              </Button>
+            )}
             
             <Button 
               variant="outline" 
