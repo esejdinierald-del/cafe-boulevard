@@ -213,10 +213,8 @@ const Index = () => {
             <h1 className="text-3xl sm:text-4xl font-display font-extrabold gradient-text-gold tracking-wide uppercase">
               Boulevard Café Elbasan
             </h1>
-            
-            <p className="text-2xl sm:text-3xl font-display font-extrabold text-foreground">
-              {t.welcome}
-            </p>
+
+
 
             {/* Table number badge or identifier input */}
             {isGenericTable && tableNumber === t.table ? (
