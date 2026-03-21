@@ -201,7 +201,7 @@ const ManagerDashboard = () => {
 
   const handleToggleAvailable = async (id: string, available: boolean) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_items')
         .update({ available: !available })
         .eq('id', id);
