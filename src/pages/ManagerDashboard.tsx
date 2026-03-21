@@ -660,6 +660,95 @@ const ManagerDashboard = () => {
               })}
             </div>
           </TabsContent>
+
+          <TabsContent value="knowledge" className="space-y-5">
+            <Card className="glass-premium p-6 rounded-3xl shadow-[var(--shadow-elegant)]">
+              <h2 className="text-xl font-display font-bold mb-2 gradient-text-gold flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Mëso AI-në
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Shkruaj informacione që AI të mësojë: linke, kalendare ndeshjesh, rezultate, shënime, çfarëdo!
+              </p>
+              <div className="space-y-3">
+                <Input
+                  value={newKnowledge.title}
+                  onChange={(e) => setNewKnowledge({ ...newKnowledge, title: e.target.value })}
+                  placeholder="Titulli (p.sh. 'Kalendari i ndeshjeve', 'Info lokali')"
+                  className="glass-premium h-12 rounded-2xl text-base"
+                />
+                <Textarea
+                  value={newKnowledge.content}
+                  onChange={(e) => setNewKnowledge({ ...newKnowledge, content: e.target.value })}
+                  placeholder="Shkruaj përmbajtjen këtu... (linke, tekst, rezultate, çdo info)"
+                  className="glass-premium rounded-2xl text-base min-h-[120px]"
+                />
+                <Button onClick={handleAddKnowledge} variant="gold" size="lg" className="font-display font-bold w-full">
+                  <Plus className="mr-2 h-5 w-5" />
+                  Shto Njohuri
+                </Button>
+              </div>
+            </Card>
+
+            <div className="grid gap-4">
+              {knowledgeEntries.map((entry) => (
+                <Card key={entry.id} className="glass-premium p-5 rounded-3xl shadow-[var(--shadow-elegant)]">
+                  {editingKnowledge === entry.id ? (
+                    <div className="space-y-3">
+                      <Input
+                        defaultValue={entry.title}
+                        id={`know-title-${entry.id}`}
+                        placeholder="Titulli"
+                        className="glass-premium h-12 rounded-2xl text-base"
+                      />
+                      <Textarea
+                        defaultValue={entry.content}
+                        id={`know-content-${entry.id}`}
+                        className="glass-premium rounded-2xl text-base min-h-[100px]"
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          size="sm"
+                          variant="gold"
+                          onClick={() => {
+                            const t = (document.getElementById(`know-title-${entry.id}`) as HTMLInputElement).value;
+                            const c = (document.getElementById(`know-content-${entry.id}`) as HTMLTextAreaElement).value;
+                            handleUpdateKnowledge(entry.id, t, c);
+                          }}
+                        >
+                          <Save className="mr-1 h-4 w-4" />
+                          Ruaj
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingKnowledge(null)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-display font-bold text-lg">{entry.title}</h3>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">{entry.content}</p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button size="icon" variant="premium" className="h-10 w-10 rounded-xl" onClick={() => setEditingKnowledge(entry.id)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="destructive" className="h-10 w-10 rounded-xl" onClick={() => handleDeleteKnowledge(entry.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              ))}
+              {knowledgeEntries.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  Asnjë njohuri e shtuar ende. Shto informacione që AI të mësojë!
+                </p>
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
