@@ -268,9 +268,9 @@ const Menu = () => {
                             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           </div>
                         )}
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-display font-bold mb-1">
+                        <div className="flex flex-col mb-2">
+                          <div>
+                            <h3 className="text-sm font-display font-bold mb-0.5 leading-tight">
                               {language === 'en' && item.name_en ? item.name_en : item.name}
                             </h3>
                             {item.description && (
