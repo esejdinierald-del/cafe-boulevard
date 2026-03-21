@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -157,6 +158,67 @@ async function fetchPanoramaSport(): Promise<string> {
   }
 }
 
+// Fetch active offers from menu_items
+async function fetchActiveOffers(): Promise<string> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+
+    const now = new Date();
+    // Format current time in Europe/Rome timezone as HH:MM
+    const romeTime = now.toLocaleTimeString("en-GB", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit", hour12: false });
+
+    const { data: items, error } = await sb
+      .from("menu_items")
+      .select("name, name_en, price, offer_price, offer_start_time, offer_end_time, category_id, categories(name, name_en)")
+      .not("offer_price", "is", null);
+
+    if (error || !items || items.length === 0) return "";
+
+    // Filter active offers based on current Rome time
+    const activeOffers = items.filter((item: any) => {
+      if (!item.offer_start_time || !item.offer_end_time) return false;
+      return romeTime >= item.offer_start_time && romeTime < item.offer_end_time;
+    });
+
+    const upcomingOffers = items.filter((item: any) => {
+      if (!item.offer_start_time || !item.offer_end_time) return false;
+      return romeTime < item.offer_start_time;
+    });
+
+    let info = "\n🔥 OFERTAT E SOTME (TË DHËNA REALE NGA DATABAZA):\n";
+
+    if (activeOffers.length > 0) {
+      info += "AKTIVE TANI:\n";
+      for (const item of activeOffers) {
+        const cat = (item as any).categories?.name || "";
+        info += `- ${item.name} (${cat}): ${item.offer_price}€ (çmimi normal: ${item.price}€) — deri në ${item.offer_end_time}\n`;
+      }
+    }
+
+    if (upcomingOffers.length > 0) {
+      info += "DO TË AKTIVIZOHEN SË SHPEJTI:\n";
+      for (const item of upcomingOffers) {
+        const cat = (item as any).categories?.name || "";
+        info += `- ${item.name} (${cat}): ${item.offer_price}€ (çmimi normal: ${item.price}€) — nga ${item.offer_start_time} deri ${item.offer_end_time}\n`;
+      }
+    }
+
+    if (activeOffers.length === 0 && upcomingOffers.length === 0) {
+      // All offers have expired for today
+      info += "Sot nuk ka oferta aktive për momentin.\n";
+    }
+
+    info += `\nOra aktuale (Rome): ${romeTime}\n`;
+    info += "⚠️ Kur pyesin klientët për oferta, përdor VETËM këto të dhëna reale! Thuaju orarin dhe çmimin e saktë.\n";
+    return info;
+  } catch (e) {
+    console.error("Error fetching offers:", e);
+    return "";
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -170,10 +232,11 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Fetch live football data and Panorama Sport news in parallel
-    const [footballData, panoramaData] = await Promise.all([
+    // Fetch live data in parallel
+    const [footballData, panoramaData, offersData] = await Promise.all([
       fetchFootballData(),
       fetchPanoramaSport(),
+      fetchActiveOffers(),
     ]);
 
     const systemPromptSq = `Ti je asistenti virtual i Boulevard Café Elbasan - por jo një robot i ftohtë! Je si një shok i mirë që e do lokalin dhe dëshiron që klientët të kalojnë kohë të bukur këtu.
@@ -203,6 +266,7 @@ serve(async (req) => {
 - Sipas lajmeve, Elbasani ka shanse edhe për titullin kampion!
 - Kur pyetesh për Elbasanin, referoju lajmeve nga panorama.com.al/sport
 - KUJDES: Titulli "Lufta për Superioren" i referohet ekipeve TË TJERA që duan të ngjiten - JO Elbasanit!
+${offersData}
 ${footballData}
 ${panoramaData}
 
@@ -247,6 +311,7 @@ UDHËZIME:
 
 🎯 YOUR PERSONALITY: Talk like a friend, use emojis, be enthusiastic about matches and food!
 
+${offersData}
 ${footballData}
 ${panoramaData}
 
