@@ -253,7 +253,7 @@ const ManagerDashboard = () => {
 
   const handleUpdateItem = async (id: string, name: string, price: number, imageUrl: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_items')
         .update({ name, price, image_url: imageUrl || null })
         .eq('id', id);

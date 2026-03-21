@@ -158,7 +158,7 @@ const Menu = () => {
         };
       });
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('orders')
         .insert({
           table_number: tableNumber,
