@@ -398,11 +398,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Polling backup every 5 seconds - ALWAYS ACTIVE
-  useEffect(() => {
-    const poll = setInterval(() => { fetchRequests(); fetchOrders(); }, 5000);
-    return () => clearInterval(poll);
-  }, []);
+  // Removed redundant 5s polling — realtime handles it
 
   // Elapsed time
   useEffect(() => {
