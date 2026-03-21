@@ -296,6 +296,7 @@ serve(async (req) => {
 ${offersData}
 ${footballData}
 ${panoramaData}
+${knowledgeData}
 
 📍 INFORMACIONE BAZË:
 - Emri: Boulevard Café Elbasan
