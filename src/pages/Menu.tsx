@@ -295,9 +295,9 @@ const Menu = () => {
                                 </p>
                               </div>
                             ) : (
-                              <p className="text-xl font-bold gradient-text-gold">
-                                {item.price} {t.currency}
-                              </p>
+                              <p className="text-sm font-bold gradient-text-gold">
+                                 {item.price} {t.currency}
+                               </p>
                             )}
                           </div>
                           
