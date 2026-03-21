@@ -30,7 +30,6 @@ const translations = {
     callWaiter: "Thirr Kamarieren",
     requestBill: "Kërko Faturën",
     orderMenu: "Porosit nga Menu",
-    turnOnHeater: "Ndez Ngrohësen",
     askStaff: "Pyet Stafin",
     premium: "Premium Service",
     fast: "Fast & Elegant",
