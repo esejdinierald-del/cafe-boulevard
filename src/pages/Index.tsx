@@ -73,6 +73,7 @@ const Index = () => {
   const t = translations[language];
   const [tableNumber, setTableNumber] = useState(t.table);
   const [chatOpen, setChatOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(true);
   const { checkLocation, checking } = useGeolocation();
 
