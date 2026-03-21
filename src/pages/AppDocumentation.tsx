@@ -115,14 +115,6 @@ const AppDocumentation = () => {
               </ul>
             </div>
             
-            <div className="border rounded p-3">
-              <h4 className="font-bold mb-2">🌡️ Kontrolli i Ngrohësit</h4>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
-                <li>Ndezje/Fikje e ngrohësve të tavolinave</li>
-                <li>Kontroll i pajisjeve Tuya IoT</li>
-                <li>Status në kohë reale</li>
-              </ul>
-            </div>
           </div>
         </section>
 

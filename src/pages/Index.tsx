@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, Flame, MessageCircle } from "lucide-react";
+import { Bell, Receipt, UtensilsCrossed, Facebook, Instagram, Languages, MessageCircle } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
 import { TableIdentifier } from "@/components/TableIdentifier";
 import { WelcomeGreeting } from "@/components/WelcomeGreeting";
@@ -30,7 +30,6 @@ const translations = {
     callWaiter: "Thirr Kamarieren",
     requestBill: "Kërko Faturën",
     orderMenu: "Porosit nga Menu",
-    turnOnHeater: "Ndez Ngrohësen",
     askStaff: "Pyet Stafin",
     premium: "Premium Service",
     fast: "Fast & Elegant",
@@ -40,8 +39,6 @@ const translations = {
     successWaiterDesc: "Kamarieri do të vijë së shpejti në tavolinën tuaj.",
     successBill: "Kërkesa u dërgua!",
     successBillDesc: "Fatura do të përgatitet për ju.",
-    successHeater: "Ngrohësja po ndizet!",
-    successHeaterDesc: "Ngrohësja do të ndizet për tavolinën tuaj.",
     error: "Gabim në dërgimin e kërkesës",
     errorWaiter: "Gabim në dërgimin e thirrjes"
   },
@@ -52,7 +49,6 @@ const translations = {
     callWaiter: "Call Waiter",
     requestBill: "Request Bill",
     orderMenu: "Order from Menu",
-    turnOnHeater: "Turn On Heater",
     askStaff: "Ask Staff",
     premium: "Premium Service",
     fast: "Fast & Elegant",
@@ -62,8 +58,6 @@ const translations = {
     successWaiterDesc: "The waiter will arrive at your table shortly.",
     successBill: "Request sent!",
     successBillDesc: "The bill will be prepared for you.",
-    successHeater: "Heater turning on!",
-    successHeaterDesc: "The heater will be turned on for your table.",
     error: "Error sending request",
     errorWaiter: "Error sending call"
   }
@@ -141,27 +135,6 @@ const Index = () => {
     }
   };
 
-  const hasHeater = () => {
-    return false;
-  };
-
-  const handleTurnOnHeater = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('control-heater', {
-        body: { tableNumber }
-      });
-
-      if (error) throw error;
-
-      toast.success(t.successHeater, {
-        description: t.successHeaterDesc,
-        duration: 4000
-      });
-    } catch (error) {
-      console.error('Error controlling heater:', error);
-      toast.error(t.error);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4 sm:p-6">
@@ -294,17 +267,6 @@ const Index = () => {
               {t.askStaff}
             </Button>
 
-            {hasHeater() && (
-              <Button 
-                variant="default" 
-                size="lg" 
-                onClick={handleTurnOnHeater} 
-                className="w-full h-[4.5rem] sm:h-20 text-xl sm:text-2xl font-display font-bold touch-manipulation service-btn group bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 border-orange-400/30"
-              >
-                <Flame className="mr-3 h-7 w-7 text-orange-200 group-hover:animate-pulse" />
-                {t.turnOnHeater}
-              </Button>
-            )}
 
           </div>
 
