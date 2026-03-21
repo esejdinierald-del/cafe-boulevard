@@ -295,7 +295,7 @@ const Dashboard = () => {
 
   const fetchRequests = async () => {
     try {
-      const { data, error } = await (supabase as any).from('service_requests').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('service_requests').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setRequests(data || []);
     } catch { toast.error('Gabim në marrjen e kërkesave'); } finally { setIsLoading(false); }
