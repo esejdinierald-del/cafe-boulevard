@@ -325,7 +325,7 @@ const Dashboard = () => {
 
   const handleCompleteOrder = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await (supabase as any).from('orders').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
+    const { error } = await supabase.from('orders').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
     if (error) toast.error('Gabim');
     else toast.success('Porosia u përmbyll');
   };
