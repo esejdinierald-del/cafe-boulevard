@@ -494,6 +494,33 @@ const ManagerDashboard = () => {
                               className="glass-effect"
                             />
                             <p className="text-xs text-muted-foreground">Kategoria: {category?.name}</p>
+                            
+                            {/* Offer fields */}
+                            <div className="border-t border-border/50 pt-3 mt-3">
+                              <p className="text-sm font-semibold mb-2 text-destructive">🔥 Ofertë</p>
+                              <div className="grid grid-cols-3 gap-2">
+                                <Input
+                                  type="number"
+                                  defaultValue={item.offer_price || ""}
+                                  id={`item-offer-price-${item.id}`}
+                                  placeholder="Çmim oferte"
+                                  className="glass-effect"
+                                />
+                                <Input
+                                  type="time"
+                                  defaultValue={item.offer_start_time?.slice(0, 5) || ""}
+                                  id={`item-offer-start-${item.id}`}
+                                  className="glass-effect"
+                                />
+                                <Input
+                                  type="time"
+                                  defaultValue={item.offer_end_time?.slice(0, 5) || ""}
+                                  id={`item-offer-end-${item.id}`}
+                                  className="glass-effect"
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">Çmimi ofertës | Ora fillimit | Ora mbarimit</p>
+                            </div>
                           </div>
                         </div>
                         <div className="flex gap-2 justify-end">
@@ -504,7 +531,18 @@ const ManagerDashboard = () => {
                               const nameInput = document.getElementById(`item-name-${item.id}`) as HTMLInputElement;
                               const priceInput = document.getElementById(`item-price-${item.id}`) as HTMLInputElement;
                               const imageInput = document.getElementById(`item-image-${item.id}`) as HTMLInputElement;
-                              handleUpdateItem(item.id, nameInput.value, parseInt(priceInput.value), imageInput.value);
+                              const offerPriceInput = document.getElementById(`item-offer-price-${item.id}`) as HTMLInputElement;
+                              const offerStartInput = document.getElementById(`item-offer-start-${item.id}`) as HTMLInputElement;
+                              const offerEndInput = document.getElementById(`item-offer-end-${item.id}`) as HTMLInputElement;
+                              handleUpdateItem(
+                                item.id, 
+                                nameInput.value, 
+                                parseInt(priceInput.value), 
+                                imageInput.value,
+                                offerPriceInput.value ? parseInt(offerPriceInput.value) : null,
+                                offerStartInput.value || null,
+                                offerEndInput.value || null
+                              );
                             }}
                           >
                             <Save className="mr-2 h-4 w-4" />
