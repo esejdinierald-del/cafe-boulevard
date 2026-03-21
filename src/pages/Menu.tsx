@@ -244,8 +244,8 @@ const Menu = () => {
                     onClick={() => setSelectedCategoryId(category.id)}
                     className={`px-6 py-3 rounded-2xl font-display font-bold text-base transition-all duration-300 whitespace-nowrap ${
                       selectedCategoryId === category.id
-                        ? 'glass-gold shadow-[var(--shadow-gold)] scale-105'
-                        : 'glass-premium hover:scale-105 hover:shadow-[var(--shadow-elegant)]'
+                        ? 'bg-white text-foreground shadow-[var(--shadow-gold)] scale-105'
+                        : 'bg-white/80 text-foreground hover:scale-105 hover:shadow-[var(--shadow-elegant)]'
                     }`}
                   >
                     {language === 'en' && category.name_en ? category.name_en : category.name}
@@ -256,25 +256,25 @@ const Menu = () => {
 
             {/* Menu Items */}
             {selectedCategoryId && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-3">
                 {menuItems
                   .filter(item => item.category_id === selectedCategoryId)
                   .map(item => {
                     const offerActive = isOfferActive(item);
                     return (
-                      <Card key={item.id} className="glass-premium p-5 hover:shadow-[var(--shadow-float)] hover:scale-105 transition-all duration-500 rounded-3xl">
+                      <Card key={item.id} className="glass-premium p-3 hover:shadow-[var(--shadow-float)] transition-all duration-500 rounded-2xl">
                         {item.image_url && (
-                          <div className="w-full h-36 mb-4 rounded-2xl overflow-hidden shadow-lg">
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
+                          <div className="w-full h-24 mb-2 rounded-xl overflow-hidden shadow-md">
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           </div>
                         )}
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-display font-bold mb-1">
+                        <div className="flex flex-col mb-2">
+                          <div>
+                            <h3 className="text-sm font-display font-bold mb-0.5 leading-tight">
                               {language === 'en' && item.name_en ? item.name_en : item.name}
                             </h3>
                             {item.description && (
-                              <p className="text-sm text-muted-foreground mb-2">
+                              <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
                                 {language === 'en' && item.description_en ? item.description_en : item.description}
                               </p>
                             )}
@@ -283,11 +283,11 @@ const Menu = () => {
                             {offerActive ? (
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm line-through text-muted-foreground">{item.price} {t.currency}</span>
-                                  <span className="text-xl font-bold text-destructive flex items-center gap-1">
-                                    <Flame className="h-4 w-4" />
-                                    {item.offer_price} {t.currency}
-                                  </span>
+                                  <span className="text-xs line-through text-muted-foreground">{item.price} {t.currency}</span>
+                                   <span className="text-sm font-bold text-destructive flex items-center gap-1">
+                                     <Flame className="h-3 w-3" />
+                                     {item.offer_price} {t.currency}
+                                   </span>
                                 </div>
                                 <p className="text-xs text-destructive/80 flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
@@ -295,26 +295,26 @@ const Menu = () => {
                                 </p>
                               </div>
                             ) : (
-                              <p className="text-xl font-bold gradient-text-gold">
-                                {item.price} {t.currency}
-                              </p>
+                              <p className="text-sm font-bold gradient-text-gold">
+                                 {item.price} {t.currency}
+                               </p>
                             )}
                           </div>
                           
-                          <div className="flex items-center gap-2 ml-3">
+                          <div className="flex items-center gap-1 mt-2">
                             {cart[item.id] ? (
                               <>
-                                <Button variant="outline" size="icon" onClick={() => removeFromCart(item.id)} className="h-10 w-10 rounded-xl">
-                                  <Minus className="h-5 w-5" />
+                                <Button variant="outline" size="icon" onClick={() => removeFromCart(item.id)} className="h-8 w-8 rounded-lg">
+                                  <Minus className="h-4 w-4" />
                                 </Button>
-                                <span className="font-bold text-lg w-10 text-center">{cart[item.id]}</span>
-                                <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-10 w-10 rounded-xl">
-                                  <Plus className="h-5 w-5" />
+                                <span className="font-bold text-sm w-6 text-center">{cart[item.id]}</span>
+                                <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-8 w-8 rounded-lg">
+                                  <Plus className="h-4 w-4" />
                                 </Button>
                               </>
                             ) : (
-                              <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-12 w-12 rounded-2xl">
-                                <Plus className="h-6 w-6" />
+                              <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-9 w-9 rounded-xl">
+                                <Plus className="h-5 w-5" />
                               </Button>
                             )}
                           </div>
