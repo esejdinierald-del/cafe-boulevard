@@ -256,13 +256,13 @@ const Menu = () => {
 
             {/* Menu Items */}
             {selectedCategoryId && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-3">
                 {menuItems
                   .filter(item => item.category_id === selectedCategoryId)
                   .map(item => {
                     const offerActive = isOfferActive(item);
                     return (
-                      <Card key={item.id} className="glass-premium p-5 hover:shadow-[var(--shadow-float)] hover:scale-105 transition-all duration-500 rounded-3xl">
+                      <Card key={item.id} className="glass-premium p-3 hover:shadow-[var(--shadow-float)] transition-all duration-500 rounded-2xl">
                         {item.image_url && (
                           <div className="w-full h-36 mb-4 rounded-2xl overflow-hidden shadow-lg">
                             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
