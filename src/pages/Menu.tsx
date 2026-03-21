@@ -283,11 +283,11 @@ const Menu = () => {
                             {offerActive ? (
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm line-through text-muted-foreground">{item.price} {t.currency}</span>
-                                  <span className="text-xl font-bold text-destructive flex items-center gap-1">
-                                    <Flame className="h-4 w-4" />
-                                    {item.offer_price} {t.currency}
-                                  </span>
+                                  <span className="text-xs line-through text-muted-foreground">{item.price} {t.currency}</span>
+                                   <span className="text-sm font-bold text-destructive flex items-center gap-1">
+                                     <Flame className="h-3 w-3" />
+                                     {item.offer_price} {t.currency}
+                                   </span>
                                 </div>
                                 <p className="text-xs text-destructive/80 flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
