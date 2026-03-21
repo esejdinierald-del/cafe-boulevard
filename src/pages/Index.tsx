@@ -324,6 +324,7 @@ const Index = () => {
       </div>
 
       <StaffChatDialog open={chatOpen} onOpenChange={setChatOpen} />
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} tableNumber={tableNumber} language={language} />
       
       {showGreeting && (
         <WelcomeGreeting 
