@@ -434,7 +434,7 @@ const Dashboard = () => {
     }
   };
 
-  const pendingRequests = requests.filter(r => r.status === 'pending');
+  const pendingRequests = requests.filter(r => r.status === 'pending' && r.request_type !== 'kitchen_ready');
   const completedRequests = requests.filter(r => r.status === 'completed');
   const pendingOrders = orders.filter(o => o.status === 'pending');
   const completedOrders = orders.filter(o => o.status === 'completed');
