@@ -24,6 +24,9 @@ interface MenuItem {
   price: number;
   image_url: string | null;
   available: boolean;
+  offer_price: number | null;
+  offer_start_time: string | null;
+  offer_end_time: string | null;
 }
 
 const ManagerDashboard = () => {
