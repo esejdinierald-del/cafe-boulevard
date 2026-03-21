@@ -301,20 +301,20 @@ const Menu = () => {
                             )}
                           </div>
                           
-                          <div className="flex items-center gap-2 ml-3">
+                          <div className="flex items-center gap-1 mt-2">
                             {cart[item.id] ? (
                               <>
-                                <Button variant="outline" size="icon" onClick={() => removeFromCart(item.id)} className="h-10 w-10 rounded-xl">
-                                  <Minus className="h-5 w-5" />
+                                <Button variant="outline" size="icon" onClick={() => removeFromCart(item.id)} className="h-8 w-8 rounded-lg">
+                                  <Minus className="h-4 w-4" />
                                 </Button>
-                                <span className="font-bold text-lg w-10 text-center">{cart[item.id]}</span>
-                                <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-10 w-10 rounded-xl">
-                                  <Plus className="h-5 w-5" />
+                                <span className="font-bold text-sm w-6 text-center">{cart[item.id]}</span>
+                                <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-8 w-8 rounded-lg">
+                                  <Plus className="h-4 w-4" />
                                 </Button>
                               </>
                             ) : (
-                              <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-12 w-12 rounded-2xl">
-                                <Plus className="h-6 w-6" />
+                              <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-9 w-9 rounded-xl">
+                                <Plus className="h-5 w-5" />
                               </Button>
                             )}
                           </div>
