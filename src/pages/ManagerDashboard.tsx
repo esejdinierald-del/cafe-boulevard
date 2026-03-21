@@ -254,11 +254,18 @@ const ManagerDashboard = () => {
     }
   };
 
-  const handleUpdateItem = async (id: string, name: string, price: number, imageUrl: string) => {
+  const handleUpdateItem = async (id: string, name: string, price: number, imageUrl: string, offerPrice?: number | null, offerStart?: string | null, offerEnd?: string | null) => {
     try {
       const { error } = await supabase
         .from('menu_items')
-        .update({ name, price, image_url: imageUrl || null })
+        .update({ 
+          name, 
+          price, 
+          image_url: imageUrl || null,
+          offer_price: offerPrice || null,
+          offer_start_time: offerStart || null,
+          offer_end_time: offerEnd || null
+        })
         .eq('id', id);
 
       if (error) throw error;
