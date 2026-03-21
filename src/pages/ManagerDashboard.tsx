@@ -30,6 +30,12 @@ interface MenuItem {
   offer_end_time: string | null;
 }
 
+interface KnowledgeEntry {
+  id: string;
+  title: string;
+  content: string;
+}
+
 const ManagerDashboard = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
