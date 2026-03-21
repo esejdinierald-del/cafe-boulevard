@@ -260,8 +260,7 @@ const StaffShift = () => {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_requests" }, () => fetchData())
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, () => fetchData())
       .subscribe();
-    const poll = setInterval(fetchData, 10000);
-    return () => { supabase.removeChannel(channel); clearInterval(poll); };
+    return () => { supabase.removeChannel(channel); };
   }, [isValid, fetchData, repeatNotification]);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {

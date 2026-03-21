@@ -87,14 +87,14 @@ const Menu = () => {
 
   const fetchMenuData = async () => {
     try {
-      const { data: categoriesData, error: categoriesError } = await (supabase as any)
+      const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
         .order('display_order');
 
       if (categoriesError) throw categoriesError;
 
-      const { data: itemsData, error: itemsError } = await (supabase as any)
+      const { data: itemsData, error: itemsError } = await supabase
         .from('menu_items')
         .select('*')
         .eq('available', true);
@@ -158,7 +158,7 @@ const Menu = () => {
         };
       });
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('orders')
         .insert({
           table_number: tableNumber,

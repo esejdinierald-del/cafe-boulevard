@@ -101,7 +101,7 @@ const Index = () => {
 
   const handleCallWaiter = async () => {
     try {
-      const { error } = await (supabase as any).from('service_requests').insert({
+      const { error } = await supabase.from('service_requests').insert({
         table_number: tableNumber,
         request_type: 'waiter',
         status: 'pending'
@@ -119,7 +119,7 @@ const Index = () => {
 
   const handleRequestBill = async () => {
     try {
-      const { error } = await (supabase as any).from('service_requests').insert({
+      const { error } = await supabase.from('service_requests').insert({
         table_number: tableNumber,
         request_type: 'bill',
         status: 'pending'

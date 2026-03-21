@@ -16,7 +16,6 @@ const ManagerLogin = () => {
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
 
@@ -24,14 +23,12 @@ const ManagerLogin = () => {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      // If there's a session and we have recovery token indicators in URL
       if (session && (searchParams.get('type') === 'recovery' || window.location.hash.includes('type=recovery'))) {
         setIsResetPassword(true);
       }
     };
     
-    // Also listen for auth state changes (for when user clicks reset link)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsResetPassword(true);
       }
@@ -48,48 +45,30 @@ const ManagerLogin = () => {
 
     try {
       if (isResetPassword) {
-        // Update password
         const { error } = await supabase.auth.updateUser({
           password: newPassword
         });
-
         if (error) throw error;
-
         toast.success("Fjalëkalimi u ndryshua me sukses! Tani mund të hyni.");
         setIsResetPassword(false);
         setNewPassword("");
       } else if (isForgotPassword) {
-        // Password reset
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/manager-login`,
         });
-
         if (error) throw error;
-
         toast.success("Kontrolloni email-in tuaj për link-un e rivendosjes së fjalëkalimit!");
         setIsForgotPassword(false);
-      } else if (isSignUp) {
-        // Sign up
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-
-        toast.success("Llogaria u krijua! Tani mund të hyni.");
-        setIsSignUp(false);
       } else {
-        // Login
+        // Login only
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-
         if (error) throw error;
 
         // Check if user has manager role
-        const { data: roleData } = await (supabase as any)
+        const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', data.user.id)
@@ -123,15 +102,13 @@ const ManagerLogin = () => {
           <div className="flex flex-col items-center mb-10">
             <img src={logo} alt="Logo" className="h-24 w-auto mb-6 drop-shadow-2xl" />
             <h1 className="text-3xl font-display font-bold gradient-text-gold mb-2">
-              {isResetPassword ? "Ndrysho Fjalëkalimin" : isForgotPassword ? "Rivendos Fjalëkalimin" : isSignUp ? "Regjistrohu" : "Manager Login"}
+              {isResetPassword ? "Ndrysho Fjalëkalimin" : isForgotPassword ? "Rivendos Fjalëkalimin" : "Manager Login"}
             </h1>
             <p className="text-muted-foreground text-center font-medium">
               {isResetPassword
                 ? "Shkruani fjalëkalimin tuaj të ri"
                 : isForgotPassword 
                 ? "Shkruani email-in tuaj për të rivendosur fjalëkalimin" 
-                : isSignUp 
-                ? "Krijo llogari të re për menaxhim" 
                 : "Hyni në panelin premium të menaxhimit"}
             </p>
           </div>
@@ -178,8 +155,8 @@ const ManagerLogin = () => {
             <Button type="submit" variant="gold" className="w-full h-14 text-lg font-display font-bold" disabled={loading}>
               <Lock className="mr-2 h-5 w-5" />
               {loading 
-                ? (isResetPassword ? "Duke ndryshuar..." : isForgotPassword ? "Duke dërguar..." : isSignUp ? "Duke krijuar..." : "Duke u kyçur...") 
-                : (isResetPassword ? "Ndrysho Fjalëkalimin" : isForgotPassword ? "Dërgo Link-un" : isSignUp ? "Regjistrohu" : "Kyçu")}
+                ? (isResetPassword ? "Duke ndryshuar..." : isForgotPassword ? "Duke dërguar..." : "Duke u kyçur...") 
+                : (isResetPassword ? "Ndrysho Fjalëkalimin" : isForgotPassword ? "Dërgo Link-un" : "Kyçu")}
             </Button>
           </form>
 
@@ -194,16 +171,15 @@ const ManagerLogin = () => {
               </Button>
             )}
             
-            <Button 
-              variant="ghost" 
-              className="w-full font-medium hover:bg-primary/5 rounded-2xl"
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                setIsForgotPassword(false);
-              }}
-            >
-              {isSignUp ? "Keni llogari? Kyçuni" : "Nuk keni llogari? Regjistrohuni"}
-            </Button>
+            {isForgotPassword && (
+              <Button 
+                variant="ghost" 
+                className="w-full font-medium hover:bg-primary/5 rounded-2xl"
+                onClick={() => setIsForgotPassword(false)}
+              >
+                Kthehu te kyçja
+              </Button>
+            )}
             
             <Button 
               variant="outline" 

@@ -57,7 +57,7 @@ const ManagerDashboard = () => {
       return;
     }
 
-    const { data: roleData } = await (supabase as any)
+    const { data: roleData } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
@@ -72,12 +72,12 @@ const ManagerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const { data: categoriesData } = await (supabase as any)
+      const { data: categoriesData } = await supabase
         .from('categories')
         .select('*')
         .order('display_order');
 
-      const { data: itemsData } = await (supabase as any)
+      const { data: itemsData } = await supabase
         .from('menu_items')
         .select('*');
 
@@ -99,7 +99,7 @@ const ManagerDashboard = () => {
     if (!newCategory.trim()) return;
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('categories')
         .insert({ 
           name: newCategory,
@@ -119,7 +119,7 @@ const ManagerDashboard = () => {
 
   const handleDeleteCategory = async (id: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('categories')
         .delete()
         .eq('id', id);
@@ -136,7 +136,7 @@ const ManagerDashboard = () => {
 
   const handleUpdateCategory = async (id: string, name: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('categories')
         .update({ name })
         .eq('id', id);
@@ -159,7 +159,7 @@ const ManagerDashboard = () => {
     }
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_items')
         .insert({
           name: newItem.name,
@@ -184,7 +184,7 @@ const ManagerDashboard = () => {
 
   const handleDeleteItem = async (id: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_items')
         .delete()
         .eq('id', id);
@@ -201,7 +201,7 @@ const ManagerDashboard = () => {
 
   const handleToggleAvailable = async (id: string, available: boolean) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_items')
         .update({ available: !available })
         .eq('id', id);
@@ -253,7 +253,7 @@ const ManagerDashboard = () => {
 
   const handleUpdateItem = async (id: string, name: string, price: number, imageUrl: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_items')
         .update({ name, price, image_url: imageUrl || null })
         .eq('id', id);

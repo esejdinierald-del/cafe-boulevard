@@ -102,8 +102,12 @@ const Dashboard = () => {
   // On mount: generate token and listen for unlock via realtime
   useEffect(() => {
     ensureShiftToken();
+  }, []);
 
-    // Listen for shift_tokens UPDATE (unlocked = true)
+  // Separate effect for realtime listener that re-subscribes when shiftToken changes
+  useEffect(() => {
+    if (!shiftToken) return;
+
     const unlockChannel = supabase
       .channel("shift-unlock")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "shift_tokens" }, (payload) => {
@@ -118,7 +122,7 @@ const Dashboard = () => {
     return () => { supabase.removeChannel(unlockChannel); };
   }, [shiftToken]);
 
-  // Poll for unlock status every 5 seconds as backup
+  // Backup poll only while curtain is active (removed once unlocked)
   useEffect(() => {
     if (!curtainActive || !shiftToken) return;
     const poll = setInterval(async () => {
@@ -131,7 +135,7 @@ const Dashboard = () => {
         setCurtainActive(false);
         toast.success("🔓 Turni u aktivizua!");
       }
-    }, 5000);
+    }, 10000);
     return () => clearInterval(poll);
   }, [curtainActive, shiftToken]);
 
@@ -295,7 +299,7 @@ const Dashboard = () => {
 
   const fetchRequests = async () => {
     try {
-      const { data, error } = await (supabase as any).from('service_requests').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('service_requests').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setRequests(data || []);
     } catch { toast.error('Gabim në marrjen e kërkesave'); } finally { setIsLoading(false); }
@@ -303,7 +307,7 @@ const Dashboard = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data, error } = await (supabase as any).from('orders').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setOrders((data || []) as Order[]);
     } catch { toast.error('Gabim në marrjen e porosive'); }
@@ -311,28 +315,28 @@ const Dashboard = () => {
 
   const handleComplete = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await (supabase as any).from('service_requests').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
+    const { error } = await supabase.from('service_requests').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
     if (error) toast.error('Gabim');
     else toast.success('Kërkesa u përmbyll');
   };
 
   const handleCancel = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await (supabase as any).from('service_requests').update({ status: 'cancelled' }).eq('id', id);
+    const { error } = await supabase.from('service_requests').update({ status: 'cancelled' }).eq('id', id);
     if (error) toast.error('Gabim');
     else toast.success('Kërkesa u anulua');
   };
 
   const handleCompleteOrder = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await (supabase as any).from('orders').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
+    const { error } = await supabase.from('orders').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
     if (error) toast.error('Gabim');
     else toast.success('Porosia u përmbyll');
   };
 
   const handleCancelOrder = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await (supabase as any).from('orders').update({ status: 'cancelled' }).eq('id', id);
+    const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', id);
     if (error) toast.error('Gabim');
     else toast.success('Porosia u anulua');
   };
@@ -394,11 +398,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Polling backup every 5 seconds - ALWAYS ACTIVE
-  useEffect(() => {
-    const poll = setInterval(() => { fetchRequests(); fetchOrders(); }, 5000);
-    return () => clearInterval(poll);
-  }, []);
+  // Removed redundant 5s polling — realtime handles it
 
   // Elapsed time
   useEffect(() => {
@@ -440,10 +440,14 @@ const Dashboard = () => {
   const completedOrders = orders.filter(o => o.status === 'completed');
 
   const handleDeleteFromHistory = async (id: string, type: 'request' | 'order') => {
-    const table = type === 'request' ? 'service_requests' : 'orders';
-    const { error } = await (supabase as any).from(table).delete().eq('id', id);
-    if (error) toast.error('Gabim');
-    else toast.success('U fshi nga historiku');
+    if (type === 'request') {
+      const { error } = await supabase.from('service_requests').delete().eq('id', id);
+      if (error) { toast.error('Gabim'); return; }
+    } else {
+      const { error } = await supabase.from('orders').delete().eq('id', id);
+      if (error) { toast.error('Gabim'); return; }
+    }
+    toast.success('U fshi nga historiku');
   };
 
   const getStatusBadge = (status: string) => {
