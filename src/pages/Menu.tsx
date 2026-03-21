@@ -72,8 +72,9 @@ interface Category {
 const isOfferActive = (item: MenuItem): boolean => {
   if (!item.offer_price || !item.offer_start_time || !item.offer_end_time) return false;
   const now = new Date();
-  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  return currentTime >= item.offer_start_time && currentTime <= item.offer_end_time;
+  // Use Rome/Italy timezone
+  const romeTime = now.toLocaleTimeString('en-GB', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hour12: false });
+  return romeTime >= item.offer_start_time.slice(0, 5) && romeTime <= item.offer_end_time.slice(0, 5);
 };
 
 const getActivePrice = (item: MenuItem): number => {
