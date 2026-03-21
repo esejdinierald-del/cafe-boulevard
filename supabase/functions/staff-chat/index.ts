@@ -219,6 +219,32 @@ async function fetchActiveOffers(): Promise<string> {
   }
 }
 
+// Fetch custom knowledge entries
+async function fetchCustomKnowledge(): Promise<string> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+
+    const { data: entries, error } = await sb
+      .from("ai_knowledge")
+      .select("title, content")
+      .order("created_at", { ascending: false });
+
+    if (error || !entries || entries.length === 0) return "";
+
+    let info = "\n📚 INFORMACIONE SHTESË NGA MENAXHERI:\n";
+    for (const entry of entries) {
+      info += `\n### ${entry.title}\n${entry.content}\n`;
+    }
+    info += "\n⚠️ Përdor këto informacione kur klientët pyesin për temat përkatëse.\n";
+    return info;
+  } catch (e) {
+    console.error("Error fetching custom knowledge:", e);
+    return "";
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
