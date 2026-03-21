@@ -386,7 +386,7 @@ const Menu = () => {
           </div>
         )}
 
-        {getTotalItems() > 0 && <div className="h-36" />}
+        {getTotalItems() > 0 && <div className="h-72" />}
       </div>
     </div>
   );
