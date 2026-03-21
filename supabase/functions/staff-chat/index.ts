@@ -342,6 +342,7 @@ UDHËZIME:
 ${offersData}
 ${footballData}
 ${panoramaData}
+${knowledgeData}
 
 📍 INFO: Boulevard Café Elbasan | Mon-Sun 07:00-24:00 | Center of Elbasan | Free Wi-Fi
 
