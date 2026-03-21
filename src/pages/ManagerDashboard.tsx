@@ -763,6 +763,8 @@ const ManagerDashboard = () => {
                 </p>
               )}
             </div>
+          </TabsContent>
+
           <TabsContent value="feedback" className="space-y-5">
             {/* Stats Card */}
             <Card className="glass-premium p-6 rounded-3xl shadow-[var(--shadow-elegant)]">
