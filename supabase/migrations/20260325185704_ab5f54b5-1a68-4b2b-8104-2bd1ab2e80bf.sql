@@ -1,0 +1,2 @@
+ALTER TABLE public.service_requests DROP CONSTRAINT service_requests_request_type_check;
+ALTER TABLE public.service_requests ADD CONSTRAINT service_requests_request_type_check CHECK (request_type = ANY (ARRAY['waiter'::text, 'bill'::text, 'kitchen_ready'::text]));
