@@ -185,8 +185,8 @@ const Index = () => {
         style={{
           background: 'hsl(0 0% 100% / 0.04)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid hsl(0 0% 100% / 0.08)',
-          boxShadow: '0 25px 80px -20px hsl(0 0% 0% / 0.7), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+          border: '1.5px solid hsl(43 85% 55% / 0.2)',
+          boxShadow: '0 25px 80px -20px hsl(0 0% 0% / 0.7), 0 0 30px hsl(43 85% 55% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
         }}
       >
         {/* Logo Header */}
