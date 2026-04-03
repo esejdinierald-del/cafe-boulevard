@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { ArrowLeft, Plus, Minus, ShoppingCart, Languages, Clock, Flame } from "lucide-react";
 import logo from "@/assets/boulevard-logo.png";
-import coffeeBackground from "@/assets/coffee-background.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useLanguage } from "@/hooks/use-language";
@@ -72,7 +70,6 @@ interface Category {
 const isOfferActive = (item: MenuItem): boolean => {
   if (!item.offer_price || !item.offer_start_time || !item.offer_end_time) return false;
   const now = new Date();
-  // Use Rome/Italy timezone
   const romeTime = now.toLocaleTimeString('en-GB', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hour12: false });
   return romeTime >= item.offer_start_time.slice(0, 5) && romeTime <= item.offer_end_time.slice(0, 5);
 };
@@ -114,14 +111,12 @@ const Menu = () => {
         .from('categories')
         .select('*')
         .order('display_order');
-
       if (categoriesError) throw categoriesError;
 
       const { data: itemsData, error: itemsError } = await supabase
         .from('menu_items')
         .select('*')
         .eq('available', true);
-
       if (itemsError) throw itemsError;
 
       setCategories(categoriesData || []);
@@ -161,7 +156,6 @@ const Menu = () => {
   };
 
   const handleSubmitOrder = async () => {
-    // GPS check only when ordering
     const geoResult = await checkLocation(language);
     if (!geoResult.allowed) {
       toast.error(geoResult.error || t.geoRequired);
@@ -207,46 +201,100 @@ const Menu = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${coffeeBackground})` }} />
-      <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60 backdrop-blur-[1px]" />
+    <div
+      className="min-h-screen relative overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, hsl(0 0% 5%) 0%, hsl(220 40% 8%) 50%, hsl(0 0% 5%) 100%)' }}
+    >
+      {/* Ambient particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(4)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              width: `${3 + i * 2}px`,
+              height: `${3 + i * 2}px`,
+              background: `radial-gradient(circle, hsl(43 85% 55% / ${0.2 + i * 0.05}), transparent)`,
+              left: `${10 + i * 25}%`,
+              top: `${10 + (i % 2) * 40}%`,
+              animation: `particle-float ${5 + i}s ease-in-out ${i * 0.7}s infinite`,
+              filter: `blur(${1 + i * 0.5}px)`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Vignette */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, transparent 40%, hsl(0 0% 0% / 0.5) 100%)' }}
+      />
 
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 glass-premium rounded-3xl p-5 shadow-[var(--shadow-elegant)]">
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/?tabela=${tableNumber}`)} className="hover:scale-110 hover:bg-primary/10 transition-all rounded-2xl">
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
-          <div className="flex items-center gap-4">
-            <img src={logo} alt="Logo" className="h-12 w-auto" />
+        <div
+          className="flex items-center justify-between mb-6 rounded-2xl p-4 animate-in-stagger-1"
+          style={{
+            background: 'hsl(0 0% 100% / 0.04)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid hsl(0 0% 100% / 0.08)',
+            boxShadow: '0 10px 40px -10px hsl(0 0% 0% / 0.5)',
+          }}
+        >
+          <button
+            onClick={() => navigate(`/?tabela=${tableNumber}`)}
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
+            style={{
+              background: 'hsl(0 0% 100% / 0.06)',
+              border: '1px solid hsl(0 0% 100% / 0.1)',
+              color: 'hsl(43 85% 55%)',
+            }}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Logo" className="h-10 w-auto" />
             <div className="text-right">
-              <p className="text-sm text-muted-foreground font-medium">{t.menu}</p>
-              <p className="font-display font-bold text-lg">{tableNumber}</p>
+              <p className="text-xs" style={{ color: 'hsl(220 10% 50%)' }}>{t.menu}</p>
+              <p className="font-display font-bold text-sm gradient-text-gold">{tableNumber}</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={toggleLanguage} className="hover:scale-110 hover:bg-primary/10 transition-all rounded-2xl">
+          <button
+            onClick={toggleLanguage}
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
+            style={{
+              background: 'hsl(0 0% 100% / 0.06)',
+              border: '1px solid hsl(0 0% 100% / 0.1)',
+              color: 'hsl(43 85% 55%)',
+            }}
+          >
             <Languages className="h-5 w-5" />
-          </Button>
+          </button>
         </div>
 
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-xl font-display">{t.loading}</p>
+            <p className="text-xl font-display" style={{ color: 'hsl(220 10% 55%)' }}>{t.loading}</p>
           </div>
         ) : (
           <>
             {/* Category tabs */}
-            <div className="mb-8 -mx-4 px-4 overflow-x-auto scrollbar-hide">
+            <div className="mb-6 -mx-4 px-4 overflow-x-auto scrollbar-hide animate-in-stagger-2">
               <div className="flex gap-3 min-w-max pb-2">
                 {categories.map(category => (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategoryId(category.id)}
-                    className={`px-6 py-3 rounded-2xl font-display font-bold text-base transition-all duration-300 whitespace-nowrap ${
-                      selectedCategoryId === category.id
-                        ? 'bg-white text-foreground shadow-[var(--shadow-gold)] scale-105'
-                        : 'bg-white/80 text-foreground hover:scale-105 hover:shadow-[var(--shadow-elegant)]'
-                    }`}
+                    className="px-5 py-2.5 rounded-xl font-display font-bold text-sm transition-all duration-300 whitespace-nowrap"
+                    style={selectedCategoryId === category.id ? {
+                      background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
+                      color: 'hsl(220 60% 10%)',
+                      boxShadow: '0 0 20px hsl(43 85% 55% / 0.3)',
+                      transform: 'scale(1.05)',
+                    } : {
+                      background: 'hsl(0 0% 100% / 0.06)',
+                      color: 'hsl(0 0% 70%)',
+                      border: '1px solid hsl(0 0% 100% / 0.08)',
+                    }}
                   >
                     {language === 'en' && category.name_en ? category.name_en : category.name}
                   </button>
@@ -256,83 +304,123 @@ const Menu = () => {
 
             {/* Menu Items */}
             {selectedCategoryId && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 animate-in-stagger-3">
                 {menuItems
                   .filter(item => item.category_id === selectedCategoryId)
                   .map(item => {
                     const offerActive = isOfferActive(item);
                     return (
-                      <Card key={item.id} className="glass-premium p-3 hover:shadow-[var(--shadow-float)] transition-all duration-500 rounded-2xl">
+                      <div
+                        key={item.id}
+                        className="rounded-2xl p-3 transition-all duration-300 hover:scale-[1.02]"
+                        style={{
+                          background: 'hsl(0 0% 100% / 0.04)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid hsl(0 0% 100% / 0.08)',
+                          boxShadow: '0 4px 20px -5px hsl(0 0% 0% / 0.4)',
+                        }}
+                      >
                         {item.image_url && (
-                          <div className="w-full h-24 mb-2 rounded-xl overflow-hidden shadow-md">
+                          <div className="w-full h-24 mb-2 rounded-xl overflow-hidden"
+                            style={{ boxShadow: '0 4px 15px -5px hsl(0 0% 0% / 0.5)' }}
+                          >
                             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           </div>
                         )}
                         <div className="flex flex-col mb-2">
-                          <div>
-                            <h3 className="text-sm font-display font-bold mb-0.5 leading-tight">
-                              {language === 'en' && item.name_en ? item.name_en : item.name}
-                            </h3>
-                            {item.description && (
-                              <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
-                                {language === 'en' && item.description_en ? item.description_en : item.description}
-                              </p>
-                            )}
-                            
-                            {/* Price with offer display */}
-                            {offerActive ? (
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs line-through text-muted-foreground">{item.price} {t.currency}</span>
-                                   <span className="text-sm font-bold text-destructive flex items-center gap-1">
-                                     <Flame className="h-3 w-3" />
-                                     {item.offer_price} {t.currency}
-                                   </span>
-                                </div>
-                                <p className="text-xs text-destructive/80 flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {t.offerUntil} {item.offer_end_time?.slice(0, 5)}
-                                </p>
+                          <h3 className="text-sm font-display font-bold mb-0.5 leading-tight" style={{ color: 'hsl(0 0% 90%)' }}>
+                            {language === 'en' && item.name_en ? item.name_en : item.name}
+                          </h3>
+                          {item.description && (
+                            <p className="text-xs mb-1 line-clamp-2" style={{ color: 'hsl(220 10% 45%)' }}>
+                              {language === 'en' && item.description_en ? item.description_en : item.description}
+                            </p>
+                          )}
+                          
+                          {offerActive ? (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs line-through" style={{ color: 'hsl(220 10% 45%)' }}>{item.price} {t.currency}</span>
+                                <span className="text-sm font-bold flex items-center gap-1" style={{ color: 'hsl(0 70% 55%)' }}>
+                                  <Flame className="h-3 w-3" />
+                                  {item.offer_price} {t.currency}
+                                </span>
                               </div>
-                            ) : (
-                              <p className="text-sm font-bold gradient-text-gold">
-                                 {item.price} {t.currency}
-                               </p>
-                            )}
-                          </div>
+                              <p className="text-xs flex items-center gap-1" style={{ color: 'hsl(0 70% 55% / 0.8)' }}>
+                                <Clock className="h-3 w-3" />
+                                {t.offerUntil} {item.offer_end_time?.slice(0, 5)}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-sm font-bold gradient-text-gold">
+                              {item.price} {t.currency}
+                            </p>
+                          )}
                           
                           <div className="flex items-center gap-1 mt-2">
                             {cart[item.id] ? (
                               <>
-                                <Button variant="outline" size="icon" onClick={() => removeFromCart(item.id)} className="h-8 w-8 rounded-lg">
+                                <button
+                                  onClick={() => removeFromCart(item.id)}
+                                  className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+                                  style={{
+                                    background: 'hsl(0 0% 100% / 0.08)',
+                                    border: '1px solid hsl(0 0% 100% / 0.12)',
+                                    color: 'hsl(0 0% 80%)',
+                                  }}
+                                >
                                   <Minus className="h-4 w-4" />
-                                </Button>
-                                <span className="font-bold text-sm w-6 text-center">{cart[item.id]}</span>
-                                <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-8 w-8 rounded-lg">
+                                </button>
+                                <span className="font-bold text-sm w-6 text-center" style={{ color: 'hsl(0 0% 90%)' }}>{cart[item.id]}</span>
+                                <button
+                                  onClick={() => addToCart(item.id)}
+                                  className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+                                  style={{
+                                    background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
+                                    color: 'hsl(220 60% 10%)',
+                                    boxShadow: '0 0 10px hsl(43 85% 55% / 0.3)',
+                                  }}
+                                >
                                   <Plus className="h-4 w-4" />
-                                </Button>
+                                </button>
                               </>
                             ) : (
-                              <Button variant="gold" size="icon" onClick={() => addToCart(item.id)} className="h-9 w-9 rounded-xl">
+                              <button
+                                onClick={() => addToCart(item.id)}
+                                className="h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110"
+                                style={{
+                                  background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
+                                  color: 'hsl(220 60% 10%)',
+                                  boxShadow: '0 0 10px hsl(43 85% 55% / 0.3)',
+                                }}
+                              >
                                 <Plus className="h-5 w-5" />
-                              </Button>
+                              </button>
                             )}
                           </div>
                         </div>
-                      </Card>
+                      </div>
                     );
                   })}
               </div>
             )}
 
-            <p className="text-center text-sm text-muted-foreground mt-6 italic">{t.priceDisclaimer}</p>
+            <p className="text-center text-sm mt-6 italic" style={{ color: 'hsl(220 10% 40%)' }}>{t.priceDisclaimer}</p>
           </>
         )}
 
         {/* Cart Summary */}
         {getTotalItems() > 0 && (
           <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 z-50">
-            <Card className="glass-premium p-5 shadow-[var(--shadow-float)] border-2 border-secondary/30 rounded-3xl animate-pulse-glow">
+            <div
+              className="p-5 rounded-2xl animate-in-stagger-1"
+              style={{
+                background: 'hsl(0 0% 100% / 0.06)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid hsl(43 85% 55% / 0.2)',
+                boxShadow: '0 0 30px hsl(43 85% 55% / 0.15), 0 20px 60px -15px hsl(0 0% 0% / 0.7)',
+              }}
+            >
               <div className="space-y-3">
                 {/* Cart items list */}
                 <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
@@ -343,46 +431,75 @@ const Menu = () => {
                     return (
                       <div key={itemId} className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span className="font-medium truncate">
+                          <span className="font-medium truncate" style={{ color: 'hsl(0 0% 85%)' }}>
                             {language === 'en' && item.name_en ? item.name_en : item.name}
                           </span>
-                          <span className="text-muted-foreground">×{qty}</span>
+                          <span style={{ color: 'hsl(220 10% 50%)' }}>×{qty}</span>
                         </div>
                         <div className="flex items-center gap-2 ml-2">
-                          <span className="font-bold whitespace-nowrap">{price * qty} {t.currency}</span>
-                          <Button variant="ghost" size="icon" onClick={() => removeFromCart(itemId)} className="h-7 w-7 rounded-lg hover:bg-destructive/20">
+                          <span className="font-bold whitespace-nowrap gradient-text-gold">{price * qty} {t.currency}</span>
+                          <button
+                            onClick={() => removeFromCart(itemId)}
+                            className="h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+                            style={{
+                              background: 'hsl(0 70% 50% / 0.15)',
+                              border: '1px solid hsl(0 70% 50% / 0.2)',
+                              color: 'hsl(0 70% 65%)',
+                            }}
+                          >
                             <Minus className="h-3 w-3" />
-                          </Button>
+                          </button>
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                <div className="border-t border-border/30 pt-3">
+                <div style={{ borderTop: '1px solid hsl(0 0% 100% / 0.08)' }} className="pt-3">
                   <textarea
                     value={orderNotes}
                     onChange={(e) => setOrderNotes(e.target.value)}
                     placeholder={t.notesPlaceholder}
-                    className="w-full h-16 rounded-2xl border border-input bg-background/50 backdrop-blur-sm px-4 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 placeholder:text-muted-foreground"
+                    className="w-full h-16 rounded-xl px-4 py-2 text-sm resize-none focus:outline-none"
+                    style={{
+                      background: 'hsl(0 0% 100% / 0.05)',
+                      border: '1px solid hsl(0 0% 100% / 0.1)',
+                      color: 'hsl(0 0% 85%)',
+                      backdropFilter: 'blur(10px)',
+                    }}
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="gradient-gold rounded-full p-2.5 shadow-[var(--shadow-gold)]">
-                      <ShoppingCart className="h-5 w-5" />
+                    <div
+                      className="rounded-full p-2.5"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
+                        boxShadow: '0 0 15px hsl(43 85% 55% / 0.3)',
+                      }}
+                    >
+                      <ShoppingCart className="h-5 w-5" style={{ color: 'hsl(220 60% 10%)' }} />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground font-medium">{getTotalItems()} {t.items}</p>
+                      <p className="text-xs font-medium" style={{ color: 'hsl(220 10% 50%)' }}>{getTotalItems()} {t.items}</p>
                       <p className="text-xl font-display font-bold gradient-text-gold">{getTotalPrice()} {t.currency}</p>
                     </div>
                   </div>
-                  <Button size="lg" variant="burgundy" className="font-display font-bold text-lg" onClick={handleSubmitOrder} disabled={checking}>
+                  <button
+                    onClick={handleSubmitOrder}
+                    disabled={checking}
+                    className="px-6 py-3 rounded-xl font-display font-bold text-base transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
+                      color: 'hsl(220 60% 10%)',
+                      boxShadow: '0 0 20px hsl(43 85% 55% / 0.3)',
+                    }}
+                  >
                     {t.order}
-                  </Button>
+                  </button>
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
         )}
 

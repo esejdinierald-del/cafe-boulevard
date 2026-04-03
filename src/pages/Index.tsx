@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Bell, Receipt, UtensilsCrossed, MessageCircle, Star, MapPin, Check, Languages } from "lucide-react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
 import { FeedbackDialog } from "@/components/FeedbackDialog";
@@ -41,6 +40,7 @@ const translations = {
     error: "Gabim në dërgimin e kërkesës",
     errorWaiter: "Gabim në dërgimin e thirrjes",
     tableRequired: "Shkruani numrin e tavolinës",
+    subtitle: "Café Elbasan • Eat • Drink • Connect",
   },
   en: {
     table: "Table",
@@ -59,6 +59,7 @@ const translations = {
     error: "Error sending request",
     errorWaiter: "Error sending call",
     tableRequired: "Enter the table number",
+    subtitle: "Café Elbasan • Eat • Drink • Connect",
   },
 };
 
@@ -135,106 +136,176 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, hsl(0 0% 5%) 0%, hsl(220 40% 8%) 50%, hsl(0 0% 5%) 100%)' }}
+    >
+      {/* Ambient gold particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              width: `${4 + i * 2}px`,
+              height: `${4 + i * 2}px`,
+              background: `radial-gradient(circle, hsl(43 85% 55% / ${0.3 + i * 0.05}), transparent)`,
+              left: `${15 + i * 14}%`,
+              top: `${20 + (i % 3) * 25}%`,
+              animation: `particle-float ${4 + i}s ease-in-out ${i * 0.5}s infinite`,
+              filter: `blur(${1 + i * 0.5}px)`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Vignette overlay */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, transparent 40%, hsl(0 0% 0% / 0.6) 100%)' }}
+      />
+
       {/* Language Toggle */}
       <div className="absolute top-4 right-4 z-20">
         <button
           onClick={toggleLanguage}
-          className="w-10 h-10 rounded-full bg-navy flex items-center justify-center text-primary-foreground hover:bg-navy-light transition-colors"
+          className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+          style={{
+            background: 'hsl(0 0% 100% / 0.08)',
+            border: '1px solid hsl(0 0% 100% / 0.12)',
+            backdropFilter: 'blur(10px)',
+            color: 'hsl(43 85% 55%)',
+          }}
         >
           <Languages className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="w-full max-w-sm bg-card rounded-3xl shadow-xl p-6 text-center space-y-4">
-        {/* Logo Card */}
-        <div className="bg-gradient-to-r from-navy to-navy-light rounded-xl p-6">
-          <img src={logo} alt="Boulevard Café Logo" className="w-40 mx-auto h-auto object-contain" />
+      {/* Main Card */}
+      <div
+        className="w-full max-w-[400px] rounded-3xl p-6 text-center space-y-5 relative z-10 animate-in-stagger-1"
+        style={{
+          background: 'hsl(0 0% 100% / 0.04)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid hsl(0 0% 100% / 0.08)',
+          boxShadow: '0 25px 80px -20px hsl(0 0% 0% / 0.7), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+        }}
+      >
+        {/* Logo Header */}
+        <div
+          className="rounded-2xl p-6 relative overflow-hidden animate-in-stagger-2"
+          style={{
+            background: 'linear-gradient(135deg, hsl(220 60% 10%) 0%, hsl(220 50% 18%) 100%)',
+            border: '1px solid hsl(43 85% 55% / 0.1)',
+            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+          }}
+        >
+          {/* Subtle inner glow */}
+          <div className="absolute inset-0 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse at top center, hsl(43 85% 55% / 0.06), transparent 70%)' }}
+          />
+          <img src={logo} alt="Boulevard Café Logo" className="w-36 mx-auto h-auto object-contain relative z-10" />
         </div>
 
         {/* Brand Title */}
-        <h2 className="text-gold-brand font-display font-bold text-lg tracking-wide">
+        <h2 className="font-display font-bold text-lg tracking-[0.15em] animate-in-stagger-3 gradient-text-gold">
           BOULEVARD CAFÉ ELBASAN
         </h2>
 
         {/* Table Input */}
-        <div className="flex items-center bg-navy rounded-full overflow-hidden">
-          <div className="pl-4">
-            <MapPin className="w-5 h-5 text-gold-brand" />
-          </div>
-          <input
-            type="text"
-            placeholder={t.placeholder}
-            value={tableNumber}
-            onChange={(e) => setTableNumber(e.target.value)}
-            className="flex-1 px-3 py-3 text-primary-foreground bg-transparent outline-none text-center font-display font-bold placeholder:text-muted-foreground/50"
-          />
-          <button
-            onClick={handleConfirmTable}
-            className="bg-gold-brand px-4 py-3 text-navy font-bold hover:opacity-90 transition-opacity"
+        <div className="animate-in-stagger-3">
+          <div
+            className="flex items-center rounded-full overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, hsl(220 60% 12%) 0%, hsl(220 50% 18%) 100%)',
+              border: '1px solid hsl(43 85% 55% / 0.2)',
+              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.3), 0 0 15px hsl(43 85% 55% / 0.08)',
+            }}
           >
-            <Check className="w-5 h-5" />
-          </button>
+            <div className="pl-4">
+              <MapPin className="w-5 h-5" style={{ color: 'hsl(43 85% 55%)' }} />
+            </div>
+            <input
+              type="text"
+              placeholder={t.placeholder}
+              value={tableNumber}
+              onChange={(e) => setTableNumber(e.target.value)}
+              className="flex-1 px-3 py-3.5 bg-transparent outline-none text-center font-display font-bold placeholder:opacity-40"
+              style={{ color: 'hsl(0 0% 90%)' }}
+            />
+            <button
+              onClick={handleConfirmTable}
+              className="px-4 py-3.5 font-bold transition-all duration-300 hover:opacity-90 active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
+                color: 'hsl(220 60% 10%)',
+                borderRadius: '0 9999px 9999px 0',
+              }}
+            >
+              <Check className="w-5 h-5" />
+            </button>
+          </div>
+          <p className="text-xs mt-2" style={{ color: 'hsl(220 10% 50%)' }}>{t.hint}</p>
         </div>
-        <p className="text-xs text-muted-foreground">{t.hint}</p>
 
         {/* Welcome text */}
-        <p className="font-display font-semibold text-foreground">{t.chooseService}</p>
+        <p className="font-display text-sm animate-in-stagger-4" style={{ color: 'hsl(220 10% 55%)' }}>
+          {t.chooseService}
+        </p>
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-3">
-          {/* Navy button */}
+          {/* Call Waiter - Navy */}
           <button
             onClick={() => withGeoCheck(handleCallWaiter)}
             disabled={checking}
-            className="bg-navy text-primary-foreground py-3.5 rounded-full font-display font-bold text-lg flex items-center justify-center gap-2 hover:bg-navy-light transition-colors disabled:opacity-50 active:scale-[0.98]"
+            className="group service-btn-navy animate-in-stagger-4 disabled:opacity-50"
           >
-            <Bell className="h-5 w-5" />
-            {t.callWaiter}
+            <Bell className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(43 85% 55%)' }} />
+            <span>{t.callWaiter}</span>
           </button>
 
-          {/* Gold button */}
+          {/* Request Bill - Gold */}
           <button
             onClick={() => withGeoCheck(handleRequestBill)}
             disabled={checking}
-            className="bg-gradient-to-r from-gold-brand to-secondary text-navy py-3.5 rounded-full font-display font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 active:scale-[0.98]"
+            className="group service-btn-gold animate-in-stagger-5 disabled:opacity-50"
           >
-            <Receipt className="h-5 w-5" />
-            {t.requestBill}
+            <Receipt className="h-5 w-5 scale-bounce-hover" />
+            <span>{t.requestBill}</span>
           </button>
 
-          {/* Navy button */}
+          {/* Order from Menu - Navy */}
           <button
             onClick={() => navigate(`/menu?tabela=${displayTable}`)}
-            className="bg-navy text-primary-foreground py-3.5 rounded-full font-display font-bold text-lg flex items-center justify-center gap-2 hover:bg-navy-light transition-colors active:scale-[0.98]"
+            className="group service-btn-navy animate-in-stagger-5"
           >
-            <UtensilsCrossed className="h-5 w-5" />
-            {t.orderMenu}
+            <UtensilsCrossed className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(43 85% 55%)' }} />
+            <span>{t.orderMenu}</span>
           </button>
 
-          {/* Gold button */}
+          {/* Ask Staff - Gold */}
           <button
             onClick={() => setChatOpen(true)}
-            className="bg-gradient-to-r from-gold-brand to-secondary text-navy py-3.5 rounded-full font-display font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity active:scale-[0.98]"
+            className="group service-btn-gold animate-in-stagger-6"
           >
-            <MessageCircle className="h-5 w-5" />
-            {t.askStaff}
+            <MessageCircle className="h-5 w-5 scale-bounce-hover" />
+            <span>{t.askStaff}</span>
           </button>
 
-          {/* Outlined button */}
+          {/* Rate Us - Outline */}
           <button
             onClick={() => setFeedbackOpen(true)}
-            className="border border-border text-foreground py-3.5 rounded-full font-display font-bold text-lg flex items-center justify-center gap-2 hover:bg-muted transition-colors active:scale-[0.98]"
+            className="group service-btn-outline animate-in-stagger-7"
           >
-            <Star className="h-5 w-5" />
-            {t.rateUs}
+            <Star className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(43 85% 55%)' }} />
+            <span>{t.rateUs}</span>
           </button>
         </div>
 
         {/* Hidden manager link */}
         <button
           onClick={() => navigate("/manager-login")}
-          className="text-xs text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors"
+          className="text-xs transition-colors"
+          style={{ color: 'hsl(0 0% 100% / 0.1)' }}
         >
           •
         </button>
