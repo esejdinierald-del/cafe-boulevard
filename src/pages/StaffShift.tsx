@@ -1,33 +1,60 @@
-import React from 'react';
-import './StaffShift.css'; // Import improved CSS for styling
+import React, { useEffect, useState } from 'react';
+import { useSupabaseClient } from '@supabase/supabase-js';
+import QRCode from 'qrcode.react';
+import './StaffShift.css';
 
 const StaffShift = () => {
+  const supabase = useSupabaseClient();
+  const [staffMembers, setStaffMembers] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+      const { data, error } = await supabase
+        .from('staff')
+        .select('*');
+      if (error) console.error(error);
+      else setStaffMembers(data);
+    };
+    fetchStaff();
+  }, [supabase]);
+
+  useEffect(() => {
+    const userNotifications = async () => {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*');
+      if (error) console.error(error);
+      else setNotifications(data);
+    };
+    userNotifications();
+  }, [supabase]);
+
+  const playAudioAlert = () => {
+    const audio = new Audio('/audio/alert.mp3');
+    audio.play();
+  };
+
   return (
     <div className="staff-shift-container">
       <h1 className="title">Staff Shift Management</h1>
-      <div className="shift-list">
-        {/* Enhanced design, priority visualization, confetti effects, and micro-interactions */}
-        <div className="shift-item priority-high">
-          <p>Shift 1: 8 AM - 12 PM</p>
-          <button className="btn-assign">Assign</button>
-        </div>
-        <div className="shift-item priority-medium">
-          <p>Shift 2: 12 PM - 4 PM</p>
-          <button className="btn-assign">Assign</button>
-        </div>
-        <div className="shift-item priority-low">
-          <p>Shift 3: 4 PM - 8 PM</p>
-          <button className="btn-assign">Assign</button>
-        </div>
+      <div className="staff-list">
+        {staffMembers.map((member) => (
+          <div key={member.id} className="staff-item">
+            <h2>{member.name}</h2>
+            <QRCode value={member.id} />
+          </div>
+        ))}
       </div>
-      {/* Confetti effect trigger button */}
-      <button className="btn-confetti" onClick={triggerConfetti}>Celebrate!</button>
+      <div className="notifications">
+        {notifications.map((notif) => (
+          <div key={notif.id} className="notification" onClick={playAudioAlert}>
+            {notif.message}
+          </div>
+        ))}
+      </div>
     </div>
   );
-};
-
-const triggerConfetti = () => {
-  // Logic for confetti effects
 };
 
 export default StaffShift;
