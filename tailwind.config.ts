@@ -62,8 +62,11 @@ export default {
         navy: {
           DEFAULT: "hsl(var(--navy))",
           light: "hsl(var(--navy-light))",
+          deep: "hsl(var(--navy-deep))",
         },
         "gold-brand": "hsl(var(--gold-brand))",
+        "gold-light": "hsl(var(--gold-light))",
+        "gold-glow": "hsl(var(--gold-glow))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
