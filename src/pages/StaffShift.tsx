@@ -1,57 +1,548 @@
-import React, { useEffect, useState } from 'react';
-import { useSupabaseClient } from '@supabase/supabase-js';
-import QRCode from 'qrcode.react';
-import './StaffShift.css';
+import { useEffect, useState, useRef, useCallback, TouchEvent } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw, QrCode, LogOut } from "lucide-react";
+import { toast } from "sonner";
+import QrScanner from "@/components/QrScanner";
+import SplashScreen from "@/components/SplashScreen";
+import boulevardLogo from "@/assets/boulevard-logo.png";
+
+interface ServiceRequest {
+  id: string;
+  table_number: string;
+  request_type: string;
+  status: string;
+  created_at: string;
+}
+
+interface Order {
+  id: string;
+  table_number: string;
+  items: Array<{ name: string; quantity: number }>;
+  total_price: number;
+  status: string;
+  created_at: string;
+  notes: string | null;
+}
+
+const getElapsedMinutes = (createdAt: string) => {
+  const diff = Date.now() - new Date(createdAt).getTime();
+  return Math.floor(diff / 60000);
+};
+
+const ElapsedBadge = ({ createdAt }: { createdAt: string }) => {
+  const [mins, setMins] = useState(getElapsedMinutes(createdAt));
+  useEffect(() => {
+    const interval = setInterval(() => setMins(getElapsedMinutes(createdAt)), 15000);
+    return () => clearInterval(interval);
+  }, [createdAt]);
+  const color = mins >= 5 ? "bg-destructive/20 text-destructive" : mins >= 2 ? "bg-warning/20 text-warning" : "bg-muted text-muted-foreground";
+  return <Badge className={`${color} text-[10px] font-medium`}>{mins} min</Badge>;
+};
+
+const STAFF_PWA_PREFERRED_KEY = "staff_pwa_preferred";
 
 const StaffShift = () => {
-  const supabase = useSupabaseClient();
-  const [staffMembers, setStaffMembers] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const urlToken = searchParams.get("token");
+
+  // Try saved token from localStorage, fallback to URL token
+  const [activeToken, setActiveToken] = useState<string | null>(() => {
+    const saved = localStorage.getItem("staff_shift_token");
+    return urlToken || saved || null;
+  });
+
+  const [isValid, setIsValid] = useState<boolean | null>(null);
+  const [shiftEnd, setShiftEnd] = useState<Date | null>(null);
+  const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [timeLeft, setTimeLeft] = useState("");
+  const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
+  const [showScanner, setShowScanner] = useState(false);
+  const [showSplash, setShowSplash] = useState(() => {
+    // Show splash only once per session
+    const shown = sessionStorage.getItem("staff_splash_shown");
+    return !shown;
+  });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const touchStartY = useRef(0);
 
   useEffect(() => {
-    const fetchStaff = async () => {
-      const { data, error } = await supabase
-        .from('staff')
-        .select('*');
-      if (error) console.error(error);
-      else setStaffMembers(data);
-    };
-    fetchStaff();
-  }, [supabase]);
+    localStorage.setItem(STAFF_PWA_PREFERRED_KEY, "1");
+  }, []);
 
+  // Override manifest for staff PWA install
   useEffect(() => {
-    const userNotifications = async () => {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*');
-      if (error) console.error(error);
-      else setNotifications(data);
+    const link = document.querySelector('link[rel="manifest"]');
+    if (link) {
+      link.setAttribute('href', '/staff-manifest.webmanifest');
+    }
+    return () => {
+      if (link) link.setAttribute('href', '/manifest.webmanifest');
     };
-    userNotifications();
-  }, [supabase]);
+  }, []);
 
-  const playAudioAlert = () => {
-    const audio = new Audio('/audio/alert.mp3');
-    audio.play();
-  };
+  // When URL has token, save it and clean URL
+  useEffect(() => {
+    if (urlToken) {
+      setActiveToken(urlToken);
+      localStorage.setItem("staff_shift_token", urlToken);
+      // Clean URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [urlToken, setSearchParams]);
+
+  // Validate token
+  useEffect(() => {
+    if (!activeToken) { setIsValid(false); return; }
+    const validate = async () => {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from("shift_tokens")
+        .select("*")
+        .eq("token", activeToken)
+        .gte("shift_end", now)
+        .lte("shift_start", now)
+        .maybeSingle();
+      if (error || !data) {
+        setIsValid(false);
+        localStorage.removeItem("staff_shift_token");
+        return;
+      }
+      setIsValid(true);
+      setShiftEnd(new Date(data.shift_end));
+    };
+    validate();
+  }, [activeToken]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (!shiftEnd) return;
+    const update = () => {
+      const diff = shiftEnd.getTime() - Date.now();
+      if (diff <= 0) {
+        setIsValid(false);
+        setActiveToken(null);
+        localStorage.removeItem("staff_shift_token");
+        setTimeLeft("Turni ka mbaruar");
+        return false;
+      }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      setTimeLeft(`${h}h ${m}m`);
+      return true;
+    };
+    update();
+    const interval = setInterval(() => { if (!update()) clearInterval(interval); }, 30000);
+    return () => clearInterval(interval);
+  }, [shiftEnd]);
+
+  const playDingDong = useCallback(() => {
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    const now = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.frequency.value = 830; osc1.type = "sine";
+    gain1.gain.setValueAtTime(0.4, now);
+    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+    osc1.connect(gain1).connect(ctx.destination);
+    osc1.start(now); osc1.stop(now + 0.4);
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.frequency.value = 620; osc2.type = "sine";
+    gain2.gain.setValueAtTime(0.4, now + 0.3);
+    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+    osc2.connect(gain2).connect(ctx.destination);
+    osc2.start(now + 0.3); osc2.stop(now + 0.8);
+  }, []);
+
+  // Loud urgent alarm for kitchen_ready — 5 rapid high-pitched beeps
+  const playKitchenAlarm = useCallback(() => {
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    for (let i = 0; i < 5; i++) {
+      const t = ctx.currentTime + i * 0.25;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = 1400;
+      osc.type = "square";
+      gain.gain.setValueAtTime(0.7, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.15);
+    }
+  }, []);
+
+  const requestNotificationPermission = useCallback(async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+    return false;
+  }, []);
+
+  const showSystemNotification = useCallback((title: string, body: string) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notification = new Notification(title, {
+        body, icon: '/pwa-192x192.png', badge: '/pwa-192x192.png',
+        tag: `staff-${Date.now()}`, requireInteraction: true,
+        vibrate: [200, 100, 200],
+      } as NotificationOptions);
+      notification.onclick = () => { window.focus(); notification.close(); };
+    }
+  }, []);
+
+  const triggerVibration = useCallback(() => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate([300, 100, 300, 100, 300]);
+    }
+  }, []);
+
+  const repeatNotification = useCallback((title: string, body: string, useKitchenAlarm = false) => {
+    const sound = useKitchenAlarm ? playKitchenAlarm : playDingDong;
+    const vibPattern = useKitchenAlarm ? [500, 150, 500, 150, 500] : [300, 100, 300, 100, 300];
+    sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern);
+    const t1 = setTimeout(() => { sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern); }, 4000);
+    const t2 = setTimeout(() => { sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern); }, 8000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [playDingDong, playKitchenAlarm, showSystemNotification]);
+
+  const enableAudio = useCallback(async () => {
+    if (audioEnabled) return;
+    try {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (audioContextRef.current.state === 'suspended') await audioContextRef.current.resume();
+      const notifGranted = await requestNotificationPermission();
+      setAudioEnabled(true);
+      if (notifGranted) toast.success("Zëri dhe njoftimet u aktivizuan!");
+      else toast.success("Zëri u aktivizua!");
+    } catch {}
+  }, [audioEnabled, requestNotificationPermission]);
+
+  const fetchData = useCallback(async (showIndicator = false) => {
+    if (showIndicator) setIsRefreshing(true);
+    const [reqRes, ordRes] = await Promise.all([
+      supabase.from("service_requests").select("*").eq("status", "pending").neq("request_type", "kitchen_ready").order("created_at", { ascending: true }),
+      supabase.from("orders").select("*").eq("status", "pending").order("created_at", { ascending: true }),
+    ]);
+    if (reqRes.data) setRequests(reqRes.data as ServiceRequest[]);
+    if (ordRes.data) setOrders(ordRes.data as unknown as Order[]);
+    if (showIndicator) setTimeout(() => setIsRefreshing(false), 300);
+  }, []);
+
+  const handleCompleteRequest = useCallback(async (id: string, tableNumber: string) => {
+    setCompletingIds(prev => new Set(prev).add(id));
+    const { error } = await supabase
+      .from("service_requests")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) toast.error("Gabim në përditësim");
+    else { toast.success(`✅ ${tableNumber} — U krye!`); setRequests(prev => prev.filter(r => r.id !== id)); }
+    setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+  }, []);
+
+  const handleCompleteOrder = useCallback(async (id: string, tableNumber: string) => {
+    setCompletingIds(prev => new Set(prev).add(id));
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) toast.error("Gabim në përditësim");
+    else { toast.success(`✅ Porosia ${tableNumber} — U krye!`); setOrders(prev => prev.filter(o => o.id !== id)); }
+    setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+  }, []);
+
+  // Realtime + polling
+  useEffect(() => {
+    if (!isValid) return;
+    fetchData();
+    const channel = supabase
+      .channel("staff-shift-realtime")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "service_requests" }, (payload) => {
+        fetchData();
+        const r = payload.new as any;
+        if (r.request_type === "kitchen_ready") {
+          repeatNotification(`🍽️ POROSIA GATI!`, `Klient në banakun — hajde merr!`, true);
+          // Auto-complete after 15s so it doesn't stay in the list
+          setTimeout(async () => {
+            await supabase.from("service_requests").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", r.id);
+          }, 15000);
+        } else {
+          const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
+          repeatNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
+        }
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
+        fetchData();
+        const o = payload.new as any;
+        repeatNotification(`🛒 Porosi - ${o.table_number}`, `Porosi e re ${o.total_price} L nga ${o.table_number}`);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_requests" }, () => fetchData())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, () => fetchData())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [isValid, fetchData, repeatNotification]);
+
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    const diff = e.changedTouches[0].clientY - touchStartY.current;
+    if (diff > 80 && window.scrollY === 0) fetchData(true);
+  }, [fetchData]);
+
+  const handleQrScan = useCallback(async (scannedToken: string) => {
+    setShowScanner(false);
+    setActiveToken(scannedToken);
+    localStorage.setItem("staff_shift_token", scannedToken);
+    setIsValid(null); // trigger re-validation
+
+    // Unlock dashboard curtain
+    await supabase
+      .from("shift_tokens")
+      .update({ unlocked: true } as any)
+      .eq("token", scannedToken);
+
+    toast.success("QR u skanua! Dashboard u zhbllokua!");
+  }, []);
+
+  const handleEndShift = useCallback(() => {
+    setActiveToken(null);
+    setIsValid(false);
+    localStorage.removeItem("staff_shift_token");
+    toast.info("Turni u mbyll");
+  }, []);
+
+  // Splash screen
+  if (showSplash) {
+    return <SplashScreen onFinish={() => { setShowSplash(false); sessionStorage.setItem("staff_splash_shown", "1"); }} />;
+  }
+
+  // QR Scanner overlay
+  if (showScanner) {
+    return <QrScanner onScan={handleQrScan} onClose={() => setShowScanner(false)} />;
+  }
+
+  // Loading state
+  if (isValid === null && activeToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="text-center space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground text-sm">Duke verifikuar turnin...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No active shift — show scan home screen
+  if (!isValid || !activeToken) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+        <div className="max-w-sm w-full text-center space-y-8">
+           {/* Logo */}
+           <div className="space-y-2">
+             <img src={boulevardLogo} alt="Boulevard Café Logo" className="w-24 h-24 mx-auto rounded-2xl shadow-lg object-contain" />
+             <h1 className="text-2xl font-bold text-foreground">Boulevard Café</h1>
+            <p className="text-muted-foreground text-sm">Stafi — Thirrjet Live</p>
+          </div>
+
+          {/* Scan button */}
+          <Button
+            size="lg"
+            onClick={() => setShowScanner(true)}
+            className="w-full h-16 text-lg gap-3 bg-primary hover:bg-primary/90"
+          >
+            <QrCode className="h-6 w-6" />
+            Skano QR-në e Turnit
+          </Button>
+
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            Skano kodin QR të turnit që gjendet në dashboard për të aktivizuar njoftimet e thirrjeve.
+          </p>
+
+          {/* Expired message if coming from expired shift */}
+          {isValid === false && activeToken === null && (
+            <Card className="p-4 border-warning/30 bg-warning/5">
+              <div className="flex items-center gap-2 text-warning text-sm">
+                <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                Turni i mëparshëm ka skaduar. Skano QR-në e re.
+              </div>
+            </Card>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Active shift — live notifications view
+  const totalPending = requests.length + orders.length;
 
   return (
-    <div className="staff-shift-container">
-      <h1 className="title">Staff Shift Management</h1>
-      <div className="staff-list">
-        {staffMembers.map((member) => (
-          <div key={member.id} className="staff-item">
-            <h2>{member.name}</h2>
-            <QRCode value={member.id} />
+    <div
+      className="min-h-screen bg-background p-3 pb-8"
+      onClick={enableAudio}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div className="max-w-lg mx-auto space-y-3">
+        {isRefreshing && (
+          <div className="flex justify-center py-2">
+            <RefreshCw className="h-5 w-5 animate-spin text-primary" />
           </div>
-        ))}
-      </div>
-      <div className="notifications">
-        {notifications.map((notif) => (
-          <div key={notif.id} className="notification" onClick={playAudioAlert}>
-            {notif.message}
+        )}
+
+        {/* Header */}
+        <div className="text-center space-y-1.5">
+          <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
+            <Bell className="h-5 w-5 text-primary" />
+            Thirrjet Live
+            {totalPending > 0 && (
+              <Badge className="bg-destructive text-destructive-foreground animate-pulse text-xs ml-1">
+                {totalPending}
+              </Badge>
+            )}
+          </h1>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <Badge variant="outline" className="gap-1">
+              <Clock className="h-3 w-3" />
+              {timeLeft}
+            </Badge>
+            {!audioEnabled ? (
+              <Button size="sm" variant="outline" onClick={enableAudio} className="gap-1 h-7 text-xs">
+                <Volume2 className="h-3 w-3" />
+                Aktivizo zërin
+              </Button>
+            ) : (
+              <Badge className="bg-success/20 text-success border-success/30 gap-1">
+                <Volume2 className="h-3 w-3" />
+                Aktiv
+              </Badge>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleEndShift}
+              className="gap-1 h-7 text-xs text-muted-foreground hover:text-destructive"
+            >
+              <LogOut className="h-3 w-3" />
+              Dil
+            </Button>
           </div>
-        ))}
+        </div>
+
+        {/* Pending Requests */}
+        <div className="space-y-2">
+          <h2 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5">
+            <Bell className="h-4 w-4 text-warning" />
+            Kërkesa ({requests.length})
+          </h2>
+          {requests.length === 0 ? (
+            <Card className="p-6 text-center">
+              <p className="text-muted-foreground text-sm">Nuk ka kërkesa aktive ✨</p>
+            </Card>
+          ) : (
+            requests.map((r) => {
+              const isCompleting = completingIds.has(r.id);
+              return (
+                <Card key={r.id} className="p-3 border-l-4 border-l-warning">
+                  <div className="flex items-center gap-3">
+                    {r.request_type === "waiter" ? (
+                      <Bell className="h-5 w-5 text-warning flex-shrink-0" />
+                    ) : (
+                      <Receipt className="h-5 w-5 text-primary flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-lg">{r.table_number}</p>
+                        <ElapsedBadge createdAt={r.created_at} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {r.request_type === "waiter" ? "Kamarier" : "Faturë"} •{" "}
+                        {new Date(r.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); handleCompleteRequest(r.id, r.table_number); }}
+                      disabled={isCompleting}
+                      className="bg-success hover:bg-success/90 text-success-foreground h-10 px-3 flex-shrink-0"
+                    >
+                      {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      <span className="ml-1 text-xs">U krye</span>
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })
+          )}
+        </div>
+
+        {/* Pending Orders */}
+        <div className="space-y-2">
+          <h2 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5">
+            <Receipt className="h-4 w-4 text-primary" />
+            Porosi ({orders.length})
+          </h2>
+          {orders.length === 0 ? (
+            <Card className="p-6 text-center">
+              <p className="text-muted-foreground text-sm">Nuk ka porosi aktive ✨</p>
+            </Card>
+          ) : (
+            orders.map((o) => {
+              const isCompleting = completingIds.has(o.id);
+              return (
+                <Card key={o.id} className="p-3 border-l-4 border-l-primary">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-lg">{o.table_number}</p>
+                        <ElapsedBadge createdAt={o.created_at} />
+                      </div>
+                      <Badge className="bg-primary/20 text-primary">{o.total_price} L</Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {o.items.map((item, i) => (
+                        <span key={i}>
+                          {item.quantity}x {item.name}
+                          {i < o.items.length - 1 ? ", " : ""}
+                        </span>
+                      ))}
+                    </div>
+                    {o.notes && <p className="text-xs italic text-muted-foreground">📝 {o.notes}</p>}
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(o.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleCompleteOrder(o.id, o.table_number); }}
+                        disabled={isCompleting}
+                        className="bg-success hover:bg-success/90 text-success-foreground h-10 px-3"
+                      >
+                        {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                        <span className="ml-1 text-xs">U krye</span>
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })
+          )}
+        </div>
+
+        <p className="text-center text-xs text-muted-foreground pt-4">
+          Boulevard Café • Turni aktiv deri në fund
+        </p>
       </div>
     </div>
   );
