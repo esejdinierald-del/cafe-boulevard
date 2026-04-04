@@ -136,27 +136,33 @@ const Index = () => {
       style={{ background: 'linear-gradient(180deg, hsl(225 40% 5%) 0%, hsl(220 45% 7%) 30%, hsl(225 35% 8%) 60%, hsl(30 20% 6%) 80%, hsl(220 40% 4%) 100%)' }}
     >
       {/* Ambient gold glow - top right */}
-      <div className="absolute -top-20 -right-20 w-80 h-80 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(38 80% 50% / 0.08), transparent 60%)', filter: 'blur(60px)' }}
+      <div className="absolute -top-32 -right-32 w-[500px] h-[500px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(35 75% 45% / 0.15), hsl(38 80% 50% / 0.06) 40%, transparent 65%)', filter: 'blur(50px)' }}
       />
       {/* Ambient gold glow - bottom left */}
-      <div className="absolute -bottom-32 -left-20 w-96 h-96 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(38 70% 45% / 0.1), transparent 55%)', filter: 'blur(70px)' }}
+      <div className="absolute -bottom-40 -left-32 w-[600px] h-[600px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(35 70% 42% / 0.2), hsl(38 75% 45% / 0.08) 40%, transparent 60%)', filter: 'blur(60px)' }}
+      />
+      {/* Ambient gold glow - bottom right */}
+      <div className="absolute -bottom-20 -right-20 w-[400px] h-[400px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(30 70% 40% / 0.12), transparent 55%)', filter: 'blur(55px)' }}
       />
 
       {/* Large bokeh particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[
-          { size: 160, x: '5%', y: '10%', opacity: 0.14, blur: 50, delay: 0 },
-          { size: 100, x: '80%', y: '55%', opacity: 0.18, blur: 35, delay: 1 },
-          { size: 70, x: '90%', y: '15%', opacity: 0.12, blur: 30, delay: 2 },
-          { size: 130, x: '15%', y: '75%', opacity: 0.1, blur: 45, delay: 0.5 },
-          { size: 50, x: '55%', y: '35%', opacity: 0.22, blur: 22, delay: 1.5 },
-          { size: 180, x: '65%', y: '85%', opacity: 0.12, blur: 60, delay: 3 },
-          { size: 35, x: '35%', y: '45%', opacity: 0.25, blur: 18, delay: 2.5 },
-          { size: 110, x: '3%', y: '90%', opacity: 0.15, blur: 40, delay: 1.8 },
-          { size: 45, x: '70%', y: '30%', opacity: 0.2, blur: 20, delay: 0.8 },
-          { size: 200, x: '40%', y: '95%', opacity: 0.08, blur: 70, delay: 2.2 },
+          { size: 200, x: '0%', y: '5%', opacity: 0.22, blur: 40, delay: 0 },
+          { size: 140, x: '75%', y: '50%', opacity: 0.28, blur: 28, delay: 1 },
+          { size: 90, x: '85%', y: '10%', opacity: 0.2, blur: 22, delay: 2 },
+          { size: 170, x: '10%', y: '70%', opacity: 0.18, blur: 35, delay: 0.5 },
+          { size: 60, x: '50%', y: '30%', opacity: 0.35, blur: 16, delay: 1.5 },
+          { size: 220, x: '60%', y: '82%', opacity: 0.2, blur: 50, delay: 3 },
+          { size: 50, x: '30%', y: '42%', opacity: 0.4, blur: 14, delay: 2.5 },
+          { size: 150, x: '0%', y: '88%', opacity: 0.22, blur: 32, delay: 1.8 },
+          { size: 70, x: '68%', y: '25%', opacity: 0.3, blur: 16, delay: 0.8 },
+          { size: 250, x: '35%', y: '92%', opacity: 0.15, blur: 55, delay: 2.2 },
+          { size: 80, x: '90%', y: '70%', opacity: 0.25, blur: 20, delay: 1.2 },
+          { size: 120, x: '45%', y: '5%', opacity: 0.18, blur: 28, delay: 0.3 },
         ].map((p, i) => (
           <div
             key={i}
@@ -199,32 +205,32 @@ const Index = () => {
       <div
         className="w-full max-w-[400px] rounded-[28px] p-6 text-center space-y-5 relative z-10 animate-in-stagger-1 bottom-reflection"
         style={{
-          background: 'linear-gradient(180deg, hsl(220 45% 9% / 0.9) 0%, hsl(220 40% 7% / 0.92) 50%, hsl(220 35% 6% / 0.95) 100%)',
+          background: 'linear-gradient(180deg, hsl(220 45% 9% / 0.92) 0%, hsl(220 40% 7% / 0.94) 50%, hsl(220 35% 5% / 0.96) 100%)',
           backdropFilter: 'blur(30px)',
-          border: '1.5px solid hsl(43 85% 55% / 0.25)',
-          boxShadow: '0 30px 100px -25px hsl(0 0% 0% / 0.85), 0 0 50px hsl(43 85% 55% / 0.1), 0 0 100px hsl(43 85% 55% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.08), inset 0 -1px 0 hsl(0 0% 0% / 0.3)',
+          border: '1.5px solid hsl(43 85% 55% / 0.4)',
+          boxShadow: '0 30px 100px -25px hsl(0 0% 0% / 0.9), 0 0 60px hsl(43 85% 55% / 0.15), 0 0 120px hsl(43 85% 55% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.1), inset 0 -1px 0 hsl(0 0% 0% / 0.4)',
         }}
       >
         {/* Logo Header */}
         <div className="rounded-2xl overflow-hidden animate-in-stagger-2 relative"
           style={{
-            border: '1px solid hsl(43 85% 55% / 0.2)',
-            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8), 0 0 20px hsl(43 85% 55% / 0.06)',
+            border: '1.5px solid hsl(43 85% 55% / 0.35)',
+            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8), 0 0 25px hsl(43 85% 55% / 0.1)',
           }}
         >
           <img src={logo} alt="Boulevard Café Logo" className="w-full h-auto object-cover relative z-10" />
           {/* Bottom light flare */}
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] z-20"
+          <div className="absolute bottom-0 left-0 right-0 h-[3px] z-20"
             style={{
-              background: 'linear-gradient(90deg, transparent 5%, hsl(43 85% 60% / 0.5) 30%, hsl(43 90% 70% / 0.8) 50%, hsl(43 85% 60% / 0.5) 70%, transparent 95%)',
-              boxShadow: '0 0 10px hsl(43 85% 55% / 0.3)',
+              background: 'linear-gradient(90deg, transparent 3%, hsl(43 85% 60% / 0.6) 25%, hsl(43 90% 75% / 0.9) 50%, hsl(43 85% 60% / 0.6) 75%, transparent 97%)',
+              boxShadow: '0 0 15px hsl(43 85% 55% / 0.4), 0 0 30px hsl(43 85% 55% / 0.15)',
             }}
           />
         </div>
 
         {/* Gold Divider */}
         <div className="flex items-center justify-center animate-in-stagger-2">
-          <div className="h-[1px] flex-1" style={{ background: 'linear-gradient(90deg, transparent, hsl(43 85% 55% / 0.4), transparent)' }} />
+          <div className="h-[2px] flex-1" style={{ background: 'linear-gradient(90deg, transparent 5%, hsl(43 85% 55% / 0.5) 30%, hsl(43 90% 65% / 0.7) 50%, hsl(43 85% 55% / 0.5) 70%, transparent 95%)', boxShadow: '0 0 8px hsl(43 85% 55% / 0.2)' }} />
         </div>
 
         {/* Brand Title */}
@@ -237,9 +243,9 @@ const Index = () => {
           <div
             className="flex items-center rounded-full"
             style={{
-              background: 'linear-gradient(135deg, hsl(220 60% 12%) 0%, hsl(220 50% 16%) 100%)',
-              border: '1.5px solid hsl(43 85% 55% / 0.35)',
-              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.3), 0 0 18px hsl(43 85% 55% / 0.12)',
+              background: 'linear-gradient(135deg, hsl(220 60% 10%) 0%, hsl(220 50% 14%) 100%)',
+              border: '1.5px solid hsl(43 85% 55% / 0.45)',
+              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.4), 0 0 22px hsl(43 85% 55% / 0.18), 0 0 40px hsl(43 85% 55% / 0.06)',
             }}
           >
             <div className="pl-4">
