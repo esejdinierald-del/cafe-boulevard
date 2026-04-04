@@ -132,8 +132,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, hsl(0 0% 3%) 0%, hsl(220 40% 7%) 40%, hsl(30 30% 8%) 70%, hsl(0 0% 3%) 100%)' }}
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden grain-texture"
+      style={{ background: 'linear-gradient(180deg, hsl(225 40% 5%) 0%, hsl(220 45% 7%) 30%, hsl(225 35% 8%) 60%, hsl(30 20% 6%) 80%, hsl(220 40% 4%) 100%)' }}
     >
       {/* Large bokeh particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
