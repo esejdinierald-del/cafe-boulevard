@@ -151,16 +151,18 @@ const Index = () => {
       {/* Large bokeh particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[
-          { size: 160, x: '5%', y: '10%', opacity: 0.14, blur: 50, delay: 0 },
-          { size: 100, x: '80%', y: '55%', opacity: 0.18, blur: 35, delay: 1 },
-          { size: 70, x: '90%', y: '15%', opacity: 0.12, blur: 30, delay: 2 },
-          { size: 130, x: '15%', y: '75%', opacity: 0.1, blur: 45, delay: 0.5 },
-          { size: 50, x: '55%', y: '35%', opacity: 0.22, blur: 22, delay: 1.5 },
-          { size: 180, x: '65%', y: '85%', opacity: 0.12, blur: 60, delay: 3 },
-          { size: 35, x: '35%', y: '45%', opacity: 0.25, blur: 18, delay: 2.5 },
-          { size: 110, x: '3%', y: '90%', opacity: 0.15, blur: 40, delay: 1.8 },
-          { size: 45, x: '70%', y: '30%', opacity: 0.2, blur: 20, delay: 0.8 },
-          { size: 200, x: '40%', y: '95%', opacity: 0.08, blur: 70, delay: 2.2 },
+          { size: 200, x: '0%', y: '5%', opacity: 0.22, blur: 40, delay: 0 },
+          { size: 140, x: '75%', y: '50%', opacity: 0.28, blur: 28, delay: 1 },
+          { size: 90, x: '85%', y: '10%', opacity: 0.2, blur: 22, delay: 2 },
+          { size: 170, x: '10%', y: '70%', opacity: 0.18, blur: 35, delay: 0.5 },
+          { size: 60, x: '50%', y: '30%', opacity: 0.35, blur: 16, delay: 1.5 },
+          { size: 220, x: '60%', y: '82%', opacity: 0.2, blur: 50, delay: 3 },
+          { size: 50, x: '30%', y: '42%', opacity: 0.4, blur: 14, delay: 2.5 },
+          { size: 150, x: '0%', y: '88%', opacity: 0.22, blur: 32, delay: 1.8 },
+          { size: 70, x: '68%', y: '25%', opacity: 0.3, blur: 16, delay: 0.8 },
+          { size: 250, x: '35%', y: '92%', opacity: 0.15, blur: 55, delay: 2.2 },
+          { size: 80, x: '90%', y: '70%', opacity: 0.25, blur: 20, delay: 1.2 },
+          { size: 120, x: '45%', y: '5%', opacity: 0.18, blur: 28, delay: 0.3 },
         ].map((p, i) => (
           <div
             key={i}
