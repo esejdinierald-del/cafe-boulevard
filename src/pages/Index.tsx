@@ -136,12 +136,16 @@ const Index = () => {
       style={{ background: 'linear-gradient(180deg, hsl(225 40% 5%) 0%, hsl(220 45% 7%) 30%, hsl(225 35% 8%) 60%, hsl(30 20% 6%) 80%, hsl(220 40% 4%) 100%)' }}
     >
       {/* Ambient gold glow - top right */}
-      <div className="absolute -top-20 -right-20 w-80 h-80 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(38 80% 50% / 0.08), transparent 60%)', filter: 'blur(60px)' }}
+      <div className="absolute -top-32 -right-32 w-[500px] h-[500px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(35 75% 45% / 0.15), hsl(38 80% 50% / 0.06) 40%, transparent 65%)', filter: 'blur(50px)' }}
       />
       {/* Ambient gold glow - bottom left */}
-      <div className="absolute -bottom-32 -left-20 w-96 h-96 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(38 70% 45% / 0.1), transparent 55%)', filter: 'blur(70px)' }}
+      <div className="absolute -bottom-40 -left-32 w-[600px] h-[600px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(35 70% 42% / 0.2), hsl(38 75% 45% / 0.08) 40%, transparent 60%)', filter: 'blur(60px)' }}
+      />
+      {/* Ambient gold glow - bottom right */}
+      <div className="absolute -bottom-20 -right-20 w-[400px] h-[400px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(30 70% 40% / 0.12), transparent 55%)', filter: 'blur(55px)' }}
       />
 
       {/* Large bokeh particles */}
