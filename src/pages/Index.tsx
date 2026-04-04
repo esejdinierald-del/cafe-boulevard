@@ -186,19 +186,13 @@ const Index = () => {
         }}
       >
         {/* Logo Header */}
-        <div
-          className="rounded-2xl p-6 relative overflow-hidden animate-in-stagger-2"
+        <div className="rounded-2xl overflow-hidden animate-in-stagger-2"
           style={{
-            background: 'linear-gradient(135deg, hsl(220 60% 10%) 0%, hsl(220 50% 18%) 100%)',
-            border: '1px solid hsl(43 85% 55% / 0.1)',
-            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+            border: '1px solid hsl(43 85% 55% / 0.15)',
+            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8)',
           }}
         >
-          {/* Subtle inner glow */}
-          <div className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at top center, hsl(43 85% 55% / 0.06), transparent 70%)' }}
-          />
-          <img src={logo} alt="Boulevard Café Logo" className="w-full max-w-[280px] mx-auto h-auto object-contain relative z-10" />
+          <img src={logo} alt="Boulevard Café Logo" className="w-full h-auto object-cover relative z-10" />
         </div>
 
         {/* Brand Title */}
