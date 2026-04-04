@@ -116,7 +116,8 @@ const Menu = () => {
       const { data: itemsData, error: itemsError } = await supabase
         .from('menu_items')
         .select('*')
-        .eq('available', true);
+        .eq('available', true)
+        .order('display_order', { ascending: true });
       if (itemsError) throw itemsError;
 
       setCategories(categoriesData || []);
