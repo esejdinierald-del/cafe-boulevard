@@ -219,11 +219,11 @@ const Index = () => {
         {/* Table Input */}
         <div className="animate-in-stagger-3">
           <div
-            className="flex items-center rounded-full overflow-hidden"
+            className="flex items-center rounded-full"
             style={{
-              background: 'linear-gradient(135deg, hsl(220 60% 12%) 0%, hsl(220 50% 18%) 100%)',
-              border: '1px solid hsl(43 85% 55% / 0.2)',
-              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.3), 0 0 15px hsl(43 85% 55% / 0.08)',
+              background: 'linear-gradient(135deg, hsl(220 60% 12%) 0%, hsl(220 50% 16%) 100%)',
+              border: '1.5px solid hsl(43 85% 55% / 0.35)',
+              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.3), 0 0 18px hsl(43 85% 55% / 0.12)',
             }}
           >
             <div className="pl-4">
