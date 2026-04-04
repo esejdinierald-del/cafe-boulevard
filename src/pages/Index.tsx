@@ -258,7 +258,7 @@ const Index = () => {
         </p>
 
         {/* Action Buttons */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3.5">
           {/* Call Waiter - Navy */}
           <button
             onClick={() => withGeoCheck(handleCallWaiter)}
