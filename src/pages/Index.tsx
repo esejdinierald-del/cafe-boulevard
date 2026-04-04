@@ -198,7 +198,7 @@ const Index = () => {
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: 'radial-gradient(ellipse at top center, hsl(43 85% 55% / 0.06), transparent 70%)' }}
           />
-          <img src={logo} alt="Boulevard Café Logo" className="w-36 mx-auto h-auto object-contain relative z-10" />
+          <img src={logo} alt="Boulevard Café Logo" className="w-full max-w-[280px] mx-auto h-auto object-contain relative z-10" />
         </div>
 
         {/* Brand Title */}
