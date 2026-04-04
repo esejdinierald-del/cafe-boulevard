@@ -133,22 +133,31 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, hsl(0 0% 5%) 0%, hsl(220 40% 8%) 50%, hsl(0 0% 5%) 100%)' }}
+      style={{ background: 'linear-gradient(180deg, hsl(0 0% 3%) 0%, hsl(220 40% 7%) 40%, hsl(30 30% 8%) 70%, hsl(0 0% 3%) 100%)' }}
     >
-      {/* Ambient gold particles */}
+      {/* Large bokeh particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(6)].map((_, i) => (
+        {[
+          { size: 120, x: '10%', y: '15%', opacity: 0.12, blur: 40, delay: 0 },
+          { size: 80, x: '75%', y: '60%', opacity: 0.15, blur: 30, delay: 1 },
+          { size: 60, x: '85%', y: '20%', opacity: 0.1, blur: 25, delay: 2 },
+          { size: 100, x: '20%', y: '70%', opacity: 0.08, blur: 35, delay: 0.5 },
+          { size: 40, x: '50%', y: '40%', opacity: 0.18, blur: 20, delay: 1.5 },
+          { size: 150, x: '60%', y: '80%', opacity: 0.1, blur: 50, delay: 3 },
+          { size: 30, x: '30%', y: '50%', opacity: 0.2, blur: 15, delay: 2.5 },
+          { size: 90, x: '5%', y: '85%', opacity: 0.12, blur: 35, delay: 1.8 },
+        ].map((p, i) => (
           <div
             key={i}
             className="absolute rounded-full"
             style={{
-              width: `${4 + i * 2}px`,
-              height: `${4 + i * 2}px`,
-              background: `radial-gradient(circle, hsl(43 85% 55% / ${0.3 + i * 0.05}), transparent)`,
-              left: `${15 + i * 14}%`,
-              top: `${20 + (i % 3) * 25}%`,
-              animation: `particle-float ${4 + i}s ease-in-out ${i * 0.5}s infinite`,
-              filter: `blur(${1 + i * 0.5}px)`,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              background: `radial-gradient(circle, hsl(38 80% 55% / ${p.opacity}), hsl(30 60% 40% / ${p.opacity * 0.3}), transparent 70%)`,
+              left: p.x,
+              top: p.y,
+              animation: `particle-float ${5 + i * 0.8}s ease-in-out ${p.delay}s infinite`,
+              filter: `blur(${p.blur}px)`,
             }}
           />
         ))}
