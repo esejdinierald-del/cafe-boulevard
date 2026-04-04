@@ -239,11 +239,11 @@ const Index = () => {
             />
             <button
               onClick={handleConfirmTable}
-              className="px-4 py-3.5 font-bold transition-all duration-300 hover:opacity-90 active:scale-95"
+              className="w-11 h-11 min-w-[2.75rem] rounded-full flex items-center justify-center mr-1 font-bold transition-all duration-300 hover:opacity-90 active:scale-95"
               style={{
-                background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
+                background: 'linear-gradient(135deg, hsl(43 90% 58%), hsl(38 80% 45%))',
                 color: 'hsl(220 60% 10%)',
-                borderRadius: '0 9999px 9999px 0',
+                boxShadow: '0 0 12px hsl(43 85% 55% / 0.4)',
               }}
             >
               <Check className="w-5 h-5" />
