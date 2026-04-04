@@ -135,17 +135,28 @@ const Index = () => {
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden grain-texture"
       style={{ background: 'linear-gradient(180deg, hsl(225 40% 5%) 0%, hsl(220 45% 7%) 30%, hsl(225 35% 8%) 60%, hsl(30 20% 6%) 80%, hsl(220 40% 4%) 100%)' }}
     >
+      {/* Ambient gold glow - top right */}
+      <div className="absolute -top-20 -right-20 w-80 h-80 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(38 80% 50% / 0.08), transparent 60%)', filter: 'blur(60px)' }}
+      />
+      {/* Ambient gold glow - bottom left */}
+      <div className="absolute -bottom-32 -left-20 w-96 h-96 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(38 70% 45% / 0.1), transparent 55%)', filter: 'blur(70px)' }}
+      />
+
       {/* Large bokeh particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[
-          { size: 120, x: '10%', y: '15%', opacity: 0.12, blur: 40, delay: 0 },
-          { size: 80, x: '75%', y: '60%', opacity: 0.15, blur: 30, delay: 1 },
-          { size: 60, x: '85%', y: '20%', opacity: 0.1, blur: 25, delay: 2 },
-          { size: 100, x: '20%', y: '70%', opacity: 0.08, blur: 35, delay: 0.5 },
-          { size: 40, x: '50%', y: '40%', opacity: 0.18, blur: 20, delay: 1.5 },
-          { size: 150, x: '60%', y: '80%', opacity: 0.1, blur: 50, delay: 3 },
-          { size: 30, x: '30%', y: '50%', opacity: 0.2, blur: 15, delay: 2.5 },
-          { size: 90, x: '5%', y: '85%', opacity: 0.12, blur: 35, delay: 1.8 },
+          { size: 160, x: '5%', y: '10%', opacity: 0.14, blur: 50, delay: 0 },
+          { size: 100, x: '80%', y: '55%', opacity: 0.18, blur: 35, delay: 1 },
+          { size: 70, x: '90%', y: '15%', opacity: 0.12, blur: 30, delay: 2 },
+          { size: 130, x: '15%', y: '75%', opacity: 0.1, blur: 45, delay: 0.5 },
+          { size: 50, x: '55%', y: '35%', opacity: 0.22, blur: 22, delay: 1.5 },
+          { size: 180, x: '65%', y: '85%', opacity: 0.12, blur: 60, delay: 3 },
+          { size: 35, x: '35%', y: '45%', opacity: 0.25, blur: 18, delay: 2.5 },
+          { size: 110, x: '3%', y: '90%', opacity: 0.15, blur: 40, delay: 1.8 },
+          { size: 45, x: '70%', y: '30%', opacity: 0.2, blur: 20, delay: 0.8 },
+          { size: 200, x: '40%', y: '95%', opacity: 0.08, blur: 70, delay: 2.2 },
         ].map((p, i) => (
           <div
             key={i}
@@ -156,7 +167,7 @@ const Index = () => {
               background: `radial-gradient(circle, hsl(38 80% 55% / ${p.opacity}), hsl(30 60% 40% / ${p.opacity * 0.3}), transparent 70%)`,
               left: p.x,
               top: p.y,
-              animation: `particle-float ${5 + i * 0.8}s ease-in-out ${p.delay}s infinite`,
+              animation: `particle-float ${6 + i * 0.7}s ease-in-out ${p.delay}s infinite`,
               filter: `blur(${p.blur}px)`,
             }}
           />
@@ -165,7 +176,7 @@ const Index = () => {
 
       {/* Vignette overlay */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 40%, hsl(0 0% 0% / 0.6) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at center, transparent 35%, hsl(0 0% 0% / 0.65) 100%)' }}
       />
 
       {/* Language Toggle */}
