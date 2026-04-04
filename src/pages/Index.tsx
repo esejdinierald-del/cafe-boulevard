@@ -230,7 +230,7 @@ const Index = () => {
 
         {/* Gold Divider */}
         <div className="flex items-center justify-center animate-in-stagger-2">
-          <div className="h-[1px] flex-1" style={{ background: 'linear-gradient(90deg, transparent, hsl(43 85% 55% / 0.4), transparent)' }} />
+          <div className="h-[2px] flex-1" style={{ background: 'linear-gradient(90deg, transparent 5%, hsl(43 85% 55% / 0.5) 30%, hsl(43 90% 65% / 0.7) 50%, hsl(43 85% 55% / 0.5) 70%, transparent 95%)', boxShadow: '0 0 8px hsl(43 85% 55% / 0.2)' }} />
         </div>
 
         {/* Brand Title */}
