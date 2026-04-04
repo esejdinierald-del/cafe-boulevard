@@ -214,16 +214,16 @@ const Index = () => {
         {/* Logo Header */}
         <div className="rounded-2xl overflow-hidden animate-in-stagger-2 relative"
           style={{
-            border: '1px solid hsl(43 85% 55% / 0.2)',
-            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8), 0 0 20px hsl(43 85% 55% / 0.06)',
+            border: '1.5px solid hsl(43 85% 55% / 0.35)',
+            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8), 0 0 25px hsl(43 85% 55% / 0.1)',
           }}
         >
           <img src={logo} alt="Boulevard Café Logo" className="w-full h-auto object-cover relative z-10" />
           {/* Bottom light flare */}
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] z-20"
+          <div className="absolute bottom-0 left-0 right-0 h-[3px] z-20"
             style={{
-              background: 'linear-gradient(90deg, transparent 5%, hsl(43 85% 60% / 0.5) 30%, hsl(43 90% 70% / 0.8) 50%, hsl(43 85% 60% / 0.5) 70%, transparent 95%)',
-              boxShadow: '0 0 10px hsl(43 85% 55% / 0.3)',
+              background: 'linear-gradient(90deg, transparent 3%, hsl(43 85% 60% / 0.6) 25%, hsl(43 90% 75% / 0.9) 50%, hsl(43 85% 60% / 0.6) 75%, transparent 97%)',
+              boxShadow: '0 0 15px hsl(43 85% 55% / 0.4), 0 0 30px hsl(43 85% 55% / 0.15)',
             }}
           />
         </div>
