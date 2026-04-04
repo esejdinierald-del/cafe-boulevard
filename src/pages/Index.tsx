@@ -211,8 +211,13 @@ const Index = () => {
           />
         </div>
 
+        {/* Gold Divider */}
+        <div className="flex items-center justify-center animate-in-stagger-2">
+          <div className="h-[1px] flex-1" style={{ background: 'linear-gradient(90deg, transparent, hsl(43 85% 55% / 0.4), transparent)' }} />
+        </div>
+
         {/* Brand Title */}
-        <h2 className="font-display font-bold text-lg tracking-[0.15em] animate-in-stagger-3 gradient-text-gold">
+        <h2 className="font-display font-bold text-lg tracking-[0.18em] animate-in-stagger-3 gradient-text-gold" style={{ textShadow: '0 0 20px hsl(43 85% 55% / 0.2)' }}>
           BOULEVARD CAFÉ ELBASAN
         </h2>
 
