@@ -243,9 +243,9 @@ const Index = () => {
           <div
             className="flex items-center rounded-full"
             style={{
-              background: 'linear-gradient(135deg, hsl(220 60% 12%) 0%, hsl(220 50% 16%) 100%)',
-              border: '1.5px solid hsl(43 85% 55% / 0.35)',
-              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.3), 0 0 18px hsl(43 85% 55% / 0.12)',
+              background: 'linear-gradient(135deg, hsl(220 60% 10%) 0%, hsl(220 50% 14%) 100%)',
+              border: '1.5px solid hsl(43 85% 55% / 0.45)',
+              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.4), 0 0 22px hsl(43 85% 55% / 0.18), 0 0 40px hsl(43 85% 55% / 0.06)',
             }}
           >
             <div className="pl-4">
