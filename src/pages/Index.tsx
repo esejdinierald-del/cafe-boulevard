@@ -133,22 +133,31 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, hsl(0 0% 5%) 0%, hsl(220 40% 8%) 50%, hsl(0 0% 5%) 100%)' }}
+      style={{ background: 'linear-gradient(180deg, hsl(0 0% 3%) 0%, hsl(220 40% 7%) 40%, hsl(30 30% 8%) 70%, hsl(0 0% 3%) 100%)' }}
     >
-      {/* Ambient gold particles */}
+      {/* Large bokeh particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(6)].map((_, i) => (
+        {[
+          { size: 120, x: '10%', y: '15%', opacity: 0.12, blur: 40, delay: 0 },
+          { size: 80, x: '75%', y: '60%', opacity: 0.15, blur: 30, delay: 1 },
+          { size: 60, x: '85%', y: '20%', opacity: 0.1, blur: 25, delay: 2 },
+          { size: 100, x: '20%', y: '70%', opacity: 0.08, blur: 35, delay: 0.5 },
+          { size: 40, x: '50%', y: '40%', opacity: 0.18, blur: 20, delay: 1.5 },
+          { size: 150, x: '60%', y: '80%', opacity: 0.1, blur: 50, delay: 3 },
+          { size: 30, x: '30%', y: '50%', opacity: 0.2, blur: 15, delay: 2.5 },
+          { size: 90, x: '5%', y: '85%', opacity: 0.12, blur: 35, delay: 1.8 },
+        ].map((p, i) => (
           <div
             key={i}
             className="absolute rounded-full"
             style={{
-              width: `${4 + i * 2}px`,
-              height: `${4 + i * 2}px`,
-              background: `radial-gradient(circle, hsl(43 85% 55% / ${0.3 + i * 0.05}), transparent)`,
-              left: `${15 + i * 14}%`,
-              top: `${20 + (i % 3) * 25}%`,
-              animation: `particle-float ${4 + i}s ease-in-out ${i * 0.5}s infinite`,
-              filter: `blur(${1 + i * 0.5}px)`,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              background: `radial-gradient(circle, hsl(38 80% 55% / ${p.opacity}), hsl(30 60% 40% / ${p.opacity * 0.3}), transparent 70%)`,
+              left: p.x,
+              top: p.y,
+              animation: `particle-float ${5 + i * 0.8}s ease-in-out ${p.delay}s infinite`,
+              filter: `blur(${p.blur}px)`,
             }}
           />
         ))}
@@ -179,20 +188,27 @@ const Index = () => {
       <div
         className="w-full max-w-[400px] rounded-3xl p-6 text-center space-y-5 relative z-10 animate-in-stagger-1"
         style={{
-          background: 'hsl(0 0% 100% / 0.04)',
-          backdropFilter: 'blur(20px)',
-          border: '1.5px solid hsl(43 85% 55% / 0.2)',
-          boxShadow: '0 25px 80px -20px hsl(0 0% 0% / 0.7), 0 0 30px hsl(43 85% 55% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
+          background: 'linear-gradient(180deg, hsl(220 40% 8% / 0.85) 0%, hsl(220 35% 6% / 0.9) 100%)',
+          backdropFilter: 'blur(25px)',
+          border: '1.5px solid hsl(43 85% 55% / 0.3)',
+          boxShadow: '0 25px 80px -20px hsl(0 0% 0% / 0.8), 0 0 40px hsl(43 85% 55% / 0.12), 0 0 80px hsl(43 85% 55% / 0.06), inset 0 1px 0 hsl(0 0% 100% / 0.06)',
         }}
       >
         {/* Logo Header */}
-        <div className="rounded-2xl overflow-hidden animate-in-stagger-2"
+        <div className="rounded-2xl overflow-hidden animate-in-stagger-2 relative"
           style={{
-            border: '1px solid hsl(43 85% 55% / 0.15)',
-            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8)',
+            border: '1px solid hsl(43 85% 55% / 0.2)',
+            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8), 0 0 20px hsl(43 85% 55% / 0.06)',
           }}
         >
           <img src={logo} alt="Boulevard Café Logo" className="w-full h-auto object-cover relative z-10" />
+          {/* Bottom light flare */}
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] z-20"
+            style={{
+              background: 'linear-gradient(90deg, transparent 5%, hsl(43 85% 60% / 0.5) 30%, hsl(43 90% 70% / 0.8) 50%, hsl(43 85% 60% / 0.5) 70%, transparent 95%)',
+              boxShadow: '0 0 10px hsl(43 85% 55% / 0.3)',
+            }}
+          />
         </div>
 
         {/* Brand Title */}
@@ -203,11 +219,11 @@ const Index = () => {
         {/* Table Input */}
         <div className="animate-in-stagger-3">
           <div
-            className="flex items-center rounded-full overflow-hidden"
+            className="flex items-center rounded-full"
             style={{
-              background: 'linear-gradient(135deg, hsl(220 60% 12%) 0%, hsl(220 50% 18%) 100%)',
-              border: '1px solid hsl(43 85% 55% / 0.2)',
-              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.3), 0 0 15px hsl(43 85% 55% / 0.08)',
+              background: 'linear-gradient(135deg, hsl(220 60% 12%) 0%, hsl(220 50% 16%) 100%)',
+              border: '1.5px solid hsl(43 85% 55% / 0.35)',
+              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.3), 0 0 18px hsl(43 85% 55% / 0.12)',
             }}
           >
             <div className="pl-4">
@@ -223,11 +239,11 @@ const Index = () => {
             />
             <button
               onClick={handleConfirmTable}
-              className="px-4 py-3.5 font-bold transition-all duration-300 hover:opacity-90 active:scale-95"
+              className="w-11 h-11 min-w-[2.75rem] rounded-full flex items-center justify-center mr-1 font-bold transition-all duration-300 hover:opacity-90 active:scale-95"
               style={{
-                background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
+                background: 'linear-gradient(135deg, hsl(43 90% 58%), hsl(38 80% 45%))',
                 color: 'hsl(220 60% 10%)',
-                borderRadius: '0 9999px 9999px 0',
+                boxShadow: '0 0 12px hsl(43 85% 55% / 0.4)',
               }}
             >
               <Check className="w-5 h-5" />
@@ -242,7 +258,7 @@ const Index = () => {
         </p>
 
         {/* Action Buttons */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3.5">
           {/* Call Waiter - Navy */}
           <button
             onClick={() => withGeoCheck(handleCallWaiter)}
