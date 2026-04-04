@@ -205,10 +205,10 @@ const Index = () => {
       <div
         className="w-full max-w-[400px] rounded-[28px] p-6 text-center space-y-5 relative z-10 animate-in-stagger-1 bottom-reflection"
         style={{
-          background: 'linear-gradient(180deg, hsl(220 45% 9% / 0.9) 0%, hsl(220 40% 7% / 0.92) 50%, hsl(220 35% 6% / 0.95) 100%)',
+          background: 'linear-gradient(180deg, hsl(220 45% 9% / 0.92) 0%, hsl(220 40% 7% / 0.94) 50%, hsl(220 35% 5% / 0.96) 100%)',
           backdropFilter: 'blur(30px)',
-          border: '1.5px solid hsl(43 85% 55% / 0.25)',
-          boxShadow: '0 30px 100px -25px hsl(0 0% 0% / 0.85), 0 0 50px hsl(43 85% 55% / 0.1), 0 0 100px hsl(43 85% 55% / 0.05), inset 0 1px 0 hsl(0 0% 100% / 0.08), inset 0 -1px 0 hsl(0 0% 0% / 0.3)',
+          border: '1.5px solid hsl(43 85% 55% / 0.4)',
+          boxShadow: '0 30px 100px -25px hsl(0 0% 0% / 0.9), 0 0 60px hsl(43 85% 55% / 0.15), 0 0 120px hsl(43 85% 55% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.1), inset 0 -1px 0 hsl(0 0% 0% / 0.4)',
         }}
       >
         {/* Logo Header */}
