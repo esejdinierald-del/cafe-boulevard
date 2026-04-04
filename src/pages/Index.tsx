@@ -77,12 +77,8 @@ const Index = () => {
   const { checkLocation, checking } = useGeolocation();
 
   const withGeoCheck = async (action: () => Promise<void>) => {
-    const result = await checkLocation(language);
-    if (result.allowed) {
-      await action();
-    } else {
-      toast.error(result.error);
-    }
+    // GPS temporarily disabled for development
+    await action();
   };
 
   useEffect(() => {
