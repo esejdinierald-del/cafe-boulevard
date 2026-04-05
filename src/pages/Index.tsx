@@ -132,41 +132,49 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden grain-texture"
-      style={{ background: 'linear-gradient(180deg, #070B14 0%, #0D1321 30%, #111827 55%, #0D1321 75%, #070B14 100%)' }}
-    >
-      {/* Gold ambient glow - top right */}
-      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.18), rgba(201,162,74,0.08) 40%, transparent 65%)', filter: 'blur(60px)' }}
-      />
-      {/* Gold ambient glow - bottom left */}
-      <div className="absolute -bottom-48 -left-40 w-[700px] h-[700px] pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.15), rgba(255,200,120,0.08) 40%, transparent 60%)', filter: 'blur(70px)' }}
-      />
-      {/* Gold ambient glow - bottom right */}
-      <div className="absolute -bottom-32 -right-24 w-[500px] h-[500px] pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.1), transparent 55%)', filter: 'blur(55px)' }}
-      />
-      {/* Center cinematic glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(255,200,120,0.06), transparent 50%)', filter: 'blur(90px)' }}
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden grain-texture">
+      {/* Base background */}
+      <div className="absolute inset-0 bg-[#0B0F1A]" />
+
+      {/* GOLD GLOW LAYERS */}
+      <div className="absolute inset-0" style={{
+        background: `radial-gradient(circle at 30% 20%, rgba(255,215,0,0.25), transparent 60%),
+          radial-gradient(circle at 70% 80%, rgba(255,190,120,0.20), transparent 60%),
+          radial-gradient(circle at 50% 50%, rgba(255,160,60,0.15), transparent 70%)`
+      }} />
+
+      {/* CENTER LIGHT */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[40%] blur-2xl"
+        style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.35), transparent 70%)' }}
       />
 
-      {/* GOLD bokeh particles — NOT brown */}
+      {/* SPARKLES */}
+      <div className="absolute inset-0 opacity-40 pointer-events-none" style={{
+        backgroundImage: `radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.25), transparent),
+          radial-gradient(2px 2px at 70% 60%, rgba(255,220,120,0.4), transparent),
+          radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,0.2), transparent),
+          radial-gradient(2px 2px at 80% 20%, rgba(255,200,120,0.3), transparent),
+          radial-gradient(1px 1px at 55% 10%, rgba(255,255,255,0.3), transparent),
+          radial-gradient(2px 2px at 10% 65%, rgba(255,220,120,0.35), transparent),
+          radial-gradient(1.5px 1.5px at 90% 45%, rgba(255,255,255,0.2), transparent),
+          radial-gradient(2px 2px at 35% 55%, rgba(255,200,120,0.25), transparent)`
+      }} />
+
+      {/* GOLD bokeh particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[
-          { size: 200, x: '-2%', y: '5%', opacity: 0.2, blur: 45, delay: 0, color: 'rgba(255,215,0,0.25)' },
-          { size: 140, x: '80%', y: '50%', opacity: 0.25, blur: 30, delay: 1, color: 'rgba(255,215,0,0.3)' },
-          { size: 90, x: '90%', y: '10%', opacity: 0.22, blur: 22, delay: 2, color: 'rgba(201,162,74,0.3)' },
-          { size: 180, x: '5%', y: '70%', opacity: 0.2, blur: 40, delay: 0.5, color: 'rgba(255,215,0,0.2)' },
-          { size: 60, x: '55%', y: '25%', opacity: 0.35, blur: 14, delay: 1.5, color: 'rgba(255,230,100,0.4)' },
-          { size: 240, x: '60%', y: '88%', opacity: 0.15, blur: 55, delay: 3, color: 'rgba(255,215,0,0.18)' },
-          { size: 50, x: '30%', y: '38%', opacity: 0.4, blur: 12, delay: 2.5, color: 'rgba(255,230,100,0.45)' },
-          { size: 160, x: '-5%', y: '92%', opacity: 0.18, blur: 38, delay: 1.8, color: 'rgba(255,215,0,0.2)' },
-          { size: 70, x: '72%', y: '20%', opacity: 0.28, blur: 16, delay: 0.8, color: 'rgba(255,200,120,0.35)' },
-          { size: 260, x: '35%', y: '95%', opacity: 0.12, blur: 60, delay: 2.2, color: 'rgba(255,215,0,0.15)' },
-          { size: 80, x: '94%', y: '70%', opacity: 0.25, blur: 18, delay: 1.2, color: 'rgba(255,230,100,0.35)' },
-          { size: 120, x: '45%', y: '3%', opacity: 0.18, blur: 28, delay: 0.3, color: 'rgba(201,162,74,0.25)' },
+          { size: 200, x: '-2%', y: '5%', blur: 45, delay: 0, color: 'rgba(255,215,0,0.25)' },
+          { size: 140, x: '80%', y: '50%', blur: 30, delay: 1, color: 'rgba(255,215,0,0.3)' },
+          { size: 90, x: '90%', y: '10%', blur: 22, delay: 2, color: 'rgba(255,215,0,0.28)' },
+          { size: 180, x: '5%', y: '70%', blur: 40, delay: 0.5, color: 'rgba(255,215,0,0.2)' },
+          { size: 60, x: '55%', y: '25%', blur: 14, delay: 1.5, color: 'rgba(255,230,100,0.4)' },
+          { size: 240, x: '60%', y: '88%', blur: 55, delay: 3, color: 'rgba(255,215,0,0.18)' },
+          { size: 50, x: '30%', y: '38%', blur: 12, delay: 2.5, color: 'rgba(255,230,100,0.45)' },
+          { size: 160, x: '-5%', y: '92%', blur: 38, delay: 1.8, color: 'rgba(255,215,0,0.2)' },
+          { size: 70, x: '72%', y: '20%', blur: 16, delay: 0.8, color: 'rgba(255,200,120,0.35)' },
+          { size: 260, x: '35%', y: '95%', blur: 60, delay: 2.2, color: 'rgba(255,215,0,0.15)' },
+          { size: 80, x: '94%', y: '70%', blur: 18, delay: 1.2, color: 'rgba(255,230,100,0.35)' },
+          { size: 120, x: '45%', y: '3%', blur: 28, delay: 0.3, color: 'rgba(255,215,0,0.22)' },
         ].map((p, i) => (
           <div
             key={i}
@@ -184,22 +192,9 @@ const Index = () => {
         ))}
       </div>
 
-      {/* White sparkle noise overlay */}
+      {/* Vignette overlay */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `radial-gradient(circle at 20% 15%, rgba(255,255,255,0.08) 0%, transparent 1px),
-            radial-gradient(circle at 80% 25%, rgba(255,255,255,0.06) 0%, transparent 1px),
-            radial-gradient(circle at 45% 60%, rgba(255,255,255,0.05) 0%, transparent 1px),
-            radial-gradient(circle at 70% 80%, rgba(255,255,255,0.07) 0%, transparent 1px),
-            radial-gradient(circle at 15% 75%, rgba(255,255,255,0.04) 0%, transparent 1px),
-            radial-gradient(circle at 90% 55%, rgba(255,255,255,0.06) 0%, transparent 1px)`,
-          animation: 'shimmer 4s ease-in-out infinite',
-        }}
-      />
-
-      {/* Vignette overlay - deeper */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.75) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.7) 100%)' }}
       />
 
       {/* Language Toggle */}
