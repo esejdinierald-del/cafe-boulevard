@@ -61,6 +61,7 @@ const StaffShift = () => {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const alarmAudioRef = useRef<HTMLAudioElement | null>(null);
   const [timeLeft, setTimeLeft] = useState("");
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const [showScanner, setShowScanner] = useState(false);
@@ -154,43 +155,40 @@ const StaffShift = () => {
     return () => clearInterval(interval);
   }, [shiftEnd]);
 
-  const playDingDong = useCallback(() => {
-    if (!audioContextRef.current) return;
-    const ctx = audioContextRef.current;
-    const now = ctx.currentTime;
-    const osc1 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    osc1.frequency.value = 830; osc1.type = "sine";
-    gain1.gain.setValueAtTime(0.4, now);
-    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-    osc1.connect(gain1).connect(ctx.destination);
-    osc1.start(now); osc1.stop(now + 0.4);
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    osc2.frequency.value = 620; osc2.type = "sine";
-    gain2.gain.setValueAtTime(0.4, now + 0.3);
-    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
-    osc2.connect(gain2).connect(ctx.destination);
-    osc2.start(now + 0.3); osc2.stop(now + 0.8);
+  // Play the loud alarm WAV file — works better in background than AudioContext
+  const playAlarmSound = useCallback(() => {
+    try {
+      // Create a fresh Audio element each time for reliable playback
+      const audio = new Audio('/notification-alarm.wav');
+      audio.volume = 1.0;
+      audio.play().catch(() => {
+        // Fallback to AudioContext if Audio element fails
+        if (audioContextRef.current) {
+          const ctx = audioContextRef.current;
+          const now = ctx.currentTime;
+          for (let i = 0; i < 6; i++) {
+            const t = now + i * 0.3;
+            const freq = i % 2 === 0 ? 1200 : 800;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.frequency.value = freq;
+            osc.type = "square";
+            gain.gain.setValueAtTime(0.8, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.25);
+          }
+        }
+      });
+    } catch {}
   }, []);
 
-  // Loud urgent alarm for kitchen_ready — 5 rapid high-pitched beeps
+  // Extra-loud kitchen alarm — plays alarm twice
   const playKitchenAlarm = useCallback(() => {
-    if (!audioContextRef.current) return;
-    const ctx = audioContextRef.current;
-    for (let i = 0; i < 5; i++) {
-      const t = ctx.currentTime + i * 0.25;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.value = 1400;
-      osc.type = "square";
-      gain.gain.setValueAtTime(0.7, t);
-      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.15);
-    }
-  }, []);
+    playAlarmSound();
+    setTimeout(() => playAlarmSound(), 3200);
+  }, [playAlarmSound]);
 
   const requestNotificationPermission = useCallback(async () => {
     if ('Notification' in window) {
@@ -205,7 +203,7 @@ const StaffShift = () => {
       const notification = new Notification(title, {
         body, icon: '/pwa-192x192.png', badge: '/pwa-192x192.png',
         tag: `staff-${Date.now()}`, requireInteraction: true,
-        vibrate: [200, 100, 200],
+        vibrate: [500, 200, 500, 200, 500],
       } as NotificationOptions);
       notification.onclick = () => { window.focus(); notification.close(); };
     }
@@ -213,28 +211,33 @@ const StaffShift = () => {
 
   const triggerVibration = useCallback(() => {
     if ('vibrate' in navigator) {
-      navigator.vibrate([300, 100, 300, 100, 300]);
+      navigator.vibrate([500, 200, 500, 200, 500]);
     }
   }, []);
 
   const repeatNotification = useCallback((title: string, body: string, useKitchenAlarm = false) => {
-    const sound = useKitchenAlarm ? playKitchenAlarm : playDingDong;
-    const vibPattern = useKitchenAlarm ? [500, 150, 500, 150, 500] : [300, 100, 300, 100, 300];
+    const sound = useKitchenAlarm ? playKitchenAlarm : playAlarmSound;
+    const vibPattern = [500, 200, 500, 200, 500];
     sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern);
     const t1 = setTimeout(() => { sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern); }, 4000);
     const t2 = setTimeout(() => { sound(); showSystemNotification(title, body); if ('vibrate' in navigator) navigator.vibrate(vibPattern); }, 8000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [playDingDong, playKitchenAlarm, showSystemNotification]);
+  }, [playAlarmSound, playKitchenAlarm, showSystemNotification]);
 
   const enableAudio = useCallback(async () => {
     if (audioEnabled) return;
     try {
+      // Initialize AudioContext as fallback
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       if (audioContextRef.current.state === 'suspended') await audioContextRef.current.resume();
+      // Pre-load the alarm sound with a silent play to unlock audio on iOS
+      const testAudio = new Audio('/notification-alarm.wav');
+      testAudio.volume = 0.01;
+      testAudio.play().then(() => { testAudio.pause(); testAudio.currentTime = 0; }).catch(() => {});
       const notifGranted = await requestNotificationPermission();
       setAudioEnabled(true);
-      if (notifGranted) toast.success("Zëri dhe njoftimet u aktivizuan!");
-      else toast.success("Zëri u aktivizua!");
+      if (notifGranted) toast.success("🔊 Alarmi super i fortë u aktivizua!");
+      else toast.success("🔊 Alarmi u aktivizua!");
     } catch {}
   }, [audioEnabled, requestNotificationPermission]);
 
