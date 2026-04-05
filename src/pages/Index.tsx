@@ -8,8 +8,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { Languages } from "lucide-react";
+import boulevardLogo from "@/assets/boulevard-logo.png";
 import {
-  CocktailIcon,
   LocationPinIcon,
   BellIcon,
   ReceiptIcon,
@@ -170,7 +170,14 @@ const Index = () => {
               <div className="blvd-header-line-bottom" />
 
               <div className="relative z-10">
-                <CocktailIcon />
+                <img
+                  src={boulevardLogo}
+                  alt="Boulevard Café"
+                  className="w-16 h-16 mx-auto mb-3 rounded-xl object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 0 12px rgba(232, 199, 109, 0.5)) drop-shadow(0 0 25px rgba(255, 180, 50, 0.25))',
+                  }}
+                />
                 <h1 className="blvd-title">BOULEVARD</h1>
                 <div className="blvd-title-underline" />
                 <p className="blvd-subtitle">{t.subtitle}</p>
