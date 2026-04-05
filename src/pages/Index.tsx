@@ -8,8 +8,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { Languages } from "lucide-react";
+import boulevardLogo from "@/assets/boulevard-logo.png";
 import {
-  CocktailIcon,
   LocationPinIcon,
   BellIcon,
   ReceiptIcon,
