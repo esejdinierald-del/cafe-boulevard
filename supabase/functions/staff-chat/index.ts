@@ -201,7 +201,7 @@ async function fetchActiveOffers(): Promise<string> {
       info += "DO TË AKTIVIZOHEN SË SHPEJTI:\n";
       for (const item of upcomingOffers) {
         const cat = (item as any).categories?.name || "";
-        info += `- ${item.name} (${cat}): ${item.offer_price}€ (çmimi normal: ${item.price}€) — nga ${item.offer_start_time} deri ${item.offer_end_time}\n`;
+        info += `- ${item.name} (${cat}): ${item.offer_price} Lekë (çmimi normal: ${item.price} Lekë) — nga ${item.offer_start_time} deri ${item.offer_end_time}\n`;
       }
     }
 
