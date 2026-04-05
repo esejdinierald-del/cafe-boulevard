@@ -183,32 +183,46 @@
 }
 
 @layer components {
-  /* ===== DARK BUTTON (Navy glass + gold outline) ===== */
+  /* ===== DARK BUTTON (Navy glass + subtle gold edge) ===== */
   .service-btn-navy {
     @apply relative overflow-hidden rounded-full font-sans font-medium py-4 px-8;
     @apply flex items-center gap-4 w-full text-left text-base;
     @apply transition-all duration-300 ease-out;
     @apply hover:scale-[1.015] active:scale-[0.98];
     background: linear-gradient(
-      135deg,
-      hsl(215 28% 8%) 0%,
-      hsl(215 25% 12%) 40%,
-      hsl(215 28% 9%) 100%
+      180deg,
+      hsl(215 30% 11%) 0%,
+      hsl(215 28% 8%) 50%,
+      hsl(215 32% 6%) 100%
     );
-    color: hsl(38 50% 72%);
-    border: 1px solid hsl(38 52% 52% / 0.18);
+    color: hsl(38 42% 65%);
+    border: 1px solid hsl(38 42% 45% / 0.12);
     box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.04),
-      inset 0 -1px 0 hsl(0 0% 0% / 0.4),
-      0 0 12px hsl(38 52% 52% / 0.06);
+      inset 0 1px 0 hsl(215 30% 18% / 0.5),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.5),
+      inset 0 0 15px hsl(0 0% 0% / 0.15),
+      0 4px 12px hsl(0 0% 0% / 0.35),
+      0 0 8px hsl(38 42% 45% / 0.03);
+  }
+  /* Inner grain for glass feel */
+  .service-btn-navy::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px 128px;
+    pointer-events: none;
+    border-radius: inherit;
   }
   .service-btn-navy:hover {
-    border-color: hsl(38 52% 52% / 0.35);
+    border-color: hsl(38 42% 45% / 0.22);
     box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.06),
-      inset 0 -1px 0 hsl(0 0% 0% / 0.4),
-      0 0 20px hsl(38 52% 52% / 0.12),
-      0 0 40px hsl(38 52% 52% / 0.04);
+      inset 0 1px 0 hsl(215 30% 20% / 0.6),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.5),
+      inset 0 0 15px hsl(0 0% 0% / 0.15),
+      0 6px 18px hsl(0 0% 0% / 0.45),
+      0 0 15px hsl(38 42% 45% / 0.06);
   }
 
   /* ===== GOLD BUTTON (Metallic, desaturated, worn metal) ===== */
