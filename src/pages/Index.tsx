@@ -63,18 +63,23 @@ const translations = {
   },
 };
 
-/* Desaturated gold bokeh — warm amber/brown, not bright yellow */
+/* Bronze-warm bokeh — depth-of-field effect with golden shimmer */
 const bokehParticles = [
-  { size: 180, x: '-3%', y: '8%', blur: 50, delay: 0, opacity: 0.12 },
-  { size: 120, x: '82%', y: '45%', blur: 35, delay: 1.2, opacity: 0.15 },
-  { size: 80, x: '88%', y: '8%', blur: 25, delay: 2.4, opacity: 0.14 },
-  { size: 200, x: '8%', y: '75%', blur: 55, delay: 0.6, opacity: 0.1 },
-  { size: 50, x: '50%', y: '22%', blur: 15, delay: 1.8, opacity: 0.2 },
-  { size: 220, x: '55%', y: '90%', blur: 60, delay: 3.0, opacity: 0.08 },
-  { size: 40, x: '28%', y: '40%', blur: 12, delay: 2.8, opacity: 0.22 },
-  { size: 150, x: '-4%', y: '88%', blur: 42, delay: 1.5, opacity: 0.1 },
-  { size: 60, x: '75%', y: '18%', blur: 18, delay: 0.9, opacity: 0.16 },
-  { size: 100, x: '42%', y: '5%', blur: 30, delay: 0.3, opacity: 0.12 },
+  // Large distant (blurry, low opacity) — background layer
+  { size: 260, x: '-5%', y: '5%', blur: 70, delay: 0, opacity: 0.08 },
+  { size: 300, x: '75%', y: '85%', blur: 80, delay: 1.5, opacity: 0.06 },
+  { size: 220, x: '90%', y: '-5%', blur: 65, delay: 3.0, opacity: 0.07 },
+  // Mid-distance (moderate blur)
+  { size: 140, x: '20%', y: '70%', blur: 45, delay: 0.8, opacity: 0.12 },
+  { size: 160, x: '65%', y: '30%', blur: 50, delay: 2.0, opacity: 0.10 },
+  { size: 100, x: '85%', y: '50%', blur: 35, delay: 1.2, opacity: 0.14 },
+  { size: 120, x: '10%', y: '40%', blur: 40, delay: 2.5, opacity: 0.11 },
+  // Close-up (sharper, brighter) — foreground layer
+  { size: 50, x: '30%', y: '20%', blur: 12, delay: 0.4, opacity: 0.22 },
+  { size: 35, x: '55%', y: '65%', blur: 8, delay: 1.8, opacity: 0.25 },
+  { size: 45, x: '78%', y: '15%', blur: 10, delay: 0.9, opacity: 0.20 },
+  { size: 30, x: '42%', y: '88%', blur: 6, delay: 2.8, opacity: 0.28 },
+  { size: 25, x: '15%', y: '55%', blur: 5, delay: 3.2, opacity: 0.24 },
 ];
 
 /* Sparkle particles — twinkling gold/white specks */
@@ -165,36 +170,38 @@ const Index = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden grain-texture">
 
-      {/* ═══ BACKGROUND LAYER ═══ */}
+      {/* ═══ BACKGROUND — Bronze-dark warm base ═══ */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(180deg, #0B0F14 0%, #111820 40%, #141A22 100%)',
+          background: 'linear-gradient(180deg, #1a110a 0%, #3a2722 30%, #2a1c14 60%, #150e08 100%)',
         }}
       />
 
-      {/* Ambient cinematic glow — soft, desaturated, NO neon */}
+      {/* Warm atmospheric haze — misty bronze fog */}
       <div
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse at 25% 15%, rgba(201,150,74,0.12), transparent 55%),
-            radial-gradient(ellipse at 75% 80%, rgba(180,130,60,0.10), transparent 55%),
-            radial-gradient(ellipse at 50% 50%, rgba(160,120,50,0.06), transparent 60%)
+            radial-gradient(ellipse at 30% 20%, rgba(255,215,0,0.15), transparent 50%),
+            radial-gradient(ellipse at 70% 75%, rgba(255,190,100,0.12), transparent 50%),
+            radial-gradient(ellipse at 50% 45%, rgba(200,150,80,0.08), transparent 55%),
+            radial-gradient(ellipse at 15% 80%, rgba(255,200,120,0.06), transparent 45%),
+            radial-gradient(ellipse at 85% 25%, rgba(255,215,0,0.08), transparent 40%)
           `,
         }}
       />
 
-      {/* Center bloom — very soft */}
+      {/* Center bloom — golden warmth from below */}
       <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] h-[35%]"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[85%] h-[45%]"
         style={{
-          background: 'radial-gradient(ellipse, rgba(201,150,74,0.15), transparent 70%)',
-          filter: 'blur(40px)',
+          background: 'radial-gradient(ellipse, rgba(255,215,0,0.18), rgba(200,150,80,0.08) 50%, transparent 75%)',
+          filter: 'blur(50px)',
         }}
       />
 
-      {/* Bokeh particles — warm desaturated amber */}
+      {/* Depth-of-field bokeh particles — layered near/far */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {bokehParticles.map((p, i) => (
           <div
@@ -203,10 +210,10 @@ const Index = () => {
             style={{
               width: `${p.size}px`,
               height: `${p.size}px`,
-              background: `radial-gradient(circle, rgba(201,150,74,${p.opacity}), transparent 70%)`,
+              background: `radial-gradient(circle, rgba(255,215,0,${p.opacity}) 0%, rgba(255,190,100,${p.opacity * 0.5}) 40%, transparent 70%)`,
               left: p.x,
               top: p.y,
-              animation: `particle-drift ${7 + i * 0.8}s ease-in-out ${p.delay}s infinite`,
+              animation: `particle-drift ${8 + i * 0.7}s ease-in-out ${p.delay}s infinite`,
               filter: `blur(${p.blur}px)`,
             }}
           />
@@ -232,10 +239,22 @@ const Index = () => {
         ))}
       </div>
 
-      {/* Deep vignette */}
+      {/* Deep warm vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 30%, rgba(6,8,12,0.75) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at center, transparent 25%, rgba(21,14,8,0.7) 70%, rgba(10,6,3,0.9) 100%)' }}
+      />
+
+      {/* Misty atmospheric fog overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{
+          background: `
+            radial-gradient(ellipse at 40% 30%, rgba(255,240,200,0.3), transparent 50%),
+            radial-gradient(ellipse at 60% 70%, rgba(255,220,160,0.2), transparent 50%)
+          `,
+          filter: 'blur(80px)',
+        }}
       />
 
       {/* ═══ LANGUAGE TOGGLE ═══ */}
