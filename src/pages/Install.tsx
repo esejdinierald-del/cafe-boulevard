@@ -18,9 +18,12 @@ const Install = () => {
   const [isAndroid, setIsAndroid] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
-    if (window.matchMedia("(display-mode: standalone)").matches) {
+    // If already installed (standalone mode), redirect to home
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone === true;
+    if (isStandalone) {
       setIsInstalled(true);
+      navigate("/", { replace: true });
+      return;
     }
 
     // Detect iOS
@@ -48,7 +51,7 @@ const Install = () => {
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     };
-  }, []);
+  }, [navigate]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
