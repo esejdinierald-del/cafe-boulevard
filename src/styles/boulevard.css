@@ -1,5 +1,6 @@
 /* ============================================
    BOULEVARD CAFÉ - CUSTOM STYLES
+   Cinematic Premium Dark Luxury
    ============================================ */
 
 /* ===== VARIABLAT ===== */
@@ -10,16 +11,19 @@
   --bg-outside-4: #3d2418;
   --bg-outside-5: #5c3d2a;
 
-  --bokeh-1: rgba(255, 215, 0, 0.12);
-  --bokeh-2: rgba(255, 236, 139, 0.08);
-  --bokeh-3: rgba(218, 165, 32, 0.1);
-  --bokeh-4: rgba(184, 134, 11, 0.06);
+  --bokeh-1: rgba(255, 185, 50, 0.25);
+  --bokeh-2: rgba(255, 140, 30, 0.2);
+  --bokeh-3: rgba(218, 165, 32, 0.22);
+  --bokeh-4: rgba(255, 120, 20, 0.15);
+  --bokeh-5: rgba(255, 200, 80, 0.18);
+  --bokeh-6: rgba(200, 100, 20, 0.12);
 
-  --bezel-1: #e8c76d;
-  --bezel-2: #d4af37;
-  --bezel-3: #b8860b;
-  --bezel-4: #8d5720;
-  --bezel-5: #5c3d2a;
+  --bezel-1: #f0d080;
+  --bezel-2: #e8c76d;
+  --bezel-3: #d4af37;
+  --bezel-4: #b8860b;
+  --bezel-5: #8d5720;
+  --bezel-6: #5c3d2a;
 
   --ui-bg-1: #050508;
   --ui-bg-2: #0a0c10;
@@ -50,56 +54,100 @@
   --font-sans: 'Inter', sans-serif;
 }
 
-/* ===== SFONDI BOKEH ===== */
+/* ===== SFONDI BOKEH - INTENSE WARM PARTICLES ===== */
 .blvd-ambient {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle at 10% 20%, var(--bokeh-1) 0%, transparent 15%),
-    radial-gradient(circle at 25% 80%, var(--bokeh-2) 0%, transparent 12%),
-    radial-gradient(circle at 75% 15%, var(--bokeh-3) 0%, transparent 18%),
-    radial-gradient(circle at 85% 75%, var(--bokeh-1) 0%, transparent 20%),
-    radial-gradient(circle at 50% 50%, var(--bokeh-4) 0%, transparent 25%),
-    radial-gradient(circle at 15% 60%, var(--bokeh-2) 0%, transparent 10%),
-    radial-gradient(circle at 90% 40%, var(--bokeh-3) 0%, transparent 15%),
-    radial-gradient(ellipse at center, var(--bg-outside-3) 0%, var(--bg-outside-1) 70%);
+    /* Large warm bokeh circles */
+    radial-gradient(circle 180px at 5% 15%, var(--bokeh-1) 0%, transparent 100%),
+    radial-gradient(circle 220px at 92% 20%, var(--bokeh-2) 0%, transparent 100%),
+    radial-gradient(circle 160px at 85% 75%, var(--bokeh-1) 0%, transparent 100%),
+    radial-gradient(circle 200px at 10% 80%, var(--bokeh-3) 0%, transparent 100%),
+    radial-gradient(circle 140px at 50% 10%, var(--bokeh-4) 0%, transparent 100%),
+    radial-gradient(circle 130px at 95% 50%, var(--bokeh-5) 0%, transparent 100%),
+    radial-gradient(circle 170px at 3% 50%, var(--bokeh-2) 0%, transparent 100%),
+    /* Base warm gradient */
+    radial-gradient(ellipse at 50% 50%, #3d2418 0%, #1a0f0c 40%, #0d0806 75%);
   z-index: 0;
 }
 
+/* Bokeh layer 2 - bright scattered particles with strong blur */
 .blvd-bokeh-blur {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle 80px at 20% 30%, var(--bokeh-1) 0%, transparent 100%),
-    radial-gradient(circle 60px at 80% 20%, var(--bokeh-2) 0%, transparent 100%),
-    radial-gradient(circle 100px at 40% 70%, var(--bokeh-3) 0%, transparent 100%),
-    radial-gradient(circle 50px at 70% 60%, var(--bokeh-1) 0%, transparent 100%),
-    radial-gradient(circle 40px at 55% 15%, rgba(255,215,0,0.15) 0%, transparent 100%),
-    radial-gradient(circle 70px at 30% 50%, var(--bokeh-4) 0%, transparent 100%),
-    radial-gradient(circle 35px at 85% 45%, rgba(255,200,50,0.1) 0%, transparent 100%),
-    radial-gradient(circle 55px at 15% 85%, var(--bokeh-3) 0%, transparent 100%);
-  filter: blur(40px);
+    /* Bright warm orbs */
+    radial-gradient(circle 50px at 8% 25%, rgba(255,180,50,0.5) 0%, transparent 100%),
+    radial-gradient(circle 35px at 15% 60%, rgba(255,160,40,0.4) 0%, transparent 100%),
+    radial-gradient(circle 60px at 88% 18%, rgba(255,170,30,0.45) 0%, transparent 100%),
+    radial-gradient(circle 40px at 82% 65%, rgba(255,190,60,0.4) 0%, transparent 100%),
+    radial-gradient(circle 30px at 92% 40%, rgba(255,200,80,0.5) 0%, transparent 100%),
+    radial-gradient(circle 45px at 5% 85%, rgba(255,150,30,0.35) 0%, transparent 100%),
+    radial-gradient(circle 25px at 20% 15%, rgba(255,220,100,0.5) 0%, transparent 100%),
+    radial-gradient(circle 55px at 75% 80%, rgba(255,160,40,0.35) 0%, transparent 100%),
+    radial-gradient(circle 20px at 95% 90%, rgba(255,200,80,0.4) 0%, transparent 100%),
+    radial-gradient(circle 38px at 60% 5%, rgba(255,180,60,0.3) 0%, transparent 100%),
+    /* Medium scattered */
+    radial-gradient(circle 70px at 30% 40%, rgba(200,100,20,0.2) 0%, transparent 100%),
+    radial-gradient(circle 90px at 70% 30%, rgba(180,80,10,0.15) 0%, transparent 100%);
+  filter: blur(25px);
   z-index: 1;
-  opacity: 0.8;
+  opacity: 0.9;
+  animation: blvd-bokeh-drift 12s ease-in-out infinite alternate;
+}
+
+@keyframes blvd-bokeh-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(3px, -3px) scale(1.02); }
+}
+
+/* Bokeh layer 3 — tiny sharp sparkles (less blur) */
+.blvd-sparkles {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle 8px at 12% 22%, rgba(255,220,120,0.6) 0%, transparent 100%),
+    radial-gradient(circle 6px at 88% 15%, rgba(255,200,80,0.5) 0%, transparent 100%),
+    radial-gradient(circle 10px at 7% 70%, rgba(255,190,60,0.5) 0%, transparent 100%),
+    radial-gradient(circle 7px at 93% 72%, rgba(255,210,100,0.55) 0%, transparent 100%),
+    radial-gradient(circle 5px at 18% 45%, rgba(255,230,140,0.4) 0%, transparent 100%),
+    radial-gradient(circle 9px at 85% 48%, rgba(255,180,50,0.45) 0%, transparent 100%),
+    radial-gradient(circle 6px at 4% 92%, rgba(255,200,80,0.4) 0%, transparent 100%),
+    radial-gradient(circle 8px at 96% 88%, rgba(255,170,40,0.5) 0%, transparent 100%),
+    radial-gradient(circle 4px at 22% 8%, rgba(255,240,160,0.5) 0%, transparent 100%),
+    radial-gradient(circle 7px at 78% 92%, rgba(255,200,80,0.35) 0%, transparent 100%);
+  filter: blur(4px);
+  z-index: 2;
+  opacity: 0.7;
+  animation: blvd-sparkle-float 8s ease-in-out infinite alternate;
+}
+
+@keyframes blvd-sparkle-float {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-2px, 2px); }
 }
 
 .blvd-vignette {
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(10,5,3,0.6) 100%);
-  z-index: 2;
+  background: radial-gradient(ellipse 70% 70% at center, transparent 30%, rgba(10,5,3,0.7) 100%);
+  z-index: 3;
   pointer-events: none;
 }
 
+/* Screen grain noise */
 .blvd-noise {
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.06;
   pointer-events: none;
+  z-index: 5;
+  mix-blend-mode: overlay;
 }
 
-/* ===== TELEFONI ===== */
+/* ===== TELEFONI - METALLIC BEZEL ===== */
 .blvd-phone {
   position: relative;
   width: 100%;
@@ -107,43 +155,78 @@
   background: linear-gradient(
     155deg,
     var(--bezel-1) 0%,
-    var(--bezel-2) 15%,
-    var(--bezel-3) 40%,
-    var(--bezel-4) 70%,
-    var(--bezel-5) 100%
+    var(--bezel-2) 12%,
+    var(--bezel-3) 30%,
+    var(--bezel-4) 55%,
+    var(--bezel-5) 80%,
+    var(--bezel-6) 100%
   );
   border-radius: 52px;
   padding: 9px;
   box-shadow:
-    0 60px 120px rgba(0,0,0,0.8),
-    0 40px 80px rgba(0,0,0,0.6),
-    0 20px 40px rgba(0,0,0,0.4),
-    inset 0 2px 3px rgba(255,240,200,0.4),
-    inset 0 -2px 3px rgba(0,0,0,0.4),
-    inset 2px 0 3px rgba(255,240,200,0.15),
-    inset -2px 0 3px rgba(0,0,0,0.2);
+    /* Deep ambient shadow */
+    0 60px 120px rgba(0,0,0,0.85),
+    0 30px 60px rgba(0,0,0,0.65),
+    0 15px 30px rgba(0,0,0,0.45),
+    /* Warm glow around phone from bokeh */
+    0 0 80px rgba(200,130,30,0.15),
+    0 0 150px rgba(200,130,30,0.08),
+    /* Inner metallic edges */
+    inset 0 2px 3px rgba(255,240,200,0.5),
+    inset 0 -2px 3px rgba(0,0,0,0.5),
+    inset 2px 0 3px rgba(255,240,200,0.2),
+    inset -2px 0 3px rgba(0,0,0,0.3);
   z-index: 10;
 }
 
+/* Top edge highlight — strong metallic glint */
 .blvd-phone-highlight {
   position: absolute;
   top: 0;
-  left: 15%;
-  right: 15%;
-  height: 1px;
+  left: 12%;
+  right: 12%;
+  height: 2px;
   border-radius: 9999px;
-  background: linear-gradient(90deg, transparent, rgba(255,240,200,0.6), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,240,200,0.8), rgba(255,255,255,0.5), rgba(255,240,200,0.8), transparent);
+  z-index: 11;
+  box-shadow: 0 0 8px rgba(255,220,150,0.4);
+}
+
+/* Corner metallic reflections */
+.blvd-phone::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 60%;
+  bottom: 60%;
+  border-radius: 48px 0 0 0;
+  background: linear-gradient(135deg, rgba(255,240,200,0.3) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 11;
+}
+
+.blvd-phone::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  left: 60%;
+  top: 60%;
+  border-radius: 0 0 48px 0;
+  background: linear-gradient(315deg, rgba(255,200,100,0.15) 0%, transparent 40%);
+  pointer-events: none;
   z-index: 11;
 }
 
 .blvd-phone-shadow {
   position: absolute;
-  bottom: -30px;
-  left: 10%;
-  right: 10%;
-  height: 40px;
-  background: radial-gradient(ellipse, rgba(0,0,0,0.6), transparent 70%);
-  filter: blur(20px);
+  bottom: -35px;
+  left: 8%;
+  right: 8%;
+  height: 50px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.7), transparent 70%);
+  filter: blur(25px);
   z-index: -1;
 }
 
@@ -154,17 +237,23 @@
   background: var(--ui-bg-1);
   border-radius: 44px;
   overflow: hidden;
-  box-shadow: inset 0 0 30px rgba(0,0,0,0.9), inset 0 2px 4px rgba(0,0,0,0.8);
+  box-shadow:
+    inset 0 0 40px rgba(0,0,0,0.95),
+    inset 0 2px 4px rgba(0,0,0,0.8),
+    inset 0 -1px 2px rgba(100,60,20,0.1);
 }
 
+/* Flare needs to be inside content flow to avoid overflow clip */
+
+/* Diagonal glass reflection — stronger */
 .blvd-glass-reflect {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     140deg,
-    rgba(255,255,255,0.1) 0%,
-    rgba(255,255,255,0.04) 25%,
-    transparent 45%
+    rgba(255,255,255,0.12) 0%,
+    rgba(255,255,255,0.05) 20%,
+    transparent 40%
   );
   border-radius: 44px;
   pointer-events: none;
@@ -184,30 +273,106 @@
       var(--ui-bg-2) 0%,
       var(--ui-bg-1) 30%,
       var(--ui-bg-2) 60%,
-      rgba(61,48,37,0.15) 100%
+      rgba(61,48,37,0.2) 100%
     );
 }
 
+/* Top light ray — warm golden haze */
 .blvd-light-ray {
   position: absolute;
-  top: -80px;
+  top: -60px;
   left: 50%;
   transform: translateX(-50%);
-  width: 350px;
-  height: 250px;
+  width: 400px;
+  height: 280px;
   background:
-    radial-gradient(ellipse at 40% 0%, rgba(255,215,0,0.1) 0%, transparent 60%),
-    radial-gradient(ellipse at 65% 10%, rgba(232,199,109,0.06) 0%, transparent 50%);
-  filter: blur(40px);
+    radial-gradient(ellipse at 50% 0%, rgba(255,200,80,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 35% 10%, rgba(255,180,50,0.08) 0%, transparent 45%),
+    radial-gradient(ellipse at 65% 5%, rgba(232,199,109,0.07) 0%, transparent 50%);
+  filter: blur(30px);
   pointer-events: none;
+  z-index: 1;
+}
+
+/* Horizontal golden flare line — signature effect */
+.blvd-flare {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,200,80,0.15) 10%,
+    rgba(255,180,50,0.5) 30%,
+    rgba(255,220,100,0.9) 45%,
+    rgba(255,255,220,1) 50%,
+    rgba(255,220,100,0.9) 55%,
+    rgba(255,180,50,0.5) 70%,
+    rgba(255,200,80,0.15) 90%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 15px rgba(255,180,50,0.7),
+    0 0 40px rgba(255,180,50,0.4),
+    0 0 80px rgba(255,150,30,0.2);
+  z-index: 90;
+  pointer-events: none;
+  animation: blvd-flare-pulse 3s ease-in-out infinite;
+}
+
+@keyframes blvd-flare-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Soft glow haze around flare */
+.blvd-flare::before {
+  content: '';
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: -12px;
+  bottom: -12px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,180,50,0.12) 25%,
+    rgba(255,200,80,0.2) 50%,
+    rgba(255,180,50,0.12) 75%,
+    transparent
+  );
+  filter: blur(8px);
+}
+
+@keyframes blvd-flare-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Secondary soft glow band behind flare */
+.blvd-flare::before {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: -15px;
+  bottom: -15px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,180,50,0.15) 30%,
+    rgba(255,200,80,0.25) 50%,
+    rgba(255,180,50,0.15) 70%,
+    transparent
+  );
+  filter: blur(10px);
 }
 
 .blvd-inner-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(5,3,1,0.4) 100%);
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(5,3,1,0.5) 100%);
   border-radius: 44px;
   pointer-events: none;
+  z-index: 2;
 }
 
 /* ===== HEADER ===== */
@@ -224,7 +389,7 @@
     inset 0 1px 0 rgba(255,215,0,0.12),
     inset 0 -1px 0 rgba(0,0,0,0.5),
     0 0 0 1px rgba(0,0,0,0.6),
-    0 0 30px rgba(212,175,55,0.04);
+    0 0 30px rgba(212,175,55,0.06);
   overflow: hidden;
   margin-bottom: 28px;
 }
@@ -232,18 +397,31 @@
 .blvd-header-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.3) 100%);
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%);
   border-radius: 22px;
   pointer-events: none;
+}
+
+/* Header internal grain */
+.blvd-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  border-radius: 22px;
+  mix-blend-mode: overlay;
 }
 
 .blvd-header-line-top {
   position: absolute;
   top: 0;
-  left: 10%;
-  right: 10%;
+  left: 8%;
+  right: 8%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.6), transparent);
+  box-shadow: 0 0 6px rgba(212,175,55,0.3);
 }
 
 .blvd-header-line-bottom {
@@ -254,6 +432,7 @@
   width: 55%;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255,215,0,0.5), transparent);
+  box-shadow: 0 0 8px rgba(255,215,0,0.2);
 }
 
 .blvd-title {
@@ -263,7 +442,7 @@
   letter-spacing: 6px;
   color: var(--text-gold);
   text-transform: uppercase;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6), 0 0 30px rgba(212,175,55,0.15);
   margin-bottom: 6px;
 }
 
@@ -271,7 +450,8 @@
   margin: 0 auto 12px;
   width: 50%;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--gold-3) 30%, var(--bezel-1) 50%, var(--gold-3) 70%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--gold-3) 30%, var(--bezel-2) 50%, var(--gold-3) 70%, transparent 100%);
+  box-shadow: 0 0 6px rgba(212,175,55,0.3);
 }
 
 .blvd-subtitle {
@@ -289,7 +469,7 @@
   letter-spacing: 2px;
   color: var(--gold-3);
   text-transform: uppercase;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 0 20px rgba(212,175,55,0.1);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 0 25px rgba(212,175,55,0.12);
   margin-bottom: 16px;
   text-align: center;
 }
@@ -356,7 +536,7 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(145deg, var(--gold-2) 0%, var(--gold-3) 40%, var(--gold-4) 100%);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3), 0 0 8px rgba(212,175,55,0.2);
   border: none;
   cursor: pointer;
   flex-shrink: 0;
@@ -364,7 +544,8 @@
 }
 
 .blvd-check-btn:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3), 0 0 15px rgba(212,175,55,0.35);
 }
 
 .blvd-check-btn:active {
@@ -429,6 +610,7 @@
   flex-shrink: 0;
   position: relative;
   z-index: 2;
+  filter: drop-shadow(0 0 4px rgba(232,199,109,0.3));
 }
 
 /* ===== BUTON GOLD ===== */
@@ -456,7 +638,7 @@
     0 5px 12px rgba(0,0,0,0.45),
     inset 0 2px 0 rgba(255,255,255,0.35),
     inset 0 -2px 4px rgba(100,50,0,0.3),
-    0 0 10px rgba(244,196,48,0.12);
+    0 0 15px rgba(244,196,48,0.15);
   cursor: pointer;
   transition: all 0.3s ease;
   overflow: hidden;
@@ -496,7 +678,7 @@
     0 8px 20px rgba(0,0,0,0.5),
     inset 0 2px 0 rgba(255,255,255,0.4),
     inset 0 -2px 4px rgba(100,50,0,0.3),
-    0 0 20px rgba(244,196,48,0.2);
+    0 0 25px rgba(244,196,48,0.25);
   transform: translateY(-1px);
 }
 
@@ -587,6 +769,8 @@
     box-shadow: none !important;
     min-height: 100vh;
   }
+  .blvd-phone::before,
+  .blvd-phone::after,
   .blvd-phone-highlight,
   .blvd-phone-shadow {
     display: none;
@@ -601,4 +785,19 @@
   .blvd-screen-content {
     max-height: none;
   }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(201,163,92,0.15);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(201,163,92,0.35);
 }

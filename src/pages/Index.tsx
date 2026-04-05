@@ -138,6 +138,7 @@ const Index = () => {
       {/* Background layers */}
       <div className="blvd-ambient" />
       <div className="blvd-bokeh-blur" />
+      <div className="blvd-sparkles" />
       <div className="blvd-vignette" />
 
       {/* Language toggle */}
@@ -175,6 +176,12 @@ const Index = () => {
                 <p className="blvd-subtitle">{t.subtitle}</p>
               </div>
             </div>
+
+            {/* Golden flare separator */}
+            <div className="w-full h-[2px] my-2" style={{
+              background: 'linear-gradient(90deg, transparent, rgba(255,200,80,0.8) 30%, rgba(255,240,180,1) 50%, rgba(255,200,80,0.8) 70%, transparent)',
+              boxShadow: '0 0 15px rgba(255,180,50,0.6), 0 0 40px rgba(255,150,30,0.3), 0 0 80px rgba(255,130,20,0.15)',
+            }} />
 
             {/* Section title */}
             <h2 className="blvd-section-title">BOULEVARD CAFÉ ELBASAN</h2>
