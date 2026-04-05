@@ -61,6 +61,7 @@ const StaffShift = () => {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const alarmAudioRef = useRef<HTMLAudioElement | null>(null);
   const [timeLeft, setTimeLeft] = useState("");
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const [showScanner, setShowScanner] = useState(false);
