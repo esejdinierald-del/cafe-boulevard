@@ -239,10 +239,22 @@ const Index = () => {
         ))}
       </div>
 
-      {/* Deep vignette */}
+      {/* Deep warm vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 30%, rgba(6,8,12,0.75) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at center, transparent 25%, rgba(21,14,8,0.7) 70%, rgba(10,6,3,0.9) 100%)' }}
+      />
+
+      {/* Misty atmospheric fog overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{
+          background: `
+            radial-gradient(ellipse at 40% 30%, rgba(255,240,200,0.3), transparent 50%),
+            radial-gradient(ellipse at 60% 70%, rgba(255,220,160,0.2), transparent 50%)
+          `,
+          filter: 'blur(80px)',
+        }}
       />
 
       {/* ═══ LANGUAGE TOGGLE ═══ */}
