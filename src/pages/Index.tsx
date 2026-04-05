@@ -133,40 +133,40 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden grain-texture"
-      style={{ background: 'linear-gradient(180deg, hsl(220 50% 4%) 0%, hsl(215 45% 8%) 25%, hsl(220 40% 10%) 45%, hsl(30 30% 8%) 70%, hsl(25 25% 6%) 85%, hsl(220 45% 4%) 100%)' }}
+      style={{ background: 'linear-gradient(180deg, #070B14 0%, #0D1321 30%, #111827 55%, #0D1321 75%, #070B14 100%)' }}
     >
-      {/* Warm ambient glow - top right */}
+      {/* Gold ambient glow - top right */}
       <div className="absolute -top-40 -right-40 w-[600px] h-[600px] pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(30 65% 35% / 0.25), hsl(35 60% 30% / 0.12) 35%, transparent 60%)', filter: 'blur(60px)' }}
+        style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.18), rgba(201,162,74,0.08) 40%, transparent 65%)', filter: 'blur(60px)' }}
       />
-      {/* Warm ambient glow - bottom left */}
+      {/* Gold ambient glow - bottom left */}
       <div className="absolute -bottom-48 -left-40 w-[700px] h-[700px] pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(30 60% 30% / 0.3), hsl(25 55% 25% / 0.15) 35%, transparent 55%)', filter: 'blur(70px)' }}
+        style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.15), rgba(255,200,120,0.08) 40%, transparent 60%)', filter: 'blur(70px)' }}
       />
-      {/* Warm ambient glow - bottom right */}
+      {/* Gold ambient glow - bottom right */}
       <div className="absolute -bottom-32 -right-24 w-[500px] h-[500px] pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(35 55% 28% / 0.2), transparent 50%)', filter: 'blur(55px)' }}
+        style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.1), transparent 55%)', filter: 'blur(55px)' }}
       />
-      {/* Center warm glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(38 50% 30% / 0.08), transparent 55%)', filter: 'blur(80px)' }}
+      {/* Center cinematic glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(255,200,120,0.06), transparent 50%)', filter: 'blur(90px)' }}
       />
 
-      {/* Warm bokeh particles */}
+      {/* GOLD bokeh particles — NOT brown */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[
-          { size: 220, x: '-2%', y: '3%', opacity: 0.18, blur: 50, delay: 0, hue: 30 },
-          { size: 160, x: '78%', y: '48%', opacity: 0.22, blur: 35, delay: 1, hue: 35 },
-          { size: 100, x: '88%', y: '8%', opacity: 0.2, blur: 28, delay: 2, hue: 28 },
-          { size: 190, x: '8%', y: '68%', opacity: 0.2, blur: 45, delay: 0.5, hue: 25 },
-          { size: 65, x: '52%', y: '28%', opacity: 0.3, blur: 18, delay: 1.5, hue: 40 },
-          { size: 250, x: '58%', y: '85%', opacity: 0.18, blur: 60, delay: 3, hue: 30 },
-          { size: 55, x: '28%', y: '40%', opacity: 0.35, blur: 15, delay: 2.5, hue: 38 },
-          { size: 170, x: '-3%', y: '90%', opacity: 0.2, blur: 40, delay: 1.8, hue: 25 },
-          { size: 80, x: '70%', y: '22%', opacity: 0.25, blur: 20, delay: 0.8, hue: 33 },
-          { size: 280, x: '32%', y: '94%', opacity: 0.14, blur: 65, delay: 2.2, hue: 28 },
-          { size: 90, x: '92%', y: '68%', opacity: 0.22, blur: 22, delay: 1.2, hue: 35 },
-          { size: 130, x: '42%', y: '2%', opacity: 0.16, blur: 32, delay: 0.3, hue: 30 },
+          { size: 200, x: '-2%', y: '5%', opacity: 0.2, blur: 45, delay: 0, color: 'rgba(255,215,0,0.25)' },
+          { size: 140, x: '80%', y: '50%', opacity: 0.25, blur: 30, delay: 1, color: 'rgba(255,215,0,0.3)' },
+          { size: 90, x: '90%', y: '10%', opacity: 0.22, blur: 22, delay: 2, color: 'rgba(201,162,74,0.3)' },
+          { size: 180, x: '5%', y: '70%', opacity: 0.2, blur: 40, delay: 0.5, color: 'rgba(255,215,0,0.2)' },
+          { size: 60, x: '55%', y: '25%', opacity: 0.35, blur: 14, delay: 1.5, color: 'rgba(255,230,100,0.4)' },
+          { size: 240, x: '60%', y: '88%', opacity: 0.15, blur: 55, delay: 3, color: 'rgba(255,215,0,0.18)' },
+          { size: 50, x: '30%', y: '38%', opacity: 0.4, blur: 12, delay: 2.5, color: 'rgba(255,230,100,0.45)' },
+          { size: 160, x: '-5%', y: '92%', opacity: 0.18, blur: 38, delay: 1.8, color: 'rgba(255,215,0,0.2)' },
+          { size: 70, x: '72%', y: '20%', opacity: 0.28, blur: 16, delay: 0.8, color: 'rgba(255,200,120,0.35)' },
+          { size: 260, x: '35%', y: '95%', opacity: 0.12, blur: 60, delay: 2.2, color: 'rgba(255,215,0,0.15)' },
+          { size: 80, x: '94%', y: '70%', opacity: 0.25, blur: 18, delay: 1.2, color: 'rgba(255,230,100,0.35)' },
+          { size: 120, x: '45%', y: '3%', opacity: 0.18, blur: 28, delay: 0.3, color: 'rgba(201,162,74,0.25)' },
         ].map((p, i) => (
           <div
             key={i}
@@ -174,7 +174,7 @@ const Index = () => {
             style={{
               width: `${p.size}px`,
               height: `${p.size}px`,
-              background: `radial-gradient(circle, hsl(${p.hue} 65% 40% / ${p.opacity}), hsl(${p.hue} 50% 25% / ${p.opacity * 0.3}), transparent 70%)`,
+              background: `radial-gradient(circle, ${p.color}, transparent 70%)`,
               left: p.x,
               top: p.y,
               animation: `particle-float ${6 + i * 0.7}s ease-in-out ${p.delay}s infinite`,
@@ -184,9 +184,22 @@ const Index = () => {
         ))}
       </div>
 
-      {/* Vignette overlay */}
+      {/* White sparkle noise overlay */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 30%, hsl(0 0% 0% / 0.7) 100%)' }}
+        style={{
+          backgroundImage: `radial-gradient(circle at 20% 15%, rgba(255,255,255,0.08) 0%, transparent 1px),
+            radial-gradient(circle at 80% 25%, rgba(255,255,255,0.06) 0%, transparent 1px),
+            radial-gradient(circle at 45% 60%, rgba(255,255,255,0.05) 0%, transparent 1px),
+            radial-gradient(circle at 70% 80%, rgba(255,255,255,0.07) 0%, transparent 1px),
+            radial-gradient(circle at 15% 75%, rgba(255,255,255,0.04) 0%, transparent 1px),
+            radial-gradient(circle at 90% 55%, rgba(255,255,255,0.06) 0%, transparent 1px)`,
+          animation: 'shimmer 4s ease-in-out infinite',
+        }}
+      />
+
+      {/* Vignette overlay - deeper */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.75) 100%)' }}
       />
 
       {/* Language Toggle */}
@@ -195,58 +208,60 @@ const Index = () => {
           onClick={toggleLanguage}
           className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
           style={{
-            background: 'hsl(0 0% 100% / 0.08)',
-            border: '1px solid hsl(0 0% 100% / 0.12)',
-            backdropFilter: 'blur(10px)',
-            color: 'hsl(43 85% 55%)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+            border: '1px solid rgba(255,215,0,0.15)',
+            backdropFilter: 'blur(12px)',
+            color: 'hsl(48 85% 55%)',
+            boxShadow: '0 0 15px rgba(255,215,0,0.05)',
           }}
         >
           <Languages className="h-5 w-5" />
         </button>
       </div>
 
-      {/* Main Card with gold metallic frame */}
+      {/* Main Card with metallic gold frame + edge glow */}
       <div
         className="w-full max-w-[400px] rounded-[24px] relative z-10 animate-in-stagger-1"
         style={{
-          padding: '3px',
-          background: 'linear-gradient(160deg, hsl(43 75% 60% / 0.7) 0%, hsl(43 85% 50% / 0.3) 20%, hsl(43 70% 35% / 0.15) 40%, hsl(43 85% 50% / 0.3) 60%, hsl(43 75% 55% / 0.5) 80%, hsl(43 85% 60% / 0.7) 100%)',
-          boxShadow: '0 30px 100px -25px hsl(0 0% 0% / 0.9), 0 0 80px hsl(43 85% 55% / 0.12), 0 0 150px hsl(30 60% 40% / 0.08)',
+          padding: '2.5px',
+          background: 'linear-gradient(160deg, rgba(255,215,0,0.55) 0%, rgba(201,162,74,0.25) 20%, rgba(140,106,47,0.1) 40%, rgba(201,162,74,0.2) 60%, rgba(255,215,0,0.4) 80%, rgba(184,150,62,0.55) 100%)',
+          boxShadow: '0 30px 100px -25px rgba(0,0,0,0.95), 0 0 60px rgba(255,215,0,0.08), 0 0 120px rgba(255,200,120,0.04)',
         }}
       >
-        {/* Corner lens flare - top left */}
-        <div className="absolute top-0 left-4 w-12 h-[3px] z-20 pointer-events-none rounded-full"
-          style={{ background: 'linear-gradient(90deg, transparent, hsl(43 90% 75% / 0.8), transparent)', filter: 'blur(1px)' }}
+        {/* Edge glow - top */}
+        <div className="absolute top-0 left-8 right-8 h-[2px] z-20 pointer-events-none rounded-full"
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,215,0,0.6), rgba(255,230,100,0.8), rgba(255,215,0,0.6), transparent)', filter: 'blur(0.5px)' }}
         />
-        {/* Corner lens flare - top right */}
-        <div className="absolute top-0 right-4 w-12 h-[3px] z-20 pointer-events-none rounded-full"
-          style={{ background: 'linear-gradient(90deg, transparent, hsl(43 90% 75% / 0.6), transparent)', filter: 'blur(1px)' }}
-        />
-        {/* Corner lens flare - bottom center */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-[3px] z-20 pointer-events-none rounded-full"
-          style={{ background: 'linear-gradient(90deg, transparent, hsl(43 90% 70% / 0.7), transparent)', filter: 'blur(1px)' }}
+        {/* Edge glow - bottom */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-28 h-[2px] z-20 pointer-events-none rounded-full"
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,215,0,0.5), rgba(255,230,100,0.7), rgba(255,215,0,0.5), transparent)', filter: 'blur(0.5px)' }}
         />
 
         <div
-          className="rounded-[21px] p-6 text-center space-y-5 relative bottom-reflection"
+          className="rounded-[22px] p-6 text-center space-y-5 relative bottom-reflection"
           style={{
-            background: 'linear-gradient(180deg, hsl(220 50% 8% / 0.98) 0%, hsl(220 45% 6% / 0.98) 50%, hsl(220 40% 5% / 0.99) 100%)',
+            background: 'linear-gradient(180deg, rgba(13,19,33,0.98) 0%, rgba(7,11,20,0.99) 50%, rgba(7,11,20,1) 100%)',
             backdropFilter: 'blur(30px)',
           }}
         >
+          {/* Inner container edge glow */}
+          <div className="absolute inset-0 rounded-[22px] pointer-events-none"
+            style={{ boxShadow: 'inset 0 1px 0 rgba(255,215,0,0.08), inset 0 -1px 0 rgba(0,0,0,0.5)' }}
+          />
+
         {/* Logo Header */}
         <div className="rounded-2xl overflow-hidden animate-in-stagger-2 relative"
           style={{
-            border: '1.5px solid hsl(43 85% 55% / 0.35)',
-            boxShadow: '0 10px 40px -10px hsl(220 60% 10% / 0.8), 0 0 25px hsl(43 85% 55% / 0.1)',
+            border: '1.5px solid rgba(255,215,0,0.25)',
+            boxShadow: '0 10px 40px -10px rgba(0,0,0,0.9), 0 0 20px rgba(255,215,0,0.06)',
           }}
         >
           <img src={logo} alt="Boulevard Café Logo" className="w-full h-auto object-cover relative z-10" />
           {/* Bottom light flare */}
-          <div className="absolute bottom-0 left-0 right-0 h-[3px] z-20"
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] z-20"
             style={{
-              background: 'linear-gradient(90deg, transparent 3%, hsl(43 85% 60% / 0.6) 25%, hsl(43 90% 75% / 0.9) 50%, hsl(43 85% 60% / 0.6) 75%, transparent 97%)',
-              boxShadow: '0 0 15px hsl(43 85% 55% / 0.4), 0 0 30px hsl(43 85% 55% / 0.15)',
+              background: 'linear-gradient(90deg, transparent 3%, rgba(201,162,74,0.5) 25%, rgba(255,215,0,0.8) 50%, rgba(201,162,74,0.5) 75%, transparent 97%)',
+              boxShadow: '0 0 12px rgba(255,215,0,0.3), 0 0 25px rgba(255,215,0,0.1)',
             }}
           />
         </div>
