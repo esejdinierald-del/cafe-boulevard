@@ -63,18 +63,23 @@ const translations = {
   },
 };
 
-/* Desaturated gold bokeh — warm amber/brown, not bright yellow */
+/* Bronze-warm bokeh — depth-of-field effect with golden shimmer */
 const bokehParticles = [
-  { size: 180, x: '-3%', y: '8%', blur: 50, delay: 0, opacity: 0.12 },
-  { size: 120, x: '82%', y: '45%', blur: 35, delay: 1.2, opacity: 0.15 },
-  { size: 80, x: '88%', y: '8%', blur: 25, delay: 2.4, opacity: 0.14 },
-  { size: 200, x: '8%', y: '75%', blur: 55, delay: 0.6, opacity: 0.1 },
-  { size: 50, x: '50%', y: '22%', blur: 15, delay: 1.8, opacity: 0.2 },
-  { size: 220, x: '55%', y: '90%', blur: 60, delay: 3.0, opacity: 0.08 },
-  { size: 40, x: '28%', y: '40%', blur: 12, delay: 2.8, opacity: 0.22 },
-  { size: 150, x: '-4%', y: '88%', blur: 42, delay: 1.5, opacity: 0.1 },
-  { size: 60, x: '75%', y: '18%', blur: 18, delay: 0.9, opacity: 0.16 },
-  { size: 100, x: '42%', y: '5%', blur: 30, delay: 0.3, opacity: 0.12 },
+  // Large distant (blurry, low opacity) — background layer
+  { size: 260, x: '-5%', y: '5%', blur: 70, delay: 0, opacity: 0.08 },
+  { size: 300, x: '75%', y: '85%', blur: 80, delay: 1.5, opacity: 0.06 },
+  { size: 220, x: '90%', y: '-5%', blur: 65, delay: 3.0, opacity: 0.07 },
+  // Mid-distance (moderate blur)
+  { size: 140, x: '20%', y: '70%', blur: 45, delay: 0.8, opacity: 0.12 },
+  { size: 160, x: '65%', y: '30%', blur: 50, delay: 2.0, opacity: 0.10 },
+  { size: 100, x: '85%', y: '50%', blur: 35, delay: 1.2, opacity: 0.14 },
+  { size: 120, x: '10%', y: '40%', blur: 40, delay: 2.5, opacity: 0.11 },
+  // Close-up (sharper, brighter) — foreground layer
+  { size: 50, x: '30%', y: '20%', blur: 12, delay: 0.4, opacity: 0.22 },
+  { size: 35, x: '55%', y: '65%', blur: 8, delay: 1.8, opacity: 0.25 },
+  { size: 45, x: '78%', y: '15%', blur: 10, delay: 0.9, opacity: 0.20 },
+  { size: 30, x: '42%', y: '88%', blur: 6, delay: 2.8, opacity: 0.28 },
+  { size: 25, x: '15%', y: '55%', blur: 5, delay: 3.2, opacity: 0.24 },
 ];
 
 /* Sparkle particles — twinkling gold/white specks */
