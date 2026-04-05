@@ -264,7 +264,7 @@ const Menu = () => {
             <img src={logo} alt="Logo" className="h-10 w-auto" />
             <div className="text-right">
               <p className="text-xs" style={{ color: 'hsl(220 10% 50%)' }}>{t.menu}</p>
-              <p className="font-display font-bold text-sm gradient-text-gold">{tableNumber}</p>
+              <p className="font-display font-bold text-sm gradient-text-gold">{tableNumber || t.table}</p>
             </div>
           </div>
           <button
