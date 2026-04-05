@@ -193,7 +193,7 @@ async function fetchActiveOffers(): Promise<string> {
       info += "AKTIVE TANI:\n";
       for (const item of activeOffers) {
         const cat = (item as any).categories?.name || "";
-        info += `- ${item.name} (${cat}): ${item.offer_price}€ (çmimi normal: ${item.price}€) — deri në ${item.offer_end_time}\n`;
+        info += `- ${item.name} (${cat}): ${item.offer_price} Lekë (çmimi normal: ${item.price} Lekë) — deri në ${item.offer_end_time}\n`;
       }
     }
 
