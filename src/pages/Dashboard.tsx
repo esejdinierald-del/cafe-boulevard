@@ -54,7 +54,7 @@ const Dashboard = () => {
   const [shiftToken, setShiftToken] = useState<string | null>(null);
   const [staffUrl, setStaffUrl] = useState<string>('');
 
-  // Generate or fetch active shift token for curtain QR
+  // Generate or fetch active shift token via edge function (bypasses RLS)
   const ensureShiftToken = async () => {
     const now = new Date();
     const hour = now.getHours();
@@ -74,29 +74,26 @@ const Dashboard = () => {
       }
     }
 
-    // Check existing
-    const { data: existing } = await supabase
-      .from("shift_tokens")
-      .select("token, unlocked")
-      .gte("shift_end", now.toISOString())
-      .lte("shift_start", now.toISOString())
-      .maybeSingle();
-
-    if (existing) {
-      setShiftToken(existing.token);
-      setStaffUrl(`${window.location.origin}/staff?token=${existing.token}`);
-      if (existing.unlocked) setCurtainActive(false);
-      return existing.token;
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: {
+          action: "get_or_create",
+          shift_start: shiftStart.toISOString(),
+          shift_end: shiftEnd.toISOString(),
+        },
+      });
+      if (error || !data?.token) {
+        console.error("Failed to get shift token:", error);
+        return null;
+      }
+      setShiftToken(data.token);
+      setStaffUrl(`${window.location.origin}/staff?token=${data.token}`);
+      if (data.unlocked) setCurtainActive(false);
+      return data.token;
+    } catch (e) {
+      console.error("Failed to get shift token:", e);
+      return null;
     }
-
-    // Generate new
-    const token = crypto.randomUUID().replace(/-/g, "").substring(0, 12);
-    await supabase.from("shift_tokens").insert({
-      token, shift_start: shiftStart.toISOString(), shift_end: shiftEnd.toISOString(),
-    });
-    setShiftToken(token);
-    setStaffUrl(`${window.location.origin}/staff?token=${token}`);
-    return token;
   };
 
   // On mount: generate token and listen for unlock via realtime
@@ -104,37 +101,22 @@ const Dashboard = () => {
     ensureShiftToken();
   }, []);
 
-  // Separate effect for realtime listener that re-subscribes when shiftToken changes
-  useEffect(() => {
-    if (!shiftToken) return;
+  // Poll for unlock via edge function (realtime won't work without auth on shift_tokens)
+  // The backup poll below handles this
 
-    const unlockChannel = supabase
-      .channel("shift-unlock")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "shift_tokens" }, (payload) => {
-        const updated = payload.new as any;
-        if (updated.unlocked && updated.token === shiftToken) {
-          setCurtainActive(false);
-          toast.success("🔓 Turni u aktivizua nga kamarieri!");
-        }
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(unlockChannel); };
-  }, [shiftToken]);
-
-  // Backup poll only while curtain is active (removed once unlocked)
+  // Backup poll only while curtain is active — use edge function
   useEffect(() => {
     if (!curtainActive || !shiftToken) return;
     const poll = setInterval(async () => {
-      const { data } = await supabase
-        .from("shift_tokens")
-        .select("unlocked")
-        .eq("token", shiftToken)
-        .maybeSingle();
-      if (data?.unlocked) {
-        setCurtainActive(false);
-        toast.success("🔓 Turni u aktivizua!");
-      }
+      try {
+        const { data } = await supabase.functions.invoke("manage-shift", {
+          body: { action: "check_unlock", token: shiftToken },
+        });
+        if (data?.unlocked) {
+          setCurtainActive(false);
+          toast.success("🔓 Turni u aktivizua!");
+        }
+      } catch {}
     }, 10000);
     return () => clearInterval(poll);
   }, [curtainActive, shiftToken]);
@@ -315,30 +297,46 @@ const Dashboard = () => {
 
   const handleComplete = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await supabase.from('service_requests').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
-    if (error) toast.error('Gabim');
-    else toast.success('Kërkesa u përmbyll');
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action: "complete_request", id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('Kërkesa u përmbyll');
+    } catch { toast.error('Gabim'); }
   };
 
   const handleCancel = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await supabase.from('service_requests').update({ status: 'cancelled' }).eq('id', id);
-    if (error) toast.error('Gabim');
-    else toast.success('Kërkesa u anulua');
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action: "cancel_request", id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('Kërkesa u anulua');
+    } catch { toast.error('Gabim'); }
   };
 
   const handleCompleteOrder = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await supabase.from('orders').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
-    if (error) toast.error('Gabim');
-    else toast.success('Porosia u përmbyll');
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action: "complete_order", id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('Porosia u përmbyll');
+    } catch { toast.error('Gabim'); }
   };
 
   const handleCancelOrder = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', id);
-    if (error) toast.error('Gabim');
-    else toast.success('Porosia u anulua');
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action: "cancel_order", id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('Porosia u anulua');
+    } catch { toast.error('Gabim'); }
   };
 
   // Realtime subscriptions - ALWAYS ACTIVE (even behind curtain)
@@ -440,14 +438,14 @@ const Dashboard = () => {
   const completedOrders = orders.filter(o => o.status === 'completed');
 
   const handleDeleteFromHistory = async (id: string, type: 'request' | 'order') => {
-    if (type === 'request') {
-      const { error } = await supabase.from('service_requests').delete().eq('id', id);
-      if (error) { toast.error('Gabim'); return; }
-    } else {
-      const { error } = await supabase.from('orders').delete().eq('id', id);
-      if (error) { toast.error('Gabim'); return; }
-    }
-    toast.success('U fshi nga historiku');
+    try {
+      const action = type === 'request' ? 'delete_request' : 'delete_order';
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action, id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('U fshi nga historiku');
+    } catch { toast.error('Gabim'); }
   };
 
   const getStatusBadge = (status: string) => {
