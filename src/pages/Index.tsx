@@ -266,28 +266,28 @@ const Index = () => {
           />
         </div>
 
-        {/* Gold Divider */}
+        {/* Gold Divider - metallic shimmer */}
         <div className="flex items-center justify-center animate-in-stagger-2">
-          <div className="h-[2px] flex-1" style={{ background: 'linear-gradient(90deg, transparent 5%, hsl(43 85% 55% / 0.5) 30%, hsl(43 90% 65% / 0.7) 50%, hsl(43 85% 55% / 0.5) 70%, transparent 95%)', boxShadow: '0 0 8px hsl(43 85% 55% / 0.2)' }} />
+          <div className="h-[1.5px] flex-1 shimmer-overlay" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(201,162,74,0.4) 30%, rgba(255,215,0,0.6) 50%, rgba(201,162,74,0.4) 70%, transparent 95%)', boxShadow: '0 0 6px rgba(255,215,0,0.15)' }} />
         </div>
 
         {/* Brand Title */}
-        <h2 className="font-display font-bold text-lg tracking-[0.18em] animate-in-stagger-3 gradient-text-gold" style={{ textShadow: '0 0 20px hsl(43 85% 55% / 0.2)' }}>
+        <h2 className="font-display font-bold text-lg tracking-[0.18em] animate-in-stagger-3 gradient-text-gold" style={{ textShadow: '0 0 25px rgba(255,215,0,0.15)' }}>
           BOULEVARD CAFÉ ELBASAN
         </h2>
 
-        {/* Table Input */}
+        {/* Table Input - brushed metal glass */}
         <div className="animate-in-stagger-3">
           <div
             className="flex items-center rounded-full"
             style={{
-              background: 'linear-gradient(135deg, hsl(220 60% 10%) 0%, hsl(220 50% 14%) 100%)',
-              border: '1.5px solid hsl(43 85% 55% / 0.45)',
-              boxShadow: 'inset 0 2px 4px hsl(0 0% 0% / 0.4), 0 0 22px hsl(43 85% 55% / 0.18), 0 0 40px hsl(43 85% 55% / 0.06)',
+              background: 'linear-gradient(135deg, rgba(13,19,33,0.95) 0%, rgba(17,24,39,0.9) 100%)',
+              border: '1.5px solid rgba(255,215,0,0.3)',
+              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5), 0 0 18px rgba(255,215,0,0.1), 0 0 35px rgba(255,215,0,0.03)',
             }}
           >
             <div className="pl-4">
-              <MapPin className="w-5 h-5" style={{ color: 'hsl(43 85% 55%)' }} />
+              <MapPin className="w-5 h-5" style={{ color: 'hsl(48 85% 55%)' }} />
             </div>
             <input
               type="text"
@@ -295,25 +295,25 @@ const Index = () => {
               value={tableNumber}
               onChange={(e) => setTableNumber(e.target.value)}
               className="flex-1 px-3 py-3.5 bg-transparent outline-none text-center font-display font-bold placeholder:opacity-40"
-              style={{ color: 'hsl(0 0% 90%)' }}
+              style={{ color: '#EDEDED' }}
             />
             <button
               onClick={handleConfirmTable}
               className="w-11 h-11 min-w-[2.75rem] rounded-full flex items-center justify-center mr-1 font-bold transition-all duration-300 hover:opacity-90 active:scale-95"
               style={{
-                background: 'linear-gradient(135deg, hsl(43 90% 58%), hsl(38 80% 45%))',
-                color: 'hsl(220 60% 10%)',
-                boxShadow: '0 0 12px hsl(43 85% 55% / 0.4)',
+                background: 'linear-gradient(135deg, hsl(43 65% 48%), hsl(48 100% 50%), hsl(43 60% 38%))',
+                color: '#0D1321',
+                boxShadow: '0 0 10px rgba(255,215,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25)',
               }}
             >
               <Check className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-xs mt-2" style={{ color: 'hsl(220 10% 50%)' }}>{t.hint}</p>
+          <p className="text-xs mt-2" style={{ color: '#CFCFCF', opacity: 0.5 }}>{t.hint}</p>
         </div>
 
         {/* Welcome text */}
-        <p className="font-display text-sm italic animate-in-stagger-4" style={{ color: 'hsl(220 10% 55%)' }}>
+        <p className="font-display text-sm italic animate-in-stagger-4" style={{ color: '#CFCFCF' }}>
           {t.chooseService}
         </p>
 
