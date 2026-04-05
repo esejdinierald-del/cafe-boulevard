@@ -1,8 +1,9 @@
 {
-  "name": "Boulevard Café - Stafi",
-  "short_name": "Boulevard Staff",
-  "description": "Njoftimet e thirrjeve live për stafin e Boulevard Café",
-  "start_url": "/staff",
+  "name": "Boulevard Café Elbasan",
+  "short_name": "Boulevard",
+  "description": "Premium café service - thirr kamarieren, kërko faturën, porosit nga menu",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#1a1a1a",
@@ -12,13 +13,19 @@
       "src": "/pwa-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/pwa-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
