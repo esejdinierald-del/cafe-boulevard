@@ -40,7 +40,7 @@ const translations = {
     error: "Gabim në dërgimin e kërkesës",
     errorWaiter: "Gabim në dërgimin e thirrjes",
     tableRequired: "Shkruani numrin e tavolinës",
-    subtitle: "Café Elbasan • Eat • Drink • Connect",
+    subtitle: "Café Elbasan · Eat · Drink · Connect",
   },
   en: {
     table: "Table",
@@ -59,9 +59,35 @@ const translations = {
     error: "Error sending request",
     errorWaiter: "Error sending call",
     tableRequired: "Enter the table number",
-    subtitle: "Café Elbasan • Eat • Drink • Connect",
+    subtitle: "Café Elbasan · Eat · Drink · Connect",
   },
 };
+
+/* Desaturated gold bokeh — warm amber/brown, not bright yellow */
+const bokehParticles = [
+  { size: 180, x: '-3%', y: '8%', blur: 50, delay: 0, opacity: 0.12 },
+  { size: 120, x: '82%', y: '45%', blur: 35, delay: 1.2, opacity: 0.15 },
+  { size: 80, x: '88%', y: '8%', blur: 25, delay: 2.4, opacity: 0.14 },
+  { size: 200, x: '8%', y: '75%', blur: 55, delay: 0.6, opacity: 0.1 },
+  { size: 50, x: '50%', y: '22%', blur: 15, delay: 1.8, opacity: 0.2 },
+  { size: 220, x: '55%', y: '90%', blur: 60, delay: 3.0, opacity: 0.08 },
+  { size: 40, x: '28%', y: '40%', blur: 12, delay: 2.8, opacity: 0.22 },
+  { size: 150, x: '-4%', y: '88%', blur: 42, delay: 1.5, opacity: 0.1 },
+  { size: 60, x: '75%', y: '18%', blur: 18, delay: 0.9, opacity: 0.16 },
+  { size: 100, x: '42%', y: '5%', blur: 30, delay: 0.3, opacity: 0.12 },
+];
+
+/* Dust/sparkle particles — tiny white/gold specks */
+const dustParticles = [
+  { x: '15%', y: '25%', size: 2, delay: 0 },
+  { x: '72%', y: '55%', size: 1.5, delay: 1.5 },
+  { x: '38%', y: '78%', size: 2, delay: 0.8 },
+  { x: '85%', y: '15%', size: 1, delay: 2.2 },
+  { x: '55%', y: '42%', size: 1.5, delay: 3.1 },
+  { x: '22%', y: '62%', size: 2, delay: 1.1 },
+  { x: '68%', y: '85%', size: 1, delay: 2.6 },
+  { x: '48%', y: '12%', size: 1.5, delay: 0.4 },
+];
 
 const Index = () => {
   const [searchParams] = useSearchParams();
@@ -77,7 +103,6 @@ const Index = () => {
   const { checkLocation, checking } = useGeolocation();
 
   const withGeoCheck = async (action: () => Promise<void>) => {
-    // GPS temporarily disabled for development
     await action();
   };
 
@@ -133,243 +158,275 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden grain-texture">
-      {/* Base background */}
-      <div className="absolute inset-0 bg-[#0B0F1A]" />
 
-      {/* GOLD GLOW LAYERS */}
-      <div className="absolute inset-0" style={{
-        background: `radial-gradient(circle at 30% 20%, rgba(255,215,0,0.25), transparent 60%),
-          radial-gradient(circle at 70% 80%, rgba(255,190,120,0.20), transparent 60%),
-          radial-gradient(circle at 50% 50%, rgba(255,160,60,0.15), transparent 70%)`
-      }} />
-
-      {/* CENTER LIGHT */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[40%] blur-2xl"
-        style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.35), transparent 70%)' }}
+      {/* ═══ BACKGROUND LAYER ═══ */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(180deg, #0B0F14 0%, #111820 40%, #141A22 100%)',
+        }}
       />
 
-      {/* SPARKLES */}
-      <div className="absolute inset-0 opacity-40 pointer-events-none" style={{
-        backgroundImage: `radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.25), transparent),
-          radial-gradient(2px 2px at 70% 60%, rgba(255,220,120,0.4), transparent),
-          radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,0.2), transparent),
-          radial-gradient(2px 2px at 80% 20%, rgba(255,200,120,0.3), transparent),
-          radial-gradient(1px 1px at 55% 10%, rgba(255,255,255,0.3), transparent),
-          radial-gradient(2px 2px at 10% 65%, rgba(255,220,120,0.35), transparent),
-          radial-gradient(1.5px 1.5px at 90% 45%, rgba(255,255,255,0.2), transparent),
-          radial-gradient(2px 2px at 35% 55%, rgba(255,200,120,0.25), transparent)`
-      }} />
+      {/* Ambient cinematic glow — soft, desaturated, NO neon */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse at 25% 15%, rgba(201,150,74,0.12), transparent 55%),
+            radial-gradient(ellipse at 75% 80%, rgba(180,130,60,0.10), transparent 55%),
+            radial-gradient(ellipse at 50% 50%, rgba(160,120,50,0.06), transparent 60%)
+          `,
+        }}
+      />
 
-      {/* GOLD bokeh particles */}
+      {/* Center bloom — very soft */}
+      <div
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] h-[35%]"
+        style={{
+          background: 'radial-gradient(ellipse, rgba(201,150,74,0.15), transparent 70%)',
+          filter: 'blur(40px)',
+        }}
+      />
+
+      {/* Bokeh particles — warm desaturated amber */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[
-          { size: 200, x: '-2%', y: '5%', blur: 45, delay: 0, color: 'rgba(255,215,0,0.25)' },
-          { size: 140, x: '80%', y: '50%', blur: 30, delay: 1, color: 'rgba(255,215,0,0.3)' },
-          { size: 90, x: '90%', y: '10%', blur: 22, delay: 2, color: 'rgba(255,215,0,0.28)' },
-          { size: 180, x: '5%', y: '70%', blur: 40, delay: 0.5, color: 'rgba(255,215,0,0.2)' },
-          { size: 60, x: '55%', y: '25%', blur: 14, delay: 1.5, color: 'rgba(255,230,100,0.4)' },
-          { size: 240, x: '60%', y: '88%', blur: 55, delay: 3, color: 'rgba(255,215,0,0.18)' },
-          { size: 50, x: '30%', y: '38%', blur: 12, delay: 2.5, color: 'rgba(255,230,100,0.45)' },
-          { size: 160, x: '-5%', y: '92%', blur: 38, delay: 1.8, color: 'rgba(255,215,0,0.2)' },
-          { size: 70, x: '72%', y: '20%', blur: 16, delay: 0.8, color: 'rgba(255,200,120,0.35)' },
-          { size: 260, x: '35%', y: '95%', blur: 60, delay: 2.2, color: 'rgba(255,215,0,0.15)' },
-          { size: 80, x: '94%', y: '70%', blur: 18, delay: 1.2, color: 'rgba(255,230,100,0.35)' },
-          { size: 120, x: '45%', y: '3%', blur: 28, delay: 0.3, color: 'rgba(255,215,0,0.22)' },
-        ].map((p, i) => (
+        {bokehParticles.map((p, i) => (
           <div
             key={i}
             className="absolute rounded-full"
             style={{
               width: `${p.size}px`,
               height: `${p.size}px`,
-              background: `radial-gradient(circle, ${p.color}, transparent 70%)`,
+              background: `radial-gradient(circle, rgba(201,150,74,${p.opacity}), transparent 70%)`,
               left: p.x,
               top: p.y,
-              animation: `particle-float ${6 + i * 0.7}s ease-in-out ${p.delay}s infinite`,
+              animation: `particle-drift ${7 + i * 0.8}s ease-in-out ${p.delay}s infinite`,
               filter: `blur(${p.blur}px)`,
             }}
           />
         ))}
       </div>
 
-      {/* Vignette overlay */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.7) 100%)' }}
+      {/* Dust / sparkle overlay */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {dustParticles.map((d, i) => (
+          <div
+            key={`dust-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: `${d.size}px`,
+              height: `${d.size}px`,
+              background: i % 2 === 0
+                ? 'rgba(255,255,255,0.35)'
+                : 'rgba(220,185,120,0.4)',
+              left: d.x,
+              top: d.y,
+              animation: `dust-float ${4 + i * 0.6}s ease-in-out ${d.delay}s infinite`,
+              filter: 'blur(0.5px)',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Deep vignette */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, transparent 30%, rgba(6,8,12,0.75) 100%)' }}
       />
 
-      {/* Language Toggle */}
+      {/* ═══ LANGUAGE TOGGLE ═══ */}
       <div className="absolute top-4 right-4 z-20">
         <button
           onClick={toggleLanguage}
           className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-            border: '1px solid rgba(255,215,0,0.15)',
-            backdropFilter: 'blur(12px)',
-            color: 'hsl(48 85% 55%)',
-            boxShadow: '0 0 15px rgba(255,215,0,0.05)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))',
+            border: '1px solid rgba(201,150,74,0.12)',
+            backdropFilter: 'blur(10px)',
+            color: '#C9964A',
           }}
         >
           <Languages className="h-5 w-5" />
         </button>
       </div>
 
-      {/* Main Card with metallic gold frame + edge glow */}
+      {/* ═══ MAIN CARD ═══ */}
       <div
-        className="w-full max-w-[400px] rounded-[24px] relative z-10 animate-in-stagger-1"
+        className="w-full max-w-[400px] rounded-[28px] relative z-10 animate-in-stagger-1"
         style={{
-          padding: '2.5px',
-          background: 'linear-gradient(160deg, rgba(255,215,0,0.55) 0%, rgba(201,162,74,0.25) 20%, rgba(140,106,47,0.1) 40%, rgba(201,162,74,0.2) 60%, rgba(255,215,0,0.4) 80%, rgba(184,150,62,0.55) 100%)',
-          boxShadow: '0 30px 100px -25px rgba(0,0,0,0.95), 0 0 60px rgba(255,215,0,0.08), 0 0 120px rgba(255,200,120,0.04)',
+          padding: '1.5px',
+          background: 'linear-gradient(160deg, rgba(201,150,74,0.28) 0%, rgba(122,85,38,0.12) 30%, rgba(80,60,30,0.06) 50%, rgba(122,85,38,0.1) 70%, rgba(201,150,74,0.2) 100%)',
+          boxShadow: '0 30px 90px -20px rgba(0,0,0,0.9), 0 0 40px rgba(201,150,74,0.04)',
         }}
       >
-        {/* Edge glow - top */}
-        <div className="absolute top-0 left-8 right-8 h-[2px] z-20 pointer-events-none rounded-full"
-          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,215,0,0.6), rgba(255,230,100,0.8), rgba(255,215,0,0.6), transparent)', filter: 'blur(0.5px)' }}
-        />
-        {/* Edge glow - bottom */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-28 h-[2px] z-20 pointer-events-none rounded-full"
-          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,215,0,0.5), rgba(255,230,100,0.7), rgba(255,215,0,0.5), transparent)', filter: 'blur(0.5px)' }}
-        />
-
+        {/* Panel inner glow line — top */}
         <div
-          className="rounded-[22px] p-6 text-center space-y-5 relative bottom-reflection"
+          className="absolute top-0 left-12 right-12 h-px z-20 pointer-events-none"
           style={{
-            background: 'linear-gradient(180deg, rgba(13,19,33,0.98) 0%, rgba(7,11,20,0.99) 50%, rgba(7,11,20,1) 100%)',
-            backdropFilter: 'blur(30px)',
+            background: 'linear-gradient(90deg, transparent, rgba(201,150,74,0.3), rgba(246,197,111,0.4), rgba(201,150,74,0.3), transparent)',
           }}
-        >
-          {/* Inner container edge glow */}
-          <div className="absolute inset-0 rounded-[22px] pointer-events-none"
-            style={{ boxShadow: 'inset 0 1px 0 rgba(255,215,0,0.08), inset 0 -1px 0 rgba(0,0,0,0.5)' }}
-          />
+        />
 
-        {/* Logo Header */}
-        <div className="rounded-2xl overflow-hidden animate-in-stagger-2 relative"
+        {/* Panel content */}
+        <div
+          className="rounded-[27px] p-6 text-center space-y-5 relative bottom-reflection"
           style={{
-            border: '1.5px solid rgba(255,215,0,0.25)',
-            boxShadow: '0 10px 40px -10px rgba(0,0,0,0.9), 0 0 20px rgba(255,215,0,0.06)',
+            background: 'linear-gradient(180deg, #0F1722 0%, #0C1219 50%, #0A0F16 100%)',
           }}
         >
-          <img src={logo} alt="Boulevard Café Logo" className="w-full h-auto object-cover relative z-10" />
-          {/* Bottom light flare */}
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] z-20"
+          {/* Inner panel texture (subtle variation) */}
+          <div
+            className="absolute inset-0 rounded-[27px] pointer-events-none"
             style={{
-              background: 'linear-gradient(90deg, transparent 3%, rgba(201,162,74,0.5) 25%, rgba(255,215,0,0.8) 50%, rgba(201,162,74,0.5) 75%, transparent 97%)',
-              boxShadow: '0 0 12px rgba(255,215,0,0.3), 0 0 25px rgba(255,215,0,0.1)',
+              boxShadow: 'inset 0 1px 0 rgba(201,150,74,0.05), inset 0 -1px 0 rgba(0,0,0,0.4)',
             }}
           />
-        </div>
-
-        {/* Gold Divider - metallic shimmer */}
-        <div className="flex items-center justify-center animate-in-stagger-2">
-          <div className="h-[1.5px] flex-1 shimmer-overlay" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(201,162,74,0.4) 30%, rgba(255,215,0,0.6) 50%, rgba(201,162,74,0.4) 70%, transparent 95%)', boxShadow: '0 0 6px rgba(255,215,0,0.15)' }} />
-        </div>
-
-        {/* Brand Title */}
-        <h2 className="font-display font-bold text-lg tracking-[0.18em] animate-in-stagger-3 gradient-text-gold" style={{ textShadow: '0 0 25px rgba(255,215,0,0.15)' }}>
-          BOULEVARD CAFÉ ELBASAN
-        </h2>
-
-        {/* Table Input - brushed metal glass */}
-        <div className="animate-in-stagger-3">
+          {/* Panel inner vignette */}
           <div
-            className="flex items-center rounded-full"
+            className="absolute inset-0 rounded-[27px] pointer-events-none"
             style={{
-              background: 'linear-gradient(135deg, rgba(13,19,33,0.95) 0%, rgba(17,24,39,0.9) 100%)',
-              border: '1.5px solid rgba(255,215,0,0.3)',
-              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5), 0 0 18px rgba(255,215,0,0.1), 0 0 35px rgba(255,215,0,0.03)',
+              background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.3) 100%)',
+            }}
+          />
+
+          {/* Logo */}
+          <div
+            className="rounded-2xl overflow-hidden animate-in-stagger-2 relative"
+            style={{
+              border: '1px solid rgba(201,150,74,0.15)',
+              boxShadow: '0 8px 30px -8px rgba(0,0,0,0.8), 0 0 12px rgba(201,150,74,0.03)',
             }}
           >
-            <div className="pl-4">
-              <MapPin className="w-5 h-5" style={{ color: 'hsl(48 85% 55%)' }} />
-            </div>
-            <input
-              type="text"
-              placeholder={t.placeholder}
-              value={tableNumber}
-              onChange={(e) => setTableNumber(e.target.value)}
-              className="flex-1 px-3 py-3.5 bg-transparent outline-none text-center font-display font-bold placeholder:opacity-40"
-              style={{ color: '#EDEDED' }}
-            />
-            <button
-              onClick={handleConfirmTable}
-              className="w-11 h-11 min-w-[2.75rem] rounded-full flex items-center justify-center mr-1 font-bold transition-all duration-300 hover:opacity-90 active:scale-95"
+            <img src={logo} alt="Boulevard Café Logo" className="w-full h-auto object-cover relative z-10" />
+            {/* Bottom edge reflection */}
+            <div
+              className="absolute bottom-0 left-0 right-0 h-px z-20"
               style={{
-                background: 'linear-gradient(135deg, hsl(43 65% 48%), hsl(48 100% 50%), hsl(43 60% 38%))',
-                color: '#0D1321',
-                boxShadow: '0 0 10px rgba(255,215,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25)',
+                background: 'linear-gradient(90deg, transparent 5%, rgba(201,150,74,0.25) 30%, rgba(246,197,111,0.4) 50%, rgba(201,150,74,0.25) 70%, transparent 95%)',
+              }}
+            />
+          </div>
+
+          {/* Gold Divider */}
+          <div className="flex items-center justify-center animate-in-stagger-2">
+            <div
+              className="h-px flex-1 shimmer-overlay"
+              style={{
+                background: 'linear-gradient(90deg, transparent 5%, rgba(122,85,38,0.25) 30%, rgba(201,150,74,0.35) 50%, rgba(122,85,38,0.25) 70%, transparent 95%)',
+              }}
+            />
+          </div>
+
+          {/* Brand Title — dimmed gold, not bright */}
+          <h2
+            className="font-display font-bold text-lg tracking-[0.16em] animate-in-stagger-3 gradient-text-gold"
+            style={{ opacity: 0.85 }}
+          >
+            BOULEVARD CAFÉ ELBASAN
+          </h2>
+
+          {/* Table Input */}
+          <div className="animate-in-stagger-3">
+            <div
+              className="flex items-center rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, #0C1219 0%, #111820 50%, #0E141C 100%)',
+                border: '1px solid rgba(201,150,74,0.15)',
+                boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 0 10px rgba(201,150,74,0.04)',
               }}
             >
-              <Check className="w-5 h-5" />
+              <div className="pl-4">
+                <MapPin className="w-5 h-5" style={{ color: '#C9964A' }} />
+              </div>
+              <input
+                type="text"
+                placeholder={t.placeholder}
+                value={tableNumber}
+                onChange={(e) => setTableNumber(e.target.value)}
+                className="flex-1 px-3 py-3.5 bg-transparent outline-none text-center font-sans font-medium placeholder:opacity-30"
+                style={{ color: '#EDEDED' }}
+              />
+              <button
+                onClick={handleConfirmTable}
+                className="w-11 h-11 min-w-[2.75rem] rounded-full flex items-center justify-center mr-1 font-bold transition-all duration-300 hover:opacity-90 active:scale-95"
+                style={{
+                  background: 'linear-gradient(180deg, #F6C56F 0%, #C9964A 50%, #7A5526 100%)',
+                  color: '#3A2A14',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 0 8px rgba(201,150,74,0.15)',
+                }}
+              >
+                <Check className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-xs mt-2" style={{ color: '#CFCFCF', opacity: 0.4 }}>{t.hint}</p>
+          </div>
+
+          {/* Welcome text */}
+          <p
+            className="font-sans text-sm italic animate-in-stagger-4"
+            style={{ color: '#CFCFCF', opacity: 0.7 }}
+          >
+            {t.chooseService}
+          </p>
+
+          {/* ═══ ACTION BUTTONS ═══ */}
+          <div className="flex flex-col gap-3 relative z-10">
+            {/* Call Waiter — Dark */}
+            <button
+              onClick={() => withGeoCheck(handleCallWaiter)}
+              disabled={checking}
+              className="group service-btn-navy justify-center animate-in-stagger-4 disabled:opacity-50"
+            >
+              <Bell className="h-5 w-5 scale-bounce-hover" style={{ color: '#C9964A' }} />
+              <span>{t.callWaiter}</span>
+            </button>
+
+            {/* Request Bill — Gold */}
+            <button
+              onClick={() => withGeoCheck(handleRequestBill)}
+              disabled={checking}
+              className="group service-btn-gold justify-center animate-in-stagger-5 disabled:opacity-50"
+            >
+              <Receipt className="h-5 w-5 scale-bounce-hover relative z-10" />
+              <span className="relative z-10">{t.requestBill}</span>
+            </button>
+
+            {/* Order from Menu — Dark */}
+            <button
+              onClick={() => navigate(`/menu?tabela=${displayTable}`)}
+              className="group service-btn-navy justify-center animate-in-stagger-5"
+            >
+              <UtensilsCrossed className="h-5 w-5 scale-bounce-hover" style={{ color: '#C9964A' }} />
+              <span>{t.orderMenu}</span>
+            </button>
+
+            {/* Ask Staff — Gold */}
+            <button
+              onClick={() => setChatOpen(true)}
+              className="group service-btn-gold justify-center animate-in-stagger-6"
+            >
+              <MessageCircle className="h-5 w-5 scale-bounce-hover relative z-10" />
+              <span className="relative z-10">{t.askStaff}</span>
+            </button>
+
+            {/* Rate Us — Dark */}
+            <button
+              onClick={() => setFeedbackOpen(true)}
+              className="group service-btn-navy justify-center animate-in-stagger-7"
+            >
+              <Star className="h-5 w-5 scale-bounce-hover" style={{ color: '#C9964A' }} />
+              <span>{t.rateUs}</span>
             </button>
           </div>
-          <p className="text-xs mt-2" style={{ color: '#CFCFCF', opacity: 0.5 }}>{t.hint}</p>
-        </div>
 
-        {/* Welcome text */}
-        <p className="font-display text-sm italic animate-in-stagger-4" style={{ color: '#CFCFCF' }}>
-          {t.chooseService}
-        </p>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3">
-          {/* Call Waiter - Navy */}
+          {/* Hidden manager link */}
           <button
-            onClick={() => withGeoCheck(handleCallWaiter)}
-            disabled={checking}
-            className="group service-btn-navy justify-center animate-in-stagger-4 disabled:opacity-50"
+            onClick={() => navigate("/manager-login")}
+            className="text-xs transition-colors"
+            style={{ color: 'rgba(255,255,255,0.06)' }}
           >
-            <Bell className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(48 85% 55%)' }} />
-            <span>{t.callWaiter}</span>
+            •
           </button>
-
-          {/* Request Bill - Gold */}
-          <button
-            onClick={() => withGeoCheck(handleRequestBill)}
-            disabled={checking}
-            className="group service-btn-gold justify-center animate-in-stagger-5 disabled:opacity-50"
-          >
-            <Receipt className="h-5 w-5 scale-bounce-hover" />
-            <span>{t.requestBill}</span>
-          </button>
-
-          {/* Order from Menu - Navy */}
-          <button
-            onClick={() => navigate(`/menu?tabela=${displayTable}`)}
-            className="group service-btn-navy justify-center animate-in-stagger-5"
-          >
-            <UtensilsCrossed className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(48 85% 55%)' }} />
-            <span>{t.orderMenu}</span>
-          </button>
-
-          {/* Ask Staff - Gold */}
-          <button
-            onClick={() => setChatOpen(true)}
-            className="group service-btn-gold justify-center animate-in-stagger-6"
-          >
-            <MessageCircle className="h-5 w-5 scale-bounce-hover" />
-            <span>{t.askStaff}</span>
-          </button>
-
-          {/* Rate Us - Navy */}
-          <button
-            onClick={() => setFeedbackOpen(true)}
-            className="group service-btn-navy justify-center animate-in-stagger-7"
-          >
-            <Star className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(48 85% 55%)' }} />
-            <span>{t.rateUs}</span>
-          </button>
-        </div>
-
-        {/* Hidden manager link */}
-        <button
-          onClick={() => navigate("/manager-login")}
-          className="text-xs transition-colors"
-          style={{ color: 'hsl(0 0% 100% / 0.1)' }}
-        >
-          •
-        </button>
         </div>
       </div>
 
