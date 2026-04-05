@@ -14,6 +14,7 @@ import coffeeBackground from "@/assets/coffee-background.png";
 interface Category {
   id: string;
   name: string;
+  name_en: string | null;
   display_order: number;
 }
 
@@ -21,7 +22,9 @@ interface MenuItem {
   id: string;
   category_id: string;
   name: string;
+  name_en: string | null;
   description: string;
+  description_en: string | null;
   price: number;
   image_url: string | null;
   available: boolean;
@@ -98,13 +101,13 @@ const ManagerDashboard = () => {
         supabase.from('categories').select('*').order('display_order'),
         supabase.from('menu_items').select('*'),
         supabase.from('ai_knowledge').select('*').order('created_at', { ascending: false }),
-        supabase.from('feedback' as any).select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(50),
       ]);
 
       setCategories(categoriesData || []);
       setMenuItems(itemsData || []);
       setKnowledgeEntries(knowledgeData || []);
-      setFeedbackEntries((feedbackData as any) || []);
+      setFeedbackEntries((feedbackData || []) as FeedbackEntry[]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -813,7 +816,7 @@ const ManagerDashboard = () => {
                       </p>
                     </div>
                     <Button size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={async () => {
-                      await supabase.from('feedback' as any).delete().eq('id', fb.id);
+                      await supabase.from('feedback').delete().eq('id', fb.id);
                       fetchData();
                     }}>
                       <Trash2 className="h-4 w-4" />

@@ -96,9 +96,13 @@ const Index = () => {
   const displayTable = tableNumber || t.table;
 
   const handleCallWaiter = async () => {
+    if (!tableNumber.trim()) {
+      toast.error(t.tableRequired);
+      return;
+    }
     try {
       const { error } = await supabase.from("service_requests").insert({
-        table_number: displayTable,
+        table_number: tableNumber.trim(),
         request_type: "waiter",
         status: "pending",
       });
@@ -111,9 +115,13 @@ const Index = () => {
   };
 
   const handleRequestBill = async () => {
+    if (!tableNumber.trim()) {
+      toast.error(t.tableRequired);
+      return;
+    }
     try {
       const { error } = await supabase.from("service_requests").insert({
-        table_number: displayTable,
+        table_number: tableNumber.trim(),
         request_type: "bill",
         status: "pending",
       });
@@ -214,7 +222,7 @@ const Index = () => {
               </button>
 
               {/* 4. Order from Menu — Dark */}
-              <button onClick={() => navigate(`/menu?tabela=${displayTable}`)} className="blvd-btn-dark">
+              <button onClick={() => navigate(`/menu?tabela=${tableNumber.trim() || ""}`)} className="blvd-btn-dark">
                 <span className="blvd-icon-gold"><UtensilsIcon /></span>
                 <span>{t.orderMenu}</span>
               </button>

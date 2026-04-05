@@ -47,11 +47,11 @@ export const FeedbackDialog = ({ open, onOpenChange, tableNumber, language }: Fe
     if (rating === 0) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("feedback" as any).insert({
+      const { error } = await supabase.from("feedback").insert({
         table_number: tableNumber,
         rating,
         comment: comment.trim() || null,
-      } as any);
+      });
       if (error) throw error;
       toast.success(tr.thanks, { description: tr.thanksDesc });
       setRating(0);

@@ -71,7 +71,13 @@ const isOfferActive = (item: MenuItem): boolean => {
   if (!item.offer_price || !item.offer_start_time || !item.offer_end_time) return false;
   const now = new Date();
   const romeTime = now.toLocaleTimeString('en-GB', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hour12: false });
-  return romeTime >= item.offer_start_time.slice(0, 5) && romeTime <= item.offer_end_time.slice(0, 5);
+  const start = item.offer_start_time.slice(0, 5);
+  const end = item.offer_end_time.slice(0, 5);
+  // Handle overnight ranges (e.g. 22:00 - 02:00)
+  if (start > end) {
+    return romeTime >= start || romeTime <= end;
+  }
+  return romeTime >= start && romeTime <= end;
 };
 
 const getActivePrice = (item: MenuItem): number => {
@@ -83,7 +89,7 @@ const Menu = () => {
   const navigate = useNavigate();
   const { language, toggleLanguage } = useLanguage();
   const t = translations[language];
-  const [tableNumber, setTableNumber] = useState(t.table);
+  const [tableNumber, setTableNumber] = useState("");
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -96,8 +102,6 @@ const Menu = () => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
     if (tableParam) {
       setTableNumber(tableParam);
-    } else {
-      setTableNumber(t.table);
     }
   }, [searchParams, t.table]);
 
@@ -157,6 +161,10 @@ const Menu = () => {
   };
 
   const handleSubmitOrder = async () => {
+    if (!tableNumber.trim()) {
+      toast.error(language === 'sq' ? 'Shkruani numrin e tavolinës' : 'Enter the table number');
+      return;
+    }
     const geoResult = await checkLocation(language);
     if (!geoResult.allowed) {
       toast.error(geoResult.error || t.geoRequired);
@@ -178,7 +186,7 @@ const Menu = () => {
       const { error } = await supabase
         .from('orders')
         .insert({
-          table_number: tableNumber,
+          table_number: tableNumber.trim(),
           items: orderItems,
           total_price: getTotalPrice(),
           status: 'pending',
@@ -256,7 +264,7 @@ const Menu = () => {
             <img src={logo} alt="Logo" className="h-10 w-auto" />
             <div className="text-right">
               <p className="text-xs" style={{ color: 'hsl(220 10% 50%)' }}>{t.menu}</p>
-              <p className="font-display font-bold text-sm gradient-text-gold">{tableNumber}</p>
+              <p className="font-display font-bold text-sm gradient-text-gold">{tableNumber || t.table}</p>
             </div>
           </div>
           <button
