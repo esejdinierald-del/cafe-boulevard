@@ -119,19 +119,19 @@ const Dashboard = () => {
     return () => { supabase.removeChannel(unlockChannel); };
   }, [shiftToken]);
 
-  // Backup poll only while curtain is active (removed once unlocked)
+  // Backup poll only while curtain is active — use edge function
   useEffect(() => {
     if (!curtainActive || !shiftToken) return;
     const poll = setInterval(async () => {
-      const { data } = await supabase
-        .from("shift_tokens")
-        .select("unlocked")
-        .eq("token", shiftToken)
-        .maybeSingle();
-      if (data?.unlocked) {
-        setCurtainActive(false);
-        toast.success("🔓 Turni u aktivizua!");
-      }
+      try {
+        const { data } = await supabase.functions.invoke("manage-shift", {
+          body: { action: "check_unlock", token: shiftToken },
+        });
+        if (data?.unlocked) {
+          setCurtainActive(false);
+          toast.success("🔓 Turni u aktivizua!");
+        }
+      } catch {}
     }, 10000);
     return () => clearInterval(poll);
   }, [curtainActive, shiftToken]);
