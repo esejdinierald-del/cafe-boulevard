@@ -295,27 +295,50 @@
 /* Horizontal golden flare line — signature effect */
 .blvd-flare {
   position: absolute;
-  left: -5%;
-  right: -5%;
-  height: 3px;
+  left: 0;
+  right: 0;
+  height: 2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(255,200,80,0.1) 15%,
-    rgba(255,180,50,0.5) 35%,
-    rgba(255,220,100,0.9) 48%,
-    rgba(255,255,200,1) 50%,
-    rgba(255,220,100,0.9) 52%,
-    rgba(255,180,50,0.5) 65%,
-    rgba(255,200,80,0.1) 85%,
+    rgba(255,200,80,0.15) 10%,
+    rgba(255,180,50,0.5) 30%,
+    rgba(255,220,100,0.9) 45%,
+    rgba(255,255,220,1) 50%,
+    rgba(255,220,100,0.9) 55%,
+    rgba(255,180,50,0.5) 70%,
+    rgba(255,200,80,0.15) 90%,
     transparent 100%
   );
   box-shadow:
-    0 0 20px rgba(255,180,50,0.6),
-    0 0 60px rgba(255,180,50,0.3),
-    0 0 120px rgba(255,150,30,0.15);
-  z-index: 50;
+    0 0 15px rgba(255,180,50,0.7),
+    0 0 40px rgba(255,180,50,0.4),
+    0 0 80px rgba(255,150,30,0.2);
+  z-index: 90;
   pointer-events: none;
   animation: blvd-flare-pulse 3s ease-in-out infinite;
+}
+
+@keyframes blvd-flare-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Soft glow haze around flare */
+.blvd-flare::before {
+  content: '';
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: -12px;
+  bottom: -12px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,180,50,0.12) 25%,
+    rgba(255,200,80,0.2) 50%,
+    rgba(255,180,50,0.12) 75%,
+    transparent
+  );
+  filter: blur(8px);
 }
 
 @keyframes blvd-flare-pulse {
