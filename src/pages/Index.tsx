@@ -330,16 +330,13 @@ const Index = () => {
                 style={{ background: 'linear-gradient(90deg, transparent, rgba(255,215,0,0.6), transparent)' }}
               />
 
-              {/* Cocktail icon */}
-              <div className="w-[50px] h-[50px] mx-auto mb-4">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#e8c76d" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 0 8px rgba(232,199,109,0.4))' }}>
-                  <path d="M8 2L16 2L12 10L12 18" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M7 22H17" strokeLinecap="round" />
-                  <path d="M12 18V22" strokeLinecap="round" />
-                  <circle cx="15" cy="5" r="1" fill="#e8c76d" stroke="none" />
-                  <path d="M16 2C16.5 4 18 5 19 5" strokeLinecap="round" />
-                </svg>
-              </div>
+              {/* Logo */}
+              <img
+                src={logo}
+                alt="Boulevard Café"
+                className="w-14 h-14 mx-auto mb-4 rounded-xl object-contain"
+                style={{ filter: 'drop-shadow(0 0 10px rgba(232,199,109,0.3))' }}
+              />
 
               <h1
                 className="font-display font-semibold tracking-[6px] uppercase mb-2"
