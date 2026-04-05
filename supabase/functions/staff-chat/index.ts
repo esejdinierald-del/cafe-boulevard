@@ -374,16 +374,11 @@ ${offersData}
 ${footballData}
 ${panoramaData}
 ${knowledgeData}
+${menuData}
 
 📍 INFO: Boulevard Café Elbasan | Mon-Sun 07:00-24:00 | Center of Elbasan | Free Wi-Fi
 
-☕ COFFEE: Espresso (0.80€) | Macchiato (1€) | Cappuccino (1.50€) | Latte (1.80€) | Americano (1.20€) | Turkish (1€) | Freddo (2€-2.50€)
-🍺 MATCH DRINKS: Beer (2€-3€) | Energy (2.50€) | Cocktails (5€-8€) | Wine (from 3€)
-🍹 OTHER: Tea (1.50€) | Juice (2€-3€) | Smoothie (3.50€) | Lemonade (2.50€)
-🇮🇹 ANTIPASTO: Prosciutto (8€) | Cheeses (9€) | Completo (12€) | Bruschetta (4€) | Carpaccio (9€) | Boulevard (15€)
-🍕 PIZZA: Margherita (5€) | Pepperoni (6€) | Prosciutto (6.50€) | 4 Formaggi (7€) | Capricciosa (7€) | Special (8€)
-🍟 FINGER FOOD: Wings (4.50€) | Mozz Sticks (4€) | Nachos (5€) | Onion Rings (3.50€) | Nuggets (4€) | Fries (2.50€) | Mix (8€)
-🍰 DESSERTS: Croissant (1.50€) | Cake (2.50€) | Tiramisu (3€) | Cheesecake (3€) | Soufflé (3.50€) | Sandwiches (3€-4.50€)
+⚠️ PRICES: All menu prices are listed ABOVE from the database. Currency is LEKË (Albanian Lek). NEVER use old prices or euros!
 
 GUIDELINES:
 - When asked about matches/results, use the LIVE DATA above
