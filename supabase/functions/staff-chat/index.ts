@@ -340,6 +340,7 @@ ${offersData}
 ${footballData}
 ${panoramaData}
 ${knowledgeData}
+${menuData}
 
 📍 INFORMACIONE BAZË:
 - Emri: Boulevard Café Elbasan
@@ -347,20 +348,7 @@ ${knowledgeData}
 - Vendndodhja: Në qendër të Elbasanit, pranë sheshit kryesor
 - Wi-Fi: Falas | Pagesa: Cash, karta, mobile
 
-☕ MENU E KAFESË:
-- Espresso (0.80€) | Macchiato (1.00€) | Cappuccino (1.50€) | Latte (1.80€)
-- Americano (1.20€) | Kafe Turke (1.00€) | Freddo Espresso (2.00€) | Freddo Cappuccino (2.50€)
-
-🍺 PIJE PËR NDESHJE:
-- Birra (2.00€-3.00€) | Energjike (2.50€) | Kokteje (5.00€-8.00€) | Verë (nga 3.00€)
-
-🍹 PIJE TË TJERA:
-- Çaj (1.50€) | Lëngje (2.00€-3.00€) | Smoothie (3.50€) | Limonadë (2.50€) | Ujë (1.00€)
-
-🇮🇹 ANTIPASTA: Tagliere Prosciutto (8€) | Mix Djathrash (9€) | Completo (12€) | Bruschetta (4€) | Carpaccio (9€) | Antipasto Boulevard (15€)
-🍕 PIZZA: Margherita (5€) | Pepperoni (6€) | Prosciutto (6.50€) | Quattro Formaggi (7€) | Capricciosa (7€) | Special Boulevard (8€)
-🍟 FINGER FOOD: Wings (4.50€) | Mozzarella Sticks (4€) | Nachos (5€) | Onion Rings (3.50€) | Nuggets (4€) | Fries (2.50€) | Mix (8€)
-🍰 ËMBËLSIRA: Croissant (1.50€) | Torta (2.50€) | Tiramisu (3€) | Cheesecake (3€) | Sufle (3.50€) | Sanduiçe (3€-4.50€)
+⚠️ ÇMIMET: Të gjitha çmimet e menusë janë MË SIPËR, të marra nga databaza. Monedha është LEKË. KURRË mos përdor çmime të vjetra ose në euro!
 
 UDHËZIME:
 - Nëse klienti pyet për ndeshje ose rezultate, përdor të dhënat LIVE më sipër
