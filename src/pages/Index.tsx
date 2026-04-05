@@ -162,6 +162,8 @@ const Index = () => {
             <div className="blvd-noise" />
             <div className="blvd-light-ray" />
             <div className="blvd-inner-vignette" />
+            {/* Horizontal golden flare — positioned after header */}
+            <div className="blvd-flare" style={{ top: '280px' }} />
 
             {/* ═══ HEADER ═══ */}
             <div className="blvd-header">
