@@ -109,25 +109,25 @@ const StaffShift = () => {
     }
   }, [urlToken, setSearchParams]);
 
-  // Validate token
+  // Validate token via edge function (shift_tokens no longer publicly readable)
   useEffect(() => {
     if (!activeToken) { setIsValid(false); return; }
     const validate = async () => {
-      const now = new Date().toISOString();
-      const { data, error } = await supabase
-        .from("shift_tokens")
-        .select("*")
-        .eq("token", activeToken)
-        .gte("shift_end", now)
-        .lte("shift_start", now)
-        .maybeSingle();
-      if (error || !data) {
+      try {
+        const { data, error } = await supabase.functions.invoke("validate-shift", {
+          body: { token: activeToken },
+        });
+        if (error || !data?.valid) {
+          setIsValid(false);
+          localStorage.removeItem("staff_shift_token");
+          return;
+        }
+        setIsValid(true);
+        setShiftEnd(new Date(data.shift_end));
+      } catch {
         setIsValid(false);
         localStorage.removeItem("staff_shift_token");
-        return;
       }
-      setIsValid(true);
-      setShiftEnd(new Date(data.shift_end));
     };
     validate();
   }, [activeToken]);
