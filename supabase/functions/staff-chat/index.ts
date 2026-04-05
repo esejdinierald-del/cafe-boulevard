@@ -219,6 +219,48 @@ async function fetchActiveOffers(): Promise<string> {
   }
 }
 
+// Fetch full menu with prices from database
+async function fetchFullMenu(): Promise<string> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+
+    const { data: items, error } = await sb
+      .from("menu_items")
+      .select("name, name_en, price, available, category_id, categories(name, name_en)")
+      .eq("available", true)
+      .order("display_order", { ascending: true });
+
+    if (error || !items || items.length === 0) return "";
+
+    // Group by category
+    const grouped: Record<string, { name: string; name_en: string; items: any[] }> = {};
+    for (const item of items) {
+      const cat = (item as any).categories;
+      const catName = cat?.name || "Të tjera";
+      const catNameEn = cat?.name_en || "Other";
+      if (!grouped[catName]) {
+        grouped[catName] = { name: catName, name_en: catNameEn, items: [] };
+      }
+      grouped[catName].items.push(item);
+    }
+
+    let info = "\n📋 MENU E PLOTË (ÇMIME REALE NGA DATABAZA - NË LEKË):\n";
+    for (const [catName, cat] of Object.entries(grouped)) {
+      info += `\n${catName} (${cat.name_en}):\n`;
+      for (const item of cat.items) {
+        info += `- ${item.name}${item.name_en ? ` / ${item.name_en}` : ""}: ${item.price} Lekë\n`;
+      }
+    }
+    info += "\n⚠️ RREGULL: Përdor VETËM këto çmime kur pyesin klientët! Monedha është LEKË (jo euro).\n";
+    return info;
+  } catch (e) {
+    console.error("Error fetching full menu:", e);
+    return "";
+  }
+}
+
 // Fetch custom knowledge entries
 async function fetchCustomKnowledge(): Promise<string> {
   try {
