@@ -193,7 +193,7 @@ async function fetchActiveOffers(): Promise<string> {
       info += "AKTIVE TANI:\n";
       for (const item of activeOffers) {
         const cat = (item as any).categories?.name || "";
-        info += `- ${item.name} (${cat}): ${item.offer_price}€ (çmimi normal: ${item.price}€) — deri në ${item.offer_end_time}\n`;
+        info += `- ${item.name} (${cat}): ${item.offer_price} Lekë (çmimi normal: ${item.price} Lekë) — deri në ${item.offer_end_time}\n`;
       }
     }
 
@@ -201,7 +201,7 @@ async function fetchActiveOffers(): Promise<string> {
       info += "DO TË AKTIVIZOHEN SË SHPEJTI:\n";
       for (const item of upcomingOffers) {
         const cat = (item as any).categories?.name || "";
-        info += `- ${item.name} (${cat}): ${item.offer_price}€ (çmimi normal: ${item.price}€) — nga ${item.offer_start_time} deri ${item.offer_end_time}\n`;
+        info += `- ${item.name} (${cat}): ${item.offer_price} Lekë (çmimi normal: ${item.price} Lekë) — nga ${item.offer_start_time} deri ${item.offer_end_time}\n`;
       }
     }
 
@@ -215,6 +215,48 @@ async function fetchActiveOffers(): Promise<string> {
     return info;
   } catch (e) {
     console.error("Error fetching offers:", e);
+    return "";
+  }
+}
+
+// Fetch full menu with prices from database
+async function fetchFullMenu(): Promise<string> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+
+    const { data: items, error } = await sb
+      .from("menu_items")
+      .select("name, name_en, price, available, category_id, categories(name, name_en)")
+      .eq("available", true)
+      .order("display_order", { ascending: true });
+
+    if (error || !items || items.length === 0) return "";
+
+    // Group by category
+    const grouped: Record<string, { name: string; name_en: string; items: any[] }> = {};
+    for (const item of items) {
+      const cat = (item as any).categories;
+      const catName = cat?.name || "Të tjera";
+      const catNameEn = cat?.name_en || "Other";
+      if (!grouped[catName]) {
+        grouped[catName] = { name: catName, name_en: catNameEn, items: [] };
+      }
+      grouped[catName].items.push(item);
+    }
+
+    let info = "\n📋 MENU E PLOTË (ÇMIME REALE NGA DATABAZA - NË LEKË):\n";
+    for (const [catName, cat] of Object.entries(grouped)) {
+      info += `\n${catName} (${cat.name_en}):\n`;
+      for (const item of cat.items) {
+        info += `- ${item.name}${item.name_en ? ` / ${item.name_en}` : ""}: ${item.price} Lekë\n`;
+      }
+    }
+    info += "\n⚠️ RREGULL: Përdor VETËM këto çmime kur pyesin klientët! Monedha është LEKË (jo euro).\n";
+    return info;
+  } catch (e) {
+    console.error("Error fetching full menu:", e);
     return "";
   }
 }
@@ -259,11 +301,12 @@ serve(async (req) => {
     }
 
     // Fetch live data in parallel
-    const [footballData, panoramaData, offersData, knowledgeData] = await Promise.all([
+    const [footballData, panoramaData, offersData, knowledgeData, menuData] = await Promise.all([
       fetchFootballData(),
       fetchPanoramaSport(),
       fetchActiveOffers(),
       fetchCustomKnowledge(),
+      fetchFullMenu(),
     ]);
 
     const systemPromptSq = `Ti je asistenti virtual i Boulevard Café Elbasan - por jo një robot i ftohtë! Je si një shok i mirë që e do lokalin dhe dëshiron që klientët të kalojnë kohë të bukur këtu.
@@ -297,6 +340,7 @@ ${offersData}
 ${footballData}
 ${panoramaData}
 ${knowledgeData}
+${menuData}
 
 📍 INFORMACIONE BAZË:
 - Emri: Boulevard Café Elbasan
@@ -304,20 +348,7 @@ ${knowledgeData}
 - Vendndodhja: Në qendër të Elbasanit, pranë sheshit kryesor
 - Wi-Fi: Falas | Pagesa: Cash, karta, mobile
 
-☕ MENU E KAFESË:
-- Espresso (0.80€) | Macchiato (1.00€) | Cappuccino (1.50€) | Latte (1.80€)
-- Americano (1.20€) | Kafe Turke (1.00€) | Freddo Espresso (2.00€) | Freddo Cappuccino (2.50€)
-
-🍺 PIJE PËR NDESHJE:
-- Birra (2.00€-3.00€) | Energjike (2.50€) | Kokteje (5.00€-8.00€) | Verë (nga 3.00€)
-
-🍹 PIJE TË TJERA:
-- Çaj (1.50€) | Lëngje (2.00€-3.00€) | Smoothie (3.50€) | Limonadë (2.50€) | Ujë (1.00€)
-
-🇮🇹 ANTIPASTA: Tagliere Prosciutto (8€) | Mix Djathrash (9€) | Completo (12€) | Bruschetta (4€) | Carpaccio (9€) | Antipasto Boulevard (15€)
-🍕 PIZZA: Margherita (5€) | Pepperoni (6€) | Prosciutto (6.50€) | Quattro Formaggi (7€) | Capricciosa (7€) | Special Boulevard (8€)
-🍟 FINGER FOOD: Wings (4.50€) | Mozzarella Sticks (4€) | Nachos (5€) | Onion Rings (3.50€) | Nuggets (4€) | Fries (2.50€) | Mix (8€)
-🍰 ËMBËLSIRA: Croissant (1.50€) | Torta (2.50€) | Tiramisu (3€) | Cheesecake (3€) | Sufle (3.50€) | Sanduiçe (3€-4.50€)
+⚠️ ÇMIMET: Të gjitha çmimet e menusë janë MË SIPËR, të marra nga databaza. Monedha është LEKË. KURRË mos përdor çmime të vjetra ose në euro!
 
 UDHËZIME:
 - Nëse klienti pyet për ndeshje ose rezultate, përdor të dhënat LIVE më sipër
@@ -343,16 +374,11 @@ ${offersData}
 ${footballData}
 ${panoramaData}
 ${knowledgeData}
+${menuData}
 
 📍 INFO: Boulevard Café Elbasan | Mon-Sun 07:00-24:00 | Center of Elbasan | Free Wi-Fi
 
-☕ COFFEE: Espresso (0.80€) | Macchiato (1€) | Cappuccino (1.50€) | Latte (1.80€) | Americano (1.20€) | Turkish (1€) | Freddo (2€-2.50€)
-🍺 MATCH DRINKS: Beer (2€-3€) | Energy (2.50€) | Cocktails (5€-8€) | Wine (from 3€)
-🍹 OTHER: Tea (1.50€) | Juice (2€-3€) | Smoothie (3.50€) | Lemonade (2.50€)
-🇮🇹 ANTIPASTO: Prosciutto (8€) | Cheeses (9€) | Completo (12€) | Bruschetta (4€) | Carpaccio (9€) | Boulevard (15€)
-🍕 PIZZA: Margherita (5€) | Pepperoni (6€) | Prosciutto (6.50€) | 4 Formaggi (7€) | Capricciosa (7€) | Special (8€)
-🍟 FINGER FOOD: Wings (4.50€) | Mozz Sticks (4€) | Nachos (5€) | Onion Rings (3.50€) | Nuggets (4€) | Fries (2.50€) | Mix (8€)
-🍰 DESSERTS: Croissant (1.50€) | Cake (2.50€) | Tiramisu (3€) | Cheesecake (3€) | Soufflé (3.50€) | Sandwiches (3€-4.50€)
+⚠️ PRICES: All menu prices are listed ABOVE from the database. Currency is LEKË (Albanian Lek). NEVER use old prices or euros!
 
 GUIDELINES:
 - When asked about matches/results, use the LIVE DATA above
