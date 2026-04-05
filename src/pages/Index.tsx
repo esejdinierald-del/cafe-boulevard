@@ -76,6 +76,16 @@ const Index = () => {
   const { language, toggleLanguage } = useLanguage();
   const t = translations[language];
 
+  // CRITICAL: Check staff redirect SYNCHRONOUSLY before any render
+  // This prevents the flash of the client UI when staff PWA opens at "/"
+  const [redirecting] = useState(() => {
+    if (shouldRedirectToStaff()) {
+      window.location.replace("/staff");
+      return true;
+    }
+    return false;
+  });
+
   const tableParam = searchParams.get("tabela") || searchParams.get("table");
   const [tableNumber, setTableNumber] = useState(tableParam || "");
   const [chatOpen, setChatOpen] = useState(false);
@@ -84,10 +94,8 @@ const Index = () => {
   const { checking } = useGeolocation();
 
   useEffect(() => {
-    if (shouldRedirectToStaff()) {
-      window.location.replace("/staff");
-    }
-  }, []);
+    if (tableParam) setTableNumber(tableParam);
+  }, [tableParam]);
 
   useEffect(() => {
     if (tableParam) setTableNumber(tableParam);
