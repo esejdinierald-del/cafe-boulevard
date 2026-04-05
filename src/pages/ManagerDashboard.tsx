@@ -22,7 +22,9 @@ interface MenuItem {
   id: string;
   category_id: string;
   name: string;
+  name_en: string | null;
   description: string;
+  description_en: string | null;
   price: number;
   image_url: string | null;
   available: boolean;

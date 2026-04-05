@@ -190,7 +190,13 @@ async function fetchActiveOffers(): Promise<string> {
 
     const upcomingOffers = items.filter((item: any) => {
       if (!item.offer_start_time || !item.offer_end_time) return false;
-      return romeTime < item.offer_start_time;
+      const start = item.offer_start_time.slice(0, 5);
+      const end = item.offer_end_time.slice(0, 5);
+      // For overnight: if we're before start AND before end, it's upcoming
+      if (start > end) {
+        return romeTime < start && romeTime >= end;
+      }
+      return romeTime < start;
     });
 
     let info = "\n🔥 OFERTAT E SOTME (TË DHËNA REALE NGA DATABAZA):\n";
