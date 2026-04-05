@@ -101,23 +101,8 @@ const Dashboard = () => {
     ensureShiftToken();
   }, []);
 
-  // Separate effect for realtime listener that re-subscribes when shiftToken changes
-  useEffect(() => {
-    if (!shiftToken) return;
-
-    const unlockChannel = supabase
-      .channel("shift-unlock")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "shift_tokens" }, (payload) => {
-        const updated = payload.new as any;
-        if (updated.unlocked && updated.token === shiftToken) {
-          setCurtainActive(false);
-          toast.success("🔓 Turni u aktivizua nga kamarieri!");
-        }
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(unlockChannel); };
-  }, [shiftToken]);
+  // Poll for unlock via edge function (realtime won't work without auth on shift_tokens)
+  // The backup poll below handles this
 
   // Backup poll only while curtain is active — use edge function
   useEffect(() => {
