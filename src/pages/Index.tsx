@@ -173,9 +173,11 @@ const Index = () => {
                 <img
                   src={boulevardLogo}
                   alt="Boulevard Café"
-                  className="w-16 h-16 mx-auto mb-3 rounded-xl object-contain"
+                  className="w-24 h-auto mx-auto mb-3 rounded-lg object-contain"
                   style={{
-                    filter: 'drop-shadow(0 0 12px rgba(232, 199, 109, 0.5)) drop-shadow(0 0 25px rgba(255, 180, 50, 0.25))',
+                    border: '1px solid rgba(232, 199, 109, 0.3)',
+                    padding: '4px',
+                    filter: 'drop-shadow(0 0 14px rgba(232, 199, 109, 0.4)) drop-shadow(0 0 30px rgba(255, 180, 50, 0.2))',
                   }}
                 />
                 <h1 className="blvd-title">BOULEVARD</h1>
