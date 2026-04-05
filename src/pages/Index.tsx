@@ -77,16 +77,22 @@ const bokehParticles = [
   { size: 100, x: '42%', y: '5%', blur: 30, delay: 0.3, opacity: 0.12 },
 ];
 
-/* Dust/sparkle particles — tiny white/gold specks */
-const dustParticles = [
-  { x: '15%', y: '25%', size: 2, delay: 0 },
-  { x: '72%', y: '55%', size: 1.5, delay: 1.5 },
-  { x: '38%', y: '78%', size: 2, delay: 0.8 },
-  { x: '85%', y: '15%', size: 1, delay: 2.2 },
-  { x: '55%', y: '42%', size: 1.5, delay: 3.1 },
-  { x: '22%', y: '62%', size: 2, delay: 1.1 },
-  { x: '68%', y: '85%', size: 1, delay: 2.6 },
-  { x: '48%', y: '12%', size: 1.5, delay: 0.4 },
+/* Sparkle particles — twinkling gold/white specks */
+const sparkleParticles = [
+  { x: '15%', y: '25%', size: 2.5, delay: 0, color: 'rgba(255,235,160,0.8)' },
+  { x: '72%', y: '55%', size: 2, delay: 1.5, color: 'rgba(255,255,255,0.7)' },
+  { x: '38%', y: '78%', size: 3, delay: 0.8, color: 'rgba(246,197,111,0.9)' },
+  { x: '85%', y: '15%', size: 1.5, delay: 2.2, color: 'rgba(255,255,255,0.6)' },
+  { x: '55%', y: '42%', size: 2, delay: 3.1, color: 'rgba(255,220,140,0.8)' },
+  { x: '22%', y: '62%', size: 2.5, delay: 1.1, color: 'rgba(255,255,255,0.7)' },
+  { x: '68%', y: '85%', size: 1.5, delay: 2.6, color: 'rgba(246,197,111,0.7)' },
+  { x: '48%', y: '12%', size: 2, delay: 0.4, color: 'rgba(255,235,160,0.8)' },
+  { x: '8%', y: '48%', size: 3, delay: 1.8, color: 'rgba(255,255,255,0.6)' },
+  { x: '92%', y: '38%', size: 2, delay: 0.6, color: 'rgba(255,220,140,0.9)' },
+  { x: '32%', y: '92%', size: 2.5, delay: 2.0, color: 'rgba(255,255,255,0.5)' },
+  { x: '78%', y: '5%', size: 1.5, delay: 3.5, color: 'rgba(246,197,111,0.8)' },
+  { x: '45%', y: '68%', size: 2, delay: 0.2, color: 'rgba(255,235,160,0.7)' },
+  { x: '62%', y: '32%', size: 3, delay: 2.8, color: 'rgba(255,255,255,0.6)' },
 ];
 
 const Index = () => {
