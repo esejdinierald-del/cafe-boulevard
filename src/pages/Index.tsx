@@ -96,9 +96,13 @@ const Index = () => {
   const displayTable = tableNumber || t.table;
 
   const handleCallWaiter = async () => {
+    if (!tableNumber.trim()) {
+      toast.error(t.tableRequired);
+      return;
+    }
     try {
       const { error } = await supabase.from("service_requests").insert({
-        table_number: displayTable,
+        table_number: tableNumber.trim(),
         request_type: "waiter",
         status: "pending",
       });
@@ -111,9 +115,13 @@ const Index = () => {
   };
 
   const handleRequestBill = async () => {
+    if (!tableNumber.trim()) {
+      toast.error(t.tableRequired);
+      return;
+    }
     try {
       const { error } = await supabase.from("service_requests").insert({
-        table_number: displayTable,
+        table_number: tableNumber.trim(),
         request_type: "bill",
         status: "pending",
       });
