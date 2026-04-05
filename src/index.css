@@ -217,43 +217,41 @@
     @apply flex items-center gap-4 w-full text-left text-lg;
     @apply transition-all duration-300 ease-out;
     @apply hover:scale-[1.02] active:scale-[0.98];
-    background: linear-gradient(135deg, hsl(220 65% 8%) 0%, hsl(220 55% 14%) 50%, hsl(220 60% 10%) 100%);
-    color: hsl(43 85% 55%);
-    border: 1.5px solid hsl(43 85% 55% / 0.5);
+    background: linear-gradient(135deg, hsl(222 55% 5%) 0%, hsl(222 50% 10%) 50%, hsl(222 55% 7%) 100%);
+    color: hsl(48 85% 55%);
+    border: 1.5px solid hsl(43 72% 50% / 0.35);
     box-shadow: 
-      0 0 20px hsl(43 85% 55% / 0.25),
-      0 0 40px hsl(43 85% 55% / 0.1),
-      inset 0 1px 0 hsl(0 0% 100% / 0.1),
-      inset 0 -1px 0 hsl(0 0% 0% / 0.4);
+      0 0 20px hsl(43 72% 50% / 0.12),
+      0 0 40px hsl(43 72% 50% / 0.05),
+      inset 0 1px 0 hsl(0 0% 100% / 0.07),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.5);
   }
   .service-btn-navy:hover {
-    border-color: hsl(43 85% 55% / 0.7);
+    border-color: hsl(43 72% 50% / 0.6);
     box-shadow: 
-      0 0 30px hsl(43 85% 55% / 0.4),
-      0 0 60px hsl(43 85% 55% / 0.18),
-      inset 0 1px 0 hsl(0 0% 100% / 0.15),
-      inset 0 -1px 0 hsl(0 0% 0% / 0.4);
+      0 0 30px hsl(48 100% 50% / 0.25),
+      0 0 60px hsl(48 100% 50% / 0.1),
+      inset 0 1px 0 hsl(0 0% 100% / 0.12),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.5);
   }
-  /* Light flare spots - LEFT edge */
   .service-btn-navy::before {
     content: '';
     position: absolute;
     top: 50%;
     left: 4px;
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: radial-gradient(circle, hsl(43 90% 80% / 1), hsl(43 85% 60% / 0.6), transparent);
-    box-shadow: 0 0 12px 5px hsl(43 85% 55% / 0.5), 0 0 25px 8px hsl(43 85% 55% / 0.2);
+    background: radial-gradient(circle, hsl(48 90% 75% / 0.9), hsl(43 72% 50% / 0.5), transparent);
+    box-shadow: 0 0 10px 4px hsl(48 100% 50% / 0.3), 0 0 20px 6px hsl(48 100% 50% / 0.1);
     transform: translateY(-50%);
     pointer-events: none;
     z-index: 2;
   }
-  /* Shimmer sweep on hover */
   .service-btn-navy::after {
     content: '';
     @apply absolute top-0 left-0 w-full h-full opacity-0;
-    background: linear-gradient(90deg, transparent, hsl(43 85% 55% / 0.15), transparent);
+    background: linear-gradient(90deg, transparent, hsl(48 100% 50% / 0.1), transparent);
     transform: translateX(-100%);
     transition: transform 0.8s ease-out, opacity 0.3s;
   }
