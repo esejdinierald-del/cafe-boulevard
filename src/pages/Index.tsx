@@ -213,22 +213,20 @@ const Index = () => {
         ))}
       </div>
 
-      {/* Dust / sparkle overlay */}
+      {/* Twinkling sparkles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {dustParticles.map((d, i) => (
+        {sparkleParticles.map((s, i) => (
           <div
-            key={`dust-${i}`}
+            key={`sparkle-${i}`}
             className="absolute rounded-full"
             style={{
-              width: `${d.size}px`,
-              height: `${d.size}px`,
-              background: i % 2 === 0
-                ? 'rgba(255,255,255,0.35)'
-                : 'rgba(220,185,120,0.4)',
-              left: d.x,
-              top: d.y,
-              animation: `dust-float ${4 + i * 0.6}s ease-in-out ${d.delay}s infinite`,
-              filter: 'blur(0.5px)',
+              width: `${s.size}px`,
+              height: `${s.size}px`,
+              background: s.color,
+              left: s.x,
+              top: s.y,
+              animation: `sparkle-twinkle ${2.5 + i * 0.4}s ease-in-out ${s.delay}s infinite`,
+              boxShadow: `0 0 ${s.size * 2}px ${s.color}`,
             }}
           />
         ))}
