@@ -245,6 +245,8 @@ const Index = () => {
             {/* Hidden manager link */}
             <button onClick={() => navigate("/manager-login")} className="blvd-manager-dot">•</button>
           </div>
+          {/* Horizontal golden flare — renders on top of content */}
+          <div className="blvd-flare" style={{ top: '240px' }} />
         </div>
       </div>
 
