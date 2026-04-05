@@ -317,11 +317,14 @@ const StaffShift = () => {
     localStorage.setItem("staff_shift_token", scannedToken);
     setIsValid(null); // trigger re-validation
 
-    // Unlock dashboard curtain
-    await supabase
-      .from("shift_tokens")
-      .update({ unlocked: true } as any)
-      .eq("token", scannedToken);
+    // Unlock dashboard curtain via edge function
+    try {
+      await supabase.functions.invoke("unlock-shift", {
+        body: { token: scannedToken },
+      });
+    } catch (e) {
+      console.error("Failed to unlock shift:", e);
+    }
 
     toast.success("QR u skanua! Dashboard u zhbllokua!");
   }, []);
