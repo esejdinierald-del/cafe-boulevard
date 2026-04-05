@@ -162,53 +162,36 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden grain-texture">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
 
-      {/* ═══ BACKGROUND — Navy-dark with bronze reflections ═══ */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(160deg, #0a0a10 0%, #151821 25%, #1e181c 45%, #2d2524 65%, #151821 85%, #0a0a10 100%)',
-        }}
-      />
-
-      {/* Bronze-gold light reflections — warm zones */}
+      {/* ═══ BACKGROUND — Warm brown/bronze base ═══ */}
       <div
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse at 25% 15%, rgba(107,74,45,0.25), transparent 45%),
-            radial-gradient(ellipse at 78% 80%, rgba(61,46,42,0.30), transparent 50%),
-            radial-gradient(ellipse at 50% 50%, rgba(107,74,45,0.10), transparent 55%),
-            radial-gradient(ellipse at 10% 75%, rgba(45,37,36,0.20), transparent 40%),
-            radial-gradient(ellipse at 90% 20%, rgba(61,46,42,0.18), transparent 40%)
+            radial-gradient(circle at 20% 30%, rgba(255,215,0,0.15) 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, rgba(255,236,139,0.1) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(138,90,43,0.2) 0%, transparent 70%),
+            linear-gradient(135deg, #1a0f0c 0%, #2d1b15 25%, #3d2418 50%, #2d1b15 75%, #1a0f0c 100%)
           `,
         }}
       />
 
-      {/* 3D Light rays from corners */}
+      {/* Bokeh blur layer */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            linear-gradient(135deg, rgba(107,74,45,0.12) 0%, transparent 40%),
-            linear-gradient(225deg, rgba(61,46,42,0.08) 0%, transparent 35%),
-            linear-gradient(315deg, rgba(107,74,45,0.06) 0%, transparent 30%),
-            linear-gradient(45deg, rgba(45,37,36,0.10) 0%, transparent 35%)
+            radial-gradient(circle at 15% 25%, rgba(255,215,0,0.08) 0%, transparent 25%),
+            radial-gradient(circle at 85% 15%, rgba(255,236,139,0.12) 0%, transparent 30%),
+            radial-gradient(circle at 75% 85%, rgba(218,165,32,0.1) 0%, transparent 35%),
+            radial-gradient(circle at 25% 75%, rgba(184,134,11,0.08) 0%, transparent 40%)
           `,
+          filter: 'blur(40px)',
         }}
       />
 
-      {/* Center bloom — soft bronze warmth */}
-      <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[40%]"
-        style={{
-          background: 'radial-gradient(ellipse, rgba(107,74,45,0.20), rgba(61,46,42,0.08) 50%, transparent 75%)',
-          filter: 'blur(50px)',
-        }}
-      />
-
-      {/* Depth-of-field bokeh particles */}
+      {/* Bokeh particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {bokehParticles.map((p, i) => (
           <div
@@ -217,7 +200,7 @@ const Index = () => {
             style={{
               width: `${p.size}px`,
               height: `${p.size}px`,
-              background: `radial-gradient(circle, rgba(107,74,45,${p.opacity}) 0%, rgba(61,46,42,${p.opacity * 0.4}) 40%, transparent 70%)`,
+              background: `radial-gradient(circle, rgba(255,215,0,${p.opacity}) 0%, rgba(218,165,32,${p.opacity * 0.5}) 40%, transparent 70%)`,
               left: p.x,
               top: p.y,
               animation: `particle-drift ${8 + i * 0.7}s ease-in-out ${p.delay}s infinite`,
@@ -246,10 +229,13 @@ const Index = () => {
         ))}
       </div>
 
-      {/* Deep navy-bronze vignette */}
+      {/* Noise texture */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 20%, rgba(10,10,16,0.65) 65%, rgba(10,10,16,0.92) 100%)' }}
+        style={{
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
+          opacity: 0.025,
+        }}
       />
 
       {/* ═══ LANGUAGE TOGGLE ═══ */}
@@ -259,231 +245,334 @@ const Index = () => {
           className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
           style={{
             background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))',
-            border: '1px solid rgba(201,150,74,0.12)',
+            border: '1px solid rgba(201,163,92,0.15)',
             backdropFilter: 'blur(10px)',
-            color: '#C9964A',
+            color: '#c9a35c',
           }}
         >
           <Languages className="h-5 w-5" />
         </button>
       </div>
 
-      {/* ═══ MAIN CARD ═══ */}
+      {/* ═══ PHONE MOCKUP ═══ */}
       <div
-        className="w-full max-w-[400px] rounded-[30px] relative z-10 animate-in-stagger-1"
+        className="w-full max-w-[380px] relative z-10 animate-in-stagger-1"
         style={{
-          padding: '1.5px',
-          background: 'linear-gradient(160deg, rgba(180,130,55,0.22) 0%, rgba(100,72,30,0.08) 25%, rgba(60,42,18,0.04) 50%, rgba(100,72,30,0.06) 75%, rgba(180,130,55,0.18) 100%)',
-          boxShadow: '0 40px 100px -25px rgba(0,0,0,0.95), 0 0 50px rgba(160,115,45,0.03)',
+          background: 'linear-gradient(145deg, #d4af37 0%, #b8860b 50%, #8d5720 100%)',
+          borderRadius: '50px',
+          padding: '8px',
+          boxShadow: '0 50px 100px rgba(0,0,0,0.6), 0 30px 60px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.3)',
         }}
       >
-        {/* Panel edge highlight — very subtle top */}
+        {/* Phone screen */}
         <div
-          className="absolute top-0 left-16 right-16 h-px z-20 pointer-events-none"
+          className="w-full relative overflow-hidden"
           style={{
-            background: 'linear-gradient(90deg, transparent, rgba(201,150,74,0.2), rgba(220,175,90,0.3), rgba(201,150,74,0.2), transparent)',
-          }}
-        />
-
-        {/* Panel content */}
-        <div
-          className="rounded-[29px] p-6 text-center space-y-5 relative bottom-reflection overflow-hidden"
-          style={{
-            background: 'linear-gradient(180deg, #111A25 0%, #0D141D 40%, #0A0F16 100%)',
+            background: '#0a0c10',
+            borderRadius: '42px',
+            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)',
           }}
         >
-          {/* Panel inner grain texture */}
+          {/* Glass reflection */}
           <div
-            className="absolute inset-0 rounded-[29px] pointer-events-none opacity-[0.04]"
+            className="absolute inset-0 pointer-events-none z-[100]"
             style={{
-              backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 128 128\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'1.1\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
-              backgroundSize: '128px 128px',
-            }}
-          />
-          {/* Inner edge glow */}
-          <div
-            className="absolute inset-0 rounded-[29px] pointer-events-none"
-            style={{
-              boxShadow: 'inset 0 1px 0 rgba(201,150,74,0.04), inset 0 -1px 0 rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.2)',
-            }}
-          />
-          {/* Panel inner vignette */}
-          <div
-            className="absolute inset-0 rounded-[29px] pointer-events-none"
-            style={{
-              background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.35) 100%)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, transparent 50%)',
+              borderRadius: '42px',
             }}
           />
 
-          {/* Logo — subtle dark frame, no bright border */}
+          {/* App content */}
           <div
-            className="rounded-2xl overflow-hidden animate-in-stagger-2 relative"
+            className="relative flex flex-col items-center text-center"
             style={{
-              border: '1px solid rgba(160,115,45,0.12)',
-              boxShadow: '0 12px 35px -8px rgba(0,0,0,0.85), inset 0 0 20px rgba(0,0,0,0.3)',
+              padding: '40px 24px',
+              background: `
+                radial-gradient(ellipse at 50% 0%, rgba(255,215,0,0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 0% 100%, rgba(107,74,45,0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 100% 50%, rgba(61,48,37,0.05) 0%, transparent 30%),
+                #0a0c10
+              `,
             }}
           >
-            <img src={logo} alt="Boulevard Café Logo" className="w-full h-auto object-cover relative z-10" />
-            {/* Bottom edge reflection — subtle */}
+            {/* Inner noise texture */}
             <div
-              className="absolute bottom-0 left-0 right-0 h-px z-20"
+              className="absolute inset-0 pointer-events-none"
               style={{
-                background: 'linear-gradient(90deg, transparent 8%, rgba(160,115,45,0.2) 35%, rgba(201,150,74,0.3) 50%, rgba(160,115,45,0.2) 65%, transparent 92%)',
+                backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
+                opacity: 0.025,
               }}
             />
-            {/* Top inner shadow */}
+
+            {/* Light rays from top */}
             <div
-              className="absolute top-0 left-0 right-0 h-8 z-15 pointer-events-none"
+              className="absolute -top-[50px] left-1/2 -translate-x-1/2 w-[300px] h-[200px] pointer-events-none"
               style={{
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.25), transparent)',
+                background: 'radial-gradient(ellipse at center, rgba(255,215,0,0.15) 0%, transparent 70%)',
+                filter: 'blur(60px)',
               }}
             />
-          </div>
 
-          {/* Gold Divider */}
-          <div className="flex items-center justify-center animate-in-stagger-2">
+            {/* ═══ HEADER ═══ */}
             <div
-              className="h-px flex-1 shimmer-overlay"
+              className="w-full relative mb-8 animate-in-stagger-2"
               style={{
-                background: 'linear-gradient(90deg, transparent 5%, rgba(122,85,38,0.25) 30%, rgba(201,150,74,0.35) 50%, rgba(122,85,38,0.25) 70%, transparent 95%)',
-              }}
-            />
-          </div>
-
-          {/* Brand Title — dimmed gold, not bright */}
-          <h2
-            className="font-display font-bold text-lg tracking-[0.16em] animate-in-stagger-3 gradient-text-gold"
-            style={{ opacity: 0.85 }}
-          >
-            BOULEVARD CAFÉ ELBASAN
-          </h2>
-
-          {/* Table Input */}
-          <div className="animate-in-stagger-3">
-            <div
-              className="flex items-center rounded-full"
-              style={{
-                background: 'linear-gradient(135deg, #0C1219 0%, #111820 50%, #0E141C 100%)',
-                border: '1px solid rgba(201,150,74,0.15)',
-                boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 0 10px rgba(201,150,74,0.04)',
+                background: 'linear-gradient(180deg, #151821 0%, #0d1117 100%)',
+                border: '1px solid #d4af37',
+                borderRadius: '20px',
+                padding: '30px 20px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,215,0,0.1), 0 0 0 1px rgba(0,0,0,0.5)',
               }}
             >
-              <div className="pl-4">
-                <MapPin className="w-5 h-5" style={{ color: '#C9964A' }} />
-              </div>
-              <input
-                type="text"
-                placeholder={t.placeholder}
-                value={tableNumber}
-                onChange={(e) => setTableNumber(e.target.value)}
-                className="flex-1 px-3 py-3.5 bg-transparent outline-none text-center font-sans font-medium placeholder:opacity-30"
-                style={{ color: '#EDEDED' }}
+              {/* Header bottom gold line */}
+              <div
+                className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[60%] h-px"
+                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,215,0,0.6), transparent)' }}
               />
-              <button
-                onClick={handleConfirmTable}
-                className="w-11 h-11 min-w-[2.75rem] rounded-full flex items-center justify-center mr-1 font-bold transition-all duration-300 hover:opacity-90 active:scale-95"
+
+              {/* Cocktail icon */}
+              <div className="w-[50px] h-[50px] mx-auto mb-4">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#e8c76d" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 0 8px rgba(232,199,109,0.4))' }}>
+                  <path d="M8 2L16 2L12 10L12 18" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M7 22H17" strokeLinecap="round" />
+                  <path d="M12 18V22" strokeLinecap="round" />
+                  <circle cx="15" cy="5" r="1" fill="#e8c76d" stroke="none" />
+                  <path d="M16 2C16.5 4 18 5 19 5" strokeLinecap="round" />
+                </svg>
+              </div>
+
+              <h1
+                className="font-display font-semibold tracking-[6px] uppercase mb-2"
                 style={{
-                  background: 'linear-gradient(180deg, #F6C56F 0%, #C9964A 50%, #7A5526 100%)',
-                  color: '#3A2A14',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 0 8px rgba(201,150,74,0.15)',
+                  fontSize: '32px',
+                  color: '#e8dcc0',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                 }}
               >
-                <Check className="w-5 h-5" />
+                BOULEVARD
+              </h1>
+              <p
+                className="uppercase tracking-[2px]"
+                style={{ fontSize: '10px', color: '#a09070' }}
+              >
+                {t.subtitle}
+              </p>
+            </div>
+
+            {/* Section title */}
+            <h2
+              className="font-display font-semibold tracking-[2px] uppercase mb-5 animate-in-stagger-3"
+              style={{
+                fontSize: '18px',
+                color: '#d4af37',
+                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+              }}
+            >
+              BOULEVARD CAFÉ ELBASAN
+            </h2>
+
+            {/* Table Input */}
+            <div className="w-full mb-4 animate-in-stagger-3">
+              <div
+                className="flex items-center rounded-full overflow-hidden"
+                style={{
+                  background: 'linear-gradient(180deg, #1a1f2e 0%, #0f1419 100%)',
+                  border: '1px solid #c9a35c',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
+                }}
+              >
+                <div className="pl-5">
+                  <MapPin className="w-5 h-5" style={{ color: '#e8c76d' }} />
+                </div>
+                <input
+                  type="text"
+                  placeholder={t.placeholder}
+                  value={tableNumber}
+                  onChange={(e) => setTableNumber(e.target.value)}
+                  className="flex-1 px-3 py-[18px] bg-transparent outline-none text-center font-sans font-medium placeholder:opacity-30"
+                  style={{ color: '#e8dcc0', fontSize: '15px' }}
+                />
+                <button
+                  onClick={handleConfirmTable}
+                  className="w-[28px] h-[28px] min-w-[28px] rounded-full flex items-center justify-center mr-3 transition-all duration-300 hover:opacity-90 active:scale-95"
+                  style={{
+                    background: 'linear-gradient(145deg, #f4c430 0%, #d4af37 50%, #b8860b 100%)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  <Check className="w-4 h-4" style={{ color: '#1a0f00', strokeWidth: 3 }} />
+                </button>
+              </div>
+            </div>
+
+            {/* Welcome text */}
+            <p
+              className="font-sans italic mb-5 animate-in-stagger-4"
+              style={{ fontSize: '13px', color: '#9a8a6a', fontWeight: 300, letterSpacing: '0.5px' }}
+            >
+              {t.chooseService}
+            </p>
+
+            {/* ═══ BUTTONS ═══ */}
+            <div className="w-full flex flex-col gap-3.5 relative z-10">
+
+              {/* Call Waiter — Dark */}
+              <button
+                onClick={() => withGeoCheck(handleCallWaiter)}
+                disabled={checking}
+                className="animate-in-stagger-4 disabled:opacity-50"
+                style={{
+                  width: '100%',
+                  padding: '18px 20px',
+                  borderRadius: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                  background: 'linear-gradient(180deg, #1a1f2e 0%, #0f1419 100%)',
+                  color: '#e8dcc0',
+                  border: '1px solid #c9a35c',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <Bell className="h-5 w-5 flex-shrink-0" style={{ color: '#e8dcc0' }} />
+                <span>{t.callWaiter}</span>
+              </button>
+
+              {/* Request Bill — Gold */}
+              <button
+                onClick={() => withGeoCheck(handleRequestBill)}
+                disabled={checking}
+                className="animate-in-stagger-5 disabled:opacity-50 relative overflow-hidden"
+                style={{
+                  width: '100%',
+                  padding: '18px 20px',
+                  borderRadius: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                  background: 'linear-gradient(180deg, #f4c430 0%, #d4af37 30%, #b8860b 70%, #8d5720 100%)',
+                  color: '#1a0f00',
+                  border: 'none',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.2)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {/* Gold top highlight */}
+                <span className="absolute top-0 left-0 right-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 100%)' }} />
+                {/* Shimmer sweep */}
+                <span className="absolute inset-0 pointer-events-none rounded-full overflow-hidden" aria-hidden="true">
+                  <span className="absolute inset-0" style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.2) 45%, rgba(255,240,180,0.15) 50%, rgba(255,255,255,0.2) 55%, transparent 70%)', animation: 'gold-shimmer-sweep 4s ease-in-out 1s infinite' }} />
+                </span>
+                <Receipt className="h-5 w-5 flex-shrink-0 relative z-10" style={{ color: '#1a0f00' }} />
+                <span className="relative z-10">{t.requestBill}</span>
+              </button>
+
+              {/* Order from Menu — Dark */}
+              <button
+                onClick={() => navigate(`/menu?tabela=${displayTable}`)}
+                className="animate-in-stagger-5"
+                style={{
+                  width: '100%',
+                  padding: '18px 20px',
+                  borderRadius: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                  background: 'linear-gradient(180deg, #1a1f2e 0%, #0f1419 100%)',
+                  color: '#e8dcc0',
+                  border: '1px solid #c9a35c',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <UtensilsCrossed className="h-5 w-5 flex-shrink-0" style={{ color: '#e8dcc0' }} />
+                <span>{t.orderMenu}</span>
+              </button>
+
+              {/* Ask Staff — Gold */}
+              <button
+                onClick={() => setChatOpen(true)}
+                className="animate-in-stagger-6 relative overflow-hidden"
+                style={{
+                  width: '100%',
+                  padding: '18px 20px',
+                  borderRadius: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                  background: 'linear-gradient(180deg, #f4c430 0%, #d4af37 30%, #b8860b 70%, #8d5720 100%)',
+                  color: '#1a0f00',
+                  border: 'none',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.2)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <span className="absolute top-0 left-0 right-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 100%)' }} />
+                <span className="absolute inset-0 pointer-events-none rounded-full overflow-hidden" aria-hidden="true">
+                  <span className="absolute inset-0" style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.2) 45%, rgba(255,240,180,0.15) 50%, rgba(255,255,255,0.2) 55%, transparent 70%)', animation: 'gold-shimmer-sweep 4s ease-in-out 2.5s infinite' }} />
+                </span>
+                <MessageCircle className="h-5 w-5 flex-shrink-0 relative z-10" style={{ color: '#1a0f00' }} />
+                <span className="relative z-10">{t.askStaff}</span>
+              </button>
+
+              {/* Rate Us — Dark */}
+              <button
+                onClick={() => setFeedbackOpen(true)}
+                className="animate-in-stagger-7"
+                style={{
+                  width: '100%',
+                  padding: '18px 20px',
+                  borderRadius: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                  background: 'linear-gradient(180deg, #1a1f2e 0%, #0f1419 100%)',
+                  color: '#e8dcc0',
+                  border: '1px solid #c9a35c',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <Star className="h-5 w-5 flex-shrink-0" style={{ color: '#e8dcc0', fill: 'none' }} />
+                <span>{t.rateUs}</span>
               </button>
             </div>
-            <p className="text-xs mt-2" style={{ color: '#CFCFCF', opacity: 0.4 }}>{t.hint}</p>
-          </div>
 
-          {/* Welcome text */}
-          <p
-            className="font-sans text-sm italic animate-in-stagger-4"
-            style={{ color: '#CFCFCF', opacity: 0.7 }}
-          >
-            {t.chooseService}
-          </p>
-
-          {/* ═══ ACTION BUTTONS ═══ */}
-          <div className="flex flex-col gap-3 relative z-10">
-            {/* Call Waiter — Dark */}
+            {/* Hidden manager link */}
             <button
-              onClick={() => withGeoCheck(handleCallWaiter)}
-              disabled={checking}
-              className="group service-btn-navy justify-center animate-in-stagger-4 disabled:opacity-50"
+              onClick={() => navigate("/manager-login")}
+              className="text-xs transition-colors mt-4"
+              style={{ color: 'rgba(255,255,255,0.04)' }}
             >
-              <Bell className="h-5 w-5 scale-bounce-hover" style={{ color: '#C9964A' }} />
-              <span>{t.callWaiter}</span>
-            </button>
-
-            {/* Request Bill — Gold + shimmer */}
-            <button
-              onClick={() => withGeoCheck(handleRequestBill)}
-              disabled={checking}
-              className="group service-btn-gold justify-center animate-in-stagger-5 disabled:opacity-50"
-            >
-              <span
-                className="absolute inset-0 z-[3] pointer-events-none rounded-full overflow-hidden"
-                aria-hidden="true"
-              >
-                <span
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 45%, rgba(255,240,180,0.12) 50%, rgba(255,255,255,0.18) 55%, transparent 70%)',
-                    animation: 'gold-shimmer-sweep 4s ease-in-out 1s infinite',
-                  }}
-                />
-              </span>
-              <Receipt className="h-5 w-5 scale-bounce-hover relative z-10" />
-              <span className="relative z-10">{t.requestBill}</span>
-            </button>
-
-            {/* Order from Menu — Dark */}
-            <button
-              onClick={() => navigate(`/menu?tabela=${displayTable}`)}
-              className="group service-btn-navy justify-center animate-in-stagger-5"
-            >
-              <UtensilsCrossed className="h-5 w-5 scale-bounce-hover" style={{ color: '#C9964A' }} />
-              <span>{t.orderMenu}</span>
-            </button>
-
-            {/* Ask Staff — Gold + shimmer */}
-            <button
-              onClick={() => setChatOpen(true)}
-              className="group service-btn-gold justify-center animate-in-stagger-6"
-            >
-              <span
-                className="absolute inset-0 z-[3] pointer-events-none rounded-full overflow-hidden"
-                aria-hidden="true"
-              >
-                <span
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 45%, rgba(255,240,180,0.12) 50%, rgba(255,255,255,0.18) 55%, transparent 70%)',
-                    animation: 'gold-shimmer-sweep 4s ease-in-out 2.5s infinite',
-                  }}
-                />
-              </span>
-              <MessageCircle className="h-5 w-5 scale-bounce-hover relative z-10" />
-              <span className="relative z-10">{t.askStaff}</span>
-            </button>
-
-            {/* Rate Us — Dark */}
-            <button
-              onClick={() => setFeedbackOpen(true)}
-              className="group service-btn-navy justify-center animate-in-stagger-7"
-            >
-              <Star className="h-5 w-5 scale-bounce-hover" style={{ color: '#C9964A' }} />
-              <span>{t.rateUs}</span>
+              •
             </button>
           </div>
-
-          {/* Hidden manager link */}
-          <button
-            onClick={() => navigate("/manager-login")}
-            className="text-xs transition-colors"
-            style={{ color: 'rgba(255,255,255,0.06)' }}
-          >
-            •
-          </button>
         </div>
       </div>
 
