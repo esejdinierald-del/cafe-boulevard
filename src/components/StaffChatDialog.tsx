@@ -75,7 +75,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
-            messages: newMessages.filter(m => m.role !== "assistant" || messages.indexOf(m) > 0).map(m => ({
+            messages: newMessages.filter((m, idx) => m.role !== "assistant" || idx > 0).map(m => ({
               role: m.role,
               content: m.content
             })),

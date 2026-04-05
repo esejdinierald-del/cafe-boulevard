@@ -222,7 +222,7 @@ const Index = () => {
               </button>
 
               {/* 4. Order from Menu — Dark */}
-              <button onClick={() => navigate(`/menu?tabela=${displayTable}`)} className="blvd-btn-dark">
+              <button onClick={() => navigate(`/menu?tabela=${tableNumber.trim() || ""}`)} className="blvd-btn-dark">
                 <span className="blvd-icon-gold"><UtensilsIcon /></span>
                 <span>{t.orderMenu}</span>
               </button>

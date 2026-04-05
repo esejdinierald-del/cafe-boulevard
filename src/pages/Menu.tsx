@@ -102,8 +102,6 @@ const Menu = () => {
     const tableParam = searchParams.get("tabela") || searchParams.get("table");
     if (tableParam) {
       setTableNumber(tableParam);
-    } else {
-      setTableNumber(t.table);
     }
   }, [searchParams, t.table]);
 

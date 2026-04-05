@@ -74,10 +74,19 @@ export function useChatSession(welcomeMessage: string) {
     [sessionId]
   );
 
-  const resetSession = useCallback(() => {
+  const resetSession = useCallback(async () => {
+    // Delete from DB before resetting local state
+    try {
+      await supabase
+        .from("chat_sessions")
+        .delete()
+        .eq("session_id", sessionId);
+    } catch {
+      // Ignore delete errors (RLS may block for non-managers)
+    }
     localStorage.removeItem(SESSION_KEY);
     setMessages([{ role: "assistant", content: welcomeMessage }]);
-  }, [welcomeMessage]);
+  }, [welcomeMessage, sessionId]);
 
   return { messages, setMessages, saveMessages, resetSession, loaded };
 }
