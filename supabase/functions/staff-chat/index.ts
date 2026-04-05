@@ -179,7 +179,13 @@ async function fetchActiveOffers(): Promise<string> {
     // Filter active offers based on current Rome time
     const activeOffers = items.filter((item: any) => {
       if (!item.offer_start_time || !item.offer_end_time) return false;
-      return romeTime >= item.offer_start_time && romeTime < item.offer_end_time;
+      const start = item.offer_start_time.slice(0, 5);
+      const end = item.offer_end_time.slice(0, 5);
+      // Handle overnight ranges (e.g. 22:00 - 02:00)
+      if (start > end) {
+        return romeTime >= start || romeTime < end;
+      }
+      return romeTime >= start && romeTime < end;
     });
 
     const upcomingOffers = items.filter((item: any) => {
