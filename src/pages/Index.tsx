@@ -97,9 +97,10 @@ const Index = () => {
     if (tableParam) setTableNumber(tableParam);
   }, [tableParam]);
 
-  useEffect(() => {
-    if (tableParam) setTableNumber(tableParam);
-  }, [tableParam]);
+  // Don't render anything while redirecting to staff
+  if (redirecting) {
+    return <div className="min-h-screen bg-foreground" />;
+  }
 
   const displayTable = tableNumber || t.table;
 
