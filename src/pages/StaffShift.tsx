@@ -77,14 +77,25 @@ const StaffShift = () => {
     localStorage.setItem(STAFF_PWA_PREFERRED_KEY, "1");
   }, []);
 
-  // Override manifest for staff PWA install
+  // Override manifest for staff PWA install — must happen ASAP
   useEffect(() => {
-    const link = document.querySelector('link[rel="manifest"]');
-    if (link) {
-      link.setAttribute('href', '/staff-manifest.webmanifest');
+    // Remove existing manifest and create a fresh one pointing to staff
+    const existingLink = document.querySelector('link[rel="manifest"]');
+    if (existingLink) {
+      existingLink.remove();
     }
+    const staffLink = document.createElement('link');
+    staffLink.rel = 'manifest';
+    staffLink.href = '/staff-manifest.webmanifest';
+    document.head.appendChild(staffLink);
+
     return () => {
-      if (link) link.setAttribute('href', '/manifest.webmanifest');
+      staffLink.remove();
+      // Restore client manifest
+      const clientLink = document.createElement('link');
+      clientLink.rel = 'manifest';
+      clientLink.href = '/manifest.webmanifest';
+      document.head.appendChild(clientLink);
     };
   }, []);
 
