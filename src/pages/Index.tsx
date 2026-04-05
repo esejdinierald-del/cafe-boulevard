@@ -325,7 +325,7 @@ const Index = () => {
             disabled={checking}
             className="group service-btn-navy justify-center animate-in-stagger-4 disabled:opacity-50"
           >
-            <Bell className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(43 85% 55%)' }} />
+            <Bell className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(48 85% 55%)' }} />
             <span>{t.callWaiter}</span>
           </button>
 
@@ -344,7 +344,7 @@ const Index = () => {
             onClick={() => navigate(`/menu?tabela=${displayTable}`)}
             className="group service-btn-navy justify-center animate-in-stagger-5"
           >
-            <UtensilsCrossed className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(43 85% 55%)' }} />
+            <UtensilsCrossed className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(48 85% 55%)' }} />
             <span>{t.orderMenu}</span>
           </button>
 
@@ -357,12 +357,12 @@ const Index = () => {
             <span>{t.askStaff}</span>
           </button>
 
-          {/* Rate Us - Navy outline */}
+          {/* Rate Us - Navy */}
           <button
             onClick={() => setFeedbackOpen(true)}
             className="group service-btn-navy justify-center animate-in-stagger-7"
           >
-            <Star className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(43 85% 55%)' }} />
+            <Star className="h-5 w-5 scale-bounce-hover" style={{ color: 'hsl(48 85% 55%)' }} />
             <span>{t.rateUs}</span>
           </button>
         </div>
