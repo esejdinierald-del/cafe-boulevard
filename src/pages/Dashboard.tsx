@@ -312,30 +312,46 @@ const Dashboard = () => {
 
   const handleComplete = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await supabase.from('service_requests').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
-    if (error) toast.error('Gabim');
-    else toast.success('Kërkesa u përmbyll');
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action: "complete_request", id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('Kërkesa u përmbyll');
+    } catch { toast.error('Gabim'); }
   };
 
   const handleCancel = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await supabase.from('service_requests').update({ status: 'cancelled' }).eq('id', id);
-    if (error) toast.error('Gabim');
-    else toast.success('Kërkesa u anulua');
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action: "cancel_request", id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('Kërkesa u anulua');
+    } catch { toast.error('Gabim'); }
   };
 
   const handleCompleteOrder = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await supabase.from('orders').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
-    if (error) toast.error('Gabim');
-    else toast.success('Porosia u përmbyll');
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action: "complete_order", id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('Porosia u përmbyll');
+    } catch { toast.error('Gabim'); }
   };
 
   const handleCancelOrder = async (id: string) => {
     clearRepeatNotification(id);
-    const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', id);
-    if (error) toast.error('Gabim');
-    else toast.success('Porosia u anulua');
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action: "cancel_order", id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('Porosia u anulua');
+    } catch { toast.error('Gabim'); }
   };
 
   // Realtime subscriptions - ALWAYS ACTIVE (even behind curtain)
