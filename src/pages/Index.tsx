@@ -178,7 +178,7 @@ const Index = () => {
             </div>
 
             {/* Golden flare line */}
-            <div className="blvd-flare" style={{ position: 'relative', margin: '8px 0' }} />
+            <div className="blvd-flare w-full" style={{ position: 'relative', margin: '8px 0' }} />
 
             {/* Section title */}
             <h2 className="blvd-section-title">BOULEVARD CAFÉ ELBASAN</h2>
