@@ -400,12 +400,24 @@ const Index = () => {
               <span>{t.callWaiter}</span>
             </button>
 
-            {/* Request Bill — Gold */}
+            {/* Request Bill — Gold + shimmer */}
             <button
               onClick={() => withGeoCheck(handleRequestBill)}
               disabled={checking}
               className="group service-btn-gold justify-center animate-in-stagger-5 disabled:opacity-50"
             >
+              <span
+                className="absolute inset-0 z-[3] pointer-events-none rounded-full overflow-hidden"
+                aria-hidden="true"
+              >
+                <span
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 45%, rgba(255,240,180,0.12) 50%, rgba(255,255,255,0.18) 55%, transparent 70%)',
+                    animation: 'gold-shimmer-sweep 4s ease-in-out 1s infinite',
+                  }}
+                />
+              </span>
               <Receipt className="h-5 w-5 scale-bounce-hover relative z-10" />
               <span className="relative z-10">{t.requestBill}</span>
             </button>
@@ -419,11 +431,23 @@ const Index = () => {
               <span>{t.orderMenu}</span>
             </button>
 
-            {/* Ask Staff — Gold */}
+            {/* Ask Staff — Gold + shimmer */}
             <button
               onClick={() => setChatOpen(true)}
               className="group service-btn-gold justify-center animate-in-stagger-6"
             >
+              <span
+                className="absolute inset-0 z-[3] pointer-events-none rounded-full overflow-hidden"
+                aria-hidden="true"
+              >
+                <span
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 45%, rgba(255,240,180,0.12) 50%, rgba(255,255,255,0.18) 55%, transparent 70%)',
+                    animation: 'gold-shimmer-sweep 4s ease-in-out 2.5s infinite',
+                  }}
+                />
+              </span>
               <MessageCircle className="h-5 w-5 scale-bounce-hover relative z-10" />
               <span className="relative z-10">{t.askStaff}</span>
             </button>
