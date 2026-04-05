@@ -186,7 +186,7 @@ const Menu = () => {
       const { error } = await supabase
         .from('orders')
         .insert({
-          table_number: tableNumber,
+          table_number: tableNumber.trim(),
           items: orderItems,
           total_price: getTotalPrice(),
           status: 'pending',
