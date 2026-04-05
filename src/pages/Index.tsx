@@ -252,57 +252,72 @@ const Index = () => {
 
       {/* ═══ MAIN CARD ═══ */}
       <div
-        className="w-full max-w-[400px] rounded-[28px] relative z-10 animate-in-stagger-1"
+        className="w-full max-w-[400px] rounded-[30px] relative z-10 animate-in-stagger-1"
         style={{
           padding: '1.5px',
-          background: 'linear-gradient(160deg, rgba(201,150,74,0.28) 0%, rgba(122,85,38,0.12) 30%, rgba(80,60,30,0.06) 50%, rgba(122,85,38,0.1) 70%, rgba(201,150,74,0.2) 100%)',
-          boxShadow: '0 30px 90px -20px rgba(0,0,0,0.9), 0 0 40px rgba(201,150,74,0.04)',
+          background: 'linear-gradient(160deg, rgba(180,130,55,0.22) 0%, rgba(100,72,30,0.08) 25%, rgba(60,42,18,0.04) 50%, rgba(100,72,30,0.06) 75%, rgba(180,130,55,0.18) 100%)',
+          boxShadow: '0 40px 100px -25px rgba(0,0,0,0.95), 0 0 50px rgba(160,115,45,0.03)',
         }}
       >
-        {/* Panel inner glow line — top */}
+        {/* Panel edge highlight — very subtle top */}
         <div
-          className="absolute top-0 left-12 right-12 h-px z-20 pointer-events-none"
+          className="absolute top-0 left-16 right-16 h-px z-20 pointer-events-none"
           style={{
-            background: 'linear-gradient(90deg, transparent, rgba(201,150,74,0.3), rgba(246,197,111,0.4), rgba(201,150,74,0.3), transparent)',
+            background: 'linear-gradient(90deg, transparent, rgba(201,150,74,0.2), rgba(220,175,90,0.3), rgba(201,150,74,0.2), transparent)',
           }}
         />
 
         {/* Panel content */}
         <div
-          className="rounded-[27px] p-6 text-center space-y-5 relative bottom-reflection"
+          className="rounded-[29px] p-6 text-center space-y-5 relative bottom-reflection overflow-hidden"
           style={{
-            background: 'linear-gradient(180deg, #0F1722 0%, #0C1219 50%, #0A0F16 100%)',
+            background: 'linear-gradient(180deg, #111A25 0%, #0D141D 40%, #0A0F16 100%)',
           }}
         >
-          {/* Inner panel texture (subtle variation) */}
+          {/* Panel inner grain texture */}
           <div
-            className="absolute inset-0 rounded-[27px] pointer-events-none"
+            className="absolute inset-0 rounded-[29px] pointer-events-none opacity-[0.04]"
             style={{
-              boxShadow: 'inset 0 1px 0 rgba(201,150,74,0.05), inset 0 -1px 0 rgba(0,0,0,0.4)',
+              backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 128 128\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'1.1\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
+              backgroundSize: '128px 128px',
+            }}
+          />
+          {/* Inner edge glow */}
+          <div
+            className="absolute inset-0 rounded-[29px] pointer-events-none"
+            style={{
+              boxShadow: 'inset 0 1px 0 rgba(201,150,74,0.04), inset 0 -1px 0 rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.2)',
             }}
           />
           {/* Panel inner vignette */}
           <div
-            className="absolute inset-0 rounded-[27px] pointer-events-none"
+            className="absolute inset-0 rounded-[29px] pointer-events-none"
             style={{
-              background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.3) 100%)',
+              background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.35) 100%)',
             }}
           />
 
-          {/* Logo */}
+          {/* Logo — subtle dark frame, no bright border */}
           <div
             className="rounded-2xl overflow-hidden animate-in-stagger-2 relative"
             style={{
-              border: '1px solid rgba(201,150,74,0.15)',
-              boxShadow: '0 8px 30px -8px rgba(0,0,0,0.8), 0 0 12px rgba(201,150,74,0.03)',
+              border: '1px solid rgba(160,115,45,0.12)',
+              boxShadow: '0 12px 35px -8px rgba(0,0,0,0.85), inset 0 0 20px rgba(0,0,0,0.3)',
             }}
           >
             <img src={logo} alt="Boulevard Café Logo" className="w-full h-auto object-cover relative z-10" />
-            {/* Bottom edge reflection */}
+            {/* Bottom edge reflection — subtle */}
             <div
               className="absolute bottom-0 left-0 right-0 h-px z-20"
               style={{
-                background: 'linear-gradient(90deg, transparent 5%, rgba(201,150,74,0.25) 30%, rgba(246,197,111,0.4) 50%, rgba(201,150,74,0.25) 70%, transparent 95%)',
+                background: 'linear-gradient(90deg, transparent 8%, rgba(160,115,45,0.2) 35%, rgba(201,150,74,0.3) 50%, rgba(160,115,45,0.2) 65%, transparent 92%)',
+              }}
+            />
+            {/* Top inner shadow */}
+            <div
+              className="absolute top-0 left-0 right-0 h-8 z-15 pointer-events-none"
+              style={{
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.25), transparent)',
               }}
             />
           </div>
