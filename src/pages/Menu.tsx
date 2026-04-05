@@ -89,7 +89,7 @@ const Menu = () => {
   const navigate = useNavigate();
   const { language, toggleLanguage } = useLanguage();
   const t = translations[language];
-  const [tableNumber, setTableNumber] = useState(t.table);
+  const [tableNumber, setTableNumber] = useState("");
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
