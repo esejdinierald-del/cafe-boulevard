@@ -14,6 +14,7 @@ import coffeeBackground from "@/assets/coffee-background.png";
 interface Category {
   id: string;
   name: string;
+  name_en: string | null;
   display_order: number;
 }
 
