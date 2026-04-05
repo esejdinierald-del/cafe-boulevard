@@ -292,7 +292,9 @@ const StaffShift = () => {
           repeatNotification(`🍽️ POROSIA GATI!`, `Klient në banakun — hajde merr!`, true);
           // Auto-complete after 15s so it doesn't stay in the list
           setTimeout(async () => {
-            await supabase.from("service_requests").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", r.id);
+            await supabase.functions.invoke("complete-request", {
+              body: { id: r.id, type: "service_request", shift_token: activeToken },
+            });
           }, 15000);
         } else {
           const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
