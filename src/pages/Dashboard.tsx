@@ -453,14 +453,14 @@ const Dashboard = () => {
   const completedOrders = orders.filter(o => o.status === 'completed');
 
   const handleDeleteFromHistory = async (id: string, type: 'request' | 'order') => {
-    if (type === 'request') {
-      const { error } = await supabase.from('service_requests').delete().eq('id', id);
-      if (error) { toast.error('Gabim'); return; }
-    } else {
-      const { error } = await supabase.from('orders').delete().eq('id', id);
-      if (error) { toast.error('Gabim'); return; }
-    }
-    toast.success('U fshi nga historiku');
+    try {
+      const action = type === 'request' ? 'delete_request' : 'delete_order';
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action, id, token: shiftToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success('U fshi nga historiku');
+    } catch { toast.error('Gabim'); }
   };
 
   const getStatusBadge = (status: string) => {
