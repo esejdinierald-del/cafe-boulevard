@@ -54,7 +54,7 @@ const Dashboard = () => {
   const [shiftToken, setShiftToken] = useState<string | null>(null);
   const [staffUrl, setStaffUrl] = useState<string>('');
 
-  // Generate or fetch active shift token for curtain QR
+  // Generate or fetch active shift token via edge function (bypasses RLS)
   const ensureShiftToken = async () => {
     const now = new Date();
     const hour = now.getHours();
@@ -74,29 +74,26 @@ const Dashboard = () => {
       }
     }
 
-    // Check existing
-    const { data: existing } = await supabase
-      .from("shift_tokens")
-      .select("token, unlocked")
-      .gte("shift_end", now.toISOString())
-      .lte("shift_start", now.toISOString())
-      .maybeSingle();
-
-    if (existing) {
-      setShiftToken(existing.token);
-      setStaffUrl(`${window.location.origin}/staff?token=${existing.token}`);
-      if (existing.unlocked) setCurtainActive(false);
-      return existing.token;
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: {
+          action: "get_or_create",
+          shift_start: shiftStart.toISOString(),
+          shift_end: shiftEnd.toISOString(),
+        },
+      });
+      if (error || !data?.token) {
+        console.error("Failed to get shift token:", error);
+        return null;
+      }
+      setShiftToken(data.token);
+      setStaffUrl(`${window.location.origin}/staff?token=${data.token}`);
+      if (data.unlocked) setCurtainActive(false);
+      return data.token;
+    } catch (e) {
+      console.error("Failed to get shift token:", e);
+      return null;
     }
-
-    // Generate new
-    const token = crypto.randomUUID().replace(/-/g, "").substring(0, 12);
-    await supabase.from("shift_tokens").insert({
-      token, shift_start: shiftStart.toISOString(), shift_end: shiftEnd.toISOString(),
-    });
-    setShiftToken(token);
-    setStaffUrl(`${window.location.origin}/staff?token=${token}`);
-    return token;
   };
 
   // On mount: generate token and listen for unlock via realtime
