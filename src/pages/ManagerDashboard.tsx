@@ -104,7 +104,7 @@ const ManagerDashboard = () => {
       setCategories(categoriesData || []);
       setMenuItems(itemsData || []);
       setKnowledgeEntries(knowledgeData || []);
-      setFeedbackEntries((feedbackData as any) || []);
+      setFeedbackEntries((feedbackData || []) as FeedbackEntry[]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
