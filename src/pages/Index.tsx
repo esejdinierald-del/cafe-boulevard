@@ -77,16 +77,22 @@ const bokehParticles = [
   { size: 100, x: '42%', y: '5%', blur: 30, delay: 0.3, opacity: 0.12 },
 ];
 
-/* Dust/sparkle particles — tiny white/gold specks */
-const dustParticles = [
-  { x: '15%', y: '25%', size: 2, delay: 0 },
-  { x: '72%', y: '55%', size: 1.5, delay: 1.5 },
-  { x: '38%', y: '78%', size: 2, delay: 0.8 },
-  { x: '85%', y: '15%', size: 1, delay: 2.2 },
-  { x: '55%', y: '42%', size: 1.5, delay: 3.1 },
-  { x: '22%', y: '62%', size: 2, delay: 1.1 },
-  { x: '68%', y: '85%', size: 1, delay: 2.6 },
-  { x: '48%', y: '12%', size: 1.5, delay: 0.4 },
+/* Sparkle particles — twinkling gold/white specks */
+const sparkleParticles = [
+  { x: '15%', y: '25%', size: 2.5, delay: 0, color: 'rgba(255,235,160,0.8)' },
+  { x: '72%', y: '55%', size: 2, delay: 1.5, color: 'rgba(255,255,255,0.7)' },
+  { x: '38%', y: '78%', size: 3, delay: 0.8, color: 'rgba(246,197,111,0.9)' },
+  { x: '85%', y: '15%', size: 1.5, delay: 2.2, color: 'rgba(255,255,255,0.6)' },
+  { x: '55%', y: '42%', size: 2, delay: 3.1, color: 'rgba(255,220,140,0.8)' },
+  { x: '22%', y: '62%', size: 2.5, delay: 1.1, color: 'rgba(255,255,255,0.7)' },
+  { x: '68%', y: '85%', size: 1.5, delay: 2.6, color: 'rgba(246,197,111,0.7)' },
+  { x: '48%', y: '12%', size: 2, delay: 0.4, color: 'rgba(255,235,160,0.8)' },
+  { x: '8%', y: '48%', size: 3, delay: 1.8, color: 'rgba(255,255,255,0.6)' },
+  { x: '92%', y: '38%', size: 2, delay: 0.6, color: 'rgba(255,220,140,0.9)' },
+  { x: '32%', y: '92%', size: 2.5, delay: 2.0, color: 'rgba(255,255,255,0.5)' },
+  { x: '78%', y: '5%', size: 1.5, delay: 3.5, color: 'rgba(246,197,111,0.8)' },
+  { x: '45%', y: '68%', size: 2, delay: 0.2, color: 'rgba(255,235,160,0.7)' },
+  { x: '62%', y: '32%', size: 3, delay: 2.8, color: 'rgba(255,255,255,0.6)' },
 ];
 
 const Index = () => {
@@ -207,22 +213,20 @@ const Index = () => {
         ))}
       </div>
 
-      {/* Dust / sparkle overlay */}
+      {/* Twinkling sparkles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {dustParticles.map((d, i) => (
+        {sparkleParticles.map((s, i) => (
           <div
-            key={`dust-${i}`}
+            key={`sparkle-${i}`}
             className="absolute rounded-full"
             style={{
-              width: `${d.size}px`,
-              height: `${d.size}px`,
-              background: i % 2 === 0
-                ? 'rgba(255,255,255,0.35)'
-                : 'rgba(220,185,120,0.4)',
-              left: d.x,
-              top: d.y,
-              animation: `dust-float ${4 + i * 0.6}s ease-in-out ${d.delay}s infinite`,
-              filter: 'blur(0.5px)',
+              width: `${s.size}px`,
+              height: `${s.size}px`,
+              background: s.color,
+              left: s.x,
+              top: s.y,
+              animation: `sparkle-twinkle ${2.5 + i * 0.4}s ease-in-out ${s.delay}s infinite`,
+              boxShadow: `0 0 ${s.size * 2}px ${s.color}`,
             }}
           />
         ))}
@@ -396,12 +400,24 @@ const Index = () => {
               <span>{t.callWaiter}</span>
             </button>
 
-            {/* Request Bill — Gold */}
+            {/* Request Bill — Gold + shimmer */}
             <button
               onClick={() => withGeoCheck(handleRequestBill)}
               disabled={checking}
               className="group service-btn-gold justify-center animate-in-stagger-5 disabled:opacity-50"
             >
+              <span
+                className="absolute inset-0 z-[3] pointer-events-none rounded-full overflow-hidden"
+                aria-hidden="true"
+              >
+                <span
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 45%, rgba(255,240,180,0.12) 50%, rgba(255,255,255,0.18) 55%, transparent 70%)',
+                    animation: 'gold-shimmer-sweep 4s ease-in-out 1s infinite',
+                  }}
+                />
+              </span>
               <Receipt className="h-5 w-5 scale-bounce-hover relative z-10" />
               <span className="relative z-10">{t.requestBill}</span>
             </button>
@@ -415,11 +431,23 @@ const Index = () => {
               <span>{t.orderMenu}</span>
             </button>
 
-            {/* Ask Staff — Gold */}
+            {/* Ask Staff — Gold + shimmer */}
             <button
               onClick={() => setChatOpen(true)}
               className="group service-btn-gold justify-center animate-in-stagger-6"
             >
+              <span
+                className="absolute inset-0 z-[3] pointer-events-none rounded-full overflow-hidden"
+                aria-hidden="true"
+              >
+                <span
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 45%, rgba(255,240,180,0.12) 50%, rgba(255,255,255,0.18) 55%, transparent 70%)',
+                    animation: 'gold-shimmer-sweep 4s ease-in-out 2.5s infinite',
+                  }}
+                />
+              </span>
               <MessageCircle className="h-5 w-5 scale-bounce-hover relative z-10" />
               <span className="relative z-10">{t.askStaff}</span>
             </button>
