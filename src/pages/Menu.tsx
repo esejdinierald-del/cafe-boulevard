@@ -161,6 +161,10 @@ const Menu = () => {
   };
 
   const handleSubmitOrder = async () => {
+    if (!tableNumber.trim()) {
+      toast.error(language === 'sq' ? 'Shkruani numrin e tavolinës' : 'Enter the table number');
+      return;
+    }
     const geoResult = await checkLocation(language);
     if (!geoResult.allowed) {
       toast.error(geoResult.error || t.geoRequired);
