@@ -260,47 +260,46 @@
     transform: translateX(100%);
   }
 
-  /* Premium service button - Gold variant */
+  /* Premium service button - Gold variant (metallic) */
   .service-btn-gold {
     @apply relative overflow-hidden rounded-full font-display font-bold py-4 px-8;
     @apply flex items-center gap-4 w-full text-left text-lg;
     @apply transition-all duration-300 ease-out;
     @apply hover:scale-[1.02] active:scale-[0.98];
-    background: linear-gradient(135deg, hsl(43 90% 58%) 0%, hsl(40 85% 48%) 40%, hsl(38 80% 40%) 100%);
-    color: hsl(220 60% 8%);
-    border: 1.5px solid hsl(43 85% 75% / 0.6);
+    background: linear-gradient(135deg, hsl(43 65% 48%) 0%, hsl(48 100% 50%) 35%, hsl(43 60% 38%) 65%, hsl(43 65% 48%) 100%);
+    color: hsl(222 55% 6%);
+    border: 1.5px solid hsl(48 85% 70% / 0.5);
     box-shadow: 
-      0 0 25px hsl(43 85% 55% / 0.5),
-      0 0 50px hsl(43 85% 55% / 0.2),
-      0 0 80px hsl(43 85% 55% / 0.08),
+      0 0 25px hsl(48 100% 50% / 0.3),
+      0 0 50px hsl(43 72% 50% / 0.12),
+      0 0 80px hsl(48 100% 50% / 0.05),
       inset 0 1px 0 hsl(0 0% 100% / 0.35),
-      inset 0 -1px 0 hsl(38 80% 25% / 0.5);
+      inset 0 -2px 0 hsl(38 80% 25% / 0.6);
   }
-  /* Metallic texture + edge flares */
   .service-btn-gold::before {
     content: '';
     position: absolute;
     inset: 0;
     background: 
-      radial-gradient(circle at 4px 50%, hsl(43 90% 85% / 0.9) 0%, transparent 15px),
-      radial-gradient(circle at calc(100% - 4px) 50%, hsl(43 90% 85% / 0.7) 0%, transparent 15px),
-      radial-gradient(ellipse at 30% 40%, hsl(43 90% 75% / 0.45) 0%, transparent 50%),
-      radial-gradient(ellipse at 75% 30%, hsl(0 0% 100% / 0.2) 0%, transparent 40%);
+      radial-gradient(circle at 4px 50%, hsl(48 90% 85% / 0.9) 0%, transparent 14px),
+      radial-gradient(circle at calc(100% - 4px) 50%, hsl(48 90% 80% / 0.7) 0%, transparent 14px),
+      radial-gradient(ellipse at 30% 35%, hsl(48 90% 80% / 0.3) 0%, transparent 45%),
+      radial-gradient(ellipse at 75% 25%, hsl(0 0% 100% / 0.15) 0%, transparent 35%);
     pointer-events: none;
     z-index: 1;
   }
   .service-btn-gold:hover {
     box-shadow: 
-      0 0 35px hsl(43 85% 55% / 0.65),
-      0 0 70px hsl(43 85% 55% / 0.25),
-      0 0 100px hsl(43 85% 55% / 0.1),
+      0 0 35px hsl(48 100% 50% / 0.45),
+      0 0 70px hsl(43 72% 50% / 0.18),
+      0 0 100px hsl(48 100% 50% / 0.08),
       inset 0 1px 0 hsl(0 0% 100% / 0.4),
-      inset 0 -1px 0 hsl(38 80% 25% / 0.5);
+      inset 0 -2px 0 hsl(38 80% 25% / 0.6);
   }
   .service-btn-gold::after {
     content: '';
     @apply absolute top-0 left-0 w-full h-full opacity-0;
-    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.4), transparent);
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.35), transparent);
     transform: translateX(-100%);
     transition: transform 0.8s ease-out, opacity 0.3s;
     z-index: 2;
