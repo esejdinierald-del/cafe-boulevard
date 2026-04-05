@@ -138,6 +138,7 @@ const Index = () => {
       {/* Background layers */}
       <div className="blvd-ambient" />
       <div className="blvd-bokeh-blur" />
+      <div className="blvd-sparkles" />
       <div className="blvd-vignette" />
 
       {/* Language toggle */}
