@@ -173,7 +173,7 @@ const Index = () => {
                 <img
                   src={boulevardLogo}
                   alt="Boulevard Café"
-                  className="w-24 h-auto mx-auto mb-3 rounded-lg object-contain"
+                  className="w-36 h-auto mx-auto mb-3 rounded-lg object-contain"
                   style={{
                     border: '1px solid rgba(232, 199, 109, 0.3)',
                     padding: '4px',
