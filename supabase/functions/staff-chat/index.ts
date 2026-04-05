@@ -301,11 +301,12 @@ serve(async (req) => {
     }
 
     // Fetch live data in parallel
-    const [footballData, panoramaData, offersData, knowledgeData] = await Promise.all([
+    const [footballData, panoramaData, offersData, knowledgeData, menuData] = await Promise.all([
       fetchFootballData(),
       fetchPanoramaSport(),
       fetchActiveOffers(),
       fetchCustomKnowledge(),
+      fetchFullMenu(),
     ]);
 
     const systemPromptSq = `Ti je asistenti virtual i Boulevard Café Elbasan - por jo një robot i ftohtë! Je si një shok i mirë që e do lokalin dhe dëshiron që klientët të kalojnë kohë të bukur këtu.
