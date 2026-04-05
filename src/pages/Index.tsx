@@ -156,14 +156,14 @@ const Index = () => {
         {/* Screen */}
         <div className="blvd-screen">
           <div className="blvd-glass-reflect" />
+          {/* Horizontal golden flare — on screen layer */}
+          <div className="blvd-flare" style={{ top: '260px' }} />
 
           {/* Content */}
           <div className="blvd-screen-content">
             <div className="blvd-noise" />
             <div className="blvd-light-ray" />
             <div className="blvd-inner-vignette" />
-            {/* Horizontal golden flare — positioned after header */}
-            <div className="blvd-flare" style={{ top: '280px' }} />
 
             {/* ═══ HEADER ═══ */}
             <div className="blvd-header">
