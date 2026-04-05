@@ -109,25 +109,25 @@ const StaffShift = () => {
     }
   }, [urlToken, setSearchParams]);
 
-  // Validate token
+  // Validate token via edge function (shift_tokens no longer publicly readable)
   useEffect(() => {
     if (!activeToken) { setIsValid(false); return; }
     const validate = async () => {
-      const now = new Date().toISOString();
-      const { data, error } = await supabase
-        .from("shift_tokens")
-        .select("*")
-        .eq("token", activeToken)
-        .gte("shift_end", now)
-        .lte("shift_start", now)
-        .maybeSingle();
-      if (error || !data) {
+      try {
+        const { data, error } = await supabase.functions.invoke("validate-shift", {
+          body: { token: activeToken },
+        });
+        if (error || !data?.valid) {
+          setIsValid(false);
+          localStorage.removeItem("staff_shift_token");
+          return;
+        }
+        setIsValid(true);
+        setShiftEnd(new Date(data.shift_end));
+      } catch {
         setIsValid(false);
         localStorage.removeItem("staff_shift_token");
-        return;
       }
-      setIsValid(true);
-      setShiftEnd(new Date(data.shift_end));
     };
     validate();
   }, [activeToken]);
@@ -251,25 +251,33 @@ const StaffShift = () => {
 
   const handleCompleteRequest = useCallback(async (id: string, tableNumber: string) => {
     setCompletingIds(prev => new Set(prev).add(id));
-    const { error } = await supabase
-      .from("service_requests")
-      .update({ status: "completed", completed_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) toast.error("Gabim në përditësim");
-    else { toast.success(`✅ ${tableNumber} — U krye!`); setRequests(prev => prev.filter(r => r.id !== id)); }
+    try {
+      const { data, error } = await supabase.functions.invoke("complete-request", {
+        body: { id, type: "service_request", shift_token: activeToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success(`✅ ${tableNumber} — U krye!`);
+      setRequests(prev => prev.filter(r => r.id !== id));
+    } catch {
+      toast.error("Gabim në përditësim");
+    }
     setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
-  }, []);
+  }, [activeToken]);
 
   const handleCompleteOrder = useCallback(async (id: string, tableNumber: string) => {
     setCompletingIds(prev => new Set(prev).add(id));
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "completed", completed_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) toast.error("Gabim në përditësim");
-    else { toast.success(`✅ Porosia ${tableNumber} — U krye!`); setOrders(prev => prev.filter(o => o.id !== id)); }
+    try {
+      const { data, error } = await supabase.functions.invoke("complete-request", {
+        body: { id, type: "order", shift_token: activeToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success(`✅ Porosia ${tableNumber} — U krye!`);
+      setOrders(prev => prev.filter(o => o.id !== id));
+    } catch {
+      toast.error("Gabim në përditësim");
+    }
     setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
-  }, []);
+  }, [activeToken]);
 
   // Realtime + polling
   useEffect(() => {
@@ -284,7 +292,9 @@ const StaffShift = () => {
           repeatNotification(`🍽️ POROSIA GATI!`, `Klient në banakun — hajde merr!`, true);
           // Auto-complete after 15s so it doesn't stay in the list
           setTimeout(async () => {
-            await supabase.from("service_requests").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", r.id);
+            await supabase.functions.invoke("complete-request", {
+              body: { id: r.id, type: "service_request", shift_token: activeToken },
+            });
           }, 15000);
         } else {
           const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
@@ -317,11 +327,14 @@ const StaffShift = () => {
     localStorage.setItem("staff_shift_token", scannedToken);
     setIsValid(null); // trigger re-validation
 
-    // Unlock dashboard curtain
-    await supabase
-      .from("shift_tokens")
-      .update({ unlocked: true } as any)
-      .eq("token", scannedToken);
+    // Unlock dashboard curtain via edge function
+    try {
+      await supabase.functions.invoke("unlock-shift", {
+        body: { token: scannedToken },
+      });
+    } catch (e) {
+      console.error("Failed to unlock shift:", e);
+    }
 
     toast.success("QR u skanua! Dashboard u zhbllokua!");
   }, []);
