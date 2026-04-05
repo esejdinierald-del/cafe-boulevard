@@ -813,7 +813,7 @@ const ManagerDashboard = () => {
                       </p>
                     </div>
                     <Button size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={async () => {
-                      await supabase.from('feedback' as any).delete().eq('id', fb.id);
+                      await supabase.from('feedback').delete().eq('id', fb.id);
                       fetchData();
                     }}>
                       <Trash2 className="h-4 w-4" />
