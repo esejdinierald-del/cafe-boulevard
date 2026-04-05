@@ -170,38 +170,51 @@ const Index = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden grain-texture">
 
-      {/* ═══ BACKGROUND — Bronze-dark warm base ═══ */}
+      {/* ═══ BACKGROUND — Navy-dark with bronze reflections ═══ */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(180deg, #1a110a 0%, #3a2722 30%, #2a1c14 60%, #150e08 100%)',
+          background: 'linear-gradient(160deg, #0a0a10 0%, #151821 25%, #1e181c 45%, #2d2524 65%, #151821 85%, #0a0a10 100%)',
         }}
       />
 
-      {/* Warm atmospheric haze — misty bronze fog */}
+      {/* Bronze-gold light reflections — warm zones */}
       <div
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse at 30% 20%, rgba(255,215,0,0.15), transparent 50%),
-            radial-gradient(ellipse at 70% 75%, rgba(255,190,100,0.12), transparent 50%),
-            radial-gradient(ellipse at 50% 45%, rgba(200,150,80,0.08), transparent 55%),
-            radial-gradient(ellipse at 15% 80%, rgba(255,200,120,0.06), transparent 45%),
-            radial-gradient(ellipse at 85% 25%, rgba(255,215,0,0.08), transparent 40%)
+            radial-gradient(ellipse at 25% 15%, rgba(107,74,45,0.25), transparent 45%),
+            radial-gradient(ellipse at 78% 80%, rgba(61,46,42,0.30), transparent 50%),
+            radial-gradient(ellipse at 50% 50%, rgba(107,74,45,0.10), transparent 55%),
+            radial-gradient(ellipse at 10% 75%, rgba(45,37,36,0.20), transparent 40%),
+            radial-gradient(ellipse at 90% 20%, rgba(61,46,42,0.18), transparent 40%)
           `,
         }}
       />
 
-      {/* Center bloom — golden warmth from below */}
+      {/* 3D Light rays from corners */}
       <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[85%] h-[45%]"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse, rgba(255,215,0,0.18), rgba(200,150,80,0.08) 50%, transparent 75%)',
+          background: `
+            linear-gradient(135deg, rgba(107,74,45,0.12) 0%, transparent 40%),
+            linear-gradient(225deg, rgba(61,46,42,0.08) 0%, transparent 35%),
+            linear-gradient(315deg, rgba(107,74,45,0.06) 0%, transparent 30%),
+            linear-gradient(45deg, rgba(45,37,36,0.10) 0%, transparent 35%)
+          `,
+        }}
+      />
+
+      {/* Center bloom — soft bronze warmth */}
+      <div
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[40%]"
+        style={{
+          background: 'radial-gradient(ellipse, rgba(107,74,45,0.20), rgba(61,46,42,0.08) 50%, transparent 75%)',
           filter: 'blur(50px)',
         }}
       />
 
-      {/* Depth-of-field bokeh particles — layered near/far */}
+      {/* Depth-of-field bokeh particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {bokehParticles.map((p, i) => (
           <div
@@ -210,7 +223,7 @@ const Index = () => {
             style={{
               width: `${p.size}px`,
               height: `${p.size}px`,
-              background: `radial-gradient(circle, rgba(255,215,0,${p.opacity}) 0%, rgba(255,190,100,${p.opacity * 0.5}) 40%, transparent 70%)`,
+              background: `radial-gradient(circle, rgba(107,74,45,${p.opacity}) 0%, rgba(61,46,42,${p.opacity * 0.4}) 40%, transparent 70%)`,
               left: p.x,
               top: p.y,
               animation: `particle-drift ${8 + i * 0.7}s ease-in-out ${p.delay}s infinite`,
@@ -239,15 +252,11 @@ const Index = () => {
         ))}
       </div>
 
-      {/* Deep warm vignette */}
+      {/* Deep navy-bronze vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 25%, rgba(21,14,8,0.7) 70%, rgba(10,6,3,0.9) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at center, transparent 20%, rgba(10,10,16,0.65) 65%, rgba(10,10,16,0.92) 100%)' }}
       />
-
-      {/* Misty atmospheric fog overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.04]"
         style={{
           background: `
             radial-gradient(ellipse at 40% 30%, rgba(255,240,200,0.3), transparent 50%),
