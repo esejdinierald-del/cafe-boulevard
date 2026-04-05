@@ -251,25 +251,33 @@ const StaffShift = () => {
 
   const handleCompleteRequest = useCallback(async (id: string, tableNumber: string) => {
     setCompletingIds(prev => new Set(prev).add(id));
-    const { error } = await supabase
-      .from("service_requests")
-      .update({ status: "completed", completed_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) toast.error("Gabim në përditësim");
-    else { toast.success(`✅ ${tableNumber} — U krye!`); setRequests(prev => prev.filter(r => r.id !== id)); }
+    try {
+      const { data, error } = await supabase.functions.invoke("complete-request", {
+        body: { id, type: "service_request", shift_token: activeToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success(`✅ ${tableNumber} — U krye!`);
+      setRequests(prev => prev.filter(r => r.id !== id));
+    } catch {
+      toast.error("Gabim në përditësim");
+    }
     setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
-  }, []);
+  }, [activeToken]);
 
   const handleCompleteOrder = useCallback(async (id: string, tableNumber: string) => {
     setCompletingIds(prev => new Set(prev).add(id));
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "completed", completed_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) toast.error("Gabim në përditësim");
-    else { toast.success(`✅ Porosia ${tableNumber} — U krye!`); setOrders(prev => prev.filter(o => o.id !== id)); }
+    try {
+      const { data, error } = await supabase.functions.invoke("complete-request", {
+        body: { id, type: "order", shift_token: activeToken },
+      });
+      if (error || !data?.success) throw new Error("Failed");
+      toast.success(`✅ Porosia ${tableNumber} — U krye!`);
+      setOrders(prev => prev.filter(o => o.id !== id));
+    } catch {
+      toast.error("Gabim në përditësim");
+    }
     setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
-  }, []);
+  }, [activeToken]);
 
   // Realtime + polling
   useEffect(() => {
