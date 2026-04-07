@@ -250,10 +250,53 @@ const StaffShift = () => {
       testAudio.play().then(() => { testAudio.pause(); testAudio.currentTime = 0; }).catch(() => {});
       const notifGranted = await requestNotificationPermission();
       setAudioEnabled(true);
-      if (notifGranted) toast.success("🔊 Alarmi super i fortë u aktivizua!");
+      if (notifGranted) toast.success("🔊 Alarmi + Push njoftimet u aktivizuan!");
       else toast.success("🔊 Alarmi u aktivizua!");
+      
+      // Register service worker and subscribe to push notifications
+      registerPushSubscription();
     } catch {}
   }, [audioEnabled, requestNotificationPermission]);
+
+  // Register service worker and push subscription
+  const registerPushSubscription = useCallback(async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      console.log('Push notifications not supported');
+      return;
+    }
+    try {
+      const registration = await navigator.serviceWorker.register('/staff-sw.js', { scope: '/' });
+      console.log('Staff SW registered:', registration.scope);
+
+      // Wait for SW to be ready
+      const ready = await navigator.serviceWorker.ready;
+
+      // Check for existing subscription
+      let subscription = await ready.pushManager.getSubscription();
+      
+      if (!subscription) {
+        subscription = await ready.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        });
+        console.log('Push subscription created');
+      }
+
+      // Send subscription to backend
+      const subJSON = subscription.toJSON();
+      await supabase.functions.invoke('push-subscribe', {
+        body: {
+          endpoint: subJSON.endpoint,
+          p256dh: subJSON.keys?.p256dh,
+          auth: subJSON.keys?.auth,
+          shift_token: activeToken,
+        },
+      });
+      console.log('Push subscription saved to backend');
+    } catch (err) {
+      console.error('Push subscription failed:', err);
+    }
+  }, [activeToken]);
 
   const fetchData = useCallback(async (showIndicator = false) => {
     if (showIndicator) setIsRefreshing(true);
