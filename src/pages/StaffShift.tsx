@@ -350,7 +350,10 @@ const StaffShift = () => {
         const r = payload.new as any;
         if (r.request_type === "kitchen_ready") {
           repeatNotification(`🍽️ POROSIA GATI!`, `Klient në banakun — hajde merr!`, true);
-          // Auto-complete after 15s so it doesn't stay in the list
+          // Send push to other devices
+          supabase.functions.invoke("send-push", {
+            body: { title: "🍽️ POROSIA GATI!", body: "Klient në banakun — hajde merr!", type: "kitchen" },
+          }).catch(() => {});
           setTimeout(async () => {
             await supabase.functions.invoke("complete-request", {
               body: { id: r.id, type: "service_request", shift_token: activeToken },
@@ -359,12 +362,20 @@ const StaffShift = () => {
         } else {
           const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
           repeatNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
+          // Send push to other devices
+          supabase.functions.invoke("send-push", {
+            body: { title: `🔔 ${type} - ${r.table_number}`, body: `Kërkesë e re nga ${r.table_number}`, type: "service" },
+          }).catch(() => {});
         }
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
         fetchData();
         const o = payload.new as any;
         repeatNotification(`🛒 Porosi - ${o.table_number}`, `Porosi e re ${o.total_price} L nga ${o.table_number}`);
+        // Send push to other devices
+        supabase.functions.invoke("send-push", {
+          body: { title: `🛒 Porosi - ${o.table_number}`, body: `Porosi e re ${o.total_price} L nga ${o.table_number}`, type: "order" },
+        }).catch(() => {});
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_requests" }, () => fetchData())
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, () => fetchData())
