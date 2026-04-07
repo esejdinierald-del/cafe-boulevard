@@ -45,6 +45,20 @@ const ElapsedBadge = ({ createdAt }: { createdAt: string }) => {
 
 const STAFF_PWA_PREFERRED_KEY = "staff_pwa_preferred";
 
+// VAPID public key for Web Push subscription
+const VAPID_PUBLIC_KEY = "BPpV_rvXQJ90Ri_qDYBc9810BNa3r1_aT0LPJL7XK05DoadCXckfcOeXeUnB66a3J4TGkm-yWf1RhIPSeKYfJDc";
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 const StaffShift = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -236,10 +250,53 @@ const StaffShift = () => {
       testAudio.play().then(() => { testAudio.pause(); testAudio.currentTime = 0; }).catch(() => {});
       const notifGranted = await requestNotificationPermission();
       setAudioEnabled(true);
-      if (notifGranted) toast.success("🔊 Alarmi super i fortë u aktivizua!");
+      if (notifGranted) toast.success("🔊 Alarmi + Push njoftimet u aktivizuan!");
       else toast.success("🔊 Alarmi u aktivizua!");
+      
+      // Register service worker and subscribe to push notifications
+      registerPushSubscription();
     } catch {}
   }, [audioEnabled, requestNotificationPermission]);
+
+  // Register service worker and push subscription
+  const registerPushSubscription = useCallback(async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      console.log('Push notifications not supported');
+      return;
+    }
+    try {
+      const registration = await navigator.serviceWorker.register('/staff-sw.js', { scope: '/' });
+      console.log('Staff SW registered:', registration.scope);
+
+      // Wait for SW to be ready
+      const ready = await navigator.serviceWorker.ready;
+
+      // Check for existing subscription
+      let subscription = await ready.pushManager.getSubscription();
+      
+      if (!subscription) {
+        subscription = await ready.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+        });
+        console.log('Push subscription created');
+      }
+
+      // Send subscription to backend
+      const subJSON = subscription.toJSON();
+      await supabase.functions.invoke('push-subscribe', {
+        body: {
+          endpoint: subJSON.endpoint,
+          p256dh: subJSON.keys?.p256dh,
+          auth: subJSON.keys?.auth,
+          shift_token: activeToken,
+        },
+      });
+      console.log('Push subscription saved to backend');
+    } catch (err) {
+      console.error('Push subscription failed:', err);
+    }
+  }, [activeToken]);
 
   const fetchData = useCallback(async (showIndicator = false) => {
     if (showIndicator) setIsRefreshing(true);
@@ -293,7 +350,10 @@ const StaffShift = () => {
         const r = payload.new as any;
         if (r.request_type === "kitchen_ready") {
           repeatNotification(`🍽️ POROSIA GATI!`, `Klient në banakun — hajde merr!`, true);
-          // Auto-complete after 15s so it doesn't stay in the list
+          // Send push to other devices
+          supabase.functions.invoke("send-push", {
+            body: { title: "🍽️ POROSIA GATI!", body: "Klient në banakun — hajde merr!", type: "kitchen" },
+          }).catch(() => {});
           setTimeout(async () => {
             await supabase.functions.invoke("complete-request", {
               body: { id: r.id, type: "service_request", shift_token: activeToken },
@@ -302,12 +362,20 @@ const StaffShift = () => {
         } else {
           const type = r.request_type === "waiter" ? "Kamarier" : "Faturë";
           repeatNotification(`🔔 ${type} - ${r.table_number}`, `Kërkesë e re nga ${r.table_number}`);
+          // Send push to other devices
+          supabase.functions.invoke("send-push", {
+            body: { title: `🔔 ${type} - ${r.table_number}`, body: `Kërkesë e re nga ${r.table_number}`, type: "service" },
+          }).catch(() => {});
         }
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
         fetchData();
         const o = payload.new as any;
         repeatNotification(`🛒 Porosi - ${o.table_number}`, `Porosi e re ${o.total_price} L nga ${o.table_number}`);
+        // Send push to other devices
+        supabase.functions.invoke("send-push", {
+          body: { title: `🛒 Porosi - ${o.table_number}`, body: `Porosi e re ${o.total_price} L nga ${o.table_number}`, type: "order" },
+        }).catch(() => {});
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_requests" }, () => fetchData())
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, () => fetchData())
