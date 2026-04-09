@@ -82,7 +82,8 @@ const StaffShift = () => {
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const [showScanner, setShowScanner] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
-    // Show splash only once per session
+    // Skip splash when arriving with a token (QR scan link)
+    if (urlToken) return false;
     const shown = sessionStorage.getItem("staff_splash_shown");
     return !shown;
   });
