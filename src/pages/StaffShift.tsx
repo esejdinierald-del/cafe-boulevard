@@ -69,6 +69,8 @@ const StaffShift = () => {
     const saved = localStorage.getItem("staff_shift_token");
     return urlToken || saved || null;
   });
+  // Counter to force re-validation even when token doesn't change
+  const [validateTrigger, setValidateTrigger] = useState(0);
 
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [shiftEnd, setShiftEnd] = useState<Date | null>(null);
