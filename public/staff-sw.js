@@ -39,6 +39,12 @@ self.addEventListener('push', (event) => {
   );
 });
 
+self.addEventListener('fetch', (event) => {
+  event.respondWith(fetch(event.request).catch(() => {
+    return new Response("Offline", { status: 503 });
+  }));
+});
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
