@@ -130,25 +130,40 @@ const StaffShift = () => {
   // Validate token via edge function (shift_tokens no longer publicly readable)
   useEffect(() => {
     if (!activeToken) { setIsValid(false); return; }
-    const validate = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("validate-shift", {
-          body: { token: activeToken },
-        });
-        if (error || !data?.valid) {
+    let cancelled = false;
+    const validate = async (retries = 2) => {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const { data, error } = await supabase.functions.invoke("validate-shift", {
+            body: { token: activeToken },
+          });
+          if (cancelled) return;
+          if (error || !data?.valid) {
+            if (attempt < retries) {
+              await new Promise(r => setTimeout(r, 1000));
+              continue;
+            }
+            setIsValid(false);
+            localStorage.removeItem("staff_shift_token");
+            return;
+          }
+          setIsValid(true);
+          setShiftEnd(new Date(data.shift_end));
+          return;
+        } catch {
+          if (cancelled) return;
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+          }
           setIsValid(false);
           localStorage.removeItem("staff_shift_token");
-          return;
         }
-        setIsValid(true);
-        setShiftEnd(new Date(data.shift_end));
-      } catch {
-        setIsValid(false);
-        localStorage.removeItem("staff_shift_token");
       }
     };
     validate();
-  }, [activeToken]);
+    return () => { cancelled = true; };
+  }, [activeToken, validateTrigger]);
 
   // Countdown timer
   useEffect(() => {
