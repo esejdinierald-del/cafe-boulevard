@@ -1,6 +1,17 @@
 <!doctype html>
 <html lang="sq">
   <head>
+    <script>
+      // iOS PWA cache-buster: force /staff route when opened from home screen
+      if (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches) {
+        var u = new URL(window.location.href);
+        if (u.pathname === '/' || u.searchParams.get('app') === 'ios') {
+          if (u.pathname !== '/staff') {
+            window.location.replace('/staff');
+          }
+        }
+      }
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Boulevard Café Elbasan - Premium Service</title>
