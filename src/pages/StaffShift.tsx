@@ -122,6 +122,12 @@ const StaffShift = () => {
     if (urlToken) {
       setActiveToken(urlToken);
       localStorage.setItem("staff_shift_token", urlToken);
+      setValidateTrigger(t => t + 1); // ensure validation fires
+      // Skip splash when arriving via QR link
+      if (showSplash) {
+        setShowSplash(false);
+        sessionStorage.setItem("staff_splash_shown", "1");
+      }
       // Clean URL
       setSearchParams({}, { replace: true });
     }
