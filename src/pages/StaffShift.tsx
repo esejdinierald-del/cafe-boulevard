@@ -69,6 +69,8 @@ const StaffShift = () => {
     const saved = localStorage.getItem("staff_shift_token");
     return urlToken || saved || null;
   });
+  // Counter to force re-validation even when token doesn't change
+  const [validateTrigger, setValidateTrigger] = useState(0);
 
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [shiftEnd, setShiftEnd] = useState<Date | null>(null);
@@ -80,7 +82,8 @@ const StaffShift = () => {
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const [showScanner, setShowScanner] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
-    // Show splash only once per session
+    // Skip splash when arriving with a token (QR scan link)
+    if (urlToken) return false;
     const shown = sessionStorage.getItem("staff_splash_shown");
     return !shown;
   });
@@ -119,6 +122,12 @@ const StaffShift = () => {
     if (urlToken) {
       setActiveToken(urlToken);
       localStorage.setItem("staff_shift_token", urlToken);
+      setValidateTrigger(t => t + 1); // ensure validation fires
+      // Skip splash when arriving via QR link
+      if (showSplash) {
+        setShowSplash(false);
+        sessionStorage.setItem("staff_splash_shown", "1");
+      }
       // Clean URL
       setSearchParams({}, { replace: true });
     }
@@ -127,25 +136,40 @@ const StaffShift = () => {
   // Validate token via edge function (shift_tokens no longer publicly readable)
   useEffect(() => {
     if (!activeToken) { setIsValid(false); return; }
-    const validate = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("validate-shift", {
-          body: { token: activeToken },
-        });
-        if (error || !data?.valid) {
+    let cancelled = false;
+    const validate = async (retries = 2) => {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const { data, error } = await supabase.functions.invoke("validate-shift", {
+            body: { token: activeToken },
+          });
+          if (cancelled) return;
+          if (error || !data?.valid) {
+            if (attempt < retries) {
+              await new Promise(r => setTimeout(r, 1000));
+              continue;
+            }
+            setIsValid(false);
+            localStorage.removeItem("staff_shift_token");
+            return;
+          }
+          setIsValid(true);
+          setShiftEnd(new Date(data.shift_end));
+          return;
+        } catch {
+          if (cancelled) return;
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+          }
           setIsValid(false);
           localStorage.removeItem("staff_shift_token");
-          return;
         }
-        setIsValid(true);
-        setShiftEnd(new Date(data.shift_end));
-      } catch {
-        setIsValid(false);
-        localStorage.removeItem("staff_shift_token");
       }
     };
     validate();
-  }, [activeToken]);
+    return () => { cancelled = true; };
+  }, [activeToken, validateTrigger]);
 
   // Countdown timer
   useEffect(() => {
@@ -396,7 +420,8 @@ const StaffShift = () => {
     setShowScanner(false);
     setActiveToken(scannedToken);
     localStorage.setItem("staff_shift_token", scannedToken);
-    setIsValid(null); // trigger re-validation
+    setIsValid(null); // show loading
+    setValidateTrigger(t => t + 1); // force re-validation even if same token
 
     // Unlock dashboard curtain via edge function
     try {
