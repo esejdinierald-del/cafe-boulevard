@@ -414,7 +414,8 @@ const StaffShift = () => {
     setShowScanner(false);
     setActiveToken(scannedToken);
     localStorage.setItem("staff_shift_token", scannedToken);
-    setIsValid(null); // trigger re-validation
+    setIsValid(null); // show loading
+    setValidateTrigger(t => t + 1); // force re-validation even if same token
 
     // Unlock dashboard curtain via edge function
     try {
