@@ -171,16 +171,23 @@ const StaffShift = () => {
     return () => { cancelled = true; };
   }, [activeToken, validateTrigger]);
 
-  // Countdown timer
+  // Countdown timer — checks every 10s, plus re-validates with server every 5 min
   useEffect(() => {
     if (!shiftEnd) return;
+    let serverCheckCounter = 0;
+
+    const expireShift = () => {
+      setIsValid(false);
+      setActiveToken(null);
+      localStorage.removeItem("staff_shift_token");
+      setTimeLeft("Turni ka mbaruar");
+      toast.info("⏰ Turni ka përfunduar. Nuk do të merrni më thirrje.");
+    };
+
     const update = () => {
       const diff = shiftEnd.getTime() - Date.now();
       if (diff <= 0) {
-        setIsValid(false);
-        setActiveToken(null);
-        localStorage.removeItem("staff_shift_token");
-        setTimeLeft("Turni ka mbaruar");
+        expireShift();
         return false;
       }
       const h = Math.floor(diff / 3600000);
@@ -188,10 +195,31 @@ const StaffShift = () => {
       setTimeLeft(`${h}h ${m}m`);
       return true;
     };
+
+    const serverRevalidate = async () => {
+      if (!activeToken) return;
+      try {
+        const { data } = await supabase.functions.invoke("validate-shift", {
+          body: { token: activeToken },
+        });
+        if (!data?.valid) {
+          expireShift();
+        }
+      } catch {}
+    };
+
     update();
-    const interval = setInterval(() => { if (!update()) clearInterval(interval); }, 30000);
+    const interval = setInterval(() => {
+      if (!update()) { clearInterval(interval); return; }
+      // Re-validate with server every ~5 minutes (30 ticks × 10s)
+      serverCheckCounter++;
+      if (serverCheckCounter >= 30) {
+        serverCheckCounter = 0;
+        serverRevalidate();
+      }
+    }, 10000);
     return () => clearInterval(interval);
-  }, [shiftEnd]);
+  }, [shiftEnd, activeToken]);
 
   // Play the loud alarm WAV file — works better in background than AudioContext
   const playAlarmSound = useCallback(() => {
