@@ -10,20 +10,22 @@ const AppDocumentation = () => {
   };
 
   const handleSendEmail = () => {
-    const subject = encodeURIComponent("Boulevard Café - Konfigurime & Kredenciale");
+    const subject = encodeURIComponent("Boulevard Café - Konfigurime & Kredenciale PRIVATE");
     const body = encodeURIComponent(`
 ═══════════════════════════════════════
   BOULEVARD CAFÉ - KONFIGURIME PRIVATE
+  ⚠️ KY EMAIL ËSHTË KONFIDENCIAL
 ═══════════════════════════════════════
 
 👑 MENAXHERI - AKSES
 ━━━━━━━━━━━━━━━━━━━
 • URL Login: /manager-login
 • Panel: /manager
-• Email autorizuar: e.sejdini.erald@gmail.com, sejdinieral@gmail.com
+• Email autorizuar: e.sejdini.erald@gmail.com, sejdinierald@gmail.com
 • Autentikim: Supabase Auth (email + fjalëkalim)
 • Regjistrimet e reja: TË ÇAKTIVIZUARA (vetëm email-et e autorizuara)
 • Rivendosja e fjalëkalimit: vetëm për email-et e autorizuara
+• Auto-assign roles: Trigger handle_manager_signup() -> admin + manager
 
 📂 FUNKSIONALITETE MENAXHERI
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -36,9 +38,11 @@ const AppDocumentation = () => {
 
 👔 STAFI / DASHBOARD
 ━━━━━━━━━━━━━━━━━━━
-• URL: /dashboard
+• Dashboard URL: /dashboard
 • Fjalëkalimi i hyrjes: 2025
-• Zhbllokohet vetëm me skanim QR
+• PWA URL: /staff?token=<shift_token>
+• Turnet: 03:00-15:00 dhe 15:00-03:00
+• Token gjenerohet automatikisht nga manage-shift Edge Function
 
 🔗 LINQE KLIENTËSH (QR)
 ━━━━━━━━━━━━━━━━━━━━━━━
@@ -50,31 +54,49 @@ const AppDocumentation = () => {
 
 ⚙️ KONFIGURIMI TEKNIK
 ━━━━━━━━━━━━━━━━━━━━━
-• Frontend: React + TypeScript + Vite
+• Frontend: React 18 + TypeScript + Vite 5
 • Backend: Lovable Cloud (Supabase)
-• Supabase Project ID: taqrxxikhwghmeofrpzs
+• Supabase Project Ref: taqrxxikhwghmeofrpzs
 • Realtime: Aktivizuar për orders, service_requests
 • Storage Bucket: menu-images (publik)
-• AI Model: google/gemini-2.5-flash
+• AI Model: google/gemini-2.5-flash (Lovable AI Gateway)
+• GPS Geofencing: 75m rreze (Haversine formula)
+• VAPID Push: Konfiguruar me çelës publik/privat
 
-🗄️ DATABAZA
-━━━━━━━━━━━
+🗄️ DATABAZA (10 tabela)
+━━━━━━━━━━━━━━━━━━━━━━━
 • categories: id, name, name_en, display_order
-• menu_items: id, name, price, offer_price, offer_start_time, offer_end_time, category_id, image_url, available
-• orders: id, table_number, items, total_price, status, notes
+• menu_items: id, name, price, offer_price, offer_start/end_time, category_id, image_url, available
+• orders: id, table_number, items(jsonb), total_price, status, notes
 • service_requests: id, table_number, request_type, status
 • feedback: id, table_number, rating, comment
 • user_roles: id, user_id, role (admin/manager/user)
 • ai_knowledge: id, title, content
-• chat_sessions: id, session_id, messages
+• chat_sessions: id, session_id, messages(jsonb), TTL=10min
 • shift_tokens: id, token, shift_start, shift_end, unlocked
+• push_subscriptions: id, endpoint, p256dh, auth, shift_token
 
-🔐 SIGURIA
-━━━━━━━━━━
-• RLS aktive në të gjitha tabelat
-• Fshirja: vetëm admin/manager
-• Trigger: handle_manager_signup (auto-assign roles)
-• Funksioni: has_role() - SECURITY DEFINER
+🔐 SIGURIA (RLS + Edge Functions)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• RLS aktive në TË GJITHA tabelat
+• SELECT publik: categories, menu_items, orders, service_requests, feedback, ai_knowledge
+• INSERT publik: orders, service_requests, feedback, chat_sessions, push_subscriptions
+• UPDATE/DELETE: vetëm admin/manager (authenticated)
+• shift_tokens: VETËM manager (SELECT/INSERT/UPDATE/DELETE)
+• user_roles: admins menaxhojnë, users shohin vetëm rolet e tyre
+• Funksioni: has_role(_user_id, _role) - SECURITY DEFINER
+• Trigger: handle_manager_signup - auto-assign admin+manager
+
+⚡ EDGE FUNCTIONS (7 funksione)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• staff-chat: AI chat me streaming (Gemini 2.5 Flash + knowledge base)
+• manage-shift: Gjeneron/merr token turni (service_role)
+• validate-shift: Verifikon token turni aktiv
+• unlock-shift: Zhbllokon turnin me fjalëkalim
+• complete-request: Shënon porosi/kërkesë si completed
+• send-push: Dërgon Web Push njoftim
+• push-subscribe: Regjistron subscription
+• cleanup-chat-sessions: Pastron sesione > 10 min
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Gjeneruar automatikisht nga sistemi
@@ -146,215 +168,222 @@ Boulevard Café © 2026
               kontrollon menunë, ofertat dhe bazen e njohurive AI.
             </p>
           </div>
+          <div className="rounded-xl border-2 border-dashed border-[#c8b0e0] p-4 text-center bg-[#f8f4fc] print:hidden">
+            <p className="text-xs text-[#6a5a8a]">
+              <strong>🔐 Menaxheri, databaza, siguria, edge functions</strong> — të gjitha informacionet private dërgohen vetëm me email.
+              Kliko <strong>"Dërgo Private 🔐"</strong> lart djathtas.
+            </p>
+          </div>
         </section>
 
         {/* ═══ KLIENTI ═══ */}
         <section className="mb-10">
-          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8e0d4]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{
-              background: 'linear-gradient(135deg, #f5e6c8, #e8d5a8)',
-              boxShadow: '0 2px 8px rgba(201,163,92,0.2)',
-            }}>👤</div>
-            <div>
-              <h3 className="text-xl font-bold text-[#2d1b15]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                KLIENTI
-              </h3>
-              <p className="text-xs text-[#8a7a5a]">Rol publik · Akses përmes QR kodit në tavolinë</p>
-            </div>
-          </div>
+          <SectionHeader icon="👤" title="KLIENTI" subtitle="Rol publik · Akses përmes QR kodit në tavolinë" color="#f5e6c8" colorEnd="#e8d5a8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <DocCard icon="📋" title="Shikimi i Menusë" items={[
-              "Shfletim i kategorive të menusë",
-              "Shikimi i produkteve me foto dhe çmime",
-              "Filtrim sipas kategorisë",
-              "Mbështetje dygjuhëshe (Shqip / English)",
-              "Shikimi i ofertave aktive me çmim të zbritur",
+              "Shfletim i kategorive me emra shqip/anglisht",
+              "Produkte me foto (Storage: menu-images bucket), çmime, përshkrime",
+              "Filtrim sipas kategori_id (tabela categories → menu_items)",
+              "Mbështetje dygjuhëshe: useLanguage() hook → localStorage",
+              "Oferta aktive: offer_price shfaqet kur ora aktuale bie në offer_start_time–offer_end_time (timezone Europe/Rome)",
             ]} />
             <DocCard icon="🛒" title="Porositja" items={[
-              "Shtim i produkteve në shportë",
-              "Modifikim i sasive",
-              "Shtim i shënimeve për porosi",
-              "Dërgim i porosisë në kuzhinë",
-              "Njoftim automatik i stafit në kohë reale",
+              "Shporta në useState (Cart state lokal në /menu)",
+              "Modifikim i sasive, shtim shënimesh",
+              "supabase.from('orders').insert({items, total_price, table_number, status:'pending'})",
+              "GPS verifikim: useGeolocation() → Haversine ≤ 75m",
+              "Nëse jashtë rrezes: 'Duhet të jeni fizikisht në lokal'",
             ]} />
             <DocCard icon="🔔" title="Kërkesa Shërbimi" items={[
-              "Thirrje e kamarierit (buton 'Thirr Kamerieren')",
-              "Kërkesë për faturë (buton 'Kërko Faturën')",
-              "Njoftim në kohë reale në dashboard",
-              "Identifikim automatik i numrit të tavolinës",
+              "Buton 'Thirr Kamerieren' → service_requests INSERT (request_type: 'waiter')",
+              "Buton 'Kërko Faturën' → service_requests INSERT (request_type: 'bill')",
+              "GPS verifikim para dërgimit (75m rreze)",
+              "Identifikim i tavolinës nga URL param: ?table=X",
+              "Realtime: stafi merr njoftim automatik",
             ]} />
             <DocCard icon="💬" title="Chat me AI" items={[
-              "Asistent virtual 'Pyet Stafin'",
-              "Informacion rreth produkteve dhe ofertave",
-              "Rekomandime personale",
-              "Mbështetur nga Google Gemini 2.5 Flash",
+              "Dialogu StaffChatDialog → Edge Function: staff-chat",
+              "Model: google/gemini-2.5-flash (Lovable AI Gateway)",
+              "Streaming: SSE (Server-Sent Events) me reader.read() loop",
+              "Kontekst: ai_knowledge tabela + menu_items + football API",
+              "Sesion: useChatSession() → chat_sessions tabela, TTL 10 min",
+              "Biseda e re: fshin session_id nga localStorage + DB",
             ]} />
             <DocCard icon="⭐" title="Vlerësimi (Feedback)" items={[
-              "Vlerësim me yje (1-5)",
-              "Koment opsional",
-              "Ruajtje automatike me numrin e tavolinës",
-              "Shikimi nga menaxheri në panel",
+              "Dialog FeedbackDialog me yje 1-5 (klikohet)",
+              "Koment opsional (textarea)",
+              "supabase.from('feedback').insert({rating, comment, table_number})",
+              "Ruajtje automatike me numrin e tavolinës nga URL",
+              "Shikimi nga menaxheri në panelin /manager",
             ]} />
-            <DocCard icon="🏷️" title="Oferta me Orar" items={[
-              "Çmime të zbritura automatike sipas orarit",
-              "Shfaqje vizuale (çmim i vjetër i hequr)",
-              "Aktivizim/çaktivizim automatik",
-              "Timezone: Europe/Rome",
+            <DocCard icon="📍" title="GPS Geofencing" items={[
+              "Hook: useGeolocation() → navigator.geolocation.getCurrentPosition()",
+              "Koordinata kafesë: 41.114871, 20.088804",
+              "Rreze maksimale: 75 metra (MAX_DISTANCE_METERS)",
+              "Formula Haversine: getDistanceInMeters(lat1, lon1, lat2, lon2)",
+              "Opsionet: enableHighAccuracy=true, timeout=10s, maximumAge=60s",
+              "Gabime: PERMISSION_DENIED → mesazh shqip/anglisht",
             ]} />
+          </div>
+
+          {/* Code Logic: Client Flow */}
+          <div className="mt-6 rounded-xl border border-[#e8e0d4] p-5 bg-white">
+            <h4 className="font-bold text-[#2d1b15] mb-3 text-xs uppercase tracking-wider">📐 Llogjika e Klientit — Diagramë</h4>
+            <div className="flex items-center justify-center gap-2 flex-wrap text-xs mb-4">
+              <FlowStep label="Skanim QR" />
+              <FlowArrow />
+              <FlowStep label="/?table=X" />
+              <FlowArrow />
+              <FlowStep label="GPS Check ≤75m" />
+              <FlowArrow />
+              <FlowStep label="Shiko Menunë" />
+              <FlowArrow />
+              <FlowStep label="Porosit / Thirr" />
+              <FlowArrow />
+              <FlowStep label="Supabase INSERT" highlight />
+            </div>
+            <div className="text-xs text-[#5a4a3a] space-y-2 bg-[#faf8f4] rounded-lg p-4 font-mono">
+              <p className="text-[#8a7a5a] font-sans font-medium mb-2">Kodi kryesor (Index.tsx):</p>
+              <p>1. URL param: <Code>searchParams.get("table")</Code> → setTableNumber</p>
+              <p>2. Staff PWA redirect: <Code>isStandaloneMode() && localStorage("staff_shift_token")</Code> → /staff</p>
+              <p>3. Porosi: <Code>supabase.from("service_requests").insert({"{"} table_number, request_type, status: "pending" {"}"})</Code></p>
+              <p>4. Menu navigate: <Code>navigate(`/menu?table=${"{"} tableNumber {"}"}`)</Code></p>
+              <p>5. Chat: <Code>StaffChatDialog</Code> → fetch staff-chat EF → SSE stream → setMessages()</p>
+              <p>6. Feedback: <Code>FeedbackDialog</Code> → supabase.from("feedback").insert()</p>
+            </div>
           </div>
         </section>
 
         {/* ═══ STAFI ═══ */}
         <section className="mb-10">
-          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8e0d4]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{
-              background: 'linear-gradient(135deg, #d0e0f0, #b0c8e0)',
-              boxShadow: '0 2px 8px rgba(100,140,200,0.2)',
-            }}>👔</div>
-            <div>
-              <h3 className="text-xl font-bold text-[#2d1b15]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                STAFI / KAMARIERI
-              </h3>
-              <p className="text-xs text-[#8a7a5a]">Akses: /dashboard · Zhbllokohet me skanim QR</p>
-            </div>
-          </div>
+          <SectionHeader icon="👔" title="STAFI / KAMARIERI" subtitle="Akses: /dashboard (QR) + /staff (PWA me token turni)" color="#d0e0f0" colorEnd="#b0c8e0" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <DocCard icon="📊" title="Dashboard Kryesor" items={[
-              "Pamje e të gjitha porosive aktive",
-              "Shikimi i kërkesave për shërbim",
-              "Badge me numrin e pending",
-              "Timer që tregon kohën e pritjes",
-              "Rifreskim automatik në kohë reale (Realtime)",
+            <DocCard icon="📊" title="Dashboard (/dashboard)" items={[
+              "Pamje e porosive aktive (status='pending')",
+              "Pamje e kërkesave waiter/bill (status='pending')",
+              "Badge me numrin e pending items",
+              "Timer ElapsedBadge: <2min=normal, 2-5min=warning, >5min=red",
+              "Supabase Realtime: .on('postgres_changes', {event:'*', table:'orders'})",
+              "QR Curtain: shfaq QR me link /staff?token=X para aktivizimit",
             ]} />
             <DocCard icon="🔔" title="Sistem Njoftimesh" items={[
-              "Njoftimet me zë (Text-to-Speech)",
-              "Njoftimet me tingull (bell sound)",
-              "Përsëritje automatike çdo 30 sekonda",
-              "Buton 'Porosia Gati' për kuzhinën",
+              "Mënyra 1: Text-to-Speech (SpeechSynthesis API) — zë i përshtatshëm",
+              "Mënyra 2: Tingull alarmi (bell sound)",
+              "Web Push Notifications: VAPID + service worker",
+              "Push subscribe: push-subscribe EF → push_subscriptions tabela",
+              "Përsëritje: çdo 30 sekonda për pending items",
+              "Title blink: dokument.title ndryshon me interval kur ka pending",
             ]} />
             <DocCard icon="📝" title="Menaxhimi i Porosive" items={[
-              "Shënim si 'Completed'",
-              "Anulim i porosive",
-              "Shikimi i detajeve (artikuj, shënime)",
+              "Shënim si 'Completed': complete-request Edge Function",
+              "EF përdor service_role key (bypasses RLS)",
+              "Anulim/fshirje e porosive",
+              "Shikimi i detajeve: artikuj, sasi, shënime, çmim total",
+              "Swipe-to-complete (touch events) në PWA",
               "Identifikim sipas numrit të tavolinës",
             ]} />
-            <DocCard icon="📱" title="PWA për Stafin" items={[
-              "Instalohet si aplikacion në telefon",
-              "Manifest i dedikuar: /staff-manifest.webmanifest",
-              "Hyrje me token turni (shift_tokens)",
-              "Ridrejtohet automatikisht pas instalimit",
+            <DocCard icon="📱" title="PWA e Stafit (/staff)" items={[
+              "Manifest: /staff-manifest.webmanifest (start_url: /staff)",
+              "Service Worker: /staff-sw.js",
+              "Token turni ruhet në localStorage('staff_shift_token')",
+              "Validim: validate-shift EF → kontrollon token + shift_end > now()",
+              "Zhbllokim: unlock-shift EF → fjalëkalimi '2025'",
+              "Pas turnit: token skadon, PWA shfaq 'Turni ka mbaruar'",
             ]} />
           </div>
-        </section>
 
-        {/* ═══ MENAXHERI — VETËM MESAZH ═══ */}
-        <section className="mb-10 print:hidden">
-          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8e0d4]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{
-              background: 'linear-gradient(135deg, #e0d0f0, #c8b0e0)',
-              boxShadow: '0 2px 8px rgba(140,100,200,0.2)',
-            }}>👑</div>
-            <div>
-              <h3 className="text-xl font-bold text-[#2d1b15]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                MENAXHERI
-              </h3>
-              <p className="text-xs text-[#8a7a5a]">Akses i kufizuar · Kredenciale private</p>
+          {/* Code Logic: Staff Flow */}
+          <div className="mt-6 rounded-xl border border-[#e8e0d4] p-5 bg-white">
+            <h4 className="font-bold text-[#2d1b15] mb-3 text-xs uppercase tracking-wider">📐 Llogjika e Stafit — Diagramë</h4>
+            <div className="flex items-center justify-center gap-2 flex-wrap text-xs mb-4">
+              <FlowStep label="/dashboard" />
+              <FlowArrow />
+              <FlowStep label="manage-shift EF" />
+              <FlowArrow />
+              <FlowStep label="QR: /staff?token=X" />
+              <FlowArrow />
+              <FlowStep label="Skanim nga tel." />
+              <FlowArrow />
+              <FlowStep label="validate-shift" />
+              <FlowArrow />
+              <FlowStep label="unlock-shift (2025)" highlight />
+            </div>
+
+            <div className="text-xs text-[#5a4a3a] space-y-2 bg-[#faf8f4] rounded-lg p-4 font-mono">
+              <p className="text-[#8a7a5a] font-sans font-medium mb-2">Llogjika e turnit (Dashboard.tsx + StaffShift.tsx):</p>
+              <p>1. Dashboard hapet → <Code>ensureShiftToken()</Code> → manage-shift EF</p>
+              <p>2. Turnet: <Code>03:00–15:00</Code> dhe <Code>15:00–03:00</Code> (llogaritja me Date)</p>
+              <p>3. EF manage-shift: get_or_create → kërkon token ekzistues ose krijon të ri</p>
+              <p>4. QR gjenerohet: <Code>{"<QRCodeSVG value={staffUrl} />"}</Code></p>
+              <p>5. Kamarieri skanon → /staff?token=X → validate-shift EF kontrollon:</p>
+              <p className="pl-4">a. Token ekziston në shift_tokens?</p>
+              <p className="pl-4">b. shift_end {">"} now()? (nuk ka skaduar)</p>
+              <p className="pl-4">c. Kthehet: {"{"} valid, shift_end, unlocked {"}"}</p>
+              <p>6. Nëse valid + !unlocked → shfaq formë fjalëkalimi → unlock-shift EF</p>
+              <p>7. Pas zhbllokimit: Realtime subscribe, Push subscribe, Audio enable</p>
+              <p>8. Kur shift_end arrihet → <Code>"Turni ka mbaruar"</Code> + pastrim localStorage</p>
             </div>
           </div>
 
-          <div className="rounded-xl border-2 border-dashed border-[#c8b0e0] p-6 text-center bg-[#f8f4fc]">
-            <div className="text-3xl mb-3">🔐</div>
-            <p className="text-sm text-[#6a5a8a] mb-1 font-medium">
-              Kredencialet dhe konfigurimet teknike janë private.
-            </p>
-            <p className="text-xs text-[#8a7aaa]">
-              Kliko butonin <strong>"Dërgo Private 🔐"</strong> lart djathtas për t'i marrë direkt në email-in e autorizuar.
-            </p>
+          {/* Realtime & Push Logic */}
+          <div className="mt-4 rounded-xl border border-[#e8e0d4] p-5 bg-white">
+            <h4 className="font-bold text-[#2d1b15] mb-3 text-xs uppercase tracking-wider">⚡ Realtime + Push Notifications</h4>
+            <div className="text-xs text-[#5a4a3a] space-y-2 bg-[#faf8f4] rounded-lg p-4 font-mono">
+              <p className="text-[#8a7a5a] font-sans font-medium mb-2">Si funksionojnë njoftimet:</p>
+              <p>1. <Code>supabase.channel('staff-orders').on('postgres_changes', ...)</Code></p>
+              <p>2. Event INSERT në orders/service_requests → trigger njoftim</p>
+              <p>3. Voice: <Code>speechSynthesis.speak(new SpeechSynthesisUtterance(text))</Code></p>
+              <p>4. Push: <Code>send-push EF</Code> → web-push library → endpoint i regjistruar</p>
+              <p>5. Subscribe: <Code>PushManager.subscribe({"{"} applicationServerKey: VAPID_KEY {"}"})</Code></p>
+              <p>6. Repeat timer: <Code>setInterval(playNotification, 30000)</Code> për pending</p>
+              <p>7. Pas turnit: <Code>channel.unsubscribe()</Code> + ndalim i njoftimeve</p>
+            </div>
           </div>
         </section>
 
-        {/* ═══ ARKITEKTURA ═══ */}
+        {/* ═══ ARKITEKTURA E SHKURTËR ═══ */}
         <section className="mb-10">
-          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8e0d4]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{
-              background: 'linear-gradient(135deg, #d4e8d0, #b0d8a8)',
-              boxShadow: '0 2px 8px rgba(100,180,100,0.2)',
-            }}>🏗️</div>
-            <div>
-              <h3 className="text-xl font-bold text-[#2d1b15]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                ARKITEKTURA E SISTEMIT
-              </h3>
-              <p className="text-xs text-[#8a7a5a]">Stack teknik dhe fluksi i të dhënave</p>
-            </div>
-          </div>
+          <SectionHeader icon="🏗️" title="ARKITEKTURA" subtitle="Stack teknik (detaje të plota në email)" color="#d4e8d0" colorEnd="#b0d8a8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mb-6">
             <div className="rounded-xl border border-[#e8e0d4] p-4 bg-white">
               <h4 className="font-bold text-[#2d1b15] mb-2 text-xs uppercase tracking-wider">Frontend</h4>
               <ul className="space-y-1.5 text-[#5a4a3a]">
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c9a35c]" />React 18 + TypeScript</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c9a35c]" />Vite 5 (Build Tool)</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c9a35c]" />Tailwind CSS v3</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c9a35c]" />React Router v6</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c9a35c]" />TanStack Query v5</li>
+                <li className="flex items-center gap-2"><Dot color="#c9a35c" />React 18 + TypeScript</li>
+                <li className="flex items-center gap-2"><Dot color="#c9a35c" />Vite 5 (Build Tool)</li>
+                <li className="flex items-center gap-2"><Dot color="#c9a35c" />Tailwind CSS v3</li>
+                <li className="flex items-center gap-2"><Dot color="#c9a35c" />React Router v6</li>
+                <li className="flex items-center gap-2"><Dot color="#c9a35c" />TanStack Query v5</li>
               </ul>
             </div>
             <div className="rounded-xl border border-[#e8e0d4] p-4 bg-white">
               <h4 className="font-bold text-[#2d1b15] mb-2 text-xs uppercase tracking-wider">Backend</h4>
               <ul className="space-y-1.5 text-[#5a4a3a]">
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#6a9fd8]" />Lovable Cloud (Supabase)</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#6a9fd8]" />PostgreSQL Database</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#6a9fd8]" />Edge Functions (Deno)</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#6a9fd8]" />Realtime Subscriptions</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#6a9fd8]" />Storage (menu-images)</li>
+                <li className="flex items-center gap-2"><Dot color="#6a9fd8" />Lovable Cloud</li>
+                <li className="flex items-center gap-2"><Dot color="#6a9fd8" />PostgreSQL Database</li>
+                <li className="flex items-center gap-2"><Dot color="#6a9fd8" />7 Edge Functions (Deno)</li>
+                <li className="flex items-center gap-2"><Dot color="#6a9fd8" />Realtime Subscriptions</li>
+                <li className="flex items-center gap-2"><Dot color="#6a9fd8" />Storage (menu-images)</li>
               </ul>
             </div>
             <div className="rounded-xl border border-[#e8e0d4] p-4 bg-white">
               <h4 className="font-bold text-[#2d1b15] mb-2 text-xs uppercase tracking-wider">AI & Siguria</h4>
               <ul className="space-y-1.5 text-[#5a4a3a]">
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c06080]" />Google Gemini 2.5 Flash</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c06080]" />RLS në të gjitha tabelat</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c06080]" />has_role() Security Definer</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c06080]" />Trigger auto-assign roles</li>
-                <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#c06080]" />PWA + Service Worker</li>
+                <li className="flex items-center gap-2"><Dot color="#c06080" />Gemini 2.5 Flash (AI)</li>
+                <li className="flex items-center gap-2"><Dot color="#c06080" />RLS në 10 tabela</li>
+                <li className="flex items-center gap-2"><Dot color="#c06080" />GPS Geofencing 75m</li>
+                <li className="flex items-center gap-2"><Dot color="#c06080" />Web Push (VAPID)</li>
+                <li className="flex items-center gap-2"><Dot color="#c06080" />PWA + Service Worker</li>
               </ul>
-            </div>
-          </div>
-
-          {/* Flow diagram */}
-          <div className="rounded-xl border border-[#e8e0d4] p-5 bg-white">
-            <h4 className="font-bold text-[#2d1b15] mb-4 text-xs uppercase tracking-wider text-center">Fluksi i Porosisë</h4>
-            <div className="flex items-center justify-center gap-2 flex-wrap text-xs">
-              <FlowStep label="Skanim QR" />
-              <FlowArrow />
-              <FlowStep label="Shiko Menunë" />
-              <FlowArrow />
-              <FlowStep label="Zgjidh Artikuj" />
-              <FlowArrow />
-              <FlowStep label="Dërgo Porosinë" />
-              <FlowArrow />
-              <FlowStep label="Dashboard (Stafi)" highlight />
-              <FlowArrow />
-              <FlowStep label="Gati ✓" />
             </div>
           </div>
         </section>
 
-        {/* ═══ FAQET DHE ROUTES ═══ */}
+        {/* ═══ FAQET ═══ */}
         <section className="mb-10">
-          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8e0d4]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{
-              background: 'linear-gradient(135deg, #f0e0c0, #e0d0a0)',
-            }}>🗺️</div>
-            <div>
-              <h3 className="text-xl font-bold text-[#2d1b15]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                FAQET E APLIKACIONIT
-              </h3>
-              <p className="text-xs text-[#8a7a5a]">Routes dhe aksesi</p>
-            </div>
-          </div>
+          <SectionHeader icon="🗺️" title="FAQET E APLIKACIONIT" subtitle="Routes dhe aksesi" color="#f0e0c0" colorEnd="#e0d0a0" />
 
           <div className="rounded-xl border border-[#e8e0d4] overflow-hidden bg-white">
             <table className="w-full text-sm">
@@ -366,13 +395,11 @@ Boulevard Café © 2026
                 </tr>
               </thead>
               <tbody>
-                <RouteRow route="/" desc="Faqja kryesore e klientit" access="Publik" />
+                <RouteRow route="/" desc="Faqja kryesore e klientit" access="Publik (QR)" />
                 <RouteRow route="/?table=X" desc="Me numër tavoline nga QR" access="Publik" />
                 <RouteRow route="/menu" desc="Menu e plotë me kategori" access="Publik" />
-                <RouteRow route="/dashboard" desc="Dashboard i stafit" access="QR + Kod" />
-                <RouteRow route="/staff" desc="PWA e stafit" access="Token turni" />
-                <RouteRow route="/manager-login" desc="Hyrje menaxheri" access="Email autorizuar" />
-                <RouteRow route="/manager" desc="Panel menaxheri" access="Autentikuar" />
+                <RouteRow route="/dashboard" desc="Dashboard i stafit (QR generator)" access="QR + Kod" />
+                <RouteRow route="/staff" desc="PWA e stafit (merr njoftimet)" access="Token turni" />
                 <RouteRow route="/dokumentacion" desc="Ky dokument" access="Publik" />
                 <RouteRow route="/install" desc="Udhëzime instalimi PWA" access="Publik" />
               </tbody>
@@ -410,6 +437,21 @@ Boulevard Café © 2026
 
 /* ═══ REUSABLE COMPONENTS ═══ */
 
+const SectionHeader = ({ icon, title, subtitle, color, colorEnd }: { icon: string; title: string; subtitle: string; color: string; colorEnd: string }) => (
+  <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8e0d4]">
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{
+      background: `linear-gradient(135deg, ${color}, ${colorEnd})`,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    }}>{icon}</div>
+    <div>
+      <h3 className="text-xl font-bold text-[#2d1b15]" style={{ fontFamily: "'Playfair Display', serif" }}>
+        {title}
+      </h3>
+      <p className="text-xs text-[#8a7a5a]">{subtitle}</p>
+    </div>
+  </div>
+);
+
 const DocCard = ({ icon, title, items }: { icon: string; title: string; items: string[] }) => (
   <div className="rounded-xl border border-[#e8e0d4] p-4 bg-white hover:shadow-md transition-shadow">
     <h4 className="font-bold text-[#2d1b15] mb-2.5 flex items-center gap-2">
@@ -419,11 +461,19 @@ const DocCard = ({ icon, title, items }: { icon: string; title: string; items: s
       {items.map((item, i) => (
         <li key={i} className="flex items-start gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#c9a35c] mt-1.5 flex-shrink-0" />
-          {item}
+          <span className="text-[13px] leading-snug">{item}</span>
         </li>
       ))}
     </ul>
   </div>
+);
+
+const Code = ({ children }: { children: React.ReactNode }) => (
+  <code className="bg-[#2d1b15] text-[#e8c76d] px-1.5 py-0.5 rounded text-[11px] font-mono">{children}</code>
+);
+
+const Dot = ({ color }: { color: string }) => (
+  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
 );
 
 const RouteRow = ({ route, desc, access }: { route: string; desc: string; access: string }) => (
