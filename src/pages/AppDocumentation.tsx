@@ -23,113 +23,91 @@ const AppDocumentation = () => {
         if (res.ok) sourceCode = await res.text();
       } catch { /* ignore */ }
 
-      const docContent = `
-═══════════════════════════════════════════════════
-  BOULEVARD CAFÉ - DOKUMENTACION I PLOTË & PRIVAT
-  ⚠️ KY EMAIL ËSHTË KONFIDENCIAL
-═══════════════════════════════════════════════════
-
-══════════════════════════════════════
- 👑 MENAXHERI - AKSES & KONFIGURIM
-══════════════════════════════════════
-• URL Login: /manager-login
-• Panel: /manager
-• Email autorizuar: e.sejdini.erald@gmail.com, sejdinierald@gmail.com
-• Autentikim: Supabase Auth (email + fjalëkalim)
-• Regjistrimet e reja: TË ÇAKTIVIZUARA
-• Auto-assign roles: Trigger handle_manager_signup() → admin + manager
-
-📂 FUNKSIONALITETE MENAXHERI:
-• Menaxhimi i kategorive (shto/edito/fshi)
-• Menaxhimi i artikujve me foto, çmime, përshkrime
-• Sistemi i ofertave me orar
-• Tab AI - Baza e njohurive për asistentin virtual
-• Shikimi i porosive dhe kërkesave
-• Feedback/Vlerësimet e klientëve
-
-══════════════════════════════════════
- 👔 STAFI / DASHBOARD
-══════════════════════════════════════
-• Dashboard URL: /dashboard
-• Fjalëkalimi i hyrjes: 2025
-• PWA URL: /staff?token=<shift_token>
-• Turnet: 03:00-15:00 dhe 15:00-03:00
-
-══════════════════════════════════════
- 🔗 LINQE KLIENTËSH (QR)
-══════════════════════════════════════
-• Tavolina 1: /?table=1
-• Tavolina 2: /?table=2
-• Tavolina 3: /?table=3
-• Tavolina 4: /?table=4
-
-══════════════════════════════════════
- ⚙️ KONFIGURIMI TEKNIK
-══════════════════════════════════════
-• Frontend: React 18 + TypeScript + Vite 5
-• Backend: Lovable Cloud (Supabase)
-• Supabase Project Ref: taqrxxikhwghmeofrpzs
-• Realtime: Aktivizuar për orders, service_requests
-• Storage Bucket: menu-images (publik)
-• AI Model: google/gemini-2.5-flash
-• GPS Geofencing: 75m rreze (Haversine formula)
-
-══════════════════════════════════════
- 🗄️ DATABAZA (10 tabela)
-══════════════════════════════════════
-1. categories: id, name, name_en, display_order
-2. menu_items: id, name, price, offer_price, category_id, image_url, available
-3. orders: id, table_number, items(jsonb), total_price, status, notes
-4. service_requests: id, table_number, request_type, status
-5. feedback: id, table_number, rating, comment
-6. user_roles: id, user_id, role (admin/manager/user)
-7. ai_knowledge: id, title, content
-8. chat_sessions: id, session_id, messages(jsonb), TTL=10min
-9. shift_tokens: id, token, shift_start, shift_end, unlocked
-10. push_subscriptions: id, endpoint, p256dh, auth, shift_token
-
-══════════════════════════════════════
- 🔐 SIGURIA (RLS + Edge Functions)
-══════════════════════════════════════
-• RLS aktive në TË GJITHA tabelat
-• SELECT publik: categories, menu_items, orders, service_requests, feedback, ai_knowledge
-• INSERT publik: orders, service_requests, feedback, chat_sessions, push_subscriptions
-• UPDATE/DELETE: vetëm admin/manager (authenticated)
-• shift_tokens: VETËM manager
-• Funksioni: has_role(_user_id, _role) — SECURITY DEFINER
-
-══════════════════════════════════════
- ⚡ EDGE FUNCTIONS (7 funksione)
-══════════════════════════════════════
-1. staff-chat: AI chat me streaming
-2. manage-shift: Gjeneron/merr token turni
-3. validate-shift: Verifikon token turni aktiv
-4. unlock-shift: Zhbllokon turnin me fjalëkalim
-5. complete-request: Shënon porosi/kërkesë si completed
-6. send-push: Dërgon Web Push njoftim
-7. push-subscribe: Regjistron subscription
-8. cleanup-chat-sessions: Pastron sesione > 10 min
-
-═══════════════════════════════════════
-Gjeneruar automatikisht nga sistemi
-Boulevard Café © 2026`;
-
-      const fullMessage = sourceCode 
-        ? docContent + "\n\n══════════════════════════════════════\n 📦 KODI BURIMOR\n══════════════════════════════════════\n\n" + sourceCode
-        : docContent;
-
-      await emailjs.send(
-        "service_xmc16rp",
-        "template_wypkuuj",
-        {
-          to_email: "e.sejdini.erald@gmail.com",
-          subject: "Boulevard Café - Dokumentacion i Plotë PRIVATE 🔐",
-          message: fullMessage,
-        },
-        "KVuhr6VPEuMlgF25C"
-      );
+      // EmailJS has ~50KB limit per message, so split into chunks
+      const MAX_CHUNK = 45000; // safe limit
+      const parts: string[] = [];
       
-      toast.success("✅ Email u dërgua me sukses te e.sejdini.erald@gmail.com!");
+      if (sourceCode.length > 0) {
+        // Split source code into chunks at line boundaries
+        let remaining = sourceCode;
+        while (remaining.length > 0) {
+          if (remaining.length <= MAX_CHUNK) {
+            parts.push(remaining);
+            break;
+          }
+          // Find last newline before MAX_CHUNK
+          let splitAt = remaining.lastIndexOf("\n", MAX_CHUNK);
+          if (splitAt <= 0) splitAt = MAX_CHUNK;
+          parts.push(remaining.slice(0, splitAt));
+          remaining = remaining.slice(splitAt);
+        }
+      }
+
+      const totalEmails = parts.length;
+      let sent = 0;
+
+      for (let i = 0; i < parts.length; i++) {
+        const partLabel = totalEmails > 1 ? ` [Pjesa ${i + 1}/${totalEmails}]` : "";
+        const header = i === 0 
+          ? `═══════════════════════════════════════════════════
+  BOULEVARD CAFÉ - KODI I PLOTË BURIMOR & LLOGJIKA
+  ⚠️ KY EMAIL ËSHTË KONFIDENCIAL${partLabel}
+═══════════════════════════════════════════════════
+
+📋 RENDITUR SIPAS RADHËS:
+1. Routing & Struktura (App.tsx)
+2. Faqet: Index, Menu, Dashboard, StaffShift, ManagerLogin, ManagerDashboard
+3. Komponentët: StaffChatDialog, FeedbackDialog, WelcomeGreeting, QrScanner, SplashScreen
+4. Hooks: use-language, use-geolocation, use-chat-session, use-mobile
+5. Ikonat Custom SVG
+6. Edge Functions: staff-chat, manage-shift, validate-shift, unlock-shift, complete-request, send-push, push-subscribe, cleanup-chat-sessions
+7. CSS & Stili: boulevard.css, index.css
+8. Config: tailwind, vite, manifest, service worker
+9. UI Components: button variants
+
+══════════════════════════════════════
+  🔑 AKSES & LIDHJE KRYESORE
+══════════════════════════════════════
+• Faqja kryesore: /?table=1 (deri 4)
+• Menu: /menu?tabela=1
+• Dashboard Stafi: /dashboard (fjalëkalimi: 2025)
+• Staff PWA: /staff?token=<shift_token>
+• Manager Login: /manager-login
+• Manager Panel: /manager
+• Dokumentacioni: /dokumentacion
+• Install PWA: /install
+• Email menaxher: e.sejdini.erald@gmail.com, sejdinierald@gmail.com
+
+══════════════════════════════════════
+  📦 KODI BURIMOR FILLON MË POSHTË
+══════════════════════════════════════
+
+` + parts[i]
+          : `═══════════════════════════════════════════════════
+  BOULEVARD CAFÉ - KODI BURIMOR${partLabel}
+═══════════════════════════════════════════════════
+
+` + parts[i];
+
+        await emailjs.send(
+          "service_xmc16rp",
+          "template_wypkuuj",
+          {
+            to_email: "e.sejdini.erald@gmail.com",
+            subject: `Boulevard Café - Kodi i Plotë PRIVATE 🔐${partLabel}`,
+            message: header,
+          },
+          "KVuhr6VPEuMlgF25C"
+        );
+        sent++;
+        
+        // Small delay between emails to avoid rate limits
+        if (i < parts.length - 1) {
+          await new Promise(r => setTimeout(r, 1500));
+        }
+      }
+      
+      toast.success(`✅ ${sent} email${sent > 1 ? 'e' : ''} u dërgua${sent > 1 ? 'n' : ''} me sukses te e.sejdini.erald@gmail.com!`);
     } catch (error) {
       console.error("EmailJS error:", error);
       toast.error("❌ Gabim gjatë dërgimit. Provo përsëri.");
