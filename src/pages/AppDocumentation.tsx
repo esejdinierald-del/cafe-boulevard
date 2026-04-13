@@ -397,31 +397,7 @@ const AppDocumentation = () => {
           </div>
         </section>
 
-        {/* ═══ FAQET ═══ */}
-        <section className="mb-10">
-          <SectionHeader icon="🗺️" title="FAQET E APLIKACIONIT" subtitle="Routes dhe aksesi" color="#f0e0c0" colorEnd="#e0d0a0" />
 
-          <div className="rounded-xl border border-[#e8e0d4] overflow-hidden bg-white">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-[#f5f0e8]">
-                  <th className="text-left px-4 py-2.5 font-semibold text-[#2d1b15] text-xs uppercase tracking-wider">Route</th>
-                  <th className="text-left px-4 py-2.5 font-semibold text-[#2d1b15] text-xs uppercase tracking-wider">Përshkrim</th>
-                  <th className="text-left px-4 py-2.5 font-semibold text-[#2d1b15] text-xs uppercase tracking-wider">Akses</th>
-                </tr>
-              </thead>
-              <tbody>
-                <RouteRow route="/" desc="Faqja kryesore e klientit" access="Publik (QR)" />
-                <RouteRow route="/?table=X" desc="Me numër tavoline nga QR" access="Publik" />
-                <RouteRow route="/menu" desc="Menu e plotë me kategori" access="Publik" />
-                <RouteRow route="/dashboard" desc="Dashboard i stafit (QR generator)" access="QR + Kod" />
-                <RouteRow route="/staff" desc="PWA e stafit (merr njoftimet)" access="Token turni" />
-                <RouteRow route="/dokumentacion" desc="Ky dokument" access="Publik" />
-                <RouteRow route="/install" desc="Udhëzime instalimi PWA" access="Publik" />
-              </tbody>
-            </table>
-          </div>
-        </section>
 
         {/* Footer */}
         <footer className="text-center pt-6 mt-10 border-t-2 border-[#c9a35c]">
