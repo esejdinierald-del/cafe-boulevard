@@ -11,6 +11,7 @@ import ManagerDashboard from "./pages/ManagerDashboard";
 
 import Install from "./pages/Install";
 import StaffShift from "./pages/StaffShift";
+import AppDocumentation from "./pages/AppDocumentation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
