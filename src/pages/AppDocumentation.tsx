@@ -309,6 +309,12 @@ Boulevard Café © 2026
             <Mail className="h-3.5 w-3.5" />
             Dërgo Private 🔐
           </Button>
+          <a href="/boulevard-source-code.txt" download="boulevard-source-code.txt">
+            <Button size="sm" className="gap-2 bg-[#1a5c2e] text-white hover:bg-[#246b38] border-none text-xs">
+              <Download className="h-3.5 w-3.5" />
+              Shkarko Kodin 📦
+            </Button>
+          </a>
           <Button onClick={handlePrint} size="sm" variant="outline" className="gap-2 border-[#c9a35c] text-[#5a4a2a] hover:bg-[#f5f0e8] text-xs">
             <Printer className="h-3.5 w-3.5" />
             Printo A4
