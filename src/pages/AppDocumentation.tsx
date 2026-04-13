@@ -147,9 +147,9 @@ Boulevard Café © 2026`;
           Kthehu
         </button>
         <div className="flex gap-2">
-          <Button onClick={handleSendEmail} size="sm" className="gap-2 bg-[#2d1b15] text-[#e8dcc0] hover:bg-[#3d2418] border-none text-xs">
-            <Mail className="h-3.5 w-3.5" />
-            Dërgo Private 🔐
+          <Button onClick={handleSendEmail} disabled={sending} size="sm" className="gap-2 bg-[#2d1b15] text-[#e8dcc0] hover:bg-[#3d2418] border-none text-xs">
+            {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+            {sending ? "Duke dërguar..." : "Dërgo Private 🔐"}
           </Button>
           <a href="/boulevard-source-code.txt" download="boulevard-source-code.txt">
             <Button size="sm" className="gap-2 bg-[#1a5c2e] text-white hover:bg-[#246b38] border-none text-xs">
