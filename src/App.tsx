@@ -8,7 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Menu from "./pages/Menu";
 import ManagerLogin from "./pages/ManagerLogin";
 import ManagerDashboard from "./pages/ManagerDashboard";
-import AppDocumentation from "./pages/AppDocumentation";
+
 import Install from "./pages/Install";
 import StaffShift from "./pages/StaffShift";
 import NotFound from "./pages/NotFound";
