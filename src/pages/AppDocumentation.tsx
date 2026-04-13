@@ -1,17 +1,29 @@
 import { Button } from "@/components/ui/button";
-import { Printer, Mail, ArrowLeft, Download } from "lucide-react";
+import { Printer, Mail, ArrowLeft, Download, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import emailjs from "@emailjs/browser";
+import { toast } from "sonner";
 
 const AppDocumentation = () => {
   const navigate = useNavigate();
+  const [sending, setSending] = useState(false);
 
   const handlePrint = () => {
     window.print();
   };
 
-  const handleSendEmail = () => {
-    const subject = encodeURIComponent("Boulevard Café - Dokumentacion i Plotë PRIVATE");
-    const body = encodeURIComponent(`
+  const handleSendEmail = async () => {
+    setSending(true);
+    try {
+      // Fetch source code file
+      let sourceCode = "";
+      try {
+        const res = await fetch("/boulevard-source-code.txt");
+        if (res.ok) sourceCode = await res.text();
+      } catch { /* ignore */ }
+
+      const docContent = `
 ═══════════════════════════════════════════════════
   BOULEVARD CAFÉ - DOKUMENTACION I PLOTË & PRIVAT
   ⚠️ KY EMAIL ËSHTË KONFIDENCIAL
@@ -24,14 +36,13 @@ const AppDocumentation = () => {
 • Panel: /manager
 • Email autorizuar: e.sejdini.erald@gmail.com, sejdinierald@gmail.com
 • Autentikim: Supabase Auth (email + fjalëkalim)
-• Regjistrimet e reja: TË ÇAKTIVIZUARA (vetëm email-et e autorizuara)
-• Rivendosja e fjalëkalimit: vetëm për email-et e autorizuara
+• Regjistrimet e reja: TË ÇAKTIVIZUARA
 • Auto-assign roles: Trigger handle_manager_signup() → admin + manager
 
 📂 FUNKSIONALITETE MENAXHERI:
 • Menaxhimi i kategorive (shto/edito/fshi)
 • Menaxhimi i artikujve me foto, çmime, përshkrime
-• Sistemi i ofertave me orar (offer_price, offer_start_time, offer_end_time)
+• Sistemi i ofertave me orar
 • Tab AI - Baza e njohurive për asistentin virtual
 • Shikimi i porosive dhe kërkesave
 • Feedback/Vlerësimet e klientëve
@@ -43,7 +54,6 @@ const AppDocumentation = () => {
 • Fjalëkalimi i hyrjes: 2025
 • PWA URL: /staff?token=<shift_token>
 • Turnet: 03:00-15:00 dhe 15:00-03:00
-• Token gjenerohet automatikisht nga manage-shift Edge Function
 
 ══════════════════════════════════════
  🔗 LINQE KLIENTËSH (QR)
@@ -52,7 +62,6 @@ const AppDocumentation = () => {
 • Tavolina 2: /?table=2
 • Tavolina 3: /?table=3
 • Tavolina 4: /?table=4
-• Format: [DOMAIN]/?table=X
 
 ══════════════════════════════════════
  ⚙️ KONFIGURIMI TEKNIK
@@ -62,15 +71,14 @@ const AppDocumentation = () => {
 • Supabase Project Ref: taqrxxikhwghmeofrpzs
 • Realtime: Aktivizuar për orders, service_requests
 • Storage Bucket: menu-images (publik)
-• AI Model: google/gemini-2.5-flash (Lovable AI Gateway)
+• AI Model: google/gemini-2.5-flash
 • GPS Geofencing: 75m rreze (Haversine formula)
-• VAPID Push: Konfiguruar me çelës publik/privat
 
 ══════════════════════════════════════
  🗄️ DATABAZA (10 tabela)
 ══════════════════════════════════════
 1. categories: id, name, name_en, display_order
-2. menu_items: id, name, price, offer_price, offer_start/end_time, category_id, image_url, available
+2. menu_items: id, name, price, offer_price, category_id, image_url, available
 3. orders: id, table_number, items(jsonb), total_price, status, notes
 4. service_requests: id, table_number, request_type, status
 5. feedback: id, table_number, rating, comment
@@ -87,16 +95,14 @@ const AppDocumentation = () => {
 • SELECT publik: categories, menu_items, orders, service_requests, feedback, ai_knowledge
 • INSERT publik: orders, service_requests, feedback, chat_sessions, push_subscriptions
 • UPDATE/DELETE: vetëm admin/manager (authenticated)
-• shift_tokens: VETËM manager (SELECT/INSERT/UPDATE/DELETE)
-• user_roles: admins menaxhojnë, users shohin vetëm rolet e tyre
+• shift_tokens: VETËM manager
 • Funksioni: has_role(_user_id, _role) — SECURITY DEFINER
-• Trigger: handle_manager_signup — auto-assign admin+manager
 
 ══════════════════════════════════════
  ⚡ EDGE FUNCTIONS (7 funksione)
 ══════════════════════════════════════
-1. staff-chat: AI chat me streaming (Gemini 2.5 Flash + knowledge base)
-2. manage-shift: Gjeneron/merr token turni (service_role)
+1. staff-chat: AI chat me streaming
+2. manage-shift: Gjeneron/merr token turni
 3. validate-shift: Verifikon token turni aktiv
 4. unlock-shift: Zhbllokon turnin me fjalëkalim
 5. complete-request: Shënon porosi/kërkesë si completed
@@ -104,196 +110,32 @@ const AppDocumentation = () => {
 7. push-subscribe: Regjistron subscription
 8. cleanup-chat-sessions: Pastron sesione > 10 min
 
-══════════════════════════════════════
- 👤 LLOGJIKA E KLIENTIT (Kodi)
-══════════════════════════════════════
-
-📐 DIAGRAMË FLOW:
-Skanim QR → /?table=X → GPS Check ≤75m → Shiko Menunë → Porosit/Thirr → Supabase INSERT
-
-KODI KRYESOR (Index.tsx):
-1. URL param: searchParams.get("table") → setTableNumber
-2. Staff PWA redirect: isStandaloneMode() && localStorage("staff_shift_token") → /staff
-3. Porosi: supabase.from("service_requests").insert({ table_number, request_type, status: "pending" })
-4. Menu navigate: navigate(\`/menu?table=\${tableNumber}\`)
-5. Chat: StaffChatDialog → fetch staff-chat EF → SSE stream → setMessages()
-6. Feedback: FeedbackDialog → supabase.from("feedback").insert()
-
-📋 SHIKIMI I MENUSË:
-• Shfletim i kategorive me emra shqip/anglisht
-• Produkte me foto (Storage: menu-images bucket), çmime, përshkrime
-• Filtrim sipas categori_id (tabela categories → menu_items)
-• Mbështetje dygjuhëshe: useLanguage() hook → localStorage
-• Oferta aktive: offer_price shfaqet kur ora aktuale bie në offer_start_time–offer_end_time (timezone Europe/Rome)
-
-🛒 POROSITJA:
-• Shporta në useState (Cart state lokal në /menu)
-• Modifikim i sasive, shtim shënimesh
-• supabase.from('orders').insert({items, total_price, table_number, status:'pending'})
-• GPS verifikim: useGeolocation() → Haversine ≤ 75m
-• Nëse jashtë rrezes: 'Duhet të jeni fizikisht në lokal'
-
-🔔 KËRKESA SHËRBIMI:
-• Buton 'Thirr Kamerieren' → service_requests INSERT (request_type: 'waiter')
-• Buton 'Kërko Faturën' → service_requests INSERT (request_type: 'bill')
-• GPS verifikim para dërgimit (75m rreze)
-• Identifikim i tavolinës nga URL param: ?table=X
-• Realtime: stafi merr njoftim automatik
-
-💬 CHAT ME AI:
-• Dialogu StaffChatDialog → Edge Function: staff-chat
-• Model: google/gemini-2.5-flash (Lovable AI Gateway)
-• Streaming: SSE (Server-Sent Events) me reader.read() loop
-• Kontekst: ai_knowledge tabela + menu_items + football API
-• Sesion: useChatSession() → chat_sessions tabela, TTL 10 min
-• Biseda e re: fshin session_id nga localStorage + DB
-
-⭐ VLERËSIMI (FEEDBACK):
-• Dialog FeedbackDialog me yje 1-5 (klikohet)
-• Koment opsional (textarea)
-• supabase.from('feedback').insert({rating, comment, table_number})
-• Ruajtje automatike me numrin e tavolinës nga URL
-
-📍 GPS GEOFENCING:
-• Hook: useGeolocation() → navigator.geolocation.getCurrentPosition()
-• Koordinata kafesë: 41.114871, 20.088804
-• Rreze maksimale: 75 metra (MAX_DISTANCE_METERS)
-• Formula Haversine: getDistanceInMeters(lat1, lon1, lat2, lon2)
-• Opsionet: enableHighAccuracy=true, timeout=10s, maximumAge=60s
-• Gabime: PERMISSION_DENIED → mesazh shqip/anglisht
-
-══════════════════════════════════════
- 👔 LLOGJIKA E STAFIT (Kodi)
-══════════════════════════════════════
-
-📐 DIAGRAMË FLOW:
-/dashboard → manage-shift EF → QR: /staff?token=X → Skanim nga tel. → validate-shift → unlock-shift (2025)
-
-📊 DASHBOARD (/dashboard):
-• Pamje e porosive aktive (status='pending')
-• Pamje e kërkesave waiter/bill (status='pending')
-• Badge me numrin e pending items
-• Timer ElapsedBadge: <2min=normal, 2-5min=warning, >5min=red
-• Supabase Realtime: .on('postgres_changes', {event:'*', table:'orders'})
-• QR Curtain: shfaq QR me link /staff?token=X para aktivizimit
-
-🔔 SISTEM NJOFTIMESH:
-• Mënyra 1: Text-to-Speech (SpeechSynthesis API) — zë i përshtatshëm
-• Mënyra 2: Tingull alarmi (bell sound)
-• Web Push Notifications: VAPID + service worker
-• Push subscribe: push-subscribe EF → push_subscriptions tabela
-• Përsëritje: çdo 30 sekonda për pending items
-• Title blink: dokument.title ndryshon me interval kur ka pending
-
-📝 MENAXHIMI I POROSIVE:
-• Shënim si 'Completed': complete-request Edge Function
-• EF përdor service_role key (bypasses RLS)
-• Anulim/fshirje e porosive
-• Shikimi i detajeve: artikuj, sasi, shënime, çmim total
-• Swipe-to-complete (touch events) në PWA
-• Identifikim sipas numrit të tavolinës
-
-📱 PWA E STAFIT (/staff):
-• Manifest: /staff-manifest.webmanifest (start_url: /staff)
-• Service Worker: /staff-sw.js
-• Token turni ruhet në localStorage('staff_shift_token')
-• Validim: validate-shift EF → kontrollon token + shift_end > now()
-• Zhbllokim: unlock-shift EF → fjalëkalimi '2025'
-• Pas turnit: token skadon, PWA shfaq 'Turni ka mbaruar'
-
-LLOGJIKA E TURNIT (Dashboard.tsx + StaffShift.tsx):
-1. Dashboard hapet → ensureShiftToken() → manage-shift EF
-2. Turnet: 03:00–15:00 dhe 15:00–03:00 (llogaritja me Date)
-3. EF manage-shift: get_or_create → kërkon token ekzistues ose krijon të ri
-4. QR gjenerohet: <QRCodeSVG value={staffUrl} />
-5. Kamarieri skanon → /staff?token=X → validate-shift EF kontrollon:
-   a. Token ekziston në shift_tokens?
-   b. shift_end > now()? (nuk ka skaduar)
-   c. Kthehet: { valid, shift_end, unlocked }
-6. Nëse valid + !unlocked → shfaq formë fjalëkalimi → unlock-shift EF
-7. Pas zhbllokimit: Realtime subscribe, Push subscribe, Audio enable
-8. Kur shift_end arrihet → "Turni ka mbaruar" + pastrim localStorage
-
-⚡ REALTIME + PUSH NOTIFICATIONS:
-1. supabase.channel('staff-orders').on('postgres_changes', ...)
-2. Event INSERT në orders/service_requests → trigger njoftim
-3. Voice: speechSynthesis.speak(new SpeechSynthesisUtterance(text))
-4. Push: send-push EF → web-push library → endpoint i regjistruar
-5. Subscribe: PushManager.subscribe({ applicationServerKey: VAPID_KEY })
-6. Repeat timer: setInterval(playNotification, 30000) për pending
-7. Pas turnit: channel.unsubscribe() + ndalim i njoftimeve
-
-══════════════════════════════════════
- 🗺️ FAQET E APLIKACIONIT (Routes)
-══════════════════════════════════════
-/            → Faqja kryesore e klientit (Publik, QR)
-/?table=X    → Me numër tavoline nga QR (Publik)
-/menu        → Menu e plotë me kategori (Publik)
-/dashboard   → Dashboard i stafit (QR + Kod)
-/staff       → PWA e stafit (Token turni)
-/dokumentacion → Dokumentacioni (Publik)
-/install     → Udhëzime instalimi PWA (Publik)
-/manager-login → Hyrja e menaxherit (Kredenciale)
-/manager     → Paneli i menaxherit (Admin/Manager role)
-
-══════════════════════════════════════
- 🏗️ ARKITEKTURA E PLOTË
-══════════════════════════════════════
-FRONTEND:
-• React 18 + TypeScript
-• Vite 5 (Build Tool)
-• Tailwind CSS v3
-• React Router v6
-• TanStack Query v5
-• shadcn/ui komponentë
-• Framer Motion (animacione)
-
-BACKEND:
-• Lovable Cloud (Supabase)
-• PostgreSQL Database
-• 7 Edge Functions (Deno runtime)
-• Realtime Subscriptions (WebSocket)
-• Storage (menu-images bucket, publik)
-• Auth: Supabase Auth me email
-
-AI & SIGURIA:
-• Gemini 2.5 Flash (Lovable AI Gateway)
-• RLS në 10 tabela
-• GPS Geofencing 75m (Haversine)
-• Web Push (VAPID keys)
-• PWA + Service Worker
-• SECURITY DEFINER functions
-
-══════════════════════════════════════
- 📦 DOSJET KRYESORE
-══════════════════════════════════════
-src/pages/Index.tsx         → Landing page klienti
-src/pages/Menu.tsx          → Menu me kategori + porosi
-src/pages/Dashboard.tsx     → Dashboard stafi + QR
-src/pages/StaffShift.tsx    → PWA stafi + turne
-src/pages/ManagerLogin.tsx  → Login menaxheri
-src/pages/ManagerDashboard.tsx → Panel menaxheri
-src/components/StaffChatDialog.tsx → AI Chat
-src/components/FeedbackDialog.tsx  → Feedback yje
-src/components/QrScanner.tsx → QR scanner
-src/components/TableIdentifier.tsx → Identifikim tavoline
-src/hooks/use-geolocation.ts → GPS hook
-src/hooks/use-language.tsx → Gjuhë shqip/anglisht
-src/hooks/use-chat-session.ts → Chat sesion
-supabase/functions/staff-chat/ → AI Edge Function
-supabase/functions/manage-shift/ → Token turni
-supabase/functions/validate-shift/ → Validim turni
-supabase/functions/unlock-shift/ → Zhbllokim turni
-supabase/functions/complete-request/ → Kompletim porosi
-supabase/functions/send-push/ → Push njoftim
-supabase/functions/push-subscribe/ → Push subscribe
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+═══════════════════════════════════════
 Gjeneruar automatikisht nga sistemi
-Boulevard Café © 2026
-    `.trim());
+Boulevard Café © 2026`;
 
-    window.location.href = `mailto:e.sejdini.erald@gmail.com?subject=${subject}&body=${body}`;
+      const fullMessage = sourceCode 
+        ? docContent + "\n\n══════════════════════════════════════\n 📦 KODI BURIMOR\n══════════════════════════════════════\n\n" + sourceCode
+        : docContent;
+
+      await emailjs.send(
+        "service_xmc16rp",
+        "template_wypkuuj",
+        {
+          to_email: "e.sejdini.erald@gmail.com",
+          subject: "Boulevard Café - Dokumentacion i Plotë PRIVATE 🔐",
+          message: fullMessage,
+        },
+        "KVuhr6VPEuMlgF25C"
+      );
+      
+      toast.success("✅ Email u dërgua me sukses te e.sejdini.erald@gmail.com!");
+    } catch (error) {
+      console.error("EmailJS error:", error);
+      toast.error("❌ Gabim gjatë dërgimit. Provo përsëri.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
