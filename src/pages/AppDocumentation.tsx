@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Printer, Mail, ArrowLeft } from "lucide-react";
+import { Printer, Mail, ArrowLeft, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const AppDocumentation = () => {
