@@ -234,7 +234,7 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
               onClick={sendMessage}
               disabled={!input.trim() || isLoading || !loaded}
               size="icon"
-              className="shrink-0 w-11 h-11 rounded-full bg-secondary hover:bg-secondary/80 text-secondary-foreground shadow-md"
+              className="shrink-0 w-12 h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg border-2 border-primary/30"
             >
               <Send className="h-5 w-5" />
             </Button>
