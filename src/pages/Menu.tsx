@@ -292,8 +292,33 @@ const Menu = () => {
           <>
             {/* Category tabs */}
             <div className="mb-6 -mx-4 px-4 overflow-x-auto scrollbar-hide animate-in-stagger-2">
+              {/* Group tabs (BANAKU / GUZHINA / DREKA) */}
+              <div className="flex gap-2 mb-3 min-w-max">
+                {['BANAKU', 'GUZHINA', 'DREKA'].map(group => (
+                  <button
+                    key={group}
+                    onClick={() => {
+                      setSelectedGroup(group);
+                      const first = categories.find(c => c.group_name === group);
+                      if (first) setSelectedCategoryId(first.id);
+                    }}
+                    className="px-4 py-2 rounded-lg font-display font-bold text-xs uppercase tracking-widest transition-all duration-300"
+                    style={selectedGroup === group ? {
+                      background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
+                      color: 'hsl(220 60% 10%)',
+                      boxShadow: '0 0 18px hsl(43 85% 55% / 0.35)',
+                    } : {
+                      background: 'hsl(0 0% 100% / 0.04)',
+                      color: 'hsl(0 0% 60%)',
+                      border: '1px solid hsl(0 0% 100% / 0.08)',
+                    }}
+                  >
+                    {group}
+                  </button>
+                ))}
+              </div>
               <div className="flex gap-3 min-w-max pb-2">
-                {categories.map(category => (
+                {categories.filter(c => c.group_name === selectedGroup).map(category => (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategoryId(category.id)}
