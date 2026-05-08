@@ -65,6 +65,7 @@ interface Category {
   name: string;
   name_en: string | null;
   display_order: number;
+  group_name: string;
 }
 
 const isOfferActive = (item: MenuItem): boolean => {
