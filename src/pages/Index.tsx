@@ -91,6 +91,8 @@ const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(true);
+  const [pendingAction, setPendingAction] = useState<null | "waiter" | "bill">(null);
+  const [tableInput, setTableInput] = useState("");
   const { checking } = useGeolocation();
 
   useEffect(() => {
@@ -104,11 +106,7 @@ const Index = () => {
 
   const displayTable = tableNumber || t.table;
 
-  const handleCallWaiter = async () => {
-    if (!tableNumber.trim()) {
-      toast.error(t.tableRequired);
-      return;
-    }
+  const submitWaiter = async () => {
     try {
       const { error } = await supabase.from("service_requests").insert({
         table_number: tableNumber.trim(),
@@ -123,11 +121,7 @@ const Index = () => {
     }
   };
 
-  const handleRequestBill = async () => {
-    if (!tableNumber.trim()) {
-      toast.error(t.tableRequired);
-      return;
-    }
+  const submitBill = async () => {
     try {
       const { error } = await supabase.from("service_requests").insert({
         table_number: tableNumber.trim(),
@@ -140,6 +134,39 @@ const Index = () => {
       console.error("Error requesting bill:", error);
       toast.error(t.error);
     }
+  };
+
+  const handleCallWaiter = () => {
+    if (!tableNumber.trim()) {
+      setTableInput("");
+      setPendingAction("waiter");
+      return;
+    }
+    submitWaiter();
+  };
+
+  const handleRequestBill = () => {
+    if (!tableNumber.trim()) {
+      setTableInput("");
+      setPendingAction("bill");
+      return;
+    }
+    submitBill();
+  };
+
+  const confirmTableAndRun = () => {
+    const v = tableInput.trim();
+    if (!v) {
+      toast.error(t.tableRequired);
+      return;
+    }
+    setTableNumber(v);
+    const action = pendingAction;
+    setPendingAction(null);
+    setTimeout(() => {
+      if (action === "waiter") submitWaiter();
+      else if (action === "bill") submitBill();
+    }, 0);
   };
 
   return (
@@ -207,30 +234,6 @@ const Index = () => {
 
             {/* ═══ BUTTONS ═══ */}
             <div className="w-full flex flex-col gap-3 relative z-10">
-              {/* 1. Table Number */}
-              <div className="blvd-table-row">
-                <div className="pl-5 flex-shrink-0 relative z-10">
-                  <LocationPinIcon />
-                </div>
-                <input
-                  type="text"
-                  placeholder={t.tableLabel}
-                  value={tableNumber}
-                  onChange={(e) => setTableNumber(e.target.value)}
-                  className="blvd-table-input"
-                />
-                <div className="pr-3 flex-shrink-0 relative z-10">
-                  <button
-                    onClick={() => {
-                      if (!tableNumber.trim()) toast.error(t.tableRequired);
-                    }}
-                    className="blvd-check-btn"
-                  >
-                    <CheckIcon />
-                  </button>
-                </div>
-              </div>
-
               {/* Welcome text */}
               <p className="blvd-welcome">{t.chooseService}</p>
 
