@@ -237,6 +237,28 @@ const Index = () => {
               {/* Welcome text */}
               <p className="blvd-welcome">{t.chooseService}</p>
 
+              {pendingAction && (
+                <div className="blvd-table-row">
+                  <div className="pl-5 flex-shrink-0 relative z-10">
+                    <LocationPinIcon />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={t.tableLabel}
+                    value={tableInput}
+                    onChange={(e) => setTableInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && confirmTableAndRun()}
+                    autoFocus
+                    className="blvd-table-input"
+                  />
+                  <div className="pr-3 flex-shrink-0 relative z-10">
+                    <button onClick={confirmTableAndRun} className="blvd-check-btn">
+                      <CheckIcon />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* 2. Call Waiter — Dark */}
               <button onClick={handleCallWaiter} disabled={checking} className="blvd-btn-dark">
                 <span className="blvd-icon-gold"><BellIcon /></span>
