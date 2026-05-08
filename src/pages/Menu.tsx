@@ -97,6 +97,7 @@ const Menu = () => {
   const [loading, setLoading] = useState(true);
   const [orderNotes, setOrderNotes] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string>('BANAKU');
   const { checkLocation, checking } = useGeolocation();
 
   useEffect(() => {
