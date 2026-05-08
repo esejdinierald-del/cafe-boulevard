@@ -374,7 +374,9 @@ const Menu = () => {
                               {language === 'en' && item.description_en ? item.description_en : item.description}
                             </p>
                           )}
-                          
+
+                          <div className="flex items-end justify-between gap-2 mt-1">
+                            <div className="flex-1 min-w-0">
                           {offerActive ? (
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
@@ -394,8 +396,9 @@ const Menu = () => {
                               {item.price} {t.currency}
                             </p>
                           )}
-                          
-                          <div className="flex items-center gap-1 mt-2">
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
                             {cart[item.id] ? (
                               <>
                                 <button
@@ -435,6 +438,7 @@ const Menu = () => {
                                 <Plus className="h-5 w-5" />
                               </button>
                             )}
+                            </div>
                           </div>
                         </div>
                       </div>
