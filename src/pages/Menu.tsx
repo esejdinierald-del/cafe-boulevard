@@ -293,7 +293,7 @@ const Menu = () => {
             {/* Category tabs */}
             <div className="mb-6 -mx-4 px-4 overflow-x-auto scrollbar-hide animate-in-stagger-2">
               {/* Group tabs (BANAKU / GUZHINA / DREKA) */}
-              <div className="flex gap-2 mb-3 min-w-max">
+              <div className="grid grid-cols-3 gap-2 mb-3 w-full">
                 {['BANAKU', 'GUZHINA', 'DREKA'].map(group => (
                   <button
                     key={group}
@@ -302,15 +302,16 @@ const Menu = () => {
                       const first = categories.find(c => c.group_name === group);
                       if (first) setSelectedCategoryId(first.id);
                     }}
-                    className="px-4 py-2 rounded-lg font-display font-bold text-xs uppercase tracking-widest transition-all duration-300"
+                    className="w-full px-3 py-3 rounded-xl font-display font-bold text-sm uppercase tracking-[0.2em] transition-all duration-300"
                     style={selectedGroup === group ? {
                       background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
                       color: 'hsl(220 60% 10%)',
-                      boxShadow: '0 0 18px hsl(43 85% 55% / 0.35)',
+                      boxShadow: '0 0 24px hsl(43 85% 55% / 0.5)',
+                      transform: 'scale(1.03)',
                     } : {
-                      background: 'hsl(0 0% 100% / 0.04)',
-                      color: 'hsl(0 0% 60%)',
-                      border: '1px solid hsl(0 0% 100% / 0.08)',
+                      background: 'hsl(0 0% 100% / 0.06)',
+                      color: 'hsl(43 85% 65%)',
+                      border: '1px solid hsl(43 85% 55% / 0.25)',
                     }}
                   >
                     {group}
