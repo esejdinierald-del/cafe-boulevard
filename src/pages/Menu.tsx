@@ -129,7 +129,9 @@ const Menu = () => {
       setCategories(categoriesData || []);
       setMenuItems((itemsData as unknown as MenuItem[]) || []);
       if (categoriesData && categoriesData.length > 0) {
-        setSelectedCategoryId(categoriesData[0].id);
+        const firstInGroup = categoriesData.find((c: Category) => c.group_name === 'BANAKU') || categoriesData[0];
+        setSelectedCategoryId(firstInGroup.id);
+        setSelectedGroup(firstInGroup.group_name || 'BANAKU');
       }
     } catch (error) {
       console.error('Error fetching menu:', error);
