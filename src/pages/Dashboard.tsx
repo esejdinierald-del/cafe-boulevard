@@ -123,7 +123,7 @@ const Dashboard = () => {
 
   // Visual notification - flashing tab title
   useEffect(() => {
-    const pendingRequests = requests.filter(r => r.status === 'pending').length;
+    const pendingRequests = requests.filter(r => r.status === 'pending' && r.request_type !== 'kitchen_ready').length;
     const pendingOrders = orders.filter(o => o.status === 'pending').length;
     const totalPending = pendingRequests + pendingOrders;
 
