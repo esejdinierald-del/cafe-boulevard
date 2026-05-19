@@ -402,7 +402,7 @@ const Dashboard = () => {
   useEffect(() => {
     const update = () => {
       const times = [
-        ...requests.filter(r => r.status === 'pending').map(r => new Date(r.created_at).getTime()),
+        ...requests.filter(r => r.status === 'pending' && r.request_type !== 'kitchen_ready').map(r => new Date(r.created_at).getTime()),
         ...orders.filter(o => o.status === 'pending').map(o => new Date(o.created_at).getTime()),
       ];
       if (times.length === 0) { setElapsedTime(''); return; }
