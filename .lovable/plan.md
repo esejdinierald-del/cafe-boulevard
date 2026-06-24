@@ -1,66 +1,39 @@
+## Çfarë do të përfshihet në ZIP
 
+Një arkiv i vetëm `boulevard-cafe-full.zip` me **gjithë kodin + llogjikën** e projektit, i strukturuar qartë që Claude (ose çdo AI tjetër) ta lexojë lehtë.
 
-## Plani: Faqja /staff e pavarur — njoftimet funksionojnë pa instalim PWA
+### Përmbajtja
 
-### Problemi
-Faqja `/staff` nuk instalohet si PWA në shumë pajisje (sidomos iOS Safari). Pa instalim, njoftimet me zë dhe vibrim nuk funksionojnë kur telefoni është i bllokuar ose tab-i është në sfond.
+1. **Frontend i plotë**
+   - `src/` — të gjitha faqet, komponentët, hooks, stilet, ikonat
+   - `public/` — manifest, service workers, QR codes
+   - `index.html`, konfigurimet (`vite.config.ts`, `tailwind.config.ts`, `tsconfig*`, `package.json`, `components.json`, `postcss.config.js`, `eslint.config.js`)
 
-### Zgjidhja: Web Push Notifications me Service Worker
+2. **Backend i plotë (Lovable Cloud / Supabase)**
+   - `supabase/functions/` — të 8 Edge Functions (staff-chat, manage-shift, validate-shift, unlock-shift, complete-request, send-push, push-subscribe, cleanup-chat-sessions)
+   - `supabase/config.toml`
+   - `supabase/migrations/` — të gjitha migrimet SQL (skema e plotë e DB: tabelat, RLS policies, funksionet, triggers)
 
-Kjo është mënyra e vetme që funksionon pa instaluar PWA-në — **Push API + Service Worker** mund të zgjojnë telefonin edhe kur browser-i është i mbyllur (në Android; iOS 16.4+ me Safari).
+3. **Dokumentacioni**
+   - `DOKUMENTACIONI.md` (ekzistues)
+   - `README.md`
+   - `.lovable/plan.md`
+   - `STRUCTURE.md` (i ri) — pemë e plotë e dosjeve me përshkrim të shkurtër për çdo file kryesor, pikat hyrëse, rrjedhat (customer flow, staff flow, manager flow), dhe lista e tabelave të DB
 
-### Hapat
+4. **Konfigurimi i mjedisit**
+   - `.env` (vetëm çelësat publikë: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`)
 
-**1. Krijo një service worker të dedikuar për staff push notifications**
-- File: `public/staff-sw.js`
-- Regjistron veten për push events
-- Kur merr push event, luan tingull alarm, shfaq notification me vibrim
-- Përdor `self.registration.showNotification()` që funksionon edhe kur tab-i është i mbyllur
+### Çfarë do të përjashtohet
+- `node_modules/`, `dist/`, `.git/`, log files, cache — për të mbajtur ZIP-in të lehtë (~5 MB në vend të ~300 MB)
+- Asnjë sekret privat (service role key, DB password nuk janë të aksesueshme në Lovable Cloud)
 
-**2. Krijo endpoint për Web Push subscription (Edge Function)**
-- File: `supabase/functions/push-subscribe/index.ts`
-- Merr subscription object nga browser-i dhe e ruan në DB
-- Tabelë e re: `push_subscriptions` (endpoint, p256dh, auth, shift_token)
+### Output
+- File: `/mnt/documents/boulevard-cafe-full.zip`
+- Madhësia e pritshme: ~5 MB
+- I shfaqur si artifact për shkarkim direkt
 
-**3. Krijo endpoint për dërgimin e push notifications (Edge Function)**
-- File: `supabase/functions/send-push/index.ts`
-- Kur vjen kërkesë e re (service_request/order INSERT), dërgon web-push te të gjitha pajisjet e regjistruara
-- Përdor `web-push` library ose raw Web Push Protocol
-
-**4. Përditëso StaffShift.tsx**
-- Regjistro service worker-in `staff-sw.js` kur hapet faqja
-- Kërko leje për notifications
-- Dërgo subscription te edge function `/push-subscribe`
-- Hiq varësinë nga PWA install — njoftimet funksionojnë direkt nga browser
-
-**5. Krijo tabelën push_subscriptions**
-```sql
-CREATE TABLE public.push_subscriptions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  endpoint text NOT NULL UNIQUE,
-  p256dh text NOT NULL,
-  auth text NOT NULL,
-  shift_token text,
-  created_at timestamptz DEFAULT now()
-);
-ALTER TABLE public.push_subscriptions ENABLE ROW LEVEL SECURITY;
-```
-
-**6. Gjenero VAPID keys (secret)**
-- Kërkohen çelësa VAPID (public + private) për Web Push Protocol
-- Public key përdoret në frontend, private key në edge function
-- Ruhen si secrets: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`
-
-### Kufizime
-- **iOS Safari**: Web Push funksionon vetëm në iOS 16.4+ dhe vetëm kur faqja shtohet në Home Screen (Add to Home Screen) — pa nevojë për manifest PWA të plotë, mjafton `display: standalone`
-- **Android Chrome**: Funksionon pa problem edhe pa instalim PWA
-
-### Alternativë më e thjeshtë (pa Web Push)
-Nëse nuk duam kompleksitetin e Web Push, mund të përdorim:
-- **Wake Lock API** + audio loop i heshtur në sfond — mban tab-in aktiv
-- **Persistent notification sound** që riluhet çdo 3 sekonda kur ka kërkesë aktive
-- Kjo funksionon vetëm kur tab-i është i hapur (jo kur telefoni bllkohet)
-
-### Rekomandimi
-Fillojmë me **alternativën e thjeshtë** (Wake Lock + audio loop) sepse implementohet shpejt dhe mbulon rastin kryesor (stafi e mban telefonin hapur gjatë turnit). Web Push mund të shtohet më vonë si shtresë shtesë.
-
+### Hapat teknikë
+1. Eksportoj migrimet SQL nga DB (skema + RLS + functions)
+2. Gjeneroj `STRUCTURE.md` duke kaluar nëpër `src/`, `supabase/functions/`, dhe duke listuar tabelat
+3. Krijoj ZIP duke përjashtuar dosjet e padobishme
+4. Verifikoj përmbajtjen (numër file-sh, dosjet kryesore)
