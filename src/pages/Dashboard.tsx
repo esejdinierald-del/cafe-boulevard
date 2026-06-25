@@ -77,7 +77,14 @@ const Dashboard = () => {
   const lastVideoIdRef = useRef<string | null>(null);
 
   // Mute toggle (silences sounds, voice, system notifications and reminders)
-  const [muteNotifications, setMuteNotifications] = useState(false);
+  const [muteNotifications, setMuteNotifications] = useState(() => {
+    try { return localStorage.getItem('mute_notifications') === 'true'; } catch { return false; }
+  });
+  const muteNotificationsRef = useRef(muteNotifications);
+  useEffect(() => {
+    muteNotificationsRef.current = muteNotifications;
+    try { localStorage.setItem('mute_notifications', String(muteNotifications)); } catch {}
+  }, [muteNotifications]);
 
   // Refs so realtime handlers see latest playlist/currentSong without re-subscribing
   const currentSongRef = useRef<SongRequest | null>(null);
@@ -209,7 +216,7 @@ const Dashboard = () => {
   };
 
   const showSystemNotification = (title: string, body: string, requestType: string) => {
-    if (muteNotifications) return;
+    if (muteNotificationsRef.current) return;
     if ('Notification' in window && Notification.permission === 'granted') {
       const notification = new Notification(title, {
         body, icon: '/pwa-192x192.png', badge: '/pwa-192x192.png',
@@ -237,7 +244,7 @@ const Dashboard = () => {
   };
 
   const playBellSound = async () => {
-    if (muteNotifications) return;
+    if (muteNotificationsRef.current) return;
     try {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -267,7 +274,7 @@ const Dashboard = () => {
   };
 
   const playAudioNotification = (requestType: string, tableNumber: string, isReminder = false) => {
-    if (muteNotifications) return;
+    if (muteNotificationsRef.current) return;
     playBellSound();
     const title = isReminder ? `⏰ Rikujtim - ${tableNumber}` : `🔔 Kërkesë e re - ${tableNumber}`;
     const body = requestType === 'waiter' ? 'Kërkon kamarier' : requestType === 'bill' ? 'Kërkon faturën' : 'Porosi e re';
@@ -286,7 +293,7 @@ const Dashboard = () => {
   };
 
   const scheduleRepeatNotification = (requestId: string, requestType: string, tableNumber: string) => {
-    if (muteNotifications) return;
+    if (muteNotificationsRef.current) return;
     const existing = repeatTimersRef.current.get(requestId);
     if (existing) clearTimeout(existing);
     const count = repeatCountRef.current.get(requestId) || 0;
