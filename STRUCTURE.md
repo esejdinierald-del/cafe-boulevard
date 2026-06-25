@@ -1,325 +1,136 @@
-# Boulevard Café — Struktura e Plotë e Projektit
+# Boulevard Café — Project Structure
 
-Gjeneruar: Wed Jun 24 23:44:46 UTC 2026
+## Entry Points
+- `index.html` — root HTML, loads Vite/React
+- `src/main.tsx` — React root mount
+- `src/App.tsx` — router setup (BrowserRouter + all routes)
+- `src/index.css` — global CSS reset + Tailwind base
+- `src/styles/boulevard.css` — custom Boulevard brand styles
 
-## Pemë e Dosjeve
-```
-./.env
-./.git
-./.gitignore
-./.lovable/plan.md
-./DOKUMENTACIONI.md
-./README.md
-./STRUCTURE.md
-./bun.lock
-./bun.lockb
-./components.json
-./eslint.config.js
-./index.html
-./package-lock.json
-./package.json
-./postcss.config.js
-./public/boulevard-source-code.txt
-./public/favicon.ico
-./public/manifest.webmanifest
-./public/menu-images/absolut.jpg
-./public/menu-images/amf.jpg
-./public/menu-images/antipast-djathe.jpg
-./public/menu-images/antipast-ftohte.jpg
-./public/menu-images/antipast-ngrohte.jpg
-./public/menu-images/antipast-proshut.jpg
-./public/menu-images/aperol-spritz.jpg
-./public/menu-images/b52-real.png
-./public/menu-images/b52.jpg
-./public/menu-images/bakardi.jpg
-./public/menu-images/ballatines.jpg
-./public/menu-images/birre-pa-alkol.jpg
-./public/menu-images/biter.jpg
-./public/menu-images/bravo.jpg
-./public/menu-images/briosh.jpg
-./public/menu-images/budweiser.jpg
-./public/menu-images/caipirinha.jpg
-./public/menu-images/caj-bio.jpg
-./public/menu-images/caj-nxehte.jpg
-./public/menu-images/campari.jpg
-./public/menu-images/chicken-finger.jpg
-./public/menu-images/chicken-wings.jpg
-./public/menu-images/chivas.jpg
-./public/menu-images/club-sandwich.jpg
-./public/menu-images/coca-cola.jpg
-./public/menu-images/cokollate-ftohte.jpg
-./public/menu-images/cokollate.jpg
-./public/menu-images/crodino.jpg
-./public/menu-images/disarono.jpg
-./public/menu-images/fanta.jpg
-./public/menu-images/ferrnet-branka.jpg
-./public/menu-images/fokace-brusketa.jpg
-./public/menu-images/fresh-ice-tea.jpg
-./public/menu-images/fried-potatoes.jpg
-./public/menu-images/gjoks-pule.jpg
-./public/menu-images/gote-vere.jpg
-./public/menu-images/greco-di-tufo.jpg
-./public/menu-images/grillet-chicken.jpg
-./public/menu-images/heineken-400.jpg
-./public/menu-images/heineken-660.jpg
-./public/menu-images/ice-tea.jpg
-./public/menu-images/ivi.jpg
-./public/menu-images/jack-daniels.jpg
-./public/menu-images/jagermaster.jpg
-./public/menu-images/jb.jpg
-./public/menu-images/jonny-walker-black.jpg
-./public/menu-images/jonny-walker.jpg
-./public/menu-images/kafe-amerikane.jpg
-./public/menu-images/kafe-dekafeinato.jpg
-./public/menu-images/kafe-expr-v2.jpg
-./public/menu-images/kafe-expr-v3.png
-./public/menu-images/kafe-expr.jpg
-./public/menu-images/kafe-korreto.jpg
-./public/menu-images/kafe-late.jpg
-./public/menu-images/kafe-lece-lece.jpg
-./public/menu-images/kafe-makiato.jpg
-./public/menu-images/kakao-ftohte.jpg
-./public/menu-images/kakao.jpg
-./public/menu-images/kalcone-m.jpg
-./public/menu-images/kalcone-v.jpg
-./public/menu-images/kapuchino.jpg
-./public/menu-images/kapucino-ftohte.jpg
-./public/menu-images/korona.jpg
-./public/menu-images/kriko-gote.jpg
-./public/menu-images/lemon-soda.jpg
-./public/menu-images/leng-frutash.jpg
-./public/menu-images/leng-portokalli.jpg
-./public/menu-images/luna-m-abruzzo.jpg
-./public/menu-images/metaksa.jpg
-./public/menu-images/mix-salcice.jpg
-./public/menu-images/mohito.jpg
-./public/menu-images/montenegro.jpg
-./public/menu-images/neskafe-kanace.jpg
-./public/menu-images/papale.jpg
-./public/menu-images/paulaner-kristal.jpg
-./public/menu-images/paulaner.jpg
-./public/menu-images/pepsi.jpg
-./public/menu-images/pinot-grigio.jpg
-./public/menu-images/pizza-4-djatherat.jpg
-./public/menu-images/pizza-cotto.jpg
-./public/menu-images/pizza-kapricoza.jpg
-./public/menu-images/pizza-margarita.jpg
-./public/menu-images/pizza-proshut-sallam.jpg
-./public/menu-images/pizza-sallam-pikant.jpg
-./public/menu-images/pizza-tono.jpg
-./public/menu-images/red-bull.jpg
-./public/menu-images/rinforzo.jpg
-./public/menu-images/rose-real.png
-./public/menu-images/rose.jpg
-./public/menu-images/salep.jpg
-./public/menu-images/sanbuka.jpg
-./public/menu-images/shoots.jpg
-./public/menu-images/tequila-sunrise.jpg
-./public/menu-images/tequila.jpg
-./public/menu-images/tonik-zhveps-real.png
-./public/menu-images/tonik-zhveps.jpg
-./public/menu-images/tost-mengjesi.jpg
-./public/menu-images/uje-vitamina-real.png
-./public/menu-images/uje-vitamina.jpg
-./public/menu-images/uje.jpg
-./public/menu-images/vekia-romania.jpg
-./public/menu-images/vere-1l.jpg
-./public/menu-images/vere-375.jpg
-./public/menu-images/vere-hapur.jpg
-./public/menu-images/vodka-sour.jpg
-./public/menu-images/vodka.jpg
-./public/menu-images/xhin-gordons.jpg
-./public/menu-images/xhin-hindricks.jpg
-./public/notification-alarm.wav
-./public/notification-bell.mp3
-./public/og-image.png
-./public/placeholder.svg
-./public/pwa-192x192.png
-./public/pwa-512x512.png
-./public/qr-codes/table-1.svg
-./public/qr-codes/table-2.svg
-./public/qr-codes/table-3.svg
-./public/qr-codes/table-4.svg
-./public/robots.txt
-./public/staff-manifest.webmanifest
-./public/staff-sw.js
-./src/App.tsx
-./src/assets/boulevard-logo.png
-./src/assets/cappuccino-test.jpg
-./src/assets/coffee-background.png
-./src/assets/espresso-test.jpg
-./src/assets/universal-caffe-logo.png
-./src/components/FeedbackDialog.tsx
-./src/components/QrScanner.tsx
-./src/components/SplashScreen.tsx
-./src/components/StaffChatDialog.tsx
-./src/components/TableIdentifier.tsx
-./src/components/WelcomeGreeting.tsx
-./src/components/icons/BellIcon.tsx
-./src/components/icons/ChatIcon.tsx
-./src/components/icons/CheckIcon.tsx
-./src/components/icons/CocktailIcon.tsx
-./src/components/icons/LocationPinIcon.tsx
-./src/components/icons/ReceiptIcon.tsx
-./src/components/icons/StarIcon.tsx
-./src/components/icons/UtensilsIcon.tsx
-./src/components/icons/index.ts
-./src/components/ui/accordion.tsx
-./src/components/ui/alert-dialog.tsx
-./src/components/ui/alert.tsx
-./src/components/ui/aspect-ratio.tsx
-./src/components/ui/avatar.tsx
-./src/components/ui/badge.tsx
-./src/components/ui/breadcrumb.tsx
-./src/components/ui/button.tsx
-./src/components/ui/calendar.tsx
-./src/components/ui/card.tsx
-./src/components/ui/carousel.tsx
-./src/components/ui/chart.tsx
-./src/components/ui/checkbox.tsx
-./src/components/ui/collapsible.tsx
-./src/components/ui/command.tsx
-./src/components/ui/context-menu.tsx
-./src/components/ui/dialog.tsx
-./src/components/ui/drawer.tsx
-./src/components/ui/dropdown-menu.tsx
-./src/components/ui/form.tsx
-./src/components/ui/hover-card.tsx
-./src/components/ui/input-otp.tsx
-./src/components/ui/input.tsx
-./src/components/ui/label.tsx
-./src/components/ui/menubar.tsx
-./src/components/ui/navigation-menu.tsx
-./src/components/ui/pagination.tsx
-./src/components/ui/popover.tsx
-./src/components/ui/progress.tsx
-./src/components/ui/radio-group.tsx
-./src/components/ui/resizable.tsx
-./src/components/ui/scroll-area.tsx
-./src/components/ui/select.tsx
-./src/components/ui/separator.tsx
-./src/components/ui/sheet.tsx
-./src/components/ui/sidebar.tsx
-./src/components/ui/skeleton.tsx
-./src/components/ui/slider.tsx
-./src/components/ui/sonner.tsx
-./src/components/ui/switch.tsx
-./src/components/ui/table.tsx
-./src/components/ui/tabs.tsx
-./src/components/ui/textarea.tsx
-./src/components/ui/toast.tsx
-./src/components/ui/toaster.tsx
-./src/components/ui/toggle-group.tsx
-./src/components/ui/toggle.tsx
-./src/components/ui/tooltip.tsx
-./src/components/ui/use-toast.ts
-./src/hooks/use-chat-session.ts
-./src/hooks/use-geolocation.ts
-./src/hooks/use-language.tsx
-./src/hooks/use-mobile.tsx
-./src/hooks/use-toast.ts
-./src/index.css
-./src/integrations/supabase/client.ts
-./src/integrations/supabase/types.ts
-./src/lib/utils.ts
-./src/main.tsx
-./src/pages/AppDocumentation.tsx
-./src/pages/Dashboard.tsx
-./src/pages/Index.tsx
-./src/pages/Install.tsx
-./src/pages/ManagerDashboard.tsx
-./src/pages/ManagerLogin.tsx
-./src/pages/Menu.tsx
-./src/pages/NotFound.tsx
-./src/pages/StaffShift.tsx
-./src/styles/boulevard.css
-./src/vite-env.d.ts
-./supabase/config.toml
-./supabase/functions/cleanup-chat-sessions/index.ts
-./supabase/functions/complete-request/index.ts
-./supabase/functions/manage-shift/index.ts
-./supabase/functions/push-subscribe/index.ts
-./supabase/functions/send-push/index.ts
-./supabase/functions/staff-chat/index.ts
-./supabase/functions/unlock-shift/index.ts
-./supabase/functions/validate-shift/index.ts
-./supabase/migrations/20251206001705_remix_migration_from_pg_dump.sql
-./supabase/migrations/20260128100156_5d823696-52e2-4495-9c69-1f3d37da2449.sql
-./supabase/migrations/20260204232224_6ef765db-4abe-44fa-8f77-ab85be9e72ff.sql
-./supabase/migrations/20260308051348_ad612bd9-969d-4f1b-9c66-5e93fa835050.sql
-./supabase/migrations/20260308141301_3cddc955-b20c-4194-82a7-fab88e729131.sql
-./supabase/migrations/20260314060004_9627b665-30ab-4250-b5fc-3f2bd37631c8.sql
-./supabase/migrations/20260314060116_7b5e2f12-3d09-479c-a059-5da3c371d5cf.sql
-./supabase/migrations/20260321052040_4585267e-bea0-4f80-8b17-714fd3cc9dc1.sql
-./supabase/migrations/20260321055419_2cbd3908-99c9-4b62-af5d-b7d9bb4b393a.sql
-./supabase/migrations/20260321060442_228536e4-6801-496e-83e7-e956b26d677d.sql
-./supabase/migrations/20260321062752_deb0c513-5612-477b-b018-d026feeb1bee.sql
-./supabase/migrations/20260321070936_07bbee7c-d0c8-45b8-8855-91258c7daf9d.sql
-./supabase/migrations/20260321075640_273bb391-bebb-41cf-9eb8-4f91adcf717f.sql
-./supabase/migrations/20260321222516_e80640ab-99a6-4023-9ee8-11e0cbd56b66.sql
-./supabase/migrations/20260325145856_de8d712b-1e82-48d2-8bc4-0e4d49be835e.sql
-./supabase/migrations/20260325185704_ab5f54b5-1a68-4b2b-8104-2bd1ab2e80bf.sql
-./supabase/migrations/20260404225731_6721958b-989b-4351-a9bb-53621cda9c21.sql
-./supabase/migrations/20260405010635_8ac16b5b-3b2b-4670-9d81-e7d58608c99c.sql
-./supabase/migrations/20260405030440_f44ce482-60ff-4a59-a9bc-88a3983d802b.sql
-./supabase/migrations/20260407032651_7ff2b805-c6e5-4376-a468-c7b0483c1b7a.sql
-./supabase/migrations/20260508004736_8b62ee06-2cea-4d25-8b4b-9fe17146df07.sql
-./tailwind.config.ts
-./tsconfig.app.json
-./tsconfig.app.tsbuildinfo
-./tsconfig.json
-./tsconfig.node.json
-./tsconfig.node.tsbuildinfo
-./vite.config.ts
-```
+## Routes & Pages
+| Route | File | Who uses it |
+|---|---|---|
+| `/` | `src/pages/Index.tsx` | Customer — call waiter, request bill |
+| `/menu` | `src/pages/Menu.tsx` | Customer — browse menu, place order |
+| `/dashboard` | `src/pages/Dashboard.tsx` | Staff — real-time requests (passcode: 2025) |
+| `/staff` | `src/pages/StaffShift.tsx` | Staff — PWA with shift token auth |
+| `/manager-login` | `src/pages/ManagerLogin.tsx` | Manager — Supabase auth login |
+| `/manager` | `src/pages/ManagerDashboard.tsx` | Manager — menu mgmt, offers, AI knowledge |
+| `/install` | `src/pages/Install.tsx` | All — PWA install instructions |
+| `/dokumentacion` | `src/pages/AppDocumentation.tsx` | Internal — app docs |
 
-## Edge Functions
-- `supabase/functions/cleanup-chat-sessions/index.ts`
-- `supabase/functions/complete-request/index.ts`
-- `supabase/functions/manage-shift/index.ts`
-- `supabase/functions/push-subscribe/index.ts`
-- `supabase/functions/send-push/index.ts`
-- `supabase/functions/staff-chat/index.ts`
-- `supabase/functions/unlock-shift/index.ts`
-- `supabase/functions/validate-shift/index.ts`
+## Key Components
+- `src/components/StaffChatDialog.tsx` — AI chat powered by staff-chat Edge Function
+- `src/components/FeedbackDialog.tsx` — customer feedback form
+- `src/components/TableIdentifier.tsx` — reads table number from URL param
+- `src/components/WelcomeGreeting.tsx` — animated greeting on Index page
+- `src/components/QrScanner.tsx` — QR code scanner for table detection
+- `src/components/SplashScreen.tsx` — PWA splash on load
 
-## Migrimet SQL
-- `supabase/migrations/20251206001705_remix_migration_from_pg_dump.sql`
-- `supabase/migrations/20260128100156_5d823696-52e2-4495-9c69-1f3d37da2449.sql`
-- `supabase/migrations/20260204232224_6ef765db-4abe-44fa-8f77-ab85be9e72ff.sql`
-- `supabase/migrations/20260308051348_ad612bd9-969d-4f1b-9c66-5e93fa835050.sql`
-- `supabase/migrations/20260308141301_3cddc955-b20c-4194-82a7-fab88e729131.sql`
-- `supabase/migrations/20260314060004_9627b665-30ab-4250-b5fc-3f2bd37631c8.sql`
-- `supabase/migrations/20260314060116_7b5e2f12-3d09-479c-a059-5da3c371d5cf.sql`
-- `supabase/migrations/20260321052040_4585267e-bea0-4f80-8b17-714fd3cc9dc1.sql`
-- `supabase/migrations/20260321055419_2cbd3908-99c9-4b62-af5d-b7d9bb4b393a.sql`
-- `supabase/migrations/20260321060442_228536e4-6801-496e-83e7-e956b26d677d.sql`
-- `supabase/migrations/20260321062752_deb0c513-5612-477b-b018-d026feeb1bee.sql`
-- `supabase/migrations/20260321070936_07bbee7c-d0c8-45b8-8855-91258c7daf9d.sql`
-- `supabase/migrations/20260321075640_273bb391-bebb-41cf-9eb8-4f91adcf717f.sql`
-- `supabase/migrations/20260321222516_e80640ab-99a6-4023-9ee8-11e0cbd56b66.sql`
-- `supabase/migrations/20260325145856_de8d712b-1e82-48d2-8bc4-0e4d49be835e.sql`
-- `supabase/migrations/20260325185704_ab5f54b5-1a68-4b2b-8104-2bd1ab2e80bf.sql`
-- `supabase/migrations/20260404225731_6721958b-989b-4351-a9bb-53621cda9c21.sql`
-- `supabase/migrations/20260405010635_8ac16b5b-3b2b-4670-9d81-e7d58608c99c.sql`
-- `supabase/migrations/20260405030440_f44ce482-60ff-4a59-a9bc-88a3983d802b.sql`
-- `supabase/migrations/20260407032651_7ff2b805-c6e5-4376-a468-c7b0483c1b7a.sql`
-- `supabase/migrations/20260508004736_8b62ee06-2cea-4d25-8b4b-9fe17146df07.sql`
+## Custom Hooks
+- `use-chat-session.ts` — manages AI chat session state
+- `use-geolocation.ts` — geolocation for table detection
+- `use-language.tsx` — language toggle (Albanian / English)
+- `use-mobile.tsx` — responsive breakpoint detection
 
-## Faqet (Routes)
-- `/` → Index.tsx (klient - thirrje kamarier, faturë)
-- `/menu` → Menu.tsx (menu klient me kategori dhe porosi)
-- `/dashboard` → Dashboard.tsx (stafi - kërkesa në kohë reale, passcode 2025)
-- `/manager-login` → ManagerLogin.tsx
-- `/manager` → ManagerDashboard.tsx (admin - menaxhim menu, oferta, AI knowledge)
-- `/staff` → StaffShift.tsx (PWA stafi me shift token)
-- `/install` → Install.tsx (instalim PWA)
-- `/dokumentacion` → AppDocumentation.tsx
+## Supabase Integration
+- `src/integrations/supabase/client.ts` — Supabase client init
+- `src/integrations/supabase/types.ts` — auto-generated DB types
+
+## Edge Functions (supabase/functions/)
+| Function | Purpose |
+|---|---|
+| `staff-chat` | AI chat for staff (Gemini via LOVABLE_API_KEY), uses ai_knowledge table |
+| `manage-shift` | Create / extend / close staff shift tokens |
+| `validate-shift` | Validate a shift token is active |
+| `unlock-shift` | Manager unlocks a shift (override) |
+| `complete-request` | Mark a service_request as completed + send push |
+| `send-push` | Send Web Push notification to subscribed staff |
+| `push-subscribe` | Save a push subscription to push_subscriptions table |
+| `cleanup-chat-sessions` | Delete expired chat sessions (cron) |
+
+## Database Tables
+| Table | Purpose |
+|---|---|
+| `categories` | Menu categories (name, name_en, display_order) |
+| `menu_items` | Menu products (name, price, image_url, available, bilingual) |
+| `orders` | Customer orders (items jsonb, total_price, status, table_number) |
+| `service_requests` | Waiter/bill calls from customers (pending → completed) |
+| `chat_sessions` | Active AI chat sessions per table |
+| `shift_tokens` | Staff shift auth tokens (active/expired) |
+| `ai_knowledge` | Custom knowledge base for staff AI chat |
+| `feedback` | Customer feedback submissions |
+| `push_subscriptions` | Web Push endpoint/key storage per staff device |
+| `user_roles` | Manager/admin role assignments |
+| `table_devices` | Registered table devices |
 
 ## Storage Buckets
-- `menu-images` (public) — imazhet e produkteve
+- `menu-images` (public) — product images served at /storage/v1/object/public/menu-images/
 
-## Secrets (Backend)
-- VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY — web push
-- LOVABLE_API_KEY — AI Gateway (Gemini)
-- SUPABASE_* — auto
+## PWA
+- `public/manifest.webmanifest` — customer PWA manifest
+- `public/staff-manifest.webmanifest` — staff PWA manifest
+- `public/staff-sw.js` — staff service worker (push notifications)
+- `public/pwa-192x192.png` / `pwa-512x512.png` — PWA icons
+
+## QR Codes
+- `public/qr-codes/table-1.svg` through `table-4.svg` — print-ready QR codes per table
+
+## Migrations (chronological)
+| File | What it does |
+|---|---|
+| `20251206001705_remix_migration_from_pg_dump.sql` | Initial schema: categories, menu_items, orders, service_requests, table_devices, user_roles, RLS policies, manager functions |
+| `20260128100156_...sql` | Minor RLS adjustment |
+| `20260204232224_...sql` | Trigger: auto-assign manager role on signup for known emails |
+| `20260308051348_...sql` | Add chat_sessions table for AI chat |
+| `20260308141301_...sql` | Add shift_tokens table for staff shift auth |
+| `20260314060004_...sql` | Staff RLS policies for orders |
+| `20260314060116_...sql` | Fix: allow anyone to update orders |
+| `20260321052040_...sql` | Add update policy for shift_tokens |
+| `20260321055419_...sql` | Managers can delete chat sessions |
+| `20260321060442_...sql` | Minor RLS fix |
+| `20260321062752_...sql` | Consolidated RLS: service_requests, shift_tokens, storage bucket policies |
+| `20260321070936_...sql` | Minor cleanup |
+| `20260321075640_...sql` | Add ai_knowledge table for staff AI context |
+| `20260321222516_...sql` | Add feedback table for customer feedback |
+| `20260325145856_...sql` | Minor fix |
+| `20260325185704_...sql` | Minor fix |
+| `20260404225731_...sql` | Minor fix |
+| `20260405010635_...sql` | Minor fix |
+| `20260405030440_...sql` | Revised RLS for shift_tokens, service_requests, storage (manager permissions) |
+| `20260407032651_...sql` | Add push_subscriptions table for Web Push |
+| `20260508004736_...sql` | Latest patch |
+
+## User Flows
+
+### Customer Flow
+1. Scans QR code at table → opens `/` with `?table=N` param
+2. Sees welcome greeting + 3 buttons: Call Waiter / Request Bill / View Menu
+3. **Call Waiter / Request Bill** → inserts into `service_requests` → staff gets push notification
+4. **View Menu** → `/menu` → browses categories → adds items → confirms order → inserts into `orders`
+5. Optionally submits feedback via FeedbackDialog
+
+### Staff Flow (PWA)
+1. Manager creates shift via `/manager` → generates `shift_tokens` entry
+2. Staff opens `/staff` → enters shift token → validated by `validate-shift` Edge Function
+3. Staff sees live `service_requests` via Supabase realtime subscription
+4. Staff marks requests complete → `complete-request` Edge Function fires, sends push to other devices
+5. Staff can open StaffChatDialog → AI assistant powered by `staff-chat` + `ai_knowledge`
+
+### Manager Flow
+1. Logs in at `/manager-login` with Supabase auth (email: menuonline483@gmail.com)
+2. Manager Dashboard: add/edit/delete categories and menu_items, upload images to `menu-images` bucket
+3. Manage staff shifts: create/extend/unlock tokens via `manage-shift` / `unlock-shift`
+4. Manage AI knowledge base: add context entries to `ai_knowledge` for staff chat
+5. View feedback and service request history
+
+## Environment Variables
+| Variable | Used by |
+|---|---|
+| `VITE_SUPABASE_URL` | Frontend Supabase client |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Frontend Supabase client (anon key) |
+| `VITE_SUPABASE_PROJECT_ID` | Frontend project reference |
+| `SUPABASE_URL` | Edge Functions (auto-injected by Supabase) |
+| `SUPABASE_PUBLISHABLE_KEY` | Edge Functions (anon key, auto-injected) |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | send-push Edge Function (Web Push) |
+| `LOVABLE_API_KEY` | staff-chat Edge Function (Gemini AI gateway) |

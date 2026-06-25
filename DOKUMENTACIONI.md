@@ -1,13 +1,13 @@
-# Art Coffee - Dokumentacioni i Aplikacionit
+# Boulevard Café - Dokumentacioni i Aplikacionit
 
 ## Përmbledhje e Projektit
 
-Art Coffee është një aplikacion web për menaxhimin e shërbimeve në kafene. Aplikacioni lejon klientët të kërkojnë shërbime direkt nga tavolina dhe stafin të menaxhojë kërkesat në kohë reale.
+Boulevard Café është një aplikacion web për menaxhimin e shërbimeve në kafene. Aplikacioni lejon klientët të kërkojnë shërbime direkt nga tavolina dhe stafin të menaxhojë kërkesat në kohë reale.
 
 ## Struktura e Projektit
 
 ```
-art-coffee/
+boulevard-cafe/
 ├── src/
 │   ├── pages/
 │   │   ├── Index.tsx           # Faqja kryesore (landing page)
@@ -101,7 +101,7 @@ Stafi hyn në `/dashboard` për të parë kërkesat e klientëve në kohë reale
 
 1. Shkoni në `/manager-login`
 2. Vendosni kredencialet:
-   - **Email**: manager@artcoffee.com
+   - **Email**: manager@boulevard-cafe.com
    - **Password**: manager123
 3. Klikoni "Login"
 
@@ -239,8 +239,8 @@ Aplikacioni përditësohet automatikisht. Ndryshimet në kod publikohen duke kli
 ## KONTAKTI DHE MBËSHTETJA
 
 Për çdo problem teknik ose pyetje:
-- **Facebook**: facebook.com/artcoffee
-- **Instagram**: instagram.com/artcoffee
+- **Facebook**: facebook.com/boulevard-cafe
+- **Instagram**: instagram.com/boulevard-cafe
 
 ---
 
@@ -286,4 +286,4 @@ npm run lint         # Kontrollo kodin
 
 **Versioni**: 1.0  
 **Data**: 2025  
-**Aplikacioni**: Art Coffee Management System
+**Aplikacioni**: Boulevard Café Management System
