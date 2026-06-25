@@ -92,7 +92,12 @@ const StaffShift = () => {
   const touchStartY = useRef(0);
 
   useEffect(() => {
-    localStorage.setItem(STAFF_PWA_PREFERRED_KEY, "1");
+    // Only mark this device as a staff PWA when explicitly opened via ?app=ios
+    // (e.g. from /install-staff or the staff manifest start_url).
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("app") === "ios") {
+      localStorage.setItem(STAFF_PWA_PREFERRED_KEY, "1");
+    }
   }, []);
 
   // Override manifest for staff PWA install — must happen ASAP
