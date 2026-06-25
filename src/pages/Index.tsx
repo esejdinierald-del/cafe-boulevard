@@ -9,6 +9,8 @@ import { useLanguage } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { Languages } from "lucide-react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   LocationPinIcon,
   BellIcon,
@@ -41,6 +43,15 @@ const translations = {
     orderMenu: "Porosit nga Menu",
     askStaff: "Pyet Stafin",
     rateUs: "Na Vlerëso",
+    requestSong: "Kërko Këngë",
+    enterSongLink: "Ngjit linkun e YouTube...",
+    sendSong: "Dërgo Këngën",
+    cancel: "Anulo",
+    sending: "Duke dërguar...",
+    songSent: "Kërkesa u dërgua!",
+    songSentDesc: "Kamarieri do ta miratojë para se të luhet.",
+    songError: "Gabim në dërgimin e kërkesës",
+    songUrlRequired: "Vendos linkun e YouTube",
     successWaiter: "Thirrja u dërgua!",
     successWaiterDesc: "Kamarieri do të vijë së shpejti në tavolinën tuaj.",
     successBill: "Kërkesa u dërgua!",
@@ -59,6 +70,15 @@ const translations = {
     orderMenu: "Order from Menu",
     askStaff: "Ask Staff",
     rateUs: "Rate Us",
+    requestSong: "Request Song",
+    enterSongLink: "Paste YouTube link...",
+    sendSong: "Send Song",
+    cancel: "Cancel",
+    sending: "Sending...",
+    songSent: "Request sent!",
+    songSentDesc: "The waiter will approve it before playing.",
+    songError: "Error sending request",
+    songUrlRequired: "Enter the YouTube link",
     successWaiter: "Call sent!",
     successWaiterDesc: "The waiter will arrive at your table shortly.",
     successBill: "Request sent!",
@@ -93,6 +113,9 @@ const Index = () => {
   const [showGreeting, setShowGreeting] = useState(true);
   const [pendingAction, setPendingAction] = useState<null | "waiter" | "bill">(null);
   const [tableInput, setTableInput] = useState("");
+  const [songDialogOpen, setSongDialogOpen] = useState(false);
+  const [songUrl, setSongUrl] = useState("");
+  const [submittingSong, setSubmittingSong] = useState(false);
   const { checking } = useGeolocation();
 
   useEffect(() => {
@@ -170,6 +193,38 @@ const Index = () => {
       return;
     }
     submitBill();
+  };
+
+  const handleRequestSong = async () => {
+    if (!tableNumber.trim()) {
+      toast.error(t.tableRequired);
+      return;
+    }
+    if (!songUrl.trim()) {
+      toast.error(t.songUrlRequired);
+      return;
+    }
+    setSubmittingSong(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-songs", {
+        body: {
+          action: "request",
+          table_number: tableNumber.trim(),
+          url: songUrl.trim(),
+        },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || t.songError);
+        return;
+      }
+      toast.success(t.songSent, { description: t.songSentDesc });
+      setSongDialogOpen(false);
+      setSongUrl("");
+    } catch {
+      toast.error(t.songError);
+    } finally {
+      setSubmittingSong(false);
+    }
   };
 
   const confirmTableAndRun = () => {
@@ -303,6 +358,12 @@ const Index = () => {
                 <span className="relative z-10">{t.askStaff}</span>
               </button>
 
+              {/* Request Song — Dark */}
+              <button onClick={() => setSongDialogOpen(true)} className="blvd-btn-dark">
+                <span className="blvd-icon-gold text-xl">🎵</span>
+                <span>{t.requestSong}</span>
+              </button>
+
               {/* 6. Rate Us — Dark */}
               <button onClick={() => setFeedbackOpen(true)} className="blvd-btn-dark">
                 <span className="blvd-icon-gold"><StarIcon /></span>
@@ -318,6 +379,44 @@ const Index = () => {
 
       <StaffChatDialog open={chatOpen} onOpenChange={setChatOpen} />
       <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} tableNumber={displayTable} language={language} />
+
+      <Dialog open={songDialogOpen} onOpenChange={setSongDialogOpen}>
+        <DialogContent className="bg-[#0a0c10] border border-[rgba(232,199,109,0.35)] text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <span>🎵</span> {t.requestSong}
+            </DialogTitle>
+            <p className="text-sm text-white/70 mt-1">{t.enterSongLink}</p>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-2">
+            <Input
+              value={songUrl}
+              onChange={(e) => setSongUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="h-12 rounded-xl bg-black/40 border-[rgba(232,199,109,0.35)] text-white placeholder:text-white/40"
+              onKeyDown={(e) => e.key === "Enter" && !submittingSong && handleRequestSong()}
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleRequestSong}
+                disabled={submittingSong}
+                className="blvd-btn-gold flex-1 h-12"
+              >
+                <span className="relative z-10">
+                  {submittingSong ? t.sending : t.sendSong}
+                </span>
+              </button>
+              <button
+                onClick={() => setSongDialogOpen(false)}
+                className="blvd-btn-dark h-12 px-6"
+              >
+                <span>{t.cancel}</span>
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {showGreeting && (
         <WelcomeGreeting
