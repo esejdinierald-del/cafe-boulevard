@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Volume2, Clock, QrCode } from "lucide-react";
+import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
@@ -75,6 +75,15 @@ const Dashboard = () => {
   const playerRef = useRef<any>(null);
   const [radioMode, setRadioMode] = useState(false);
   const lastVideoIdRef = useRef<string | null>(null);
+
+  // Mute toggle (silences sounds, voice, system notifications and reminders)
+  const [muteNotifications, setMuteNotifications] = useState(false);
+
+  // Refs so realtime handlers see latest playlist/currentSong without re-subscribing
+  const currentSongRef = useRef<SongRequest | null>(null);
+  const playlistRef = useRef<SongRequest[]>([]);
+  useEffect(() => { currentSongRef.current = currentSong; }, [currentSong]);
+  useEffect(() => { playlistRef.current = playlist; }, [playlist]);
 
   // Generate or fetch active shift token via edge function (bypasses RLS)
   const ensureShiftToken = async () => {
@@ -200,6 +209,7 @@ const Dashboard = () => {
   };
 
   const showSystemNotification = (title: string, body: string, requestType: string) => {
+    if (muteNotifications) return;
     if ('Notification' in window && Notification.permission === 'granted') {
       const notification = new Notification(title, {
         body, icon: '/pwa-192x192.png', badge: '/pwa-192x192.png',
@@ -227,6 +237,7 @@ const Dashboard = () => {
   };
 
   const playBellSound = async () => {
+    if (muteNotifications) return;
     try {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -256,6 +267,7 @@ const Dashboard = () => {
   };
 
   const playAudioNotification = (requestType: string, tableNumber: string, isReminder = false) => {
+    if (muteNotifications) return;
     playBellSound();
     const title = isReminder ? `⏰ Rikujtim - ${tableNumber}` : `🔔 Kërkesë e re - ${tableNumber}`;
     const body = requestType === 'waiter' ? 'Kërkon kamarier' : requestType === 'bill' ? 'Kërkon faturën' : 'Porosi e re';
@@ -274,6 +286,7 @@ const Dashboard = () => {
   };
 
   const scheduleRepeatNotification = (requestId: string, requestType: string, tableNumber: string) => {
+    if (muteNotifications) return;
     const existing = repeatTimersRef.current.get(requestId);
     if (existing) clearTimeout(existing);
     const count = repeatCountRef.current.get(requestId) || 0;
