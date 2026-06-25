@@ -453,8 +453,10 @@ const StaffShift = () => {
 
     // Unlock dashboard curtain via edge function
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       await supabase.functions.invoke("unlock-shift", {
         body: { token: scannedToken },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
       });
     } catch (e) {
       console.error("Failed to unlock shift:", e);
