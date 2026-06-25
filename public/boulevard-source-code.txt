@@ -1,63 +1,5 @@
-================================================================
-  BOULEVARD CAFÉ — FULL SOURCE CODE EXPORT
-  Generated: 2026-06-25 00:11:16 UTC
-================================================================
-
-
-================================================================
-FILE: components.json
-================================================================
-{
-  "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "default",
-  "rsc": false,
-  "tsx": true,
-  "tailwind": {
-    "config": "tailwind.config.ts",
-    "css": "src/index.css",
-    "baseColor": "slate",
-    "cssVariables": true,
-    "prefix": ""
-  },
-  "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
-  }
-}
-
-
-================================================================
-FILE: eslint.config.js
-================================================================
-import js from "@eslint/js";
-import globals from "globals";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
-import tseslint from "typescript-eslint";
-
-export default tseslint.config(
-  { ignores: ["dist"] },
-  {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
-    },
-  },
-);
+# Boulevard Café - Full Source Code Export
+# Generated: 2026-06-25T00:24:03Z
 
 
 ================================================================
@@ -131,7 +73,6 @@ FILE: index.html
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
 
 ================================================================
 FILE: package.json
@@ -225,6 +166,306 @@ FILE: package.json
   }
 }
 
+================================================================
+FILE: tsconfig.json
+================================================================
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "skipLibCheck": true,
+    "strictNullChecks": false
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
+}
+================================================================
+FILE: tsconfig.app.json
+================================================================
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "skipLibCheck": true,
+    "strict": false,
+    "target": "ES2020",
+    "useDefineForClassFields": true
+  },
+  "include": [
+    "src"
+  ]
+}
+================================================================
+FILE: tsconfig.node.json
+================================================================
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+================================================================
+FILE: vite.config.ts
+================================================================
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "path";
+import { componentTagger } from "lovable-tagger";
+import { VitePWA } from "vite-plugin-pwa";
+
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => ({
+  server: {
+    host: "::",
+    port: 8080,
+  },
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.ico", "notification-bell.mp3"],
+      manifest: false, // We use our own manifest files in /public
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}"],
+        navigateFallbackDenylist: [/^\/~oauth/],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts-cache",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "gstatic-fonts-cache",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
+      },
+    }),
+  ].filter(Boolean),
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+}));
+
+================================================================
+FILE: tailwind.config.ts
+================================================================
+import type { Config } from "tailwindcss";
+
+export default {
+  darkMode: ["class"],
+  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  prefix: "",
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      fontFamily: {
+        display: ['Playfair Display', 'serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        navy: {
+          DEFAULT: "hsl(var(--navy))",
+          light: "hsl(var(--navy-light))",
+          deep: "hsl(var(--navy-deep))",
+        },
+        "gold-brand": "hsl(var(--gold-brand))",
+        "gold-light": "hsl(var(--gold-light))",
+        "gold-glow": "hsl(var(--gold-glow))",
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
+        },
+        "accordion-up": {
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
+        },
+        jiggle: {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "25%": { transform: "rotate(-5deg)" },
+          "75%": { transform: "rotate(5deg)" },
+        },
+        shimmer: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" },
+        },
+        "bounce-soft": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        glow: {
+          "0%, 100%": { boxShadow: "0 0 20px rgba(var(--primary), 0.3)" },
+          "50%": { boxShadow: "0 0 40px rgba(var(--primary), 0.6)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { boxShadow: "0 0 20px hsl(var(--secondary) / 0.3)" },
+          "50%": { 
+            boxShadow: "0 0 40px hsl(var(--secondary) / 0.6), 0 0 60px hsl(var(--secondary) / 0.3)" 
+          },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        jiggle: "jiggle 0.5s ease-in-out",
+        shimmer: "shimmer 2s ease-in-out infinite",
+        "bounce-soft": "bounce-soft 1s ease-in-out infinite",
+        glow: "glow 2s ease-in-out infinite",
+        float: "float 3s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+} satisfies Config;
 
 ================================================================
 FILE: postcss.config.js
@@ -236,7 +477,64 @@ export default {
   },
 };
 
+================================================================
+FILE: components.json
+================================================================
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "src/index.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  }
+}
 
+================================================================
+FILE: eslint.config.js
+================================================================
+import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  { ignores: ["dist"] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+);
+
+================================================================
+FILE: supabase/config.toml
+================================================================
+project_id = "taqrxxikhwghmeofrpzs"
 ================================================================
 FILE: public/manifest.webmanifest
 ================================================================
@@ -271,7 +569,6 @@ FILE: public/manifest.webmanifest
     }
   ]
 }
-
 ================================================================
 FILE: public/staff-manifest.webmanifest
 ================================================================
@@ -306,7 +603,6 @@ FILE: public/staff-manifest.webmanifest
     }
   ]
 }
-
 ================================================================
 FILE: public/staff-sw.js
 ================================================================
@@ -376,6 +672,23 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
+================================================================
+FILE: public/robots.txt
+================================================================
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: *
+Allow: /
 
 ================================================================
 FILE: src/App.tsx
@@ -423,7 +736,6 @@ const App = () => (
 );
 
 export default App;
-
 
 ================================================================
 FILE: src/components/FeedbackDialog.tsx
@@ -556,7 +868,6 @@ export const FeedbackDialog = ({ open, onOpenChange, tableNumber, language }: Fe
   );
 };
 
-
 ================================================================
 FILE: src/components/QrScanner.tsx
 ================================================================
@@ -667,7 +978,6 @@ const QrScanner = ({ onScan, onClose }: QrScannerProps) => {
 
 export default QrScanner;
 
-
 ================================================================
 FILE: src/components/SplashScreen.tsx
 ================================================================
@@ -705,7 +1015,6 @@ const SplashScreen = ({ onFinish }: { onFinish: () => void }) => {
 };
 
 export default SplashScreen;
-
 
 ================================================================
 FILE: src/components/StaffChatDialog.tsx
@@ -957,7 +1266,6 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   );
 }
 
-
 ================================================================
 FILE: src/components/TableIdentifier.tsx
 ================================================================
@@ -1040,7 +1348,6 @@ export const TableIdentifier = ({ language, tableNumber, isGeneric, onUpdate }: 
     </div>
   );
 };
-
 
 ================================================================
 FILE: src/components/WelcomeGreeting.tsx
@@ -1183,7 +1490,6 @@ export const WelcomeGreeting = ({ language, onDismiss, onOpenChat }: WelcomeGree
   );
 };
 
-
 ================================================================
 FILE: src/components/icons/BellIcon.tsx
 ================================================================
@@ -1194,7 +1500,6 @@ export const BellIcon = () => (
     <line x1="12" y1="2" x2="12" y2="4" />
   </svg>
 );
-
 
 ================================================================
 FILE: src/components/icons/ChatIcon.tsx
@@ -1207,7 +1512,6 @@ export const ChatIcon = () => (
   </svg>
 );
 
-
 ================================================================
 FILE: src/components/icons/CheckIcon.tsx
 ================================================================
@@ -1216,7 +1520,6 @@ export const CheckIcon = () => (
     <polyline points="4 12 10 18 20 6" />
   </svg>
 );
-
 
 ================================================================
 FILE: src/components/icons/CocktailIcon.tsx
@@ -1245,7 +1548,6 @@ export const CocktailIcon = () => (
   </svg>
 );
 
-
 ================================================================
 FILE: src/components/icons/LocationPinIcon.tsx
 ================================================================
@@ -1255,7 +1557,6 @@ export const LocationPinIcon = () => (
     <circle cx="12" cy="10" r="2.5" />
   </svg>
 );
-
 
 ================================================================
 FILE: src/components/icons/ReceiptIcon.tsx
@@ -1269,7 +1570,6 @@ export const ReceiptIcon = () => (
   </svg>
 );
 
-
 ================================================================
 FILE: src/components/icons/StarIcon.tsx
 ================================================================
@@ -1278,7 +1578,6 @@ export const StarIcon = () => (
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </svg>
 );
-
 
 ================================================================
 FILE: src/components/icons/UtensilsIcon.tsx
@@ -1292,7 +1591,6 @@ export const UtensilsIcon = () => (
   </svg>
 );
 
-
 ================================================================
 FILE: src/components/icons/index.ts
 ================================================================
@@ -1304,7 +1602,6 @@ export { UtensilsIcon } from './UtensilsIcon';
 export { ChatIcon } from './ChatIcon';
 export { StarIcon } from './StarIcon';
 export { CheckIcon } from './CheckIcon';
-
 
 ================================================================
 FILE: src/components/ui/accordion.tsx
@@ -1361,7 +1658,6 @@ const AccordionContent = React.forwardRef<
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
-
 
 ================================================================
 FILE: src/components/ui/alert-dialog.tsx
@@ -1471,7 +1767,6 @@ export {
   AlertDialogCancel,
 };
 
-
 ================================================================
 FILE: src/components/ui/alert.tsx
 ================================================================
@@ -1519,7 +1814,6 @@ AlertDescription.displayName = "AlertDescription";
 
 export { Alert, AlertTitle, AlertDescription };
 
-
 ================================================================
 FILE: src/components/ui/aspect-ratio.tsx
 ================================================================
@@ -1528,7 +1822,6 @@ import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio";
 const AspectRatio = AspectRatioPrimitive.Root;
 
 export { AspectRatio };
-
 
 ================================================================
 FILE: src/components/ui/avatar.tsx
@@ -1572,7 +1865,6 @@ AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
 
 export { Avatar, AvatarImage, AvatarFallback };
 
-
 ================================================================
 FILE: src/components/ui/badge.tsx
 ================================================================
@@ -1605,7 +1897,6 @@ function Badge({ className, variant, ...props }: BadgeProps) {
 }
 
 export { Badge, badgeVariants };
-
 
 ================================================================
 FILE: src/components/ui/breadcrumb.tsx
@@ -1701,7 +1992,6 @@ export {
   BreadcrumbEllipsis,
 };
 
-
 ================================================================
 FILE: src/components/ui/button.tsx
 ================================================================
@@ -1779,7 +2069,6 @@ Button.displayName = "Button";
 
 export { Button, buttonVariants };
 
-
 ================================================================
 FILE: src/components/ui/calendar.tsx
 ================================================================
@@ -1838,7 +2127,6 @@ Calendar.displayName = "Calendar";
 
 export { Calendar };
 
-
 ================================================================
 FILE: src/components/ui/card.tsx
 ================================================================
@@ -1885,7 +2173,6 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 CardFooter.displayName = "CardFooter";
 
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
-
 
 ================================================================
 FILE: src/components/ui/carousel.tsx
@@ -2114,7 +2401,6 @@ const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<ty
 CarouselNext.displayName = "CarouselNext";
 
 export { type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext };
-
 
 ================================================================
 FILE: src/components/ui/chart.tsx
@@ -2423,7 +2709,6 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
 
 export { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle };
 
-
 ================================================================
 FILE: src/components/ui/checkbox.tsx
 ================================================================
@@ -2454,7 +2739,6 @@ Checkbox.displayName = CheckboxPrimitive.Root.displayName;
 
 export { Checkbox };
 
-
 ================================================================
 FILE: src/components/ui/collapsible.tsx
 ================================================================
@@ -2467,7 +2751,6 @@ const CollapsibleTrigger = CollapsiblePrimitive.CollapsibleTrigger;
 const CollapsibleContent = CollapsiblePrimitive.CollapsibleContent;
 
 export { Collapsible, CollapsibleTrigger, CollapsibleContent };
-
 
 ================================================================
 FILE: src/components/ui/command.tsx
@@ -2604,7 +2887,6 @@ export {
   CommandShortcut,
   CommandSeparator,
 };
-
 
 ================================================================
 FILE: src/components/ui/context-menu.tsx
@@ -2788,7 +3070,6 @@ export {
   ContextMenuRadioGroup,
 };
 
-
 ================================================================
 FILE: src/components/ui/dialog.tsx
 ================================================================
@@ -2888,7 +3169,6 @@ export {
   DialogDescription,
 };
 
-
 ================================================================
 FILE: src/components/ui/drawer.tsx
 ================================================================
@@ -2979,7 +3259,6 @@ export {
   DrawerTitle,
   DrawerDescription,
 };
-
 
 ================================================================
 FILE: src/components/ui/dropdown-menu.tsx
@@ -3164,7 +3443,6 @@ export {
   DropdownMenuRadioGroup,
 };
 
-
 ================================================================
 FILE: src/components/ui/form.tsx
 ================================================================
@@ -3298,7 +3576,6 @@ FormMessage.displayName = "FormMessage";
 
 export { useFormField, Form, FormItem, FormLabel, FormControl, FormDescription, FormMessage, FormField };
 
-
 ================================================================
 FILE: src/components/ui/hover-card.tsx
 ================================================================
@@ -3329,7 +3606,6 @@ const HoverCardContent = React.forwardRef<
 HoverCardContent.displayName = HoverCardPrimitive.Content.displayName;
 
 export { HoverCard, HoverCardTrigger, HoverCardContent };
-
 
 ================================================================
 FILE: src/components/ui/input-otp.tsx
@@ -3396,7 +3672,6 @@ InputOTPSeparator.displayName = "InputOTPSeparator";
 
 export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator };
 
-
 ================================================================
 FILE: src/components/ui/input.tsx
 ================================================================
@@ -3423,7 +3698,6 @@ Input.displayName = "Input";
 
 export { Input };
 
-
 ================================================================
 FILE: src/components/ui/label.tsx
 ================================================================
@@ -3444,7 +3718,6 @@ const Label = React.forwardRef<
 Label.displayName = LabelPrimitive.Root.displayName;
 
 export { Label };
-
 
 ================================================================
 FILE: src/components/ui/menubar.tsx
@@ -3657,7 +3930,6 @@ export {
   MenubarShortcut,
 };
 
-
 ================================================================
 FILE: src/components/ui/navigation-menu.tsx
 ================================================================
@@ -3782,7 +4054,6 @@ export {
   NavigationMenuViewport,
 };
 
-
 ================================================================
 FILE: src/components/ui/pagination.tsx
 ================================================================
@@ -3868,7 +4139,6 @@ export {
   PaginationPrevious,
 };
 
-
 ================================================================
 FILE: src/components/ui/popover.tsx
 ================================================================
@@ -3902,7 +4172,6 @@ PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
 export { Popover, PopoverTrigger, PopoverContent };
 
-
 ================================================================
 FILE: src/components/ui/progress.tsx
 ================================================================
@@ -3929,7 +4198,6 @@ const Progress = React.forwardRef<
 Progress.displayName = ProgressPrimitive.Root.displayName;
 
 export { Progress };
-
 
 ================================================================
 FILE: src/components/ui/radio-group.tsx
@@ -3970,7 +4238,6 @@ const RadioGroupItem = React.forwardRef<
 RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName;
 
 export { RadioGroup, RadioGroupItem };
-
 
 ================================================================
 FILE: src/components/ui/resizable.tsx
@@ -4013,7 +4280,6 @@ const ResizableHandle = ({
 
 export { ResizablePanelGroup, ResizablePanel, ResizableHandle };
 
-
 ================================================================
 FILE: src/components/ui/scroll-area.tsx
 ================================================================
@@ -4055,7 +4321,6 @@ const ScrollBar = React.forwardRef<
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
 
 export { ScrollArea, ScrollBar };
-
 
 ================================================================
 FILE: src/components/ui/select.tsx
@@ -4204,7 +4469,6 @@ export {
   SelectScrollDownButton,
 };
 
-
 ================================================================
 FILE: src/components/ui/separator.tsx
 ================================================================
@@ -4228,7 +4492,6 @@ const Separator = React.forwardRef<
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
 export { Separator };
-
 
 ================================================================
 FILE: src/components/ui/sheet.tsx
@@ -4340,7 +4603,6 @@ export {
   SheetTitle,
   SheetTrigger,
 };
-
 
 ================================================================
 FILE: src/components/ui/sidebar.tsx
@@ -4983,7 +5245,6 @@ export {
   useSidebar,
 };
 
-
 ================================================================
 FILE: src/components/ui/skeleton.tsx
 ================================================================
@@ -4994,7 +5255,6 @@ function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
 }
 
 export { Skeleton };
-
 
 ================================================================
 FILE: src/components/ui/slider.tsx
@@ -5022,7 +5282,6 @@ const Slider = React.forwardRef<
 Slider.displayName = SliderPrimitive.Root.displayName;
 
 export { Slider };
-
 
 ================================================================
 FILE: src/components/ui/sonner.tsx
@@ -5055,7 +5314,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
 export { Toaster, toast };
 
-
 ================================================================
 FILE: src/components/ui/switch.tsx
 ================================================================
@@ -5086,7 +5344,6 @@ const Switch = React.forwardRef<
 Switch.displayName = SwitchPrimitives.Root.displayName;
 
 export { Switch };
-
 
 ================================================================
 FILE: src/components/ui/table.tsx
@@ -5164,7 +5421,6 @@ TableCaption.displayName = "TableCaption";
 
 export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption };
 
-
 ================================================================
 FILE: src/components/ui/tabs.tsx
 ================================================================
@@ -5222,7 +5478,6 @@ TabsContent.displayName = TabsPrimitive.Content.displayName;
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };
 
-
 ================================================================
 FILE: src/components/ui/textarea.tsx
 ================================================================
@@ -5247,7 +5502,6 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
 Textarea.displayName = "Textarea";
 
 export { Textarea };
-
 
 ================================================================
 FILE: src/components/ui/toast.tsx
@@ -5364,7 +5618,6 @@ export {
   ToastAction,
 };
 
-
 ================================================================
 FILE: src/components/ui/toaster.tsx
 ================================================================
@@ -5392,7 +5645,6 @@ export function Toaster() {
     </ToastProvider>
   );
 }
-
 
 ================================================================
 FILE: src/components/ui/toggle-group.tsx
@@ -5447,7 +5699,6 @@ ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName;
 
 export { ToggleGroup, ToggleGroupItem };
 
-
 ================================================================
 FILE: src/components/ui/toggle.tsx
 ================================================================
@@ -5489,7 +5740,6 @@ Toggle.displayName = TogglePrimitive.Root.displayName;
 
 export { Toggle, toggleVariants };
 
-
 ================================================================
 FILE: src/components/ui/tooltip.tsx
 ================================================================
@@ -5522,14 +5772,12 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
 
-
 ================================================================
 FILE: src/components/ui/use-toast.ts
 ================================================================
 import { useToast, toast } from "@/hooks/use-toast";
 
 export { useToast, toast };
-
 
 ================================================================
 FILE: src/hooks/use-chat-session.ts
@@ -5627,7 +5875,6 @@ export function useChatSession(welcomeMessage: string) {
   return { messages, setMessages, saveMessages, resetSession, loaded };
 }
 
-
 ================================================================
 FILE: src/hooks/use-geolocation.ts
 ================================================================
@@ -5722,7 +5969,6 @@ export function useGeolocation() {
   return { checkLocation, checking };
 }
 
-
 ================================================================
 FILE: src/hooks/use-language.tsx
 ================================================================
@@ -5747,7 +5993,6 @@ export const useLanguage = () => {
   return { language, setLanguage, toggleLanguage };
 };
 
-
 ================================================================
 FILE: src/hooks/use-mobile.tsx
 ================================================================
@@ -5770,7 +6015,6 @@ export function useIsMobile() {
 
   return !!isMobile;
 }
-
 
 ================================================================
 FILE: src/hooks/use-toast.ts
@@ -5961,7 +6205,6 @@ function useToast() {
 }
 
 export { useToast, toast };
-
 
 ================================================================
 FILE: src/index.css
@@ -6366,7 +6609,6 @@ FILE: src/index.css
   80% { opacity: 0.9; }
 }
 
-
 ================================================================
 FILE: src/integrations/supabase/client.ts
 ================================================================
@@ -6387,7 +6629,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
-
 ================================================================
 FILE: src/integrations/supabase/types.ts
 ================================================================
@@ -6847,7 +7088,6 @@ export const Constants = {
   },
 } as const
 
-
 ================================================================
 FILE: src/lib/utils.ts
 ================================================================
@@ -6858,7 +7098,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-
 ================================================================
 FILE: src/main.tsx
 ================================================================
@@ -6867,7 +7106,6 @@ import App from "./App.tsx";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
-
 
 ================================================================
 FILE: src/pages/AppDocumentation.tsx
@@ -7157,7 +7395,6 @@ const FlowArrow = () => (
 );
 
 export default AppDocumentation;
-
 
 ================================================================
 FILE: src/pages/Dashboard.tsx
@@ -7884,7 +8121,6 @@ const Dashboard = () => {
 
 export default Dashboard;
 
-
 ================================================================
 FILE: src/pages/Index.tsx
 ================================================================
@@ -7998,6 +8234,15 @@ const Index = () => {
 
   const submitWaiter = async () => {
     try {
+      const tableNum = parseInt(tableNumber.trim(), 10);
+      if (isNaN(tableNum) || tableNum < 1 || tableNum > 50) {
+        toast.error(
+          language === 'sq'
+            ? 'Numri i tavolinës duhet të jetë midis 1 dhe 50'
+            : 'Table number must be between 1 and 50'
+        );
+        return;
+      }
       const { error } = await supabase.from("service_requests").insert({
         table_number: tableNumber.trim(),
         request_type: "waiter",
@@ -8013,6 +8258,15 @@ const Index = () => {
 
   const submitBill = async () => {
     try {
+      const tableNum = parseInt(tableNumber.trim(), 10);
+      if (isNaN(tableNum) || tableNum < 1 || tableNum > 50) {
+        toast.error(
+          language === 'sq'
+            ? 'Numri i tavolinës duhet të jetë midis 1 dhe 50'
+            : 'Table number must be between 1 and 50'
+        );
+        return;
+      }
       const { error } = await supabase.from("service_requests").insert({
         table_number: tableNumber.trim(),
         request_type: "bill",
@@ -8204,7 +8458,6 @@ const Index = () => {
 
 export default Index;
 
-
 ================================================================
 FILE: src/pages/Install.tsx
 ================================================================
@@ -8390,7 +8643,6 @@ const Install = () => {
 };
 
 export default Install;
-
 
 ================================================================
 FILE: src/pages/ManagerDashboard.tsx
@@ -9231,7 +9483,6 @@ const ManagerDashboard = () => {
 
 export default ManagerDashboard;
 
-
 ================================================================
 FILE: src/pages/ManagerLogin.tsx
 ================================================================
@@ -9436,7 +9687,6 @@ const ManagerLogin = () => {
 };
 
 export default ManagerLogin;
-
 
 ================================================================
 FILE: src/pages/Menu.tsx
@@ -9997,7 +10247,6 @@ const Menu = () => {
 
 export default Menu;
 
-
 ================================================================
 FILE: src/pages/NotFound.tsx
 ================================================================
@@ -10027,7 +10276,6 @@ const NotFound = () => {
 };
 
 export default NotFound;
-
 
 ================================================================
 FILE: src/pages/StaffShift.tsx
@@ -10487,8 +10735,10 @@ const StaffShift = () => {
 
     // Unlock dashboard curtain via edge function
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       await supabase.functions.invoke("unlock-shift", {
         body: { token: scannedToken },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
       });
     } catch (e) {
       console.error("Failed to unlock shift:", e);
@@ -10731,7 +10981,6 @@ const StaffShift = () => {
 };
 
 export default StaffShift;
-
 
 ================================================================
 FILE: src/styles/boulevard.css
@@ -11540,17 +11789,10 @@ FILE: src/styles/boulevard.css
   background: rgba(201,163,92,0.35);
 }
 
-
 ================================================================
 FILE: src/vite-env.d.ts
 ================================================================
 /// <reference types="vite/client" />
-
-
-================================================================
-FILE: supabase/config.toml
-================================================================
-project_id = "taqrxxikhwghmeofrpzs"
 
 ================================================================
 FILE: supabase/functions/cleanup-chat-sessions/index.ts
@@ -11598,7 +11840,6 @@ Deno.serve(async (req) => {
     );
   }
 });
-
 
 ================================================================
 FILE: supabase/functions/complete-request/index.ts
@@ -11688,7 +11929,6 @@ Deno.serve(async (req) => {
   }
 });
 
-
 ================================================================
 FILE: supabase/functions/manage-shift/index.ts
 ================================================================
@@ -11713,6 +11953,44 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const now = new Date().toISOString();
+
+    // Actions that require manager authentication
+    const MANAGER_ACTIONS = ['create', 'extend', 'close'];
+
+    if (MANAGER_ACTIONS.includes(action)) {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      const supabaseAnon = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY')!
+      );
+      const { data: { user } } = await supabaseAnon.auth.getUser(
+        authHeader.replace('Bearer ', '')
+      );
+      if (!user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'manager')
+        .maybeSingle();
+
+      if (!roleData) {
+        return new Response(JSON.stringify({ error: 'Manager access required' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
 
     // ACTION: get_or_create — fetch active shift token or create one
     if (action === "get_or_create") {
@@ -12074,7 +12352,6 @@ Deno.serve(async (req) => {
   }
 });
 
-
 ================================================================
 FILE: supabase/functions/push-subscribe/index.ts
 ================================================================
@@ -12133,7 +12410,6 @@ Deno.serve(async (req) => {
     );
   }
 });
-
 
 ================================================================
 FILE: supabase/functions/send-push/index.ts
@@ -12400,7 +12676,6 @@ Deno.serve(async (req) => {
     );
   }
 });
-
 
 ================================================================
 FILE: supabase/functions/staff-chat/index.ts
@@ -12871,7 +13146,6 @@ GUIDELINES:
   }
 });
 
-
 ================================================================
 FILE: supabase/functions/unlock-shift/index.ts
 ================================================================
@@ -12889,6 +13163,44 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require manager auth
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const supabaseAnon = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!
+    );
+    const { data: { user } } = await supabaseAnon.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    const { data: roleData } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'manager')
+      .maybeSingle();
+
+    if (!roleData) {
+      return new Response(JSON.stringify({ error: 'Manager access required' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     const { token } = await req.json();
 
     if (!token || typeof token !== "string" || token.length < 6 || token.length > 50) {
@@ -12952,7 +13264,6 @@ Deno.serve(async (req) => {
   }
 });
 
-
 ================================================================
 FILE: supabase/functions/validate-shift/index.ts
 ================================================================
@@ -13011,7 +13322,6 @@ Deno.serve(async (req) => {
     );
   }
 });
-
 
 ================================================================
 FILE: supabase/migrations/20251206001705_remix_migration_from_pg_dump.sql
@@ -13474,7 +13784,6 @@ ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
 
 
-
 ================================================================
 FILE: supabase/migrations/20260128100156_5d823696-52e2-4495-9c69-1f3d37da2449.sql
 ================================================================
@@ -13483,7 +13792,6 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.service_requests;
 
 -- Enable realtime for orders table  
 ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
-
 ================================================================
 FILE: supabase/migrations/20260204232224_6ef765db-4abe-44fa-8f77-ab85be9e72ff.sql
 ================================================================
@@ -13516,7 +13824,6 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_manager_signup();
-
 ================================================================
 FILE: supabase/migrations/20260308051348_ad612bd9-969d-4f1b-9c66-5e93fa835050.sql
 ================================================================
@@ -13537,7 +13844,6 @@ CREATE POLICY "Anyone can view chat sessions" ON public.chat_sessions FOR SELECT
 CREATE POLICY "Anyone can insert chat sessions" ON public.chat_sessions FOR INSERT WITH CHECK (true);
 CREATE POLICY "Anyone can update chat sessions" ON public.chat_sessions FOR UPDATE USING (true);
 CREATE POLICY "Anyone can delete chat sessions" ON public.chat_sessions FOR DELETE USING (true);
-
 ================================================================
 FILE: supabase/migrations/20260308141301_3cddc955-b20c-4194-82a7-fab88e729131.sql
 ================================================================
@@ -13563,7 +13869,6 @@ CREATE POLICY "Anyone can delete shift tokens" ON public.shift_tokens
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.shift_tokens;
 
-
 ================================================================
 FILE: supabase/migrations/20260314060004_9627b665-30ab-4250-b5fc-3f2bd37631c8.sql
 ================================================================
@@ -13584,7 +13889,6 @@ FOR DELETE
 TO authenticated
 USING (public.has_role(auth.uid(), 'admin'::app_role) OR public.has_role(auth.uid(), 'manager'::app_role));
 
-
 ================================================================
 FILE: supabase/migrations/20260314060116_7b5e2f12-3d09-479c-a059-5da3c371d5cf.sql
 ================================================================
@@ -13593,7 +13897,6 @@ FILE: supabase/migrations/20260314060116_7b5e2f12-3d09-479c-a059-5da3c371d5cf.sq
 CREATE POLICY "Anyone can update orders" ON public.orders
 FOR UPDATE
 USING (true);
-
 
 ================================================================
 FILE: supabase/migrations/20260321052040_4585267e-bea0-4f80-8b17-714fd3cc9dc1.sql
@@ -13607,7 +13910,6 @@ FOR UPDATE
 TO public
 USING (true)
 WITH CHECK (true);
-
 
 ================================================================
 FILE: supabase/migrations/20260321055419_2cbd3908-99c9-4b62-af5d-b7d9bb4b393a.sql
@@ -13625,14 +13927,12 @@ USING (
   OR public.has_role(auth.uid(), 'manager'::app_role)
 );
 
-
 ================================================================
 FILE: supabase/migrations/20260321060442_228536e4-6801-496e-83e7-e956b26d677d.sql
 ================================================================
 
 CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
-
 
 ================================================================
 FILE: supabase/migrations/20260321062752_deb0c513-5612-477b-b018-d026feeb1bee.sql
@@ -13687,7 +13987,6 @@ CREATE POLICY "Managers can upload menu images" ON storage.objects
 
 CREATE POLICY "Anyone can view menu images" ON storage.objects
   FOR SELECT TO public USING (bucket_id = 'menu-images');
-
 ================================================================
 FILE: supabase/migrations/20260321070936_07bbee7c-d0c8-45b8-8855-91258c7daf9d.sql
 ================================================================
@@ -13695,7 +13994,6 @@ ALTER TABLE public.menu_items
   ADD COLUMN offer_price integer DEFAULT NULL,
   ADD COLUMN offer_start_time time DEFAULT NULL,
   ADD COLUMN offer_end_time time DEFAULT NULL;
-
 ================================================================
 FILE: supabase/migrations/20260321075640_273bb391-bebb-41cf-9eb8-4f91adcf717f.sql
 ================================================================
@@ -13713,7 +14011,6 @@ CREATE POLICY "Anyone can view ai_knowledge" ON public.ai_knowledge FOR SELECT T
 CREATE POLICY "Managers can insert ai_knowledge" ON public.ai_knowledge FOR INSERT TO public WITH CHECK (has_role(auth.uid(), 'manager'::app_role));
 CREATE POLICY "Managers can update ai_knowledge" ON public.ai_knowledge FOR UPDATE TO public USING (has_role(auth.uid(), 'manager'::app_role));
 CREATE POLICY "Managers can delete ai_knowledge" ON public.ai_knowledge FOR DELETE TO authenticated USING (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'manager'::app_role));
-
 ================================================================
 FILE: supabase/migrations/20260321222516_e80640ab-99a6-4023-9ee8-11e0cbd56b66.sql
 ================================================================
@@ -13737,25 +14034,21 @@ CREATE POLICY "Managers can delete feedback" ON public.feedback
   FOR DELETE TO authenticated USING (
     has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'manager'::app_role)
   );
-
 ================================================================
 FILE: supabase/migrations/20260325145856_de8d712b-1e82-48d2-8bc4-0e4d49be835e.sql
 ================================================================
 ALTER PUBLICATION supabase_realtime ADD TABLE public.service_requests;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.shift_tokens;
-
 ================================================================
 FILE: supabase/migrations/20260325185704_ab5f54b5-1a68-4b2b-8104-2bd1ab2e80bf.sql
 ================================================================
 ALTER TABLE public.service_requests DROP CONSTRAINT service_requests_request_type_check;
 ALTER TABLE public.service_requests ADD CONSTRAINT service_requests_request_type_check CHECK (request_type = ANY (ARRAY['waiter'::text, 'bill'::text, 'kitchen_ready'::text]));
-
 ================================================================
 FILE: supabase/migrations/20260404225731_6721958b-989b-4351-a9bb-53621cda9c21.sql
 ================================================================
 ALTER TABLE public.menu_items ADD COLUMN display_order integer DEFAULT 0;
-
 ================================================================
 FILE: supabase/migrations/20260405010635_8ac16b5b-3b2b-4670-9d81-e7d58608c99c.sql
 ================================================================
@@ -13764,7 +14057,6 @@ CREATE OR REPLACE TRIGGER on_manager_signup
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_manager_signup();
-
 ================================================================
 FILE: supabase/migrations/20260405030440_f44ce482-60ff-4a59-a9bc-88a3983d802b.sql
 ================================================================
@@ -13854,7 +14146,6 @@ USING (
   AND has_role(auth.uid(), 'manager'::app_role)
 );
 
-
 ================================================================
 FILE: supabase/migrations/20260407032651_7ff2b805-c6e5-4376-a468-c7b0483c1b7a.sql
 ================================================================
@@ -13886,7 +14177,6 @@ CREATE POLICY "Anyone can update push subscriptions"
 ON public.push_subscriptions FOR UPDATE
 USING (true);
 
-
 ================================================================
 FILE: supabase/migrations/20260508004736_8b62ee06-2cea-4d25-8b4b-9fe17146df07.sql
 ================================================================
@@ -13903,310 +14193,3 @@ INSERT INTO public.categories (name, name_en, display_order, group_name)
 VALUES 
   ('Dreka', 'Lunch', 11, 'DREKA'),
   ('Menu Javore Delivery', 'Weekly Delivery Menu', 12, 'DREKA');
-
-
-================================================================
-FILE: tailwind.config.ts
-================================================================
-import type { Config } from "tailwindcss";
-
-export default {
-  darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
-  prefix: "",
-  theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
-    extend: {
-      fontFamily: {
-        display: ['Playfair Display', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      },
-      colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
-        },
-        warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        navy: {
-          DEFAULT: "hsl(var(--navy))",
-          light: "hsl(var(--navy-light))",
-          deep: "hsl(var(--navy-deep))",
-        },
-        "gold-brand": "hsl(var(--gold-brand))",
-        "gold-light": "hsl(var(--gold-light))",
-        "gold-glow": "hsl(var(--gold-glow))",
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
-        },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      keyframes: {
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
-        },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
-        },
-        jiggle: {
-          "0%, 100%": { transform: "rotate(0deg)" },
-          "25%": { transform: "rotate(-5deg)" },
-          "75%": { transform: "rotate(5deg)" },
-        },
-        shimmer: {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
-        },
-        "bounce-soft": {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
-        },
-        glow: {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(var(--primary), 0.3)" },
-          "50%": { boxShadow: "0 0 40px rgba(var(--primary), 0.6)" },
-        },
-        float: {
-          "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-10px)" },
-        },
-        "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px hsl(var(--secondary) / 0.3)" },
-          "50%": { 
-            boxShadow: "0 0 40px hsl(var(--secondary) / 0.6), 0 0 60px hsl(var(--secondary) / 0.3)" 
-          },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        jiggle: "jiggle 0.5s ease-in-out",
-        shimmer: "shimmer 2s ease-in-out infinite",
-        "bounce-soft": "bounce-soft 1s ease-in-out infinite",
-        glow: "glow 2s ease-in-out infinite",
-        float: "float 3s ease-in-out infinite",
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
-      },
-    },
-  },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config;
-
-
-================================================================
-FILE: tsconfig.app.json
-================================================================
-{
-  "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "module": "ESNext",
-    "moduleDetection": "force",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "noFallthroughCasesInSwitch": false,
-    "noImplicitAny": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
-    "skipLibCheck": true,
-    "strict": false,
-    "target": "ES2020",
-    "useDefineForClassFields": true
-  },
-  "include": [
-    "src"
-  ]
-}
-
-================================================================
-FILE: tsconfig.json
-================================================================
-{
-  "compilerOptions": {
-    "allowJs": true,
-    "noImplicitAny": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
-    "skipLibCheck": true,
-    "strictNullChecks": false
-  },
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
-}
-
-================================================================
-FILE: tsconfig.node.json
-================================================================
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2023"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": ["vite.config.ts"]
-}
-
-
-================================================================
-FILE: vite.config.ts
-================================================================
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
-import { VitePWA } from "vite-plugin-pwa";
-
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
-  plugins: [
-    react(),
-    mode === "development" && componentTagger(),
-    VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "notification-bell.mp3"],
-      manifest: false, // We use our own manifest files in /public
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}"],
-        navigateFallbackDenylist: [/^\/~oauth/],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "google-fonts-cache",
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365,
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "gstatic-fonts-cache",
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365,
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-        ],
-      },
-    }),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-}));
-
