@@ -493,7 +493,17 @@ const Dashboard = () => {
         .select("*")
         .in("status", ["pending", "approved"])
         .order("created_at", { ascending: true });
-      if (data) setSongRequests(data as SongRequest[]);
+      if (data) {
+        const songs = data as SongRequest[];
+        setSongRequests(songs);
+        const approved = songs.filter((s) => s.status === "approved");
+        if (approved.length > 0 && !currentSongRef.current) {
+          setCurrentSong(approved[0]);
+          setPlaylist(approved.slice(1));
+        } else if (currentSongRef.current) {
+          setPlaylist(approved.filter((s) => s.id !== currentSongRef.current!.id));
+        }
+      }
     } catch (e) {
       console.error("Error fetching songs:", e);
     }
@@ -502,8 +512,7 @@ const Dashboard = () => {
   const handleApproveSong = async (id: string) => {
     try {
       await supabase.functions.invoke("manage-songs", { body: { action: "approve", id } });
-      await fetchPlaylistState();
-      fetchSongs();
+      // Realtime UPDATE event do ta shtojë automatikisht në playlist
     } catch {
       toast.error("Gabim në miratim");
     }
@@ -512,62 +521,29 @@ const Dashboard = () => {
   const handleRejectSong = async (id: string) => {
     try {
       await supabase.functions.invoke("manage-songs", { body: { action: "reject", id } });
-      fetchSongs();
     } catch {
       toast.error("Gabim në refuzim");
     }
   };
 
-  // ===== PLAYLIST STATE (server-backed) =====
-  const fetchPlaylistState = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("manage-playlist", {
-        body: { action: "get_state" },
-      });
-      if (error || !data) return;
-      setCurrentSong(data.currentSong);
-      setPlaylist(data.playlist || []);
-    } catch (e) {
-      console.error("Error fetching playlist state:", e);
-    }
-  };
-
-  const playNext = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("manage-playlist", {
-        body: { action: "play_next" },
-      });
-      if (error || !data) return;
-      setCurrentSong(data.currentSong);
-      setPlaylist(data.playlist || []);
-    } catch (e) {
-      console.error("Error playing next:", e);
-    }
-  };
-
-  const markPlayedAndNext = async (songId: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke("manage-playlist", {
-        body: { action: "mark_played", song_id: songId },
-      });
-      if (error || !data) return false;
-      setCurrentSong(data.currentSong);
-      setPlaylist(data.playlist || []);
-      return !!data.currentSong;
-    } catch (e) {
-      console.error("Error marking played:", e);
-      return false;
-    }
-  };
-
+  // ===== YOUTUBE PLAYER EVENTS (client-side queue + Radio fallback) =====
   const onPlayerEnd = () => {
-    if (currentSong) {
-      lastVideoIdRef.current = currentSong.video_id;
-      markPlayedAndNext(currentSong.id).then((hasNext) => {
-        if (!hasNext && lastVideoIdRef.current) {
-          setRadioMode(true);
-        }
-      });
+    const ended = currentSongRef.current;
+    if (ended) {
+      lastVideoIdRef.current = ended.video_id;
+      // Mark as played in DB (fire and forget — realtime will sync)
+      supabase.functions
+        .invoke("manage-songs", { body: { action: "played", id: ended.id } })
+        .catch(() => {});
+    }
+    const queue = playlistRef.current;
+    if (queue.length > 0) {
+      const next = queue[0];
+      setCurrentSong(next);
+      setPlaylist(queue.slice(1));
+    } else {
+      setCurrentSong(null);
+      if (lastVideoIdRef.current) setRadioMode(true);
     }
   };
 
@@ -576,26 +552,49 @@ const Dashboard = () => {
     try { event.target.playVideo(); } catch {}
   };
 
-  // Songs realtime + initial load
+  // Songs realtime + initial load (client-side queue management)
   useEffect(() => {
     if (curtainActive) return;
 
     fetchSongs();
-    fetchPlaylistState();
 
     const channel = supabase
       .channel("songs-realtime")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "song_requests" },
-        () => { fetchSongs(); }
+        (payload) => {
+          const newSong = payload.new as SongRequest;
+          setSongRequests((prev) => [...prev, newSong]);
+        }
       )
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "song_requests" },
-        () => {
-          fetchSongs();
-          fetchPlaylistState();
+        (payload) => {
+          const updated = payload.new as SongRequest;
+          setSongRequests((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+
+          if (updated.status === "approved") {
+            if (!currentSongRef.current) {
+              // Kënga e parë e miratuar — bëje aktuale dhe dil nga Radio Mode
+              setRadioMode(false);
+              setCurrentSong(updated);
+            } else {
+              setPlaylist((prev) => (prev.some((s) => s.id === updated.id) ? prev : [...prev, updated]));
+            }
+          } else if (updated.status === "rejected" || updated.status === "played") {
+            setPlaylist((prev) => prev.filter((s) => s.id !== updated.id));
+            if (currentSongRef.current?.id === updated.id) {
+              const queue = playlistRef.current;
+              if (queue.length > 0) {
+                setCurrentSong(queue[0]);
+                setPlaylist(queue.slice(1));
+              } else {
+                setCurrentSong(null);
+              }
+            }
+          }
         }
       )
       .on(
@@ -603,14 +602,18 @@ const Dashboard = () => {
         { event: "DELETE", schema: "public", table: "song_requests" },
         (payload) => {
           const old = payload.old as SongRequest;
-          setPlaylist((prev) => prev.filter((s) => s.id !== old.id));
           setSongRequests((prev) => prev.filter((s) => s.id !== old.id));
+          setPlaylist((prev) => prev.filter((s) => s.id !== old.id));
+          if (currentSongRef.current?.id === old.id) {
+            const queue = playlistRef.current.filter((s) => s.id !== old.id);
+            if (queue.length > 0) {
+              setCurrentSong(queue[0]);
+              setPlaylist(queue.slice(1));
+            } else {
+              setCurrentSong(null);
+            }
+          }
         }
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "playlist_state" },
-        () => { fetchPlaylistState(); }
       )
       .subscribe();
 
@@ -618,15 +621,6 @@ const Dashboard = () => {
       supabase.removeChannel(channel);
     };
   }, [curtainActive]);
-
-  // Auto-start playback when there's a queue but nothing playing
-  useEffect(() => {
-    if (curtainActive) return;
-    if (!currentSong && playlist.length > 0) {
-      if (radioMode) setRadioMode(false);
-      playNext();
-    }
-  }, [curtainActive, currentSong, playlist.length, radioMode]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
