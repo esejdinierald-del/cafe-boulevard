@@ -747,9 +747,9 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        {/* ===== YOUTUBE PLAYER (always mounted, persists across tab switches) ===== */}
+        {/* ===== YOUTUBE PLAYER (always mounted to persist playback; visible only in "Këngët" tab) ===== */}
         {(currentSong || (radioMode && lastVideoIdRef.current)) && (
-          <Card className="p-4 bg-card/50">
+          <Card className={`p-4 bg-card/50 ${activeTab === "songs" ? "block" : "hidden"}`}>
             <div className="aspect-video w-full max-w-3xl mx-auto rounded-xl overflow-hidden bg-black">
               {currentSong ? (
                 <YouTube
