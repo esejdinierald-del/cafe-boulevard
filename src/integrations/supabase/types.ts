@@ -286,6 +286,42 @@ export type Database = {
         }
         Relationships: []
       }
+      song_requests: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          id: string
+          status: string
+          table_number: string
+          thumbnail: string
+          title: string
+          video_id: string
+          youtube_url: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          table_number: string
+          thumbnail: string
+          title: string
+          video_id: string
+          youtube_url: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          table_number?: string
+          thumbnail?: string
+          title?: string
+          video_id?: string
+          youtube_url?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
