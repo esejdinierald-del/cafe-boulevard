@@ -549,6 +549,7 @@ const Dashboard = () => {
 
   const onPlayerReady = (event: any) => {
     playerRef.current = event.target;
+    try { muteNotifications ? event.target.mute() : event.target.unMute(); } catch {}
     try { event.target.playVideo(); } catch {}
   };
 
