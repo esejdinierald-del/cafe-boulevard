@@ -727,9 +727,73 @@ const Dashboard = () => {
                 className="gap-1.5 h-9 px-3 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
                 <UtensilsCrossed className="h-3.5 w-3.5 text-accent-foreground" /><span className="text-xs font-bold text-accent-foreground">Porosia Gati 🔔</span>
               </Button>
+              <Button variant="outline" size="sm"
+                onClick={() => {
+                  setMuteNotifications((m) => !m);
+                  toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
+                }}
+                className={`gap-1.5 h-9 px-3 touch-manipulation ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
+                {muteNotifications ? <VolumeX className="h-3.5 w-3.5 text-destructive" /> : <Volume2 className="h-3.5 w-3.5" />}
+                <span className="text-xs font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
+              </Button>
             </div>
           </div>
         </Card>
+
+        {/* ===== YOUTUBE PLAYER (always mounted, persists across tab switches) ===== */}
+        {(currentSong || (radioMode && lastVideoIdRef.current)) && (
+          <Card className="p-4 bg-card/50">
+            <div className="aspect-video w-full max-w-3xl mx-auto rounded-xl overflow-hidden bg-black">
+              {currentSong ? (
+                <YouTube
+                  key={`song-${currentSong.id}`}
+                  videoId={currentSong.video_id}
+                  opts={{
+                    width: "100%",
+                    height: "100%",
+                    playerVars: { autoplay: 1, controls: 1, rel: 0 },
+                  }}
+                  className="w-full h-full"
+                  iframeClassName="w-full h-full"
+                  onReady={onPlayerReady}
+                  onEnd={onPlayerEnd}
+                />
+              ) : (
+                <YouTube
+                  key={`radio-${lastVideoIdRef.current}`}
+                  videoId={lastVideoIdRef.current!}
+                  opts={{
+                    width: "100%",
+                    height: "100%",
+                    playerVars: {
+                      autoplay: 1,
+                      controls: 1,
+                      rel: 0,
+                      list: `RD${lastVideoIdRef.current}`,
+                      listType: "playlist",
+                    },
+                  }}
+                  className="w-full h-full"
+                  iframeClassName="w-full h-full"
+                  onReady={onPlayerReady}
+                />
+              )}
+            </div>
+            <div className="mt-3 text-center">
+              {currentSong ? (
+                <>
+                  <p className="font-bold text-base">{currentSong.title}</p>
+                  <p className="text-xs text-muted-foreground">Tavolina {currentSong.table_number}</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold text-base">📻 Radio Mode</p>
+                  <p className="text-xs text-muted-foreground">Muzikë e ngjashme automatike — do të ndërpritet kur miratohet një kërkesë e re</p>
+                </>
+              )}
+            </div>
+          </Card>
+        )}
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "requests" | "songs")} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-3">
