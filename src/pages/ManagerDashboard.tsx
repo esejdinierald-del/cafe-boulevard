@@ -132,6 +132,23 @@ const ManagerDashboard = () => {
     navigate('/');
   };
 
+  const handleSaveTable = async (id: string) => {
+    const name = (tableNames[id] || '').trim();
+    if (!name) {
+      toast.error('Emri nuk mund të jetë bosh');
+      return;
+    }
+    try {
+      const { error } = await supabase.from('tables').update({ name }).eq('id', id);
+      if (error) throw error;
+      toast.success('Tavolina u ruajt');
+      fetchData();
+    } catch (e) {
+      console.error('Error updating table:', e);
+      toast.error('Gabim në ruajtjen e tavolinës');
+    }
+  };
+
   const handleAddCategory = async () => {
     if (!newCategory.trim()) return;
 
