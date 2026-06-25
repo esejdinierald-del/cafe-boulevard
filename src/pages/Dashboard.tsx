@@ -339,8 +339,10 @@ const Dashboard = () => {
     } catch { toast.error('Gabim'); }
   };
 
-  // Realtime subscriptions - ALWAYS ACTIVE (even behind curtain)
+  // Realtime subscriptions — only after curtain is dismissed (shift validated)
   useEffect(() => {
+    if (curtainActive) return;
+
     fetchRequests();
     fetchOrders();
 
@@ -394,7 +396,7 @@ const Dashboard = () => {
       repeatTimersRef.current.clear();
       repeatCountRef.current.clear();
     };
-  }, []);
+  }, [curtainActive]);
 
   // Removed redundant 5s polling — realtime handles it
 
