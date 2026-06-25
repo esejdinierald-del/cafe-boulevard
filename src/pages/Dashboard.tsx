@@ -549,8 +549,19 @@ const Dashboard = () => {
 
   const onPlayerReady = (event: any) => {
     playerRef.current = event.target;
+    try { muteNotifications ? event.target.mute() : event.target.unMute(); } catch {}
     try { event.target.playVideo(); } catch {}
   };
+
+  // Sync mute toggle with YouTube player audio
+  useEffect(() => {
+    const p = playerRef.current;
+    if (!p) return;
+    try {
+      if (muteNotifications) p.mute();
+      else p.unMute();
+    } catch {}
+  }, [muteNotifications, currentSong, radioMode]);
 
   // Songs realtime + initial load (client-side queue management)
   useEffect(() => {
