@@ -152,17 +152,13 @@ const Index = () => {
 
   const submitWaiter = async () => {
     try {
-      const tableNum = parseInt(tableNumber.trim(), 10);
-      if (isNaN(tableNum) || tableNum < 1 || tableNum > 50) {
-        toast.error(
-          language === 'sq'
-            ? 'Numri i tavolinës duhet të jetë midis 1 dhe 50'
-            : 'Table number must be between 1 and 50'
-        );
+      const val = tableNumber.trim();
+      if (!val) {
+        toast.error(t.tableRequired);
         return;
       }
       const { error } = await supabase.from("service_requests").insert({
-        table_number: tableNumber.trim(),
+        table_number: val,
         request_type: "waiter",
         status: "pending",
       });
@@ -176,17 +172,13 @@ const Index = () => {
 
   const submitBill = async () => {
     try {
-      const tableNum = parseInt(tableNumber.trim(), 10);
-      if (isNaN(tableNum) || tableNum < 1 || tableNum > 50) {
-        toast.error(
-          language === 'sq'
-            ? 'Numri i tavolinës duhet të jetë midis 1 dhe 50'
-            : 'Table number must be between 1 and 50'
-        );
+      const val = tableNumber.trim();
+      if (!val) {
+        toast.error(t.tableRequired);
         return;
       }
       const { error } = await supabase.from("service_requests").insert({
-        table_number: tableNumber.trim(),
+        table_number: val,
         request_type: "bill",
         status: "pending",
       });
