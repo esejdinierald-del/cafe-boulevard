@@ -163,7 +163,7 @@ const Dashboard = () => {
       titleIntervalRef.current = null;
     }
 
-    if (totalPending > 0) {
+    if (totalPending > 0 && !muteNotifications) {
       let isAlternate = false;
       titleIntervalRef.current = setInterval(() => {
         document.title = isAlternate ? `🔔 ${totalPending} në pritje!` : `⚠️ KËRKESË E RE!`;
@@ -177,7 +177,7 @@ const Dashboard = () => {
       if (titleIntervalRef.current) clearInterval(titleIntervalRef.current);
       document.title = originalTitleRef.current;
     };
-  }, [requests, orders]);
+  }, [requests, orders, muteNotifications]);
 
   // Load notification preference
   useEffect(() => {
