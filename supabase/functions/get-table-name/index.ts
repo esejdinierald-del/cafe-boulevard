@@ -26,9 +26,10 @@ Deno.serve(async (req) => {
     );
 
     const num = parseInt(String(table_number), 10);
-    const fallback = `Tavolina ${table_number}`;
+    const isNumeric = Number.isFinite(num) && String(num) === String(table_number).trim();
+    const fallback = isNumeric ? `Tavolina ${num}` : String(table_number);
 
-    if (!Number.isFinite(num)) {
+    if (!isNumeric) {
       return new Response(
         JSON.stringify({ name: fallback }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
