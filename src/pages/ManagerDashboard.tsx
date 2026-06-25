@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Plus, Trash2, Edit, Save, X, Brain, Star } from "lucide-react";
+import { LogOut, Plus, Trash2, Edit, Save, X, Brain, Star, Armchair } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +47,12 @@ interface FeedbackEntry {
   created_at: string;
 }
 
+interface TableRow {
+  id: string;
+  number: number;
+  name: string;
+}
+
 const ManagerDashboard = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -68,6 +74,8 @@ const ManagerDashboard = () => {
   const [newKnowledge, setNewKnowledge] = useState({ title: "", content: "" });
   const [editingKnowledge, setEditingKnowledge] = useState<string | null>(null);
   const [feedbackEntries, setFeedbackEntries] = useState<FeedbackEntry[]>([]);
+  const [tables, setTables] = useState<TableRow[]>([]);
+  const [tableNames, setTableNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     checkAuth();
@@ -97,17 +105,21 @@ const ManagerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }, { data: feedbackData }] = await Promise.all([
+      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }, { data: feedbackData }, { data: tablesData }] = await Promise.all([
         supabase.from('categories').select('*').order('display_order'),
         supabase.from('menu_items').select('*'),
         supabase.from('ai_knowledge').select('*').order('created_at', { ascending: false }),
         supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('tables').select('id, number, name').order('number'),
       ]);
 
       setCategories(categoriesData || []);
       setMenuItems(itemsData || []);
       setKnowledgeEntries(knowledgeData || []);
       setFeedbackEntries((feedbackData || []) as FeedbackEntry[]);
+      const rows = (tablesData || []) as TableRow[];
+      setTables(rows);
+      setTableNames(Object.fromEntries(rows.map((r) => [r.id, r.name])));
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -118,6 +130,23 @@ const ManagerDashboard = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
+  };
+
+  const handleSaveTable = async (id: string) => {
+    const name = (tableNames[id] || '').trim();
+    if (!name) {
+      toast.error('Emri nuk mund të jetë bosh');
+      return;
+    }
+    try {
+      const { error } = await supabase.from('tables').update({ name }).eq('id', id);
+      if (error) throw error;
+      toast.success('Tavolina u ruajt');
+      fetchData();
+    } catch (e) {
+      console.error('Error updating table:', e);
+      toast.error('Gabim në ruajtjen e tavolinës');
+    }
   };
 
   const handleAddCategory = async () => {
@@ -382,6 +411,10 @@ const ManagerDashboard = () => {
             <TabsTrigger value="feedback" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
               <Star className="mr-1 h-4 w-4" />
               Feedback
+            </TabsTrigger>
+            <TabsTrigger value="tables" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              <Armchair className="mr-1 h-4 w-4" />
+              Tavolinat
             </TabsTrigger>
           </TabsList>
 
@@ -825,6 +858,37 @@ const ManagerDashboard = () => {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="tables" className="space-y-4">
+            <Card className="glass-premium p-6 rounded-3xl shadow-[var(--shadow-elegant)]">
+              <h2 className="text-xl font-display font-bold mb-2 gradient-text-gold">Menaxhimi i Tavolinave</h2>
+              <p className="text-sm text-muted-foreground mb-5">Vendos një emër të personalizuar për çdo tavolinë (p.sh. "Tavolina e Dritares", "Tavolina VIP").</p>
+              <div className="grid gap-3">
+                {tables.map((table) => (
+                  <div key={table.id} className="flex items-center gap-3">
+                    <span className="font-display font-bold text-secondary w-12 text-center">#{table.number}</span>
+                    <Input
+                      value={tableNames[table.id] ?? ''}
+                      onChange={(e) => setTableNames((prev) => ({ ...prev, [table.id]: e.target.value }))}
+                      className="flex-1"
+                      placeholder={`Tavolina ${table.number}`}
+                    />
+                    <Button
+                      onClick={() => handleSaveTable(table.id)}
+                      disabled={(tableNames[table.id] ?? '') === table.name}
+                      className="rounded-xl"
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      Ruaj
+                    </Button>
+                  </div>
+                ))}
+                {tables.length === 0 && (
+                  <p className="text-muted-foreground text-center py-8">Nuk u gjetën tavolina.</p>
+                )}
+              </div>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -351,6 +351,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tables: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          number: number
+          qr_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          number: number
+          qr_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          number?: number
+          qr_code?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

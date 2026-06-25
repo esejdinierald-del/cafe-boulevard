@@ -116,18 +116,39 @@ const Index = () => {
   const [songDialogOpen, setSongDialogOpen] = useState(false);
   const [songUrl, setSongUrl] = useState("");
   const [submittingSong, setSubmittingSong] = useState(false);
+  const [tableDisplayName, setTableDisplayName] = useState("");
   const { checking } = useGeolocation();
 
   useEffect(() => {
     if (tableParam) setTableNumber(tableParam);
   }, [tableParam]);
 
+  useEffect(() => {
+    const n = tableNumber.trim();
+    if (!n) {
+      setTableDisplayName("");
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.functions.invoke("get-table-name", {
+          body: { table_number: n },
+        });
+        if (!cancelled) setTableDisplayName(data?.name || `Tavolina ${n}`);
+      } catch {
+        if (!cancelled) setTableDisplayName(`Tavolina ${n}`);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [tableNumber]);
+
   // Don't render anything while redirecting to staff
   if (redirecting) {
     return <div className="min-h-screen bg-foreground" />;
   }
 
-  const displayTable = tableNumber || t.table;
+  const displayTable = tableDisplayName || tableNumber || t.table;
 
   const submitWaiter = async () => {
     try {
