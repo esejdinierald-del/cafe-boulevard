@@ -956,56 +956,7 @@ const Dashboard = () => {
 
           <TabsContent value="songs">
             <div className="space-y-4">
-              {/* Player */}
-              {currentSong ? (
-                <Card className="p-4 bg-card/50">
-                  <div className="aspect-video w-full max-w-3xl mx-auto rounded-xl overflow-hidden bg-black">
-                    <YouTube
-                      videoId={currentSong.video_id}
-                      opts={{
-                        width: "100%",
-                        height: "100%",
-                        playerVars: { autoplay: 1, controls: 1, rel: 0 },
-                      }}
-                      className="w-full h-full"
-                      iframeClassName="w-full h-full"
-                      onReady={onPlayerReady}
-                      onEnd={onPlayerEnd}
-                    />
-                  </div>
-                  <div className="mt-3 text-center">
-                    <p className="font-bold text-base">{currentSong.title}</p>
-                    <p className="text-xs text-muted-foreground">Tavolina {currentSong.table_number}</p>
-                  </div>
-                </Card>
-              ) : radioMode && lastVideoIdRef.current ? (
-                <Card className="p-4 bg-card/50">
-                  <div className="aspect-video w-full max-w-3xl mx-auto rounded-xl overflow-hidden bg-black">
-                    <YouTube
-                      key={`radio-${lastVideoIdRef.current}`}
-                      videoId={lastVideoIdRef.current}
-                      opts={{
-                        width: "100%",
-                        height: "100%",
-                        playerVars: {
-                          autoplay: 1,
-                          controls: 1,
-                          rel: 0,
-                          list: `RD${lastVideoIdRef.current}`,
-                          listType: "playlist",
-                        },
-                      }}
-                      className="w-full h-full"
-                      iframeClassName="w-full h-full"
-                      onReady={onPlayerReady}
-                    />
-                  </div>
-                  <div className="mt-3 text-center">
-                    <p className="font-bold text-base">📻 Radio Mode</p>
-                    <p className="text-xs text-muted-foreground">Muzikë e ngjashme automatike — do të ndërpritet kur miratohet një kërkesë e re</p>
-                  </div>
-                </Card>
-              ) : (
+              {!currentSong && !radioMode && (
                 <Card className="p-8 text-center bg-card/50">
                   <p className="text-4xl mb-3">🎵</p>
                   <p className="font-bold">Nuk ka këngë në radhë</p>
