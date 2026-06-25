@@ -47,6 +47,10 @@ export function useGeolocation() {
     const t = translations[language];
     setChecking(true);
 
+    // GPS geofencing temporarily disabled for all users (until further notice)
+    setChecking(false);
+    return Promise.resolve({ allowed: true });
+
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
         setChecking(false);
