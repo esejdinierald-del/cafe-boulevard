@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Volume2, Clock, QrCode } from "lucide-react";
+import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
@@ -75,6 +75,15 @@ const Dashboard = () => {
   const playerRef = useRef<any>(null);
   const [radioMode, setRadioMode] = useState(false);
   const lastVideoIdRef = useRef<string | null>(null);
+
+  // Mute toggle (silences sounds, voice, system notifications and reminders)
+  const [muteNotifications, setMuteNotifications] = useState(false);
+
+  // Refs so realtime handlers see latest playlist/currentSong without re-subscribing
+  const currentSongRef = useRef<SongRequest | null>(null);
+  const playlistRef = useRef<SongRequest[]>([]);
+  useEffect(() => { currentSongRef.current = currentSong; }, [currentSong]);
+  useEffect(() => { playlistRef.current = playlist; }, [playlist]);
 
   // Generate or fetch active shift token via edge function (bypasses RLS)
   const ensureShiftToken = async () => {
@@ -154,7 +163,7 @@ const Dashboard = () => {
       titleIntervalRef.current = null;
     }
 
-    if (totalPending > 0) {
+    if (totalPending > 0 && !muteNotifications) {
       let isAlternate = false;
       titleIntervalRef.current = setInterval(() => {
         document.title = isAlternate ? `🔔 ${totalPending} në pritje!` : `⚠️ KËRKESË E RE!`;
@@ -168,7 +177,7 @@ const Dashboard = () => {
       if (titleIntervalRef.current) clearInterval(titleIntervalRef.current);
       document.title = originalTitleRef.current;
     };
-  }, [requests, orders]);
+  }, [requests, orders, muteNotifications]);
 
   // Load notification preference
   useEffect(() => {
@@ -200,6 +209,7 @@ const Dashboard = () => {
   };
 
   const showSystemNotification = (title: string, body: string, requestType: string) => {
+    if (muteNotifications) return;
     if ('Notification' in window && Notification.permission === 'granted') {
       const notification = new Notification(title, {
         body, icon: '/pwa-192x192.png', badge: '/pwa-192x192.png',
@@ -227,6 +237,7 @@ const Dashboard = () => {
   };
 
   const playBellSound = async () => {
+    if (muteNotifications) return;
     try {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -256,6 +267,7 @@ const Dashboard = () => {
   };
 
   const playAudioNotification = (requestType: string, tableNumber: string, isReminder = false) => {
+    if (muteNotifications) return;
     playBellSound();
     const title = isReminder ? `⏰ Rikujtim - ${tableNumber}` : `🔔 Kërkesë e re - ${tableNumber}`;
     const body = requestType === 'waiter' ? 'Kërkon kamarier' : requestType === 'bill' ? 'Kërkon faturën' : 'Porosi e re';
@@ -274,6 +286,7 @@ const Dashboard = () => {
   };
 
   const scheduleRepeatNotification = (requestId: string, requestType: string, tableNumber: string) => {
+    if (muteNotifications) return;
     const existing = repeatTimersRef.current.get(requestId);
     if (existing) clearTimeout(existing);
     const count = repeatCountRef.current.get(requestId) || 0;
@@ -480,7 +493,17 @@ const Dashboard = () => {
         .select("*")
         .in("status", ["pending", "approved"])
         .order("created_at", { ascending: true });
-      if (data) setSongRequests(data as SongRequest[]);
+      if (data) {
+        const songs = data as SongRequest[];
+        setSongRequests(songs);
+        const approved = songs.filter((s) => s.status === "approved");
+        if (approved.length > 0 && !currentSongRef.current) {
+          setCurrentSong(approved[0]);
+          setPlaylist(approved.slice(1));
+        } else if (currentSongRef.current) {
+          setPlaylist(approved.filter((s) => s.id !== currentSongRef.current!.id));
+        }
+      }
     } catch (e) {
       console.error("Error fetching songs:", e);
     }
@@ -489,8 +512,7 @@ const Dashboard = () => {
   const handleApproveSong = async (id: string) => {
     try {
       await supabase.functions.invoke("manage-songs", { body: { action: "approve", id } });
-      await fetchPlaylistState();
-      fetchSongs();
+      // Realtime UPDATE event do ta shtojë automatikisht në playlist
     } catch {
       toast.error("Gabim në miratim");
     }
@@ -499,62 +521,29 @@ const Dashboard = () => {
   const handleRejectSong = async (id: string) => {
     try {
       await supabase.functions.invoke("manage-songs", { body: { action: "reject", id } });
-      fetchSongs();
     } catch {
       toast.error("Gabim në refuzim");
     }
   };
 
-  // ===== PLAYLIST STATE (server-backed) =====
-  const fetchPlaylistState = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("manage-playlist", {
-        body: { action: "get_state" },
-      });
-      if (error || !data) return;
-      setCurrentSong(data.currentSong);
-      setPlaylist(data.playlist || []);
-    } catch (e) {
-      console.error("Error fetching playlist state:", e);
-    }
-  };
-
-  const playNext = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("manage-playlist", {
-        body: { action: "play_next" },
-      });
-      if (error || !data) return;
-      setCurrentSong(data.currentSong);
-      setPlaylist(data.playlist || []);
-    } catch (e) {
-      console.error("Error playing next:", e);
-    }
-  };
-
-  const markPlayedAndNext = async (songId: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke("manage-playlist", {
-        body: { action: "mark_played", song_id: songId },
-      });
-      if (error || !data) return false;
-      setCurrentSong(data.currentSong);
-      setPlaylist(data.playlist || []);
-      return !!data.currentSong;
-    } catch (e) {
-      console.error("Error marking played:", e);
-      return false;
-    }
-  };
-
+  // ===== YOUTUBE PLAYER EVENTS (client-side queue + Radio fallback) =====
   const onPlayerEnd = () => {
-    if (currentSong) {
-      lastVideoIdRef.current = currentSong.video_id;
-      markPlayedAndNext(currentSong.id).then((hasNext) => {
-        if (!hasNext && lastVideoIdRef.current) {
-          setRadioMode(true);
-        }
-      });
+    const ended = currentSongRef.current;
+    if (ended) {
+      lastVideoIdRef.current = ended.video_id;
+      // Mark as played in DB (fire and forget — realtime will sync)
+      supabase.functions
+        .invoke("manage-songs", { body: { action: "played", id: ended.id } })
+        .catch(() => {});
+    }
+    const queue = playlistRef.current;
+    if (queue.length > 0) {
+      const next = queue[0];
+      setCurrentSong(next);
+      setPlaylist(queue.slice(1));
+    } else {
+      setCurrentSong(null);
+      if (lastVideoIdRef.current) setRadioMode(true);
     }
   };
 
@@ -563,26 +552,49 @@ const Dashboard = () => {
     try { event.target.playVideo(); } catch {}
   };
 
-  // Songs realtime + initial load
+  // Songs realtime + initial load (client-side queue management)
   useEffect(() => {
     if (curtainActive) return;
 
     fetchSongs();
-    fetchPlaylistState();
 
     const channel = supabase
       .channel("songs-realtime")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "song_requests" },
-        () => { fetchSongs(); }
+        (payload) => {
+          const newSong = payload.new as SongRequest;
+          setSongRequests((prev) => [...prev, newSong]);
+        }
       )
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "song_requests" },
-        () => {
-          fetchSongs();
-          fetchPlaylistState();
+        (payload) => {
+          const updated = payload.new as SongRequest;
+          setSongRequests((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+
+          if (updated.status === "approved") {
+            if (!currentSongRef.current) {
+              // Kënga e parë e miratuar — bëje aktuale dhe dil nga Radio Mode
+              setRadioMode(false);
+              setCurrentSong(updated);
+            } else {
+              setPlaylist((prev) => (prev.some((s) => s.id === updated.id) ? prev : [...prev, updated]));
+            }
+          } else if (updated.status === "rejected" || updated.status === "played") {
+            setPlaylist((prev) => prev.filter((s) => s.id !== updated.id));
+            if (currentSongRef.current?.id === updated.id) {
+              const queue = playlistRef.current;
+              if (queue.length > 0) {
+                setCurrentSong(queue[0]);
+                setPlaylist(queue.slice(1));
+              } else {
+                setCurrentSong(null);
+              }
+            }
+          }
         }
       )
       .on(
@@ -590,14 +602,18 @@ const Dashboard = () => {
         { event: "DELETE", schema: "public", table: "song_requests" },
         (payload) => {
           const old = payload.old as SongRequest;
-          setPlaylist((prev) => prev.filter((s) => s.id !== old.id));
           setSongRequests((prev) => prev.filter((s) => s.id !== old.id));
+          setPlaylist((prev) => prev.filter((s) => s.id !== old.id));
+          if (currentSongRef.current?.id === old.id) {
+            const queue = playlistRef.current.filter((s) => s.id !== old.id);
+            if (queue.length > 0) {
+              setCurrentSong(queue[0]);
+              setPlaylist(queue.slice(1));
+            } else {
+              setCurrentSong(null);
+            }
+          }
         }
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "playlist_state" },
-        () => { fetchPlaylistState(); }
       )
       .subscribe();
 
@@ -605,15 +621,6 @@ const Dashboard = () => {
       supabase.removeChannel(channel);
     };
   }, [curtainActive]);
-
-  // Auto-start playback when there's a queue but nothing playing
-  useEffect(() => {
-    if (curtainActive) return;
-    if (!currentSong && playlist.length > 0) {
-      if (radioMode) setRadioMode(false);
-      playNext();
-    }
-  }, [curtainActive, currentSong, playlist.length, radioMode]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -720,9 +727,73 @@ const Dashboard = () => {
                 className="gap-1.5 h-9 px-3 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
                 <UtensilsCrossed className="h-3.5 w-3.5 text-accent-foreground" /><span className="text-xs font-bold text-accent-foreground">Porosia Gati 🔔</span>
               </Button>
+              <Button variant="outline" size="sm"
+                onClick={() => {
+                  setMuteNotifications((m) => !m);
+                  toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
+                }}
+                className={`gap-1.5 h-9 px-3 touch-manipulation ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
+                {muteNotifications ? <VolumeX className="h-3.5 w-3.5 text-destructive" /> : <Volume2 className="h-3.5 w-3.5" />}
+                <span className="text-xs font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
+              </Button>
             </div>
           </div>
         </Card>
+
+        {/* ===== YOUTUBE PLAYER (always mounted, persists across tab switches) ===== */}
+        {(currentSong || (radioMode && lastVideoIdRef.current)) && (
+          <Card className="p-4 bg-card/50">
+            <div className="aspect-video w-full max-w-3xl mx-auto rounded-xl overflow-hidden bg-black">
+              {currentSong ? (
+                <YouTube
+                  key={`song-${currentSong.id}`}
+                  videoId={currentSong.video_id}
+                  opts={{
+                    width: "100%",
+                    height: "100%",
+                    playerVars: { autoplay: 1, controls: 1, rel: 0 },
+                  }}
+                  className="w-full h-full"
+                  iframeClassName="w-full h-full"
+                  onReady={onPlayerReady}
+                  onEnd={onPlayerEnd}
+                />
+              ) : (
+                <YouTube
+                  key={`radio-${lastVideoIdRef.current}`}
+                  videoId={lastVideoIdRef.current!}
+                  opts={{
+                    width: "100%",
+                    height: "100%",
+                    playerVars: {
+                      autoplay: 1,
+                      controls: 1,
+                      rel: 0,
+                      list: `RD${lastVideoIdRef.current}`,
+                      listType: "playlist",
+                    },
+                  }}
+                  className="w-full h-full"
+                  iframeClassName="w-full h-full"
+                  onReady={onPlayerReady}
+                />
+              )}
+            </div>
+            <div className="mt-3 text-center">
+              {currentSong ? (
+                <>
+                  <p className="font-bold text-base">{currentSong.title}</p>
+                  <p className="text-xs text-muted-foreground">Tavolina {currentSong.table_number}</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold text-base">📻 Radio Mode</p>
+                  <p className="text-xs text-muted-foreground">Muzikë e ngjashme automatike — do të ndërpritet kur miratohet një kërkesë e re</p>
+                </>
+              )}
+            </div>
+          </Card>
+        )}
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "requests" | "songs")} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-3">
@@ -885,56 +956,7 @@ const Dashboard = () => {
 
           <TabsContent value="songs">
             <div className="space-y-4">
-              {/* Player */}
-              {currentSong ? (
-                <Card className="p-4 bg-card/50">
-                  <div className="aspect-video w-full max-w-3xl mx-auto rounded-xl overflow-hidden bg-black">
-                    <YouTube
-                      videoId={currentSong.video_id}
-                      opts={{
-                        width: "100%",
-                        height: "100%",
-                        playerVars: { autoplay: 1, controls: 1, rel: 0 },
-                      }}
-                      className="w-full h-full"
-                      iframeClassName="w-full h-full"
-                      onReady={onPlayerReady}
-                      onEnd={onPlayerEnd}
-                    />
-                  </div>
-                  <div className="mt-3 text-center">
-                    <p className="font-bold text-base">{currentSong.title}</p>
-                    <p className="text-xs text-muted-foreground">Tavolina {currentSong.table_number}</p>
-                  </div>
-                </Card>
-              ) : radioMode && lastVideoIdRef.current ? (
-                <Card className="p-4 bg-card/50">
-                  <div className="aspect-video w-full max-w-3xl mx-auto rounded-xl overflow-hidden bg-black">
-                    <YouTube
-                      key={`radio-${lastVideoIdRef.current}`}
-                      videoId={lastVideoIdRef.current}
-                      opts={{
-                        width: "100%",
-                        height: "100%",
-                        playerVars: {
-                          autoplay: 1,
-                          controls: 1,
-                          rel: 0,
-                          list: `RD${lastVideoIdRef.current}`,
-                          listType: "playlist",
-                        },
-                      }}
-                      className="w-full h-full"
-                      iframeClassName="w-full h-full"
-                      onReady={onPlayerReady}
-                    />
-                  </div>
-                  <div className="mt-3 text-center">
-                    <p className="font-bold text-base">📻 Radio Mode</p>
-                    <p className="text-xs text-muted-foreground">Muzikë e ngjashme automatike — do të ndërpritet kur miratohet një kërkesë e re</p>
-                  </div>
-                </Card>
-              ) : (
+              {!currentSong && !radioMode && (
                 <Card className="p-8 text-center bg-card/50">
                   <p className="text-4xl mb-3">🎵</p>
                   <p className="font-bold">Nuk ka këngë në radhë</p>
