@@ -73,6 +73,8 @@ const Dashboard = () => {
   const [playlist, setPlaylist] = useState<SongRequest[]>([]);
   const [currentSong, setCurrentSong] = useState<SongRequest | null>(null);
   const playerRef = useRef<any>(null);
+  const [radioMode, setRadioMode] = useState(false);
+  const lastVideoIdRef = useRef<string | null>(null);
 
   // Generate or fetch active shift token via edge function (bypasses RLS)
   const ensureShiftToken = async () => {
@@ -535,16 +537,25 @@ const Dashboard = () => {
       const { data, error } = await supabase.functions.invoke("manage-playlist", {
         body: { action: "mark_played", song_id: songId },
       });
-      if (error || !data) return;
+      if (error || !data) return false;
       setCurrentSong(data.currentSong);
       setPlaylist(data.playlist || []);
+      return !!data.currentSong;
     } catch (e) {
       console.error("Error marking played:", e);
+      return false;
     }
   };
 
   const onPlayerEnd = () => {
-    if (currentSong) markPlayedAndNext(currentSong.id);
+    if (currentSong) {
+      lastVideoIdRef.current = currentSong.video_id;
+      markPlayedAndNext(currentSong.id).then((hasNext) => {
+        if (!hasNext && lastVideoIdRef.current) {
+          setRadioMode(true);
+        }
+      });
+    }
   };
 
   const onPlayerReady = (event: any) => {
@@ -599,9 +610,10 @@ const Dashboard = () => {
   useEffect(() => {
     if (curtainActive) return;
     if (!currentSong && playlist.length > 0) {
+      if (radioMode) setRadioMode(false);
       playNext();
     }
-  }, [curtainActive, currentSong, playlist.length]);
+  }, [curtainActive, currentSong, playlist.length, radioMode]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
