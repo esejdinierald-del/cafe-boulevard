@@ -1,82 +1,9 @@
 # Boulevard Café - Full Source Code Export
-# Generated: 2026-06-25T00:24:03Z
+# Generated: 2026-06-25T00:32:33Z
 
 
-================================================================
-FILE: index.html
-================================================================
-<!doctype html>
-<html lang="sq">
-  <head>
-    <script>
-      // iOS PWA cache-buster: force /staff route when opened from home screen
-      if (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches) {
-        var u = new URL(window.location.href);
-        if (u.pathname === '/' || u.searchParams.get('app') === 'ios') {
-          if (u.pathname !== '/staff') {
-            window.location.replace('/staff');
-          }
-        }
-      }
-    </script>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Boulevard Café Elbasan - Premium Service</title>
-    <meta name="description" content="Experience premium café service at Boulevard Café Elbasan. Call waiter, request bill, and order from menu with elegant simplicity.">
-    <meta name="author" content="Boulevard Café Elbasan" />
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#1a1a1a" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Boulevard" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="application-name" content="Boulevard Café" />
-    <meta name="format-detection" content="telephone=no" />
-    
-    <!-- PWA Icons -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+===== FILE: package.json =====
 
-    
-    
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://cafe-boulevard.lovable.app" />
-    <meta property="og:image" content="https://cafe-boulevard.lovable.app/og-image.png">
-
-    <meta name="twitter:card" content="summary_large_image" />
-    
-    
-    <meta name="twitter:image" content="https://cafe-boulevard.lovable.app/og-image.png">
-    
-    <!-- Splash Screens for iOS -->
-    <style>
-      /* Prevent pull-to-refresh on mobile */
-      html, body {
-        overscroll-behavior-y: contain;
-      }
-    </style>
-    <meta property="og:title" content="Boulevard Café Elbasan - Premium Service">
-  <meta name="twitter:title" content="Boulevard Café Elbasan - Premium Service">
-  <meta property="og:description" content="Experience premium café service at Boulevard Café Elbasan. Call waiter, request bill, and order from menu with elegant simplicity.">
-  <meta name="twitter:description" content="Experience premium café service at Boulevard Café Elbasan. Call waiter, request bill, and order from menu with elegant simplicity.">
-</head>
-
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-
-================================================================
-FILE: package.json
-================================================================
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
@@ -166,9 +93,8 @@ FILE: package.json
   }
 }
 
-================================================================
-FILE: tsconfig.json
-================================================================
+===== FILE: tsconfig.json =====
+
 {
   "compilerOptions": {
     "allowJs": true,
@@ -193,9 +119,8 @@ FILE: tsconfig.json
     }
   ]
 }
-================================================================
-FILE: tsconfig.app.json
-================================================================
+===== FILE: tsconfig.app.json =====
+
 {
   "compilerOptions": {
     "allowImportingTsExtensions": true,
@@ -228,9 +153,8 @@ FILE: tsconfig.app.json
     "src"
   ]
 }
-================================================================
-FILE: tsconfig.node.json
-================================================================
+===== FILE: tsconfig.node.json =====
+
 {
   "compilerOptions": {
     "target": "ES2022",
@@ -254,9 +178,8 @@ FILE: tsconfig.node.json
   "include": ["vite.config.ts"]
 }
 
-================================================================
-FILE: vite.config.ts
-================================================================
+===== FILE: vite.config.ts =====
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -319,9 +242,8 @@ export default defineConfig(({ mode }) => ({
   },
 }));
 
-================================================================
-FILE: tailwind.config.ts
-================================================================
+===== FILE: tailwind.config.ts =====
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -467,9 +389,8 @@ export default {
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
 
-================================================================
-FILE: postcss.config.js
-================================================================
+===== FILE: postcss.config.js =====
+
 export default {
   plugins: {
     tailwindcss: {},
@@ -477,9 +398,8 @@ export default {
   },
 };
 
-================================================================
-FILE: components.json
-================================================================
+===== FILE: components.json =====
+
 {
   "$schema": "https://ui.shadcn.com/schema.json",
   "style": "default",
@@ -501,9 +421,8 @@ FILE: components.json
   }
 }
 
-================================================================
-FILE: eslint.config.js
-================================================================
+===== FILE: eslint.config.js =====
+
 import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -531,13 +450,82 @@ export default tseslint.config(
   },
 );
 
-================================================================
-FILE: supabase/config.toml
-================================================================
+===== FILE: index.html =====
+
+<!doctype html>
+<html lang="sq">
+  <head>
+    <script>
+      // iOS PWA cache-buster: force /staff route when opened from home screen
+      if (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches) {
+        var u = new URL(window.location.href);
+        if (u.pathname === '/' || u.searchParams.get('app') === 'ios') {
+          if (u.pathname !== '/staff') {
+            window.location.replace('/staff');
+          }
+        }
+      }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Boulevard Café Elbasan - Premium Service</title>
+    <meta name="description" content="Experience premium café service at Boulevard Café Elbasan. Call waiter, request bill, and order from menu with elegant simplicity.">
+    <meta name="author" content="Boulevard Café Elbasan" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1a1a1a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Boulevard" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Boulevard Café" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cafe-boulevard.lovable.app" />
+    <meta property="og:image" content="https://cafe-boulevard.lovable.app/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    
+    <meta name="twitter:image" content="https://cafe-boulevard.lovable.app/og-image.png">
+    
+    <!-- Splash Screens for iOS -->
+    <style>
+      /* Prevent pull-to-refresh on mobile */
+      html, body {
+        overscroll-behavior-y: contain;
+      }
+    </style>
+    <meta property="og:title" content="Boulevard Café Elbasan - Premium Service">
+  <meta name="twitter:title" content="Boulevard Café Elbasan - Premium Service">
+  <meta property="og:description" content="Experience premium café service at Boulevard Café Elbasan. Call waiter, request bill, and order from menu with elegant simplicity.">
+  <meta name="twitter:description" content="Experience premium café service at Boulevard Café Elbasan. Call waiter, request bill, and order from menu with elegant simplicity.">
+</head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+===== FILE: supabase/config.toml =====
+
 project_id = "taqrxxikhwghmeofrpzs"
-================================================================
-FILE: public/manifest.webmanifest
-================================================================
+===== FILE: public/manifest.webmanifest =====
+
 {
   "name": "Boulevard Café Elbasan",
   "short_name": "Boulevard",
@@ -569,9 +557,8 @@ FILE: public/manifest.webmanifest
     }
   ]
 }
-================================================================
-FILE: public/staff-manifest.webmanifest
-================================================================
+===== FILE: public/staff-manifest.webmanifest =====
+
 {
   "name": "Boulevard Café - Stafi",
   "short_name": "Boulevard Staff",
@@ -603,9 +590,8 @@ FILE: public/staff-manifest.webmanifest
     }
   ]
 }
-================================================================
-FILE: public/staff-sw.js
-================================================================
+===== FILE: public/staff-sw.js =====
+
 // Staff Service Worker for Web Push Notifications
 // This runs independently of the page — receives push even when tab is closed
 
@@ -672,9 +658,8 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-================================================================
-FILE: public/robots.txt
-================================================================
+===== FILE: public/robots.txt =====
+
 User-agent: Googlebot
 Allow: /
 
@@ -690,9 +675,8 @@ Allow: /
 User-agent: *
 Allow: /
 
-================================================================
-FILE: src/App.tsx
-================================================================
+===== FILE: src/App.tsx =====
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -737,9 +721,8 @@ const App = () => (
 
 export default App;
 
-================================================================
-FILE: src/components/FeedbackDialog.tsx
-================================================================
+===== FILE: src/components/FeedbackDialog.tsx =====
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -868,9 +851,8 @@ export const FeedbackDialog = ({ open, onOpenChange, tableNumber, language }: Fe
   );
 };
 
-================================================================
-FILE: src/components/QrScanner.tsx
-================================================================
+===== FILE: src/components/QrScanner.tsx =====
+
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { Camera, X, Loader2 } from "lucide-react";
@@ -978,9 +960,8 @@ const QrScanner = ({ onScan, onClose }: QrScannerProps) => {
 
 export default QrScanner;
 
-================================================================
-FILE: src/components/SplashScreen.tsx
-================================================================
+===== FILE: src/components/SplashScreen.tsx =====
+
 import { useState, useEffect } from "react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
 
@@ -1016,9 +997,8 @@ const SplashScreen = ({ onFinish }: { onFinish: () => void }) => {
 
 export default SplashScreen;
 
-================================================================
-FILE: src/components/StaffChatDialog.tsx
-================================================================
+===== FILE: src/components/StaffChatDialog.tsx =====
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -1266,9 +1246,8 @@ export function StaffChatDialog({ open, onOpenChange }: StaffChatDialogProps) {
   );
 }
 
-================================================================
-FILE: src/components/TableIdentifier.tsx
-================================================================
+===== FILE: src/components/TableIdentifier.tsx =====
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1349,9 +1328,8 @@ export const TableIdentifier = ({ language, tableNumber, isGeneric, onUpdate }: 
   );
 };
 
-================================================================
-FILE: src/components/WelcomeGreeting.tsx
-================================================================
+===== FILE: src/components/WelcomeGreeting.tsx =====
+
 import { useState, useEffect } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -1490,9 +1468,8 @@ export const WelcomeGreeting = ({ language, onDismiss, onOpenChat }: WelcomeGree
   );
 };
 
-================================================================
-FILE: src/components/icons/BellIcon.tsx
-================================================================
+===== FILE: src/components/icons/BellIcon.tsx =====
+
 export const BellIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -1501,9 +1478,8 @@ export const BellIcon = () => (
   </svg>
 );
 
-================================================================
-FILE: src/components/icons/ChatIcon.tsx
-================================================================
+===== FILE: src/components/icons/ChatIcon.tsx =====
+
 export const ChatIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -1512,18 +1488,16 @@ export const ChatIcon = () => (
   </svg>
 );
 
-================================================================
-FILE: src/components/icons/CheckIcon.tsx
-================================================================
+===== FILE: src/components/icons/CheckIcon.tsx =====
+
 export const CheckIcon = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1a0f00" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="4 12 10 18 20 6" />
   </svg>
 );
 
-================================================================
-FILE: src/components/icons/CocktailIcon.tsx
-================================================================
+===== FILE: src/components/icons/CocktailIcon.tsx =====
+
 export const CocktailIcon = () => (
   <svg
     viewBox="0 0 48 48"
@@ -1548,9 +1522,8 @@ export const CocktailIcon = () => (
   </svg>
 );
 
-================================================================
-FILE: src/components/icons/LocationPinIcon.tsx
-================================================================
+===== FILE: src/components/icons/LocationPinIcon.tsx =====
+
 export const LocationPinIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#e8c76d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 21c-4-4-7-7.5-7-11a7 7 0 0 1 14 0c0 3.5-3 7-7 11z" />
@@ -1558,9 +1531,8 @@ export const LocationPinIcon = () => (
   </svg>
 );
 
-================================================================
-FILE: src/components/icons/ReceiptIcon.tsx
-================================================================
+===== FILE: src/components/icons/ReceiptIcon.tsx =====
+
 export const ReceiptIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 3 2V2H4z" />
@@ -1570,18 +1542,16 @@ export const ReceiptIcon = () => (
   </svg>
 );
 
-================================================================
-FILE: src/components/icons/StarIcon.tsx
-================================================================
+===== FILE: src/components/icons/StarIcon.tsx =====
+
 export const StarIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </svg>
 );
 
-================================================================
-FILE: src/components/icons/UtensilsIcon.tsx
-================================================================
+===== FILE: src/components/icons/UtensilsIcon.tsx =====
+
 export const UtensilsIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2" />
@@ -1591,9 +1561,8 @@ export const UtensilsIcon = () => (
   </svg>
 );
 
-================================================================
-FILE: src/components/icons/index.ts
-================================================================
+===== FILE: src/components/icons/index.ts =====
+
 export { CocktailIcon } from './CocktailIcon';
 export { LocationPinIcon } from './LocationPinIcon';
 export { BellIcon } from './BellIcon';
@@ -1603,9 +1572,8 @@ export { ChatIcon } from './ChatIcon';
 export { StarIcon } from './StarIcon';
 export { CheckIcon } from './CheckIcon';
 
-================================================================
-FILE: src/components/ui/accordion.tsx
-================================================================
+===== FILE: src/components/ui/accordion.tsx =====
+
 import * as React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
@@ -1659,9 +1627,8 @@ AccordionContent.displayName = AccordionPrimitive.Content.displayName;
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
 
-================================================================
-FILE: src/components/ui/alert-dialog.tsx
-================================================================
+===== FILE: src/components/ui/alert-dialog.tsx =====
+
 import * as React from "react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 
@@ -1767,9 +1734,8 @@ export {
   AlertDialogCancel,
 };
 
-================================================================
-FILE: src/components/ui/alert.tsx
-================================================================
+===== FILE: src/components/ui/alert.tsx =====
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -1814,18 +1780,16 @@ AlertDescription.displayName = "AlertDescription";
 
 export { Alert, AlertTitle, AlertDescription };
 
-================================================================
-FILE: src/components/ui/aspect-ratio.tsx
-================================================================
+===== FILE: src/components/ui/aspect-ratio.tsx =====
+
 import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio";
 
 const AspectRatio = AspectRatioPrimitive.Root;
 
 export { AspectRatio };
 
-================================================================
-FILE: src/components/ui/avatar.tsx
-================================================================
+===== FILE: src/components/ui/avatar.tsx =====
+
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 
@@ -1865,9 +1829,8 @@ AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
 
 export { Avatar, AvatarImage, AvatarFallback };
 
-================================================================
-FILE: src/components/ui/badge.tsx
-================================================================
+===== FILE: src/components/ui/badge.tsx =====
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -1898,9 +1861,8 @@ function Badge({ className, variant, ...props }: BadgeProps) {
 
 export { Badge, badgeVariants };
 
-================================================================
-FILE: src/components/ui/breadcrumb.tsx
-================================================================
+===== FILE: src/components/ui/breadcrumb.tsx =====
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
@@ -1992,9 +1954,8 @@ export {
   BreadcrumbEllipsis,
 };
 
-================================================================
-FILE: src/components/ui/button.tsx
-================================================================
+===== FILE: src/components/ui/button.tsx =====
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -2069,9 +2030,8 @@ Button.displayName = "Button";
 
 export { Button, buttonVariants };
 
-================================================================
-FILE: src/components/ui/calendar.tsx
-================================================================
+===== FILE: src/components/ui/calendar.tsx =====
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -2127,9 +2087,8 @@ Calendar.displayName = "Calendar";
 
 export { Calendar };
 
-================================================================
-FILE: src/components/ui/card.tsx
-================================================================
+===== FILE: src/components/ui/card.tsx =====
+
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -2174,9 +2133,8 @@ CardFooter.displayName = "CardFooter";
 
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
 
-================================================================
-FILE: src/components/ui/carousel.tsx
-================================================================
+===== FILE: src/components/ui/carousel.tsx =====
+
 import * as React from "react";
 import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -2402,9 +2360,8 @@ CarouselNext.displayName = "CarouselNext";
 
 export { type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext };
 
-================================================================
-FILE: src/components/ui/chart.tsx
-================================================================
+===== FILE: src/components/ui/chart.tsx =====
+
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
@@ -2709,9 +2666,8 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
 
 export { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle };
 
-================================================================
-FILE: src/components/ui/checkbox.tsx
-================================================================
+===== FILE: src/components/ui/checkbox.tsx =====
+
 import * as React from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Check } from "lucide-react";
@@ -2739,9 +2695,8 @@ Checkbox.displayName = CheckboxPrimitive.Root.displayName;
 
 export { Checkbox };
 
-================================================================
-FILE: src/components/ui/collapsible.tsx
-================================================================
+===== FILE: src/components/ui/collapsible.tsx =====
+
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 
 const Collapsible = CollapsiblePrimitive.Root;
@@ -2752,9 +2707,8 @@ const CollapsibleContent = CollapsiblePrimitive.CollapsibleContent;
 
 export { Collapsible, CollapsibleTrigger, CollapsibleContent };
 
-================================================================
-FILE: src/components/ui/command.tsx
-================================================================
+===== FILE: src/components/ui/command.tsx =====
+
 import * as React from "react";
 import { type DialogProps } from "@radix-ui/react-dialog";
 import { Command as CommandPrimitive } from "cmdk";
@@ -2888,9 +2842,8 @@ export {
   CommandSeparator,
 };
 
-================================================================
-FILE: src/components/ui/context-menu.tsx
-================================================================
+===== FILE: src/components/ui/context-menu.tsx =====
+
 import * as React from "react";
 import * as ContextMenuPrimitive from "@radix-ui/react-context-menu";
 import { Check, ChevronRight, Circle } from "lucide-react";
@@ -3070,9 +3023,8 @@ export {
   ContextMenuRadioGroup,
 };
 
-================================================================
-FILE: src/components/ui/dialog.tsx
-================================================================
+===== FILE: src/components/ui/dialog.tsx =====
+
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
@@ -3169,9 +3121,8 @@ export {
   DialogDescription,
 };
 
-================================================================
-FILE: src/components/ui/drawer.tsx
-================================================================
+===== FILE: src/components/ui/drawer.tsx =====
+
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
@@ -3260,9 +3211,8 @@ export {
   DrawerDescription,
 };
 
-================================================================
-FILE: src/components/ui/dropdown-menu.tsx
-================================================================
+===== FILE: src/components/ui/dropdown-menu.tsx =====
+
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronRight, Circle } from "lucide-react";
@@ -3443,9 +3393,8 @@ export {
   DropdownMenuRadioGroup,
 };
 
-================================================================
-FILE: src/components/ui/form.tsx
-================================================================
+===== FILE: src/components/ui/form.tsx =====
+
 import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { Slot } from "@radix-ui/react-slot";
@@ -3576,9 +3525,8 @@ FormMessage.displayName = "FormMessage";
 
 export { useFormField, Form, FormItem, FormLabel, FormControl, FormDescription, FormMessage, FormField };
 
-================================================================
-FILE: src/components/ui/hover-card.tsx
-================================================================
+===== FILE: src/components/ui/hover-card.tsx =====
+
 import * as React from "react";
 import * as HoverCardPrimitive from "@radix-ui/react-hover-card";
 
@@ -3607,9 +3555,8 @@ HoverCardContent.displayName = HoverCardPrimitive.Content.displayName;
 
 export { HoverCard, HoverCardTrigger, HoverCardContent };
 
-================================================================
-FILE: src/components/ui/input-otp.tsx
-================================================================
+===== FILE: src/components/ui/input-otp.tsx =====
+
 import * as React from "react";
 import { OTPInput, OTPInputContext } from "input-otp";
 import { Dot } from "lucide-react";
@@ -3672,9 +3619,8 @@ InputOTPSeparator.displayName = "InputOTPSeparator";
 
 export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator };
 
-================================================================
-FILE: src/components/ui/input.tsx
-================================================================
+===== FILE: src/components/ui/input.tsx =====
+
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -3698,9 +3644,8 @@ Input.displayName = "Input";
 
 export { Input };
 
-================================================================
-FILE: src/components/ui/label.tsx
-================================================================
+===== FILE: src/components/ui/label.tsx =====
+
 import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -3719,9 +3664,8 @@ Label.displayName = LabelPrimitive.Root.displayName;
 
 export { Label };
 
-================================================================
-FILE: src/components/ui/menubar.tsx
-================================================================
+===== FILE: src/components/ui/menubar.tsx =====
+
 import * as React from "react";
 import * as MenubarPrimitive from "@radix-ui/react-menubar";
 import { Check, ChevronRight, Circle } from "lucide-react";
@@ -3930,9 +3874,8 @@ export {
   MenubarShortcut,
 };
 
-================================================================
-FILE: src/components/ui/navigation-menu.tsx
-================================================================
+===== FILE: src/components/ui/navigation-menu.tsx =====
+
 import * as React from "react";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
 import { cva } from "class-variance-authority";
@@ -4054,9 +3997,8 @@ export {
   NavigationMenuViewport,
 };
 
-================================================================
-FILE: src/components/ui/pagination.tsx
-================================================================
+===== FILE: src/components/ui/pagination.tsx =====
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
@@ -4139,9 +4081,8 @@ export {
   PaginationPrevious,
 };
 
-================================================================
-FILE: src/components/ui/popover.tsx
-================================================================
+===== FILE: src/components/ui/popover.tsx =====
+
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 
@@ -4172,9 +4113,8 @@ PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
 export { Popover, PopoverTrigger, PopoverContent };
 
-================================================================
-FILE: src/components/ui/progress.tsx
-================================================================
+===== FILE: src/components/ui/progress.tsx =====
+
 import * as React from "react";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 
@@ -4199,9 +4139,8 @@ Progress.displayName = ProgressPrimitive.Root.displayName;
 
 export { Progress };
 
-================================================================
-FILE: src/components/ui/radio-group.tsx
-================================================================
+===== FILE: src/components/ui/radio-group.tsx =====
+
 import * as React from "react";
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import { Circle } from "lucide-react";
@@ -4239,9 +4178,8 @@ RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName;
 
 export { RadioGroup, RadioGroupItem };
 
-================================================================
-FILE: src/components/ui/resizable.tsx
-================================================================
+===== FILE: src/components/ui/resizable.tsx =====
+
 import { GripVertical } from "lucide-react";
 import * as ResizablePrimitive from "react-resizable-panels";
 
@@ -4280,9 +4218,8 @@ const ResizableHandle = ({
 
 export { ResizablePanelGroup, ResizablePanel, ResizableHandle };
 
-================================================================
-FILE: src/components/ui/scroll-area.tsx
-================================================================
+===== FILE: src/components/ui/scroll-area.tsx =====
+
 import * as React from "react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 
@@ -4322,9 +4259,8 @@ ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
 
 export { ScrollArea, ScrollBar };
 
-================================================================
-FILE: src/components/ui/select.tsx
-================================================================
+===== FILE: src/components/ui/select.tsx =====
+
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
@@ -4469,9 +4405,8 @@ export {
   SelectScrollDownButton,
 };
 
-================================================================
-FILE: src/components/ui/separator.tsx
-================================================================
+===== FILE: src/components/ui/separator.tsx =====
+
 import * as React from "react";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
 
@@ -4493,9 +4428,8 @@ Separator.displayName = SeparatorPrimitive.Root.displayName;
 
 export { Separator };
 
-================================================================
-FILE: src/components/ui/sheet.tsx
-================================================================
+===== FILE: src/components/ui/sheet.tsx =====
+
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
@@ -4604,9 +4538,8 @@ export {
   SheetTrigger,
 };
 
-================================================================
-FILE: src/components/ui/sidebar.tsx
-================================================================
+===== FILE: src/components/ui/sidebar.tsx =====
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
@@ -5245,9 +5178,8 @@ export {
   useSidebar,
 };
 
-================================================================
-FILE: src/components/ui/skeleton.tsx
-================================================================
+===== FILE: src/components/ui/skeleton.tsx =====
+
 import { cn } from "@/lib/utils";
 
 function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
@@ -5256,9 +5188,8 @@ function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
 
 export { Skeleton };
 
-================================================================
-FILE: src/components/ui/slider.tsx
-================================================================
+===== FILE: src/components/ui/slider.tsx =====
+
 import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 
@@ -5283,9 +5214,8 @@ Slider.displayName = SliderPrimitive.Root.displayName;
 
 export { Slider };
 
-================================================================
-FILE: src/components/ui/sonner.tsx
-================================================================
+===== FILE: src/components/ui/sonner.tsx =====
+
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, toast } from "sonner";
 
@@ -5314,9 +5244,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
 export { Toaster, toast };
 
-================================================================
-FILE: src/components/ui/switch.tsx
-================================================================
+===== FILE: src/components/ui/switch.tsx =====
+
 import * as React from "react";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 
@@ -5345,9 +5274,8 @@ Switch.displayName = SwitchPrimitives.Root.displayName;
 
 export { Switch };
 
-================================================================
-FILE: src/components/ui/table.tsx
-================================================================
+===== FILE: src/components/ui/table.tsx =====
+
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -5421,9 +5349,8 @@ TableCaption.displayName = "TableCaption";
 
 export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption };
 
-================================================================
-FILE: src/components/ui/tabs.tsx
-================================================================
+===== FILE: src/components/ui/tabs.tsx =====
+
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
@@ -5478,9 +5405,8 @@ TabsContent.displayName = TabsPrimitive.Content.displayName;
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };
 
-================================================================
-FILE: src/components/ui/textarea.tsx
-================================================================
+===== FILE: src/components/ui/textarea.tsx =====
+
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -5503,9 +5429,8 @@ Textarea.displayName = "Textarea";
 
 export { Textarea };
 
-================================================================
-FILE: src/components/ui/toast.tsx
-================================================================
+===== FILE: src/components/ui/toast.tsx =====
+
 import * as React from "react";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -5618,9 +5543,8 @@ export {
   ToastAction,
 };
 
-================================================================
-FILE: src/components/ui/toaster.tsx
-================================================================
+===== FILE: src/components/ui/toaster.tsx =====
+
 import { useToast } from "@/hooks/use-toast";
 import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from "@/components/ui/toast";
 
@@ -5646,9 +5570,8 @@ export function Toaster() {
   );
 }
 
-================================================================
-FILE: src/components/ui/toggle-group.tsx
-================================================================
+===== FILE: src/components/ui/toggle-group.tsx =====
+
 import * as React from "react";
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
 import { type VariantProps } from "class-variance-authority";
@@ -5699,9 +5622,8 @@ ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName;
 
 export { ToggleGroup, ToggleGroupItem };
 
-================================================================
-FILE: src/components/ui/toggle.tsx
-================================================================
+===== FILE: src/components/ui/toggle.tsx =====
+
 import * as React from "react";
 import * as TogglePrimitive from "@radix-ui/react-toggle";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -5740,9 +5662,8 @@ Toggle.displayName = TogglePrimitive.Root.displayName;
 
 export { Toggle, toggleVariants };
 
-================================================================
-FILE: src/components/ui/tooltip.tsx
-================================================================
+===== FILE: src/components/ui/tooltip.tsx =====
+
 import * as React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
@@ -5772,16 +5693,14 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
 
-================================================================
-FILE: src/components/ui/use-toast.ts
-================================================================
+===== FILE: src/components/ui/use-toast.ts =====
+
 import { useToast, toast } from "@/hooks/use-toast";
 
 export { useToast, toast };
 
-================================================================
-FILE: src/hooks/use-chat-session.ts
-================================================================
+===== FILE: src/hooks/use-chat-session.ts =====
+
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -5875,9 +5794,8 @@ export function useChatSession(welcomeMessage: string) {
   return { messages, setMessages, saveMessages, resetSession, loaded };
 }
 
-================================================================
-FILE: src/hooks/use-geolocation.ts
-================================================================
+===== FILE: src/hooks/use-geolocation.ts =====
+
 import { useState, useCallback } from "react";
 
 // Boulevard Café Elbasan approximate coordinates
@@ -5969,9 +5887,8 @@ export function useGeolocation() {
   return { checkLocation, checking };
 }
 
-================================================================
-FILE: src/hooks/use-language.tsx
-================================================================
+===== FILE: src/hooks/use-language.tsx =====
+
 import { useState, useEffect } from 'react';
 
 export type Language = 'sq' | 'en';
@@ -5993,9 +5910,8 @@ export const useLanguage = () => {
   return { language, setLanguage, toggleLanguage };
 };
 
-================================================================
-FILE: src/hooks/use-mobile.tsx
-================================================================
+===== FILE: src/hooks/use-mobile.tsx =====
+
 import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;
@@ -6016,9 +5932,8 @@ export function useIsMobile() {
   return !!isMobile;
 }
 
-================================================================
-FILE: src/hooks/use-toast.ts
-================================================================
+===== FILE: src/hooks/use-toast.ts =====
+
 import * as React from "react";
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
@@ -6206,9 +6121,8 @@ function useToast() {
 
 export { useToast, toast };
 
-================================================================
-FILE: src/index.css
-================================================================
+===== FILE: src/index.css =====
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6609,9 +6523,8 @@ FILE: src/index.css
   80% { opacity: 0.9; }
 }
 
-================================================================
-FILE: src/integrations/supabase/client.ts
-================================================================
+===== FILE: src/integrations/supabase/client.ts =====
+
 // This file is automatically generated. Do not edit it directly.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
@@ -6629,9 +6542,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
-================================================================
-FILE: src/integrations/supabase/types.ts
-================================================================
+===== FILE: src/integrations/supabase/types.ts =====
+
 export type Json =
   | string
   | number
@@ -7088,9 +7000,8 @@ export const Constants = {
   },
 } as const
 
-================================================================
-FILE: src/lib/utils.ts
-================================================================
+===== FILE: src/lib/utils.ts =====
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -7098,18 +7009,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-================================================================
-FILE: src/main.tsx
-================================================================
+===== FILE: src/main.tsx =====
+
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
 
-================================================================
-FILE: src/pages/AppDocumentation.tsx
-================================================================
+===== FILE: src/pages/AppDocumentation.tsx =====
+
 import { Button } from "@/components/ui/button";
 import { Printer, Mail, ArrowLeft, Download, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -7396,9 +7305,8 @@ const FlowArrow = () => (
 
 export default AppDocumentation;
 
-================================================================
-FILE: src/pages/Dashboard.tsx
-================================================================
+===== FILE: src/pages/Dashboard.tsx =====
+
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -8121,9 +8029,8 @@ const Dashboard = () => {
 
 export default Dashboard;
 
-================================================================
-FILE: src/pages/Index.tsx
-================================================================
+===== FILE: src/pages/Index.tsx =====
+
 import { useState, useEffect } from "react";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
 import { FeedbackDialog } from "@/components/FeedbackDialog";
@@ -8458,9 +8365,8 @@ const Index = () => {
 
 export default Index;
 
-================================================================
-FILE: src/pages/Install.tsx
-================================================================
+===== FILE: src/pages/Install.tsx =====
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8644,9 +8550,8 @@ const Install = () => {
 
 export default Install;
 
-================================================================
-FILE: src/pages/ManagerDashboard.tsx
-================================================================
+===== FILE: src/pages/ManagerDashboard.tsx =====
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9483,9 +9388,8 @@ const ManagerDashboard = () => {
 
 export default ManagerDashboard;
 
-================================================================
-FILE: src/pages/ManagerLogin.tsx
-================================================================
+===== FILE: src/pages/ManagerLogin.tsx =====
+
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9688,9 +9592,8 @@ const ManagerLogin = () => {
 
 export default ManagerLogin;
 
-================================================================
-FILE: src/pages/Menu.tsx
-================================================================
+===== FILE: src/pages/Menu.tsx =====
+
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10247,9 +10150,8 @@ const Menu = () => {
 
 export default Menu;
 
-================================================================
-FILE: src/pages/NotFound.tsx
-================================================================
+===== FILE: src/pages/NotFound.tsx =====
+
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -10277,9 +10179,8 @@ const NotFound = () => {
 
 export default NotFound;
 
-================================================================
-FILE: src/pages/StaffShift.tsx
-================================================================
+===== FILE: src/pages/StaffShift.tsx =====
+
 import { useEffect, useState, useRef, useCallback, TouchEvent } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10982,9 +10883,8 @@ const StaffShift = () => {
 
 export default StaffShift;
 
-================================================================
-FILE: src/styles/boulevard.css
-================================================================
+===== FILE: src/styles/boulevard.css =====
+
 /* ============================================
    BOULEVARD CAFÉ - CUSTOM STYLES
    Cinematic Premium Dark Luxury
@@ -11789,14 +11689,12 @@ FILE: src/styles/boulevard.css
   background: rgba(201,163,92,0.35);
 }
 
-================================================================
-FILE: src/vite-env.d.ts
-================================================================
+===== FILE: src/vite-env.d.ts =====
+
 /// <reference types="vite/client" />
 
-================================================================
-FILE: supabase/functions/cleanup-chat-sessions/index.ts
-================================================================
+===== FILE: supabase/functions/cleanup-chat-sessions/index.ts =====
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -11841,9 +11739,8 @@ Deno.serve(async (req) => {
   }
 });
 
-================================================================
-FILE: supabase/functions/complete-request/index.ts
-================================================================
+===== FILE: supabase/functions/complete-request/index.ts =====
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -11929,9 +11826,8 @@ Deno.serve(async (req) => {
   }
 });
 
-================================================================
-FILE: supabase/functions/manage-shift/index.ts
-================================================================
+===== FILE: supabase/functions/manage-shift/index.ts =====
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -12352,9 +12248,8 @@ Deno.serve(async (req) => {
   }
 });
 
-================================================================
-FILE: supabase/functions/push-subscribe/index.ts
-================================================================
+===== FILE: supabase/functions/push-subscribe/index.ts =====
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -12411,9 +12306,8 @@ Deno.serve(async (req) => {
   }
 });
 
-================================================================
-FILE: supabase/functions/send-push/index.ts
-================================================================
+===== FILE: supabase/functions/send-push/index.ts =====
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -12677,9 +12571,8 @@ Deno.serve(async (req) => {
   }
 });
 
-================================================================
-FILE: supabase/functions/staff-chat/index.ts
-================================================================
+===== FILE: supabase/functions/staff-chat/index.ts =====
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
 
@@ -13146,9 +13039,8 @@ GUIDELINES:
   }
 });
 
-================================================================
-FILE: supabase/functions/unlock-shift/index.ts
-================================================================
+===== FILE: supabase/functions/unlock-shift/index.ts =====
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -13264,9 +13156,8 @@ Deno.serve(async (req) => {
   }
 });
 
-================================================================
-FILE: supabase/functions/validate-shift/index.ts
-================================================================
+===== FILE: supabase/functions/validate-shift/index.ts =====
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -13323,9 +13214,8 @@ Deno.serve(async (req) => {
   }
 });
 
-================================================================
-FILE: supabase/migrations/20251206001705_remix_migration_from_pg_dump.sql
-================================================================
+===== FILE: supabase/migrations/20251206001705_remix_migration_from_pg_dump.sql =====
+
 CREATE EXTENSION IF NOT EXISTS "pg_graphql";
 CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
@@ -13784,17 +13674,15 @@ ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
 
 
-================================================================
-FILE: supabase/migrations/20260128100156_5d823696-52e2-4495-9c69-1f3d37da2449.sql
-================================================================
+===== FILE: supabase/migrations/20260128100156_5d823696-52e2-4495-9c69-1f3d37da2449.sql =====
+
 -- Enable realtime for service_requests table
 ALTER PUBLICATION supabase_realtime ADD TABLE public.service_requests;
 
 -- Enable realtime for orders table  
 ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
-================================================================
-FILE: supabase/migrations/20260204232224_6ef765db-4abe-44fa-8f77-ab85be9e72ff.sql
-================================================================
+===== FILE: supabase/migrations/20260204232224_6ef765db-4abe-44fa-8f77-ab85be9e72ff.sql =====
+
 -- Update the manager signup trigger to include the new admin email
 CREATE OR REPLACE FUNCTION public.handle_manager_signup()
  RETURNS trigger
@@ -13824,9 +13712,8 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_manager_signup();
-================================================================
-FILE: supabase/migrations/20260308051348_ad612bd9-969d-4f1b-9c66-5e93fa835050.sql
-================================================================
+===== FILE: supabase/migrations/20260308051348_ad612bd9-969d-4f1b-9c66-5e93fa835050.sql =====
+
 CREATE TABLE public.chat_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id text NOT NULL,
@@ -13844,9 +13731,8 @@ CREATE POLICY "Anyone can view chat sessions" ON public.chat_sessions FOR SELECT
 CREATE POLICY "Anyone can insert chat sessions" ON public.chat_sessions FOR INSERT WITH CHECK (true);
 CREATE POLICY "Anyone can update chat sessions" ON public.chat_sessions FOR UPDATE USING (true);
 CREATE POLICY "Anyone can delete chat sessions" ON public.chat_sessions FOR DELETE USING (true);
-================================================================
-FILE: supabase/migrations/20260308141301_3cddc955-b20c-4194-82a7-fab88e729131.sql
-================================================================
+===== FILE: supabase/migrations/20260308141301_3cddc955-b20c-4194-82a7-fab88e729131.sql =====
+
 
 CREATE TABLE public.shift_tokens (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -13869,9 +13755,8 @@ CREATE POLICY "Anyone can delete shift tokens" ON public.shift_tokens
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.shift_tokens;
 
-================================================================
-FILE: supabase/migrations/20260314060004_9627b665-30ab-4250-b5fc-3f2bd37631c8.sql
-================================================================
+===== FILE: supabase/migrations/20260314060004_9627b665-30ab-4250-b5fc-3f2bd37631c8.sql =====
+
 
 -- Drop overly permissive policies
 DROP POLICY IF EXISTS "Anyone can update orders" ON public.orders;
@@ -13889,18 +13774,16 @@ FOR DELETE
 TO authenticated
 USING (public.has_role(auth.uid(), 'admin'::app_role) OR public.has_role(auth.uid(), 'manager'::app_role));
 
-================================================================
-FILE: supabase/migrations/20260314060116_7b5e2f12-3d09-479c-a059-5da3c371d5cf.sql
-================================================================
+===== FILE: supabase/migrations/20260314060116_7b5e2f12-3d09-479c-a059-5da3c371d5cf.sql =====
+
 
 -- Allow anon to update orders (needed for staff who use simple password auth)
 CREATE POLICY "Anyone can update orders" ON public.orders
 FOR UPDATE
 USING (true);
 
-================================================================
-FILE: supabase/migrations/20260321052040_4585267e-bea0-4f80-8b17-714fd3cc9dc1.sql
-================================================================
+===== FILE: supabase/migrations/20260321052040_4585267e-bea0-4f80-8b17-714fd3cc9dc1.sql =====
+
 
 ALTER TABLE public.shift_tokens ADD COLUMN unlocked boolean NOT NULL DEFAULT false;
 
@@ -13911,9 +13794,8 @@ TO public
 USING (true)
 WITH CHECK (true);
 
-================================================================
-FILE: supabase/migrations/20260321055419_2cbd3908-99c9-4b62-af5d-b7d9bb4b393a.sql
-================================================================
+===== FILE: supabase/migrations/20260321055419_2cbd3908-99c9-4b62-af5d-b7d9bb4b393a.sql =====
+
 
 -- Remove public DELETE on chat_sessions - only managers can delete
 DROP POLICY IF EXISTS "Anyone can delete chat sessions" ON public.chat_sessions;
@@ -13927,16 +13809,14 @@ USING (
   OR public.has_role(auth.uid(), 'manager'::app_role)
 );
 
-================================================================
-FILE: supabase/migrations/20260321060442_228536e4-6801-496e-83e7-e956b26d677d.sql
-================================================================
+===== FILE: supabase/migrations/20260321060442_228536e4-6801-496e-83e7-e956b26d677d.sql =====
+
 
 CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 
-================================================================
-FILE: supabase/migrations/20260321062752_deb0c513-5612-477b-b018-d026feeb1bee.sql
-================================================================
+===== FILE: supabase/migrations/20260321062752_deb0c513-5612-477b-b018-d026feeb1bee.sql =====
+
 -- Fix RLS on service_requests: remove dangerous anon DELETE/UPDATE policies
 DROP POLICY IF EXISTS "Anyone can delete service requests" ON public.service_requests;
 DROP POLICY IF EXISTS "Anyone can update service requests" ON public.service_requests;
@@ -13987,16 +13867,14 @@ CREATE POLICY "Managers can upload menu images" ON storage.objects
 
 CREATE POLICY "Anyone can view menu images" ON storage.objects
   FOR SELECT TO public USING (bucket_id = 'menu-images');
-================================================================
-FILE: supabase/migrations/20260321070936_07bbee7c-d0c8-45b8-8855-91258c7daf9d.sql
-================================================================
+===== FILE: supabase/migrations/20260321070936_07bbee7c-d0c8-45b8-8855-91258c7daf9d.sql =====
+
 ALTER TABLE public.menu_items 
   ADD COLUMN offer_price integer DEFAULT NULL,
   ADD COLUMN offer_start_time time DEFAULT NULL,
   ADD COLUMN offer_end_time time DEFAULT NULL;
-================================================================
-FILE: supabase/migrations/20260321075640_273bb391-bebb-41cf-9eb8-4f91adcf717f.sql
-================================================================
+===== FILE: supabase/migrations/20260321075640_273bb391-bebb-41cf-9eb8-4f91adcf717f.sql =====
+
 CREATE TABLE public.ai_knowledge (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text NOT NULL,
@@ -14011,9 +13889,8 @@ CREATE POLICY "Anyone can view ai_knowledge" ON public.ai_knowledge FOR SELECT T
 CREATE POLICY "Managers can insert ai_knowledge" ON public.ai_knowledge FOR INSERT TO public WITH CHECK (has_role(auth.uid(), 'manager'::app_role));
 CREATE POLICY "Managers can update ai_knowledge" ON public.ai_knowledge FOR UPDATE TO public USING (has_role(auth.uid(), 'manager'::app_role));
 CREATE POLICY "Managers can delete ai_knowledge" ON public.ai_knowledge FOR DELETE TO authenticated USING (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'manager'::app_role));
-================================================================
-FILE: supabase/migrations/20260321222516_e80640ab-99a6-4023-9ee8-11e0cbd56b66.sql
-================================================================
+===== FILE: supabase/migrations/20260321222516_e80640ab-99a6-4023-9ee8-11e0cbd56b66.sql =====
+
 CREATE TABLE public.feedback (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   table_number text NOT NULL,
@@ -14034,32 +13911,27 @@ CREATE POLICY "Managers can delete feedback" ON public.feedback
   FOR DELETE TO authenticated USING (
     has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'manager'::app_role)
   );
-================================================================
-FILE: supabase/migrations/20260325145856_de8d712b-1e82-48d2-8bc4-0e4d49be835e.sql
-================================================================
+===== FILE: supabase/migrations/20260325145856_de8d712b-1e82-48d2-8bc4-0e4d49be835e.sql =====
+
 ALTER PUBLICATION supabase_realtime ADD TABLE public.service_requests;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.shift_tokens;
-================================================================
-FILE: supabase/migrations/20260325185704_ab5f54b5-1a68-4b2b-8104-2bd1ab2e80bf.sql
-================================================================
+===== FILE: supabase/migrations/20260325185704_ab5f54b5-1a68-4b2b-8104-2bd1ab2e80bf.sql =====
+
 ALTER TABLE public.service_requests DROP CONSTRAINT service_requests_request_type_check;
 ALTER TABLE public.service_requests ADD CONSTRAINT service_requests_request_type_check CHECK (request_type = ANY (ARRAY['waiter'::text, 'bill'::text, 'kitchen_ready'::text]));
-================================================================
-FILE: supabase/migrations/20260404225731_6721958b-989b-4351-a9bb-53621cda9c21.sql
-================================================================
+===== FILE: supabase/migrations/20260404225731_6721958b-989b-4351-a9bb-53621cda9c21.sql =====
+
 ALTER TABLE public.menu_items ADD COLUMN display_order integer DEFAULT 0;
-================================================================
-FILE: supabase/migrations/20260405010635_8ac16b5b-3b2b-4670-9d81-e7d58608c99c.sql
-================================================================
+===== FILE: supabase/migrations/20260405010635_8ac16b5b-3b2b-4670-9d81-e7d58608c99c.sql =====
+
 -- Create the trigger on auth.users for auto-assigning manager roles
 CREATE OR REPLACE TRIGGER on_manager_signup
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_manager_signup();
-================================================================
-FILE: supabase/migrations/20260405030440_f44ce482-60ff-4a59-a9bc-88a3983d802b.sql
-================================================================
+===== FILE: supabase/migrations/20260405030440_f44ce482-60ff-4a59-a9bc-88a3983d802b.sql =====
+
 
 -- =============================================
 -- 1. SHIFT_TOKENS: Lock down all public access
@@ -14146,9 +14018,8 @@ USING (
   AND has_role(auth.uid(), 'manager'::app_role)
 );
 
-================================================================
-FILE: supabase/migrations/20260407032651_7ff2b805-c6e5-4376-a468-c7b0483c1b7a.sql
-================================================================
+===== FILE: supabase/migrations/20260407032651_7ff2b805-c6e5-4376-a468-c7b0483c1b7a.sql =====
+
 
 CREATE TABLE public.push_subscriptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -14177,9 +14048,8 @@ CREATE POLICY "Anyone can update push subscriptions"
 ON public.push_subscriptions FOR UPDATE
 USING (true);
 
-================================================================
-FILE: supabase/migrations/20260508004736_8b62ee06-2cea-4d25-8b4b-9fe17146df07.sql
-================================================================
+===== FILE: supabase/migrations/20260508004736_8b62ee06-2cea-4d25-8b4b-9fe17146df07.sql =====
+
 
 -- Add group column to categories
 ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS group_name TEXT NOT NULL DEFAULT 'BANAKU';
