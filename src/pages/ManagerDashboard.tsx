@@ -859,6 +859,37 @@ const ManagerDashboard = () => {
               ))}
             </div>
           </TabsContent>
+
+          <TabsContent value="tables" className="space-y-4">
+            <Card className="glass-premium p-6 rounded-3xl shadow-[var(--shadow-elegant)]">
+              <h2 className="text-xl font-display font-bold mb-2 gradient-text-gold">Menaxhimi i Tavolinave</h2>
+              <p className="text-sm text-muted-foreground mb-5">Vendos një emër të personalizuar për çdo tavolinë (p.sh. "Tavolina e Dritares", "Tavolina VIP").</p>
+              <div className="grid gap-3">
+                {tables.map((table) => (
+                  <div key={table.id} className="flex items-center gap-3">
+                    <span className="font-display font-bold text-secondary w-12 text-center">#{table.number}</span>
+                    <Input
+                      value={tableNames[table.id] ?? ''}
+                      onChange={(e) => setTableNames((prev) => ({ ...prev, [table.id]: e.target.value }))}
+                      className="flex-1"
+                      placeholder={`Tavolina ${table.number}`}
+                    />
+                    <Button
+                      onClick={() => handleSaveTable(table.id)}
+                      disabled={(tableNames[table.id] ?? '') === table.name}
+                      className="rounded-xl"
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      Ruaj
+                    </Button>
+                  </div>
+                ))}
+                {tables.length === 0 && (
+                  <p className="text-muted-foreground text-center py-8">Nuk u gjetën tavolina.</p>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
