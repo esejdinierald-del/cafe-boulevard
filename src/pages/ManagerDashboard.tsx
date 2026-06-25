@@ -412,6 +412,10 @@ const ManagerDashboard = () => {
               <Star className="mr-1 h-4 w-4" />
               Feedback
             </TabsTrigger>
+            <TabsTrigger value="tables" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              <Armchair className="mr-1 h-4 w-4" />
+              Tavolinat
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-5">
