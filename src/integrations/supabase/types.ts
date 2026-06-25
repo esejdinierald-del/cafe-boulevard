@@ -205,6 +205,32 @@ export type Database = {
         }
         Relationships: []
       }
+      playlist_state: {
+        Row: {
+          current_song_id: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          current_song_id?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          current_song_id?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playlist_state_current_song_id_fkey"
+            columns: ["current_song_id"]
+            isOneToOne: false
+            referencedRelation: "song_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -291,6 +317,7 @@ export type Database = {
           approved_at: string | null
           created_at: string
           id: string
+          played_at: string | null
           status: string
           table_number: string
           thumbnail: string
@@ -302,6 +329,7 @@ export type Database = {
           approved_at?: string | null
           created_at?: string
           id?: string
+          played_at?: string | null
           status?: string
           table_number: string
           thumbnail: string
@@ -313,6 +341,7 @@ export type Database = {
           approved_at?: string | null
           created_at?: string
           id?: string
+          played_at?: string | null
           status?: string
           table_number?: string
           thumbnail?: string
