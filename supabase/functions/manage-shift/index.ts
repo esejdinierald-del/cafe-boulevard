@@ -20,6 +20,44 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
 
+    // Actions that require manager authentication
+    const MANAGER_ACTIONS = ['create', 'extend', 'close'];
+
+    if (MANAGER_ACTIONS.includes(action)) {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      const supabaseAnon = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY')!
+      );
+      const { data: { user } } = await supabaseAnon.auth.getUser(
+        authHeader.replace('Bearer ', '')
+      );
+      if (!user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'manager')
+        .maybeSingle();
+
+      if (!roleData) {
+        return new Response(JSON.stringify({ error: 'Manager access required' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
     // ACTION: get_or_create — fetch active shift token or create one
     if (action === "get_or_create") {
       if (!shift_start || !shift_end) {
