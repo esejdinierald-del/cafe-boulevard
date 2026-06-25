@@ -77,7 +77,14 @@ const Dashboard = () => {
   const lastVideoIdRef = useRef<string | null>(null);
 
   // Mute toggle (silences sounds, voice, system notifications and reminders)
-  const [muteNotifications, setMuteNotifications] = useState(false);
+  const [muteNotifications, setMuteNotifications] = useState(() => {
+    try { return localStorage.getItem('mute_notifications') === 'true'; } catch { return false; }
+  });
+  const muteNotificationsRef = useRef(muteNotifications);
+  useEffect(() => {
+    muteNotificationsRef.current = muteNotifications;
+    try { localStorage.setItem('mute_notifications', String(muteNotifications)); } catch {}
+  }, [muteNotifications]);
 
   // Refs so realtime handlers see latest playlist/currentSong without re-subscribing
   const currentSongRef = useRef<SongRequest | null>(null);
