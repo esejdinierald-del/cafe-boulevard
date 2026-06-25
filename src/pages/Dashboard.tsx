@@ -487,6 +487,7 @@ const Dashboard = () => {
   const handleApproveSong = async (id: string) => {
     try {
       await supabase.functions.invoke("manage-songs", { body: { action: "approve", id } });
+      await fetchPlaylistState();
       fetchSongs();
     } catch {
       toast.error("Gabim në miratim");
@@ -502,19 +503,48 @@ const Dashboard = () => {
     }
   };
 
-  const onPlayerEnd = () => {
-    if (currentSong) {
-      supabase.functions.invoke("manage-songs", { body: { action: "played", id: currentSong.id } }).catch(() => {});
+  // ===== PLAYLIST STATE (server-backed) =====
+  const fetchPlaylistState = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-playlist", {
+        body: { action: "get_state" },
+      });
+      if (error || !data) return;
+      setCurrentSong(data.currentSong);
+      setPlaylist(data.playlist || []);
+    } catch (e) {
+      console.error("Error fetching playlist state:", e);
     }
-    setPlaylist((prev) => {
-      if (prev.length === 0) {
-        setCurrentSong(null);
-        return prev;
-      }
-      const [next, ...rest] = prev;
-      setCurrentSong(next);
-      return rest;
-    });
+  };
+
+  const playNext = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-playlist", {
+        body: { action: "play_next" },
+      });
+      if (error || !data) return;
+      setCurrentSong(data.currentSong);
+      setPlaylist(data.playlist || []);
+    } catch (e) {
+      console.error("Error playing next:", e);
+    }
+  };
+
+  const markPlayedAndNext = async (songId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-playlist", {
+        body: { action: "mark_played", song_id: songId },
+      });
+      if (error || !data) return;
+      setCurrentSong(data.currentSong);
+      setPlaylist(data.playlist || []);
+    } catch (e) {
+      console.error("Error marking played:", e);
+    }
+  };
+
+  const onPlayerEnd = () => {
+    if (currentSong) markPlayedAndNext(currentSong.id);
   };
 
   const onPlayerReady = (event: any) => {
@@ -527,6 +557,7 @@ const Dashboard = () => {
     if (curtainActive) return;
 
     fetchSongs();
+    fetchPlaylistState();
 
     const channel = supabase
       .channel("songs-realtime")
@@ -538,23 +569,9 @@ const Dashboard = () => {
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "song_requests" },
-        (payload) => {
-          const updated = payload.new as SongRequest;
+        () => {
           fetchSongs();
-          if (updated.status === "approved") {
-            setPlaylist((prev) => {
-              if (prev.some((s) => s.id === updated.id)) return prev;
-              if (currentSong && currentSong.id === updated.id) return prev;
-              const next = [...prev, updated];
-              if (!currentSong) {
-                setCurrentSong(next[0]);
-                return next.slice(1);
-              }
-              return next;
-            });
-          } else if (updated.status === "rejected" || updated.status === "played") {
-            setPlaylist((prev) => prev.filter((s) => s.id !== updated.id));
-          }
+          fetchPlaylistState();
         }
       )
       .on(
@@ -566,12 +583,25 @@ const Dashboard = () => {
           setSongRequests((prev) => prev.filter((s) => s.id !== old.id));
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "playlist_state" },
+        () => { fetchPlaylistState(); }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [curtainActive, currentSong]);
+  }, [curtainActive]);
+
+  // Auto-start playback when there's a queue but nothing playing
+  useEffect(() => {
+    if (curtainActive) return;
+    if (!currentSong && playlist.length > 0) {
+      playNext();
+    }
+  }, [curtainActive, currentSong, playlist.length]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
