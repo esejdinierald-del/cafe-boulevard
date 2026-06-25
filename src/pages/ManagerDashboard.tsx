@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Plus, Trash2, Edit, Save, X, Brain, Star } from "lucide-react";
+import { LogOut, Plus, Trash2, Edit, Save, X, Brain, Star, Armchair } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +47,12 @@ interface FeedbackEntry {
   created_at: string;
 }
 
+interface TableRow {
+  id: string;
+  number: number;
+  name: string;
+}
+
 const ManagerDashboard = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -68,6 +74,8 @@ const ManagerDashboard = () => {
   const [newKnowledge, setNewKnowledge] = useState({ title: "", content: "" });
   const [editingKnowledge, setEditingKnowledge] = useState<string | null>(null);
   const [feedbackEntries, setFeedbackEntries] = useState<FeedbackEntry[]>([]);
+  const [tables, setTables] = useState<TableRow[]>([]);
+  const [tableNames, setTableNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     checkAuth();
@@ -97,17 +105,21 @@ const ManagerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }, { data: feedbackData }] = await Promise.all([
+      const [{ data: categoriesData }, { data: itemsData }, { data: knowledgeData }, { data: feedbackData }, { data: tablesData }] = await Promise.all([
         supabase.from('categories').select('*').order('display_order'),
         supabase.from('menu_items').select('*'),
         supabase.from('ai_knowledge').select('*').order('created_at', { ascending: false }),
         supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('tables').select('id, number, name').order('number'),
       ]);
 
       setCategories(categoriesData || []);
       setMenuItems(itemsData || []);
       setKnowledgeEntries(knowledgeData || []);
       setFeedbackEntries((feedbackData || []) as FeedbackEntry[]);
+      const rows = (tablesData || []) as TableRow[];
+      setTables(rows);
+      setTableNames(Object.fromEntries(rows.map((r) => [r.id, r.name])));
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
