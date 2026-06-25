@@ -7,6 +7,8 @@ import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Volume2, Clock, QrCode 
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import YouTube from "react-youtube";
 
 interface ServiceRequest {
   id: string;
@@ -33,6 +35,17 @@ interface Order {
   notes: string | null;
 }
 
+interface SongRequest {
+  id: string;
+  table_number: string;
+  youtube_url: string;
+  video_id: string;
+  title: string;
+  thumbnail: string;
+  status: string;
+  created_at: string;
+}
+
 const Dashboard = () => {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -53,6 +66,13 @@ const Dashboard = () => {
   const [curtainActive, setCurtainActive] = useState(true);
   const [shiftToken, setShiftToken] = useState<string | null>(null);
   const [staffUrl, setStaffUrl] = useState<string>('');
+
+  // Music tab state
+  const [activeTab, setActiveTab] = useState<"requests" | "songs">("requests");
+  const [songRequests, setSongRequests] = useState<SongRequest[]>([]);
+  const [playlist, setPlaylist] = useState<SongRequest[]>([]);
+  const [currentSong, setCurrentSong] = useState<SongRequest | null>(null);
+  const playerRef = useRef<any>(null);
 
   // Generate or fetch active shift token via edge function (bypasses RLS)
   const ensureShiftToken = async () => {
@@ -450,6 +470,109 @@ const Dashboard = () => {
     } catch { toast.error('Gabim'); }
   };
 
+  // ===== SONGS MANAGEMENT =====
+  const fetchSongs = async () => {
+    try {
+      const { data } = await supabase
+        .from("song_requests")
+        .select("*")
+        .in("status", ["pending", "approved"])
+        .order("created_at", { ascending: true });
+      if (data) setSongRequests(data as SongRequest[]);
+    } catch (e) {
+      console.error("Error fetching songs:", e);
+    }
+  };
+
+  const handleApproveSong = async (id: string) => {
+    try {
+      await supabase.functions.invoke("manage-songs", { body: { action: "approve", id } });
+      fetchSongs();
+    } catch {
+      toast.error("Gabim në miratim");
+    }
+  };
+
+  const handleRejectSong = async (id: string) => {
+    try {
+      await supabase.functions.invoke("manage-songs", { body: { action: "reject", id } });
+      fetchSongs();
+    } catch {
+      toast.error("Gabim në refuzim");
+    }
+  };
+
+  const onPlayerEnd = () => {
+    if (currentSong) {
+      supabase.functions.invoke("manage-songs", { body: { action: "played", id: currentSong.id } }).catch(() => {});
+    }
+    setPlaylist((prev) => {
+      if (prev.length === 0) {
+        setCurrentSong(null);
+        return prev;
+      }
+      const [next, ...rest] = prev;
+      setCurrentSong(next);
+      return rest;
+    });
+  };
+
+  const onPlayerReady = (event: any) => {
+    playerRef.current = event.target;
+    try { event.target.playVideo(); } catch {}
+  };
+
+  // Songs realtime + initial load
+  useEffect(() => {
+    if (curtainActive) return;
+
+    fetchSongs();
+
+    const channel = supabase
+      .channel("songs-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "song_requests" },
+        () => { fetchSongs(); }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "song_requests" },
+        (payload) => {
+          const updated = payload.new as SongRequest;
+          fetchSongs();
+          if (updated.status === "approved") {
+            setPlaylist((prev) => {
+              if (prev.some((s) => s.id === updated.id)) return prev;
+              if (currentSong && currentSong.id === updated.id) return prev;
+              const next = [...prev, updated];
+              if (!currentSong) {
+                setCurrentSong(next[0]);
+                return next.slice(1);
+              }
+              return next;
+            });
+          } else if (updated.status === "rejected" || updated.status === "played") {
+            setPlaylist((prev) => prev.filter((s) => s.id !== updated.id));
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "song_requests" },
+        (payload) => {
+          const old = payload.old as SongRequest;
+          setPlaylist((prev) => prev.filter((s) => s.id !== old.id));
+          setSongRequests((prev) => prev.filter((s) => s.id !== old.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [curtainActive, currentSong]);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending': return <Badge className="bg-warning text-warning-foreground">Në pritje</Badge>;
@@ -559,7 +682,16 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        <div className="grid gap-3 grid-cols-3">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "requests" | "songs")} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-3">
+            <TabsTrigger value="requests">📋 Thirrje & Porosi</TabsTrigger>
+            <TabsTrigger value="songs">
+              🎵 Këngët ({songRequests.filter((s) => s.status === "pending").length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="requests">
+            <div className="grid gap-3 grid-cols-3">
           {/* Pending Requests */}
           <Card className="p-4">
             <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
@@ -706,7 +838,110 @@ const Dashboard = () => {
               )}
             </div>
           </Card>
-        </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="songs">
+            <div className="space-y-4">
+              {/* Player */}
+              {currentSong ? (
+                <Card className="p-4 bg-card/50">
+                  <div className="aspect-video w-full max-w-3xl mx-auto rounded-xl overflow-hidden bg-black">
+                    <YouTube
+                      videoId={currentSong.video_id}
+                      opts={{
+                        width: "100%",
+                        height: "100%",
+                        playerVars: { autoplay: 1, controls: 1, rel: 0 },
+                      }}
+                      className="w-full h-full"
+                      iframeClassName="w-full h-full"
+                      onReady={onPlayerReady}
+                      onEnd={onPlayerEnd}
+                    />
+                  </div>
+                  <div className="mt-3 text-center">
+                    <p className="font-bold text-base">{currentSong.title}</p>
+                    <p className="text-xs text-muted-foreground">Tavolina {currentSong.table_number}</p>
+                  </div>
+                </Card>
+              ) : (
+                <Card className="p-8 text-center bg-card/50">
+                  <p className="text-4xl mb-3">🎵</p>
+                  <p className="font-bold">Nuk ka këngë në radhë</p>
+                  <p className="text-xs text-muted-foreground mt-1">Mirato kërkesat për të filluar muzikën</p>
+                </Card>
+              )}
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {/* Pending songs */}
+                <Card className="p-4">
+                  <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+                    <span>⏳ Kërkesat në Pritje</span>
+                    <Badge variant="outline">
+                      {songRequests.filter((s) => s.status === "pending").length}
+                    </Badge>
+                  </h2>
+                  <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                    {songRequests.filter((s) => s.status === "pending").length === 0 ? (
+                      <p className="text-muted-foreground text-center py-6 text-sm">Nuk ka kërkesa në pritje ✨</p>
+                    ) : (
+                      songRequests
+                        .filter((s) => s.status === "pending")
+                        .map((req) => (
+                          <Card key={req.id} className="p-3 bg-card/50 border-l-4 border-l-warning">
+                            <div className="flex items-center gap-3">
+                              <img src={req.thumbnail} alt={req.title} className="w-20 h-14 object-cover rounded-md flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm truncate">{req.title}</p>
+                                <p className="text-xs text-muted-foreground">Tavolina {req.table_number}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {new Date(req.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              </div>
+                              <div className="flex gap-1.5">
+                                <Button size="sm" onClick={() => handleApproveSong(req.id)} className="bg-success hover:bg-success/90 h-10 w-10 p-0">
+                                  <CheckCircle className="h-5 w-5" />
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => handleRejectSong(req.id)} className="h-10 w-10 p-0">
+                                  <X className="h-5 w-5" />
+                                </Button>
+                              </div>
+                            </div>
+                          </Card>
+                        ))
+                    )}
+                  </div>
+                </Card>
+
+                {/* Approved queue */}
+                <Card className="p-4">
+                  <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+                    <span>📋 Radha e Miratuar</span>
+                    <Badge variant="outline">{playlist.length}</Badge>
+                  </h2>
+                  <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                    {playlist.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-6 text-sm">Radha është bosh</p>
+                    ) : (
+                      playlist.map((song) => (
+                        <Card key={song.id} className="p-3 bg-card/50 border-l-4 border-l-primary">
+                          <div className="flex items-center gap-3">
+                            <img src={song.thumbnail} alt={song.title} className="w-20 h-14 object-cover rounded-md flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm truncate">{song.title}</p>
+                              <p className="text-xs text-muted-foreground">Tav. {song.table_number}</p>
+                            </div>
+                          </div>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div className="mt-auto pt-3 border-t border-border">
