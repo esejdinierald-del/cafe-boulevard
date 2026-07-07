@@ -39,7 +39,7 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
       .eq("type", kind)
       .eq("status", "pending")
       .order("created_at", { ascending: true });
-    setSplits((data as Split[]) || []);
+    setSplits(((data as unknown) as Split[]) || []);
   };
 
   useEffect(() => {
@@ -116,7 +116,7 @@ export const CashierPanel = () => {
       .select("*")
       .in("status", ["ready", "open"])
       .order("created_at", { ascending: true });
-    setOrders((data as POSOrder[]) || []);
+    setOrders(((data as unknown) as POSOrder[]) || []);
   };
 
   useEffect(() => {

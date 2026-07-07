@@ -9,6 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import YouTube from "react-youtube";
+import { KDSPanel, CashierPanel } from "@/components/pos/POSPanels";
 
 interface ServiceRequest {
   id: string;
@@ -68,7 +69,7 @@ const Dashboard = () => {
   const [staffUrl, setStaffUrl] = useState<string>('');
 
   // Music tab state
-  const [activeTab, setActiveTab] = useState<"requests" | "songs">("requests");
+  const [activeTab, setActiveTab] = useState<"requests" | "songs" | "bar" | "kitchen" | "cashier">("requests");
   const [songRequests, setSongRequests] = useState<SongRequest[]>([]);
   const [playlist, setPlaylist] = useState<SongRequest[]>([]);
   const [currentSong, setCurrentSong] = useState<SongRequest | null>(null);
@@ -802,12 +803,15 @@ const Dashboard = () => {
           </Card>
         )}
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "requests" | "songs")} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-3">
             <TabsTrigger value="requests">📋 Thirrje & Porosi</TabsTrigger>
             <TabsTrigger value="songs">
               🎵 Këngët ({songRequests.filter((s) => s.status === "pending").length})
             </TabsTrigger>
+            <TabsTrigger value="bar">🍹 Bar KDS</TabsTrigger>
+            <TabsTrigger value="kitchen">🍽️ Kuzhina KDS</TabsTrigger>
+            <TabsTrigger value="cashier">💳 Arka</TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests">
