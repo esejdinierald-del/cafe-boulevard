@@ -24,7 +24,7 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { tableNumber, mode = "table", items: cartItems, notes = null, locationId = "main" } = body ?? {};
+    const { tableNumber, mode = "table", items: cartItems, notes = null, locationId = "main", operatorName = null } = body ?? {};
 
     if (!Array.isArray(cartItems) || cartItems.length === 0) return jsonResponse({ error: "Shporta është bosh" }, 400);
     if (!["table", "bar", "delivery", "takeaway"].includes(mode)) return jsonResponse({ error: "Mode i panjohur" }, 400);
@@ -74,7 +74,7 @@ serve(async (req) => {
         table_id: tableId,
         table_number: mode === "table" ? tableNumber : null,
         mode, items: enrichedItems, status: "open",
-        total_amount: totalAmount, operator_name: null, location_id: locationId, notes,
+        total_amount: totalAmount, operator_name: operatorName, location_id: locationId, notes,
       }).select().single();
     if (orderErr) return jsonResponse({ error: orderErr.message }, 500);
 

@@ -52,9 +52,11 @@ serve(async (req) => {
     if (orderErr || !order) return jsonResponse({ error: "Porosia nuk u gjet" }, 404);
 
     if (closeOrder) {
-      if (!operatorName) return jsonResponse({ error: "operatorName kërkohet për të mbyllur porosinë" }, 400);
+      // Prefer the waiter who created the order; fall back to cashier's name
+      const effectiveOperator = (order as any).operator_name || operatorName;
+      if (!effectiveOperator) return jsonResponse({ error: "operatorName kërkohet për të mbyllur porosinë" }, 400);
       const { data: txn, error: closeErr } = await supabase.rpc("close_pos_order", {
-        p_order_id: orderId, p_operator_name: operatorName,
+        p_order_id: orderId, p_operator_name: effectiveOperator,
       });
       if (closeErr) return jsonResponse({ error: closeErr.message }, 500);
       await supabase.from("pos_orders").update({ printed_at: new Date().toISOString() }).eq("id", orderId);
