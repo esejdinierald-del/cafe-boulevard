@@ -147,6 +147,12 @@ export const CashierPanel = () => {
   };
 
   const cancelOrder = async (orderId: string) => {
+    const pw = window.prompt("Fjalëkalimi i adminit për të anuluar porosinë:");
+    if (pw === null) return;
+    if (pw !== "2025") {
+      toast.error("Fjalëkalim i pasaktë");
+      return;
+    }
     if (!confirm("Anulo këtë porosi? Ky veprim nuk mund të zhbëhet.")) return;
     setLoading(true);
     // Free table if any
