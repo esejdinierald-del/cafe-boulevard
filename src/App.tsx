@@ -12,6 +12,7 @@ import ManagerDashboard from "./pages/ManagerDashboard";
 import Install from "./pages/Install";
 import StaffShift from "./pages/StaffShift";
 import InstallStaff from "./pages/InstallStaff";
+import POS from "./pages/POS";
 import AppDocumentation from "./pages/AppDocumentation";
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/install" element={<Install />} />
           <Route path="/install-staff" element={<InstallStaff />} />
           <Route path="/staff" element={<StaffShift />} />
+          <Route path="/pos" element={<POS />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
