@@ -42,28 +42,48 @@ export type Database = {
         Row: {
           created_at: string | null
           display_order: number | null
+          for_bar: boolean | null
+          for_kitchen: boolean | null
           group_name: string
+          icon: string | null
           id: string
           name: string
           name_en: string | null
+          parent_id: string | null
         }
         Insert: {
           created_at?: string | null
           display_order?: number | null
+          for_bar?: boolean | null
+          for_kitchen?: boolean | null
           group_name?: string
+          icon?: string | null
           id?: string
           name: string
           name_en?: string | null
+          parent_id?: string | null
         }
         Update: {
           created_at?: string | null
           display_order?: number | null
+          for_bar?: boolean | null
+          for_kitchen?: boolean | null
           group_name?: string
+          icon?: string | null
           id?: string
           name?: string
           name_en?: string | null
+          parent_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chat_sessions: {
         Row: {
@@ -121,8 +141,11 @@ export type Database = {
           description: string | null
           description_en: string | null
           display_order: number | null
+          for_bar: boolean | null
+          for_kitchen: boolean | null
           id: string
           image_url: string | null
+          is_active: boolean | null
           name: string
           name_en: string | null
           offer_end_time: string | null
@@ -137,8 +160,11 @@ export type Database = {
           description?: string | null
           description_en?: string | null
           display_order?: number | null
+          for_bar?: boolean | null
+          for_kitchen?: boolean | null
           id?: string
           image_url?: string | null
+          is_active?: boolean | null
           name: string
           name_en?: string | null
           offer_end_time?: string | null
@@ -153,8 +179,11 @@ export type Database = {
           description?: string | null
           description_en?: string | null
           display_order?: number | null
+          for_bar?: boolean | null
+          for_kitchen?: boolean | null
           id?: string
           image_url?: string | null
+          is_active?: boolean | null
           name?: string
           name_en?: string | null
           offer_end_time?: string | null
@@ -168,6 +197,44 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items_split: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string | null
+          id: string
+          items: Json
+          order_id: string | null
+          status: string | null
+          type: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string | null
+          id?: string
+          items: Json
+          order_id?: string | null
+          status?: string | null
+          type: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string | null
+          id?: string
+          items?: Json
+          order_id?: string | null
+          status?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_split_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "pos_orders"
             referencedColumns: ["id"]
           },
         ]
@@ -231,6 +298,62 @@ export type Database = {
           },
         ]
       }
+      pos_orders: {
+        Row: {
+          closed_at: string | null
+          created_at: string | null
+          id: string
+          items: Json
+          location_id: string | null
+          mode: string | null
+          notes: string | null
+          operator_name: string | null
+          printed_at: string | null
+          status: string | null
+          table_id: string | null
+          table_number: number | null
+          total_amount: number | null
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string | null
+          id?: string
+          items?: Json
+          location_id?: string | null
+          mode?: string | null
+          notes?: string | null
+          operator_name?: string | null
+          printed_at?: string | null
+          status?: string | null
+          table_id?: string | null
+          table_number?: number | null
+          total_amount?: number | null
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string | null
+          id?: string
+          items?: Json
+          location_id?: string | null
+          mode?: string | null
+          notes?: string | null
+          operator_name?: string | null
+          printed_at?: string | null
+          status?: string | null
+          table_id?: string | null
+          table_number?: number | null
+          total_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_orders_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -255,6 +378,39 @@ export type Database = {
           id?: string
           p256dh?: string
           shift_token?: string | null
+        }
+        Relationships: []
+      }
+      raw_materials: {
+        Row: {
+          created_at: string | null
+          id: string
+          location_id: string | null
+          min_threshold: number | null
+          name: string
+          quantity: number | null
+          unit: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          location_id?: string | null
+          min_threshold?: number | null
+          name: string
+          quantity?: number | null
+          unit: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          location_id?: string | null
+          min_threshold?: number | null
+          name?: string
+          quantity?: number | null
+          unit?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -351,32 +507,159 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_members: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          location_id: string | null
+          name: string
+          pin_code: string | null
+          role: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          location_id?: string | null
+          name: string
+          pin_code?: string | null
+          role: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          location_id?: string | null
+          name?: string
+          pin_code?: string | null
+          role?: string
+        }
+        Relationships: []
+      }
+      supplies: {
+        Row: {
+          created_at: string | null
+          id: string
+          location_id: string | null
+          material_id: string | null
+          note: string | null
+          operator_name: string | null
+          quantity: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          location_id?: string | null
+          material_id?: string | null
+          note?: string | null
+          operator_name?: string | null
+          quantity: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          location_id?: string | null
+          material_id?: string | null
+          note?: string | null
+          operator_name?: string | null
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplies_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "raw_materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tables: {
         Row: {
+          capacity: number | null
           created_at: string
           id: string
+          location_id: string | null
           name: string
           number: number
           qr_code: string | null
+          status: string | null
           updated_at: string
         }
         Insert: {
+          capacity?: number | null
           created_at?: string
           id?: string
+          location_id?: string | null
           name: string
           number: number
           qr_code?: string | null
+          status?: string | null
           updated_at?: string
         }
         Update: {
+          capacity?: number | null
           created_at?: string
           id?: string
+          location_id?: string | null
           name?: string
           number?: number
           qr_code?: string | null
+          status?: string | null
           updated_at?: string
         }
         Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          fiscal_code: string | null
+          id: string
+          items: Json | null
+          location_id: string | null
+          operator_name: string | null
+          order_id: string | null
+          table_number: number | null
+          type: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          fiscal_code?: string | null
+          id?: string
+          items?: Json | null
+          location_id?: string | null
+          operator_name?: string | null
+          order_id?: string | null
+          table_number?: number | null
+          type?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          fiscal_code?: string | null
+          id?: string
+          items?: Json | null
+          location_id?: string | null
+          operator_name?: string | null
+          order_id?: string | null
+          table_number?: number | null
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "pos_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -404,12 +687,71 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_supply: {
+        Args: {
+          p_location_id: string
+          p_material_id: string
+          p_note: string
+          p_operator_name: string
+          p_quantity: number
+        }
+        Returns: {
+          created_at: string | null
+          id: string
+          location_id: string | null
+          min_threshold: number | null
+          name: string
+          quantity: number | null
+          unit: string
+          updated_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "raw_materials"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      close_pos_order: {
+        Args: { p_operator_name: string; p_order_id: string }
+        Returns: {
+          amount: number
+          created_at: string | null
+          fiscal_code: string | null
+          id: string
+          items: Json | null
+          location_id: string | null
+          operator_name: string | null
+          order_id: string | null
+          table_number: number | null
+          type: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_material: {
+        Args: { amount: number; material_id: string }
+        Returns: undefined
+      }
+      verify_staff_pin: {
+        Args: { p_pin: string }
+        Returns: {
+          id: string
+          location_id: string
+          name: string
+          role: string
+        }[]
       }
     }
     Enums: {
