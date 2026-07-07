@@ -26,7 +26,7 @@ export const MenuGrid = () => {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    supabase.from("menu_items").select("*").eq("is_active", true).then(({ data }) => {
+    supabase.from("menu_items").select("*").eq("available", true).then(({ data }) => {
       setProducts((data as Product[]) || []);
     });
     supabase.from("categories").select("*").order("display_order").then(({ data }) => {

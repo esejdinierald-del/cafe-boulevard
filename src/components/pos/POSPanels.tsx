@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Printer, CheckCircle2, X } from "lucide-react";
+import { Printer, CheckCircle2, X, Ban } from "lucide-react";
 
 interface Split {
   id: string;
@@ -25,6 +25,7 @@ interface POSOrder {
   total_amount: number;
   items: Array<{ name: string; quantity: number; price: number; notes?: string }>;
   created_at: string;
+  operator_name?: string | null;
 }
 
 // ---------- KDS (bar / kitchen) ----------
@@ -145,6 +146,22 @@ export const CashierPanel = () => {
     if (close) toast.success("Porosia u mbyll");
   };
 
+  const cancelOrder = async (orderId: string) => {
+    if (!confirm("Anulo këtë porosi? Ky veprim nuk mund të zhbëhet.")) return;
+    setLoading(true);
+    // Free table if any
+    const { data: order } = await supabase.from("pos_orders").select("table_id").eq("id", orderId).single();
+    const { error: delSplits } = await supabase.from("order_items_split").delete().eq("order_id", orderId);
+    if (delSplits) { setLoading(false); toast.error("Gabim: " + delSplits.message); return; }
+    const { error: delOrder } = await supabase.from("pos_orders").delete().eq("id", orderId);
+    setLoading(false);
+    if (delOrder) { toast.error("Gabim: " + delOrder.message); return; }
+    if ((order as any)?.table_id) {
+      await supabase.from("tables").update({ status: "available" }).eq("id", (order as any).table_id);
+    }
+    toast.success("Porosia u anulua");
+  };
+
   return (
     <div className="space-y-3">
       {orders.length === 0 && (
@@ -173,6 +190,9 @@ export const CashierPanel = () => {
               <span>Totali</span>
               <span>{Number(o.total_amount).toFixed(0)} Lekë</span>
             </div>
+            {o.operator_name && (
+              <div className="text-xs text-muted-foreground">Kamarieri: {o.operator_name}</div>
+            )}
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -192,6 +212,15 @@ export const CashierPanel = () => {
                 <CheckCircle2 className="h-4 w-4 mr-1" /> Printo & Mbyll
               </Button>
             </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => cancelOrder(o.id)}
+              disabled={loading}
+              className="w-full"
+            >
+              <Ban className="h-4 w-4 mr-1" /> Anulo porosinë
+            </Button>
           </Card>
         ))}
       </div>

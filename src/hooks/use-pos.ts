@@ -45,10 +45,12 @@ export function usePOS() {
 
   async function submitOrder(_authToken: string) {
     if (!currentOrder || currentOrder.items.length === 0) throw new Error("Shporta është bosh");
+    const waiterName = (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || null;
     const { data, error } = await supabase.functions.invoke("pos-create-order", {
       body: {
         tableNumber: currentOrder.tableNumber,
         mode: currentOrder.mode,
+        operatorName: waiterName,
         items: currentOrder.items.map((i) => ({
           productId: i.productId,
           quantity: i.quantity,

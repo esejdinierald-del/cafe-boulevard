@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
-import { LogOut, Coffee } from "lucide-react";
+import { LogOut, Coffee, PowerOff } from "lucide-react";
 
 interface TableRow {
   id: string;
@@ -61,6 +61,13 @@ const POS = () => {
 
   const activeTableNumber = currentOrder?.tableNumber ?? null;
 
+  const handleEndShift = () => {
+    if (!confirm("Të mbyllim turnin dhe të dilni?")) return;
+    localStorage.removeItem("staff_shift_token");
+    usePOSStore.getState().setCurrentOrder(null);
+    navigate("/staff", { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
@@ -77,6 +84,12 @@ const POS = () => {
             className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
           >
             <LogOut size={14} /> Kthehu te Turni
+          </button>
+          <button
+            onClick={handleEndShift}
+            className="flex items-center gap-2 px-3 py-2 rounded bg-red-700 hover:bg-red-600 text-sm"
+          >
+            <PowerOff size={14} /> Mbyll Turnin
           </button>
         </div>
       </header>
