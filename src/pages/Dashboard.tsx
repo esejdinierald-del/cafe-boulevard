@@ -1043,6 +1043,16 @@ const Dashboard = () => {
               </div>
             </div>
           </TabsContent>
+
+          <TabsContent value="bar">
+            <KDSPanel kind="bar" />
+          </TabsContent>
+          <TabsContent value="kitchen">
+            <KDSPanel kind="kitchen" />
+          </TabsContent>
+          <TabsContent value="cashier">
+            <CashierPanel />
+          </TabsContent>
         </Tabs>
       </div>
 
