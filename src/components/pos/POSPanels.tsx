@@ -168,14 +168,22 @@ export const CashierPanel = () => {
         <div className="p-8 text-center text-muted-foreground">Asnjë porosi aktive.</div>
       )}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {orders.map((o) => (
-          <Card key={o.id} className="p-4 space-y-2">
+        {orders.map((o, idx) => (
+          <Card
+            key={o.id}
+            className={`p-4 space-y-2 relative ${
+              o.status === "open"
+                ? "border-amber-500/60 animate-pulse ring-2 ring-amber-500/40"
+                : "border-green-500/60"
+            }`}
+          >
+            <Badge className="absolute -top-2 -left-2" variant="outline">#{idx + 1}</Badge>
             <div className="flex items-center justify-between">
               <div className="font-bold">
                 {o.table_number ? `Tavolina #${o.table_number}` : o.mode.toUpperCase()}
               </div>
               <Badge variant={o.status === "ready" ? "default" : "secondary"}>
-                {o.status === "ready" ? "GATI" : "HAPUR"}
+                {o.status === "ready" ? "GATI ✓" : "⏳ Duke pritur banakun"}
               </Badge>
             </div>
             <ul className="text-sm space-y-1">
