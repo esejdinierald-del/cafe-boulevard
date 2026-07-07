@@ -4,7 +4,7 @@ export function useAuth() {
   const [shiftToken, setShiftToken] = useState<string | null>(null);
   useEffect(() => {
     try {
-      setShiftToken(localStorage.getItem("shift_token"));
+      setShiftToken(localStorage.getItem("staff_shift_token"));
     } catch {
       setShiftToken(null);
     }

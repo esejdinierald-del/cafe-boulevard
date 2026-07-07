@@ -1,58 +1,62 @@
-## Plan: POS System Integration
+## 1) Siguri RLS — heq `allow_all`, mban lexim publik
 
-Do të zbatoj HAPAT A–C plotësisht nga brenda Lovable. Nuk ka asnjë hap që kërkon të hysh vetë në Supabase — migrationi dhe Edge Functions deployohen automatikisht nga këtu.
+Migration i ri që zëvendëson politikat `allow_all` me politika të ngushta. Të gjitha shkrimet kalojnë vetëm përmes Edge Functions (service_role), që i anashkalojnë RLS-në.
 
-Po ashtu ka disa mospërputhje me kodin ekzistues që duhen zgjidhur para se komponentët POS të funksionojnë. I trajtoj më poshtë.
+**Për çdo tabelë:**
 
----
+| Tabela | SELECT | INSERT | UPDATE | DELETE |
+|---|---|---|---|---|
+| `pos_orders` | public | ❌ | ❌ | ❌ |
+| `order_items_split` | public | ❌ | ❌ | ❌ |
+| `transactions` | public | ❌ | ❌ | ❌ |
+| `raw_materials` | public | ❌ | ❌ (vetëm RPC `add_supply`/`increment_material`) | ❌ |
+| `supplies` | public | ❌ | ❌ | ❌ |
+| `staff_members` | ❌ (as `pin_code`, as lista) | ❌ | ❌ | ❌ |
+| `tables` | tashmë e saktë (SELECT public, mutations vetëm manager) — nuk preket |
 
-### HAPI A — Migration SQL
+**Shënime teknike:**
+- `DROP POLICY allow_all` mbi 6 tabelat, pastaj `CREATE POLICY ... FOR SELECT USING (true)` ku nevojitet.
+- `staff_members` mbetet pa asnjë policy publike → anon/authenticated nuk e prekin dot; verifikimi bëhet vetëm përmes RPC `verify_staff_pin` (SECURITY DEFINER, ekziston).
+- `REVOKE INSERT, UPDATE, DELETE` mbi këto tabela nga `anon` dhe `authenticated`, mbaj `GRANT SELECT` ku duhet. `service_role` mban `ALL`.
+- Nuk përdor `has_role()` — kamarierët nuk kanë sesion Supabase.
 
-Ekzekutoj migrationin ashtu siç është, me këto **korrigjime të domosdoshme**:
+**Kontroll: a thyhet ndonjë faqe ekzistuese?**
+Bëra grep në kodin frontend për shkrime direkte mbi këto tabela. Faqet ekzistuese (Dashboard, ManagerDashboard, Menu, Index, StaffShift) nuk bëjnë INSERT/UPDATE/DELETE direkt mbi `pos_orders`, `order_items_split`, `transactions`, `supplies`, `staff_members`, `raw_materials` — këto janë tabela të reja të POS. Nëse dalin gabime pas migrationit, do t'i raportoj për rregullim.
 
-1. **`menu_categories` nuk ekziston** në projektin tënd — tabela quhet `categories`. Do ta zbatoj `ALTER TABLE` mbi `categories` (shtoj `parent_id`, `icon`, `for_bar`, `for_kitchen`; `display_order` ekziston tashmë).
-2. **Konflikt me tabelën `tables` ekzistuese**: ti tashmë ke `public.tables(id, number, name, qr_code, created_at, updated_at)` me 20 rreshta (Tavolina 1–20) të përdorura nga `get-table-name`. `CREATE TABLE IF NOT EXISTS` do ta anashkalojë krijimin, kështu që do të shtoj kolonat e reja (`capacity`, `status`, `location_id`) me `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, dhe **nuk do të futë** të dhënat fillestare 1–14 (do të mbetet konfigurimi yt aktual).
-3. **GRANT statements**: shtoj `GRANT` për `authenticated` dhe `service_role` mbi çdo tabelë të re (kërkesë e Lovable Cloud / PostgREST — pa to tabelat nuk arrihen).
-4. **Politika `allow_all` publike**: kjo lejon këdo në internet të lexojë/modifikojë porositë, transaksionet, stafin, inventarin. Do ta zbatoj siç e kërkove, por **ta di**: kjo është e pasigurt për prod. Rekomandim: më vonë ta ngushtojmë me RLS bazuar në `has_role()`.
-5. Pjesa tjetër (raw_materials, supplies, transactions, pos_orders, order_items_split, staff_members, RPCs `verify_staff_pin`/`increment_material`/`add_supply`/`close_pos_order`, indexes, REPLICA IDENTITY, REVOKE mbi `pin_code`) zbatohen ashtu siç janë.
+## 2) Route i ri `/pos` (i mbrojtur me PIN staff)
 
-### HAPI B — 4 Edge Functions
+**Gating:** Ripërdor `shift_token` nga `localStorage` (njësoj si `/staff`). Nëse mungon → redirect te `/staff`.
 
-Krijoj:
-- `supabase/functions/pos-create-order/index.ts`
-- `supabase/functions/pos-confirm-order/index.ts`
-- `supabase/functions/pos-print-ticket/index.ts`
-- `supabase/functions/pos-get-inventory/index.ts`
+**Layout 3-kolonësh (desktop, tablet-first):**
 
-Kod-i ashtu siç e dhe. Deployohen automatikisht — **s'ke pse të bësh asgjë manuale**.
+```text
+┌──────────┬────────────────────┬──────────┐
+│ Tavolinat│     MenuGrid       │OrderPanel│
+│  (list)  │   (produktet)      │ (shporta)│
+│  1  2  3 │                    │          │
+│  🟢 🔴 🟢│                    │          │
+└──────────┴────────────────────┴──────────┘
+```
 
-### HAPI C — 2 komponentë POS
+**Sjellja:**
+- Kolona majtas: `useEffect` merr `tables` (SELECT public), realtime subscribe në `pos_orders` për të rifreskuar statusin (green=`available`, red=`occupied`).
+- Klik mbi tavolinë të lirë → `startOrder("table", table.number)` → MenuGrid & OrderPanel fillojnë punën me atë porosi.
+- Klik mbi tavolinë të zënë → shfaq porosinë ekzistuese `open` në OrderPanel (mund të shtohen artikuj/dërgohet përsëri).
+- Pas `submitOrder` të suksesshëm, `pos-create-order` e vë tavolinën `occupied`; UI rifreskohet nga realtime.
+- Buton "Modaliteti Banak" për porosi pa tavolinë (`startOrder("bar", null)`).
 
-**Problem**: skedarët `src/components/pos/MenuGrid.tsx` dhe `OrderPanel.tsx` nuk ekzistojnë ende, dhe importojnë module që gjithashtu nuk ekzistojnë:
-- `@/hooks/use-pos`
-- `@/hooks/use-auth`
-- `@/stores/pos-store`
-- `@/lib/supabase` (te ky projekt është `@/integrations/supabase/client`)
+**Route:**
+- `/pos` shtohet në `src/App.tsx` para catch-all.
+- Faqja `src/pages/POS.tsx`: kontrollon `localStorage.shift_token` dhe `validate-shift` (opsional, në boot); nëse invalid → `navigate("/staff")`.
 
-Po ashtu bllokun tuaj JSX i mungon markup-i (mesa duket u pastrua nga formatimi i mesazhit — mungojnë tag-e `<div>`, `<button>`, `<input>`, `<span>`, etj).
+## Skedarët e prekur
 
-**Plani im për HAPIN C**: krijoj të dy skedarët POS ashtu siç dërguat, duke:
-- korrigjuar `@/lib/supabase` → `@/integrations/supabase/client`,
-- rindërtuar JSX-në e humbur bazuar në logjikën dhe klasat Tailwind që janë të dukshme,
-- **shtuar stub-e minimale** për `use-pos`, `use-auth`, `pos-store` që të kompilohen (Zustand store bosh me `currentOrder`, `addItem`, `removeItem`, `updateItemNotes`, `submitOrder` që thërret edge function `pos-create-order`). Këto stub-e nuk lidhen ende me asnjë faqe/route — komponentët POS mbeten të pasistemuar derisa të më thuash ku t'i vendos (Dashboard, faqe e re `/pos`, etj).
+**Krijim:**
+- `supabase/migrations/<ts>_pos_rls_hardening.sql`
+- `src/pages/POS.tsx`
 
-Nëse ke tashmë një plan për arkitekturën POS (hooks/stores) ose preferon që ta shtyj HAPIN C derisa të ma dërgosh të plotë, më thuaj dhe e kaloj për momentin.
+**Modifikim:**
+- `src/App.tsx` (route `/pos`)
 
-### HAPI D — Konfirmimi
-Në fund të ndryshimeve, të kthej përmbledhje të plotë me çdo skedar të prekur dhe çdo problem të hasur.
-
----
-
-### A duhet të bësh diçka vetë në Supabase?
-**Jo.** Migrationi dhe Edge Functions bëhen të gjitha nga këtu. E vetmja gjë që do të kërkohet nga ti është të **aprovosh migrationin** kur të shfaqet dialog-u i Lovable Cloud.
-
----
-
-### Pyetje kritike para se të filloj
-1. **Politikat `allow_all`**: A i dëshiron vërtet publike (këdo mund të shohë/modifikojë porositë e POS)? Ose t'i ngushtoj me `has_role('manager' | 'admin')`?
-2. **HAPI C stub-et**: OK me stub-e minimale `use-pos`/`use-auth`/`pos-store` që kodi të kompilohet, ose ta shtyj HAPIN C derisa të më dërgosh arkitekturën e plotë?
+## Pyetje t\u00eb hapura
+Asnjë — vazhdojmë me `/pos` + shift_token gating. Nëse ndonjë faqe prishet pas migrationit, do të raportoj konkretisht dhe do rregullojmë veç e veç.
