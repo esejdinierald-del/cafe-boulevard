@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Printer, CheckCircle2, X, Ban } from "lucide-react";
+import { Printer, CheckCircle2, X, Ban, Minus } from "lucide-react";
 
 interface Split {
   id: string;
@@ -110,6 +110,16 @@ export const CashierPanel = () => {
   const [orders, setOrders] = useState<POSOrder[]>([]);
   const [receipt, setReceipt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [adminOk, setAdminOk] = useState(false);
+
+  const requireAdmin = (): boolean => {
+    if (adminOk) return true;
+    const pw = window.prompt("Fjalëkalimi i adminit për anulim:");
+    if (pw === null) return false;
+    if (pw !== "2025") { toast.error("Fjalëkalim i pasaktë"); return false; }
+    setAdminOk(true);
+    return true;
+  };
 
   const load = async () => {
     const { data } = await supabase
@@ -147,12 +157,7 @@ export const CashierPanel = () => {
   };
 
   const cancelOrder = async (orderId: string) => {
-    const pw = window.prompt("Fjalëkalimi i adminit për të anuluar porosinë:");
-    if (pw === null) return;
-    if (pw !== "2025") {
-      toast.error("Fjalëkalim i pasaktë");
-      return;
-    }
+    if (!requireAdmin()) return;
     if (!confirm("Anulo këtë porosi? Ky veprim nuk mund të zhbëhet.")) return;
     setLoading(true);
     // Free table if any
@@ -166,6 +171,58 @@ export const CashierPanel = () => {
       await supabase.from("tables").update({ status: "available" }).eq("id", (order as any).table_id);
     }
     toast.success("Porosia u anulua");
+  };
+
+  // Cancel a single item (decrement qty by 1) with admin password
+  const cancelItem = async (order: POSOrder, index: number) => {
+    if (!requireAdmin()) return;
+    const item = order.items[index];
+    if (!item) return;
+    const newItems = order.items
+      .map((it, i) => (i === index ? { ...it, quantity: it.quantity - 1 } : it))
+      .filter((it) => it.quantity > 0);
+
+    // If order becomes empty → cancel entire order (delete + free table)
+    if (newItems.length === 0) {
+      setLoading(true);
+      const { data: full } = await supabase.from("pos_orders").select("table_id").eq("id", order.id).single();
+      await supabase.from("order_items_split").delete().eq("order_id", order.id);
+      await supabase.from("pos_orders").delete().eq("id", order.id);
+      if ((full as any)?.table_id) {
+        await supabase.from("tables").update({ status: "available" }).eq("id", (full as any).table_id);
+      }
+      setLoading(false);
+      toast.success(`U hoq "${item.name}". Porosia u mbyll (bosh).`);
+      return;
+    }
+
+    const newTotal = newItems.reduce((s, it: any) => s + Number(it.price) * it.quantity, 0);
+    setLoading(true);
+    const { error } = await supabase
+      .from("pos_orders")
+      .update({ items: newItems as any, total_amount: newTotal })
+      .eq("id", order.id);
+
+    // Sync splits: rebuild bar/kitchen splits from newItems (preserve status where possible)
+    if (!error) {
+      const { data: splits } = await supabase
+        .from("order_items_split")
+        .select("id, type, status")
+        .eq("order_id", order.id);
+      for (const sp of (splits as any[]) || []) {
+        const filtered = newItems.filter((it: any) =>
+          sp.type === "bar" ? it.forBar !== false : it.forKitchen === true
+        );
+        if (filtered.length === 0) {
+          await supabase.from("order_items_split").delete().eq("id", sp.id);
+        } else {
+          await supabase.from("order_items_split").update({ items: filtered as any }).eq("id", sp.id);
+        }
+      }
+    }
+    setLoading(false);
+    if (error) { toast.error("Gabim: " + error.message); return; }
+    toast.success(`U hoq 1x "${item.name}" (-${Number(item.price).toFixed(0)} L)`);
   };
 
   return (
@@ -194,9 +251,19 @@ export const CashierPanel = () => {
             </div>
             <ul className="text-sm space-y-1">
               {o.items.map((it, i) => (
-                <li key={i} className="flex justify-between">
-                  <span>{it.name} x{it.quantity}</span>
+                <li key={i} className="flex justify-between items-center gap-2">
+                  <span className="flex-1">{it.name} x{it.quantity}</span>
                   <span>{(it.price * it.quantity).toFixed(0)} L</span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                    onClick={() => cancelItem(o, i)}
+                    disabled={loading}
+                    title="Hiq 1 nga ky artikull (admin)"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
                 </li>
               ))}
             </ul>
