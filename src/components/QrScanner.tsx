@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { Camera, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -7,6 +7,17 @@ interface QrScannerProps {
   onScan: (token: string) => void;
   onClose: () => void;
 }
+
+const safeStop = (scanner: Html5Qrcode) => {
+  try {
+    const state = scanner.getState();
+    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+      scanner.stop().catch(() => {});
+    }
+  } catch {
+    // ignore
+  }
+};
 
 const QrScanner = ({ onScan, onClose }: QrScannerProps) => {
   const [error, setError] = useState<string | null>(null);
@@ -28,14 +39,14 @@ const QrScanner = ({ onScan, onClose }: QrScannerProps) => {
             const url = new URL(decodedText);
             const token = url.searchParams.get("token");
             if (token) {
-              scanner.stop().catch(() => {});
+              safeStop(scanner);
               onScan(token);
               return;
             }
           } catch {
             // Not a URL, try as raw token
             if (decodedText.length >= 6 && decodedText.length <= 20) {
-              scanner.stop().catch(() => {});
+              safeStop(scanner);
               onScan(decodedText);
               return;
             }
@@ -54,7 +65,7 @@ const QrScanner = ({ onScan, onClose }: QrScannerProps) => {
       });
 
     return () => {
-      scanner.stop().catch(() => {});
+      safeStop(scanner);
     };
   }, [onScan]);
 
