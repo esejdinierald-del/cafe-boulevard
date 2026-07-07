@@ -572,6 +572,15 @@ const StaffShift = () => {
               <Clock className="h-3 w-3" />
               {timeLeft}
             </Badge>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => navigate("/pos")}
+              className="gap-1 h-7 text-xs bg-primary hover:bg-primary/90"
+            >
+              <Receipt className="h-3 w-3" />
+              POS
+            </Button>
             {!audioEnabled ? (
               <Button size="sm" variant="outline" onClick={enableAudio} className="gap-1 h-7 text-xs">
                 <Volume2 className="h-3 w-3" />
