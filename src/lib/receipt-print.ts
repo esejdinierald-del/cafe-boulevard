@@ -20,12 +20,12 @@ const AUTOFIT_SCRIPT = `
     for (var i = 0; i < lines.length; i++) if (lines[i].length > maxLine) maxLine = lines[i].length;
     var usable = document.body.clientWidth - 12; /* padding */
     if (usable <= 0) usable = 280;
-    var size = 12;
-    for (; size >= 7; size -= 0.5){
+    var size = 18;
+    for (; size >= 10; size -= 0.5){
       if (maxLine * size * 0.6 <= usable) break;
     }
     pre.style.fontSize = size + 'px';
-    pre.style.lineHeight = (size <= 9 ? 1.05 : size <= 10 ? 1.1 : 1.15);
+    pre.style.lineHeight = (size <= 11 ? 1.1 : size <= 13 ? 1.15 : 1.2);
   }
   fit();
   setTimeout(function(){ window.focus(); window.print(); }, 200);
@@ -54,8 +54,8 @@ const printDocument = (title: string, body: string, withAutofit = false) => `<!d
       pre {
         margin: 0;
         padding: 0 3mm 2mm 3mm;
-        font-size: 11px;
-        line-height: 1.1;
+        font-size: 16px;
+        line-height: 1.2;
         font-weight: 700;
         white-space: pre-wrap;
         page-break-after: avoid;
@@ -117,12 +117,12 @@ export const printReceiptInline = (receiptText: string, _title = "Bileta") => {
     for (const l of lines) if (l.length > maxLine) maxLine = l.length;
     // 80mm ≈ 302px. Minus horizontal padding (~24px) leaves ~278px usable.
     const usable = 278;
-    let size = 12;
-    for (; size >= 7; size -= 0.5) {
+    let size = 18;
+    for (; size >= 10; size -= 0.5) {
       if (maxLine * size * 0.6 <= usable) break;
     }
     pre.style.fontSize = `${size}px`;
-    pre.style.lineHeight = size <= 9 ? "1.05" : size <= 10 ? "1.1" : "1.15";
+    pre.style.lineHeight = size <= 11 ? "1.1" : size <= 13 ? "1.15" : "1.2";
   };
   autoFit();
 
