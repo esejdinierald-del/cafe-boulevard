@@ -387,3 +387,180 @@ export const CashierPanel = () => {
     </div>
   );
 };
+
+// ---------- Cashier history (Admin) ----------
+interface Txn {
+  id: string;
+  amount: number;
+  operator_name: string | null;
+  table_number: number | null;
+  created_at: string;
+  items: Array<{ name: string; quantity: number; price: number }>;
+}
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const CashierHistoryPanel = () => {
+  const [date, setDate] = useState<string>(todayISO());
+  const [fromTime, setFromTime] = useState<string>("00:00");
+  const [toTime, setToTime] = useState<string>("23:59");
+  const [operator, setOperator] = useState<string>("");
+  const [txns, setTxns] = useState<Txn[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const load = async () => {
+    setLoading(true);
+    const start = new Date(`${date}T${fromTime}:00`).toISOString();
+    const end = new Date(`${date}T${toTime}:59`).toISOString();
+    let q = supabase
+      .from("transactions")
+      .select("id, amount, operator_name, table_number, created_at, items")
+      .eq("type", "sale")
+      .gte("created_at", start)
+      .lte("created_at", end)
+      .order("created_at", { ascending: false });
+    if (operator.trim()) q = q.ilike("operator_name", `%${operator.trim()}%`);
+    const { data, error } = await q;
+    setLoading(false);
+    if (error) {
+      toast.error("Gabim: " + error.message);
+      return;
+    }
+    setTxns((data as unknown as Txn[]) || []);
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Aggregate items sold
+  const summary = (() => {
+    const map = new Map<string, { name: string; quantity: number; total: number }>();
+    for (const t of txns) {
+      for (const it of t.items || []) {
+        const key = it.name;
+        const prev = map.get(key) || { name: it.name, quantity: 0, total: 0 };
+        prev.quantity += Number(it.quantity) || 0;
+        prev.total += (Number(it.price) || 0) * (Number(it.quantity) || 0);
+        map.set(key, prev);
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.quantity - a.quantity);
+  })();
+
+  const grandTotal = txns.reduce((s, t) => s + Number(t.amount || 0), 0);
+
+  return (
+    <div className="space-y-4">
+      {/* Filters */}
+      <Card className="p-3 grid gap-3 md:grid-cols-5 items-end">
+        <div className="space-y-1">
+          <Label className="text-xs flex items-center gap-1"><Calendar className="h-3 w-3" /> Data</Label>
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Nga ora</Label>
+          <Input type="time" value={fromTime} onChange={(e) => setFromTime(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Deri në orën</Label>
+          <Input type="time" value={toTime} onChange={(e) => setToTime(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Kamarier (opsional)</Label>
+          <Input placeholder="Emri..." value={operator} onChange={(e) => setOperator(e.target.value)} />
+        </div>
+        <Button onClick={load} disabled={loading}>
+          {loading ? "Duke ngarkuar..." : "Kërko"}
+        </Button>
+      </Card>
+
+      {/* Summary */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold">Përmbledhje ({txns.length} porosi)</h3>
+          <div className="text-lg font-bold text-amber-500">
+            {grandTotal.toFixed(0)} Lekë
+          </div>
+        </div>
+        {summary.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-4">
+            Asnjë shitje në këtë interval.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs text-muted-foreground border-b border-border/60">
+                <tr>
+                  <th className="py-1 pr-2">Artikulli</th>
+                  <th className="py-1 px-2 text-right">Sasia</th>
+                  <th className="py-1 pl-2 text-right">Vlera</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summary.map((s) => (
+                  <tr key={s.name} className="border-b border-border/30">
+                    <td className="py-1 pr-2">{s.name}</td>
+                    <td className="py-1 px-2 text-right font-semibold">{s.quantity}</td>
+                    <td className="py-1 pl-2 text-right text-amber-500">{s.total.toFixed(0)} L</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* Transaction list */}
+      <div className="space-y-2">
+        <div className="text-xs text-muted-foreground uppercase font-semibold">
+          Porositë e mbyllura
+        </div>
+        {txns.length === 0 && (
+          <div className="text-sm text-muted-foreground text-center py-4">Asnjë.</div>
+        )}
+        {txns.map((t) => {
+          const open = !!expanded[t.id];
+          return (
+            <Card key={t.id} className="overflow-hidden">
+              <button
+                onClick={() => setExpanded((e) => ({ ...e, [t.id]: !e[t.id] }))}
+                className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/40"
+              >
+                {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold">
+                    {t.table_number ? `Tavolina #${t.table_number}` : "TAKEAWAY"}
+                    {t.operator_name && (
+                      <span className="text-xs text-muted-foreground font-normal ml-2">
+                        • {t.operator_name}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(t.created_at).toLocaleString("sq-AL")}
+                  </div>
+                </div>
+                <div className="text-amber-500 font-bold">{Number(t.amount).toFixed(0)} L</div>
+              </button>
+              {open && (
+                <div className="border-t border-border/40 p-3">
+                  <ul className="text-sm space-y-1">
+                    {(t.items || []).map((it, i) => (
+                      <li key={i} className="flex justify-between">
+                        <span>{it.name} <span className="text-muted-foreground">x{it.quantity}</span></span>
+                        <span>{(Number(it.price) * Number(it.quantity)).toFixed(0)} L</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
