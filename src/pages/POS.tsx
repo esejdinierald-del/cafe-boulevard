@@ -233,10 +233,10 @@ const POS = () => {
           </button>
           {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
             <button
-              onClick={() => navigate("/inventory")}
+              onClick={() => navigate("/inventory-materials")}
               className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
             >
-              <Package size={14} /> Inventari
+              <Package size={14} /> Materialet
             </button>
           )}
           <button
