@@ -108,9 +108,12 @@ const POS = () => {
   };
 
   const closeTable = async (tableNumber: number | string) => {
-    if (!confirm(`Të mbyllim & printojmë tavolinën #${tableNumber}?`)) return;
     const printWindow = openReceiptPrintWindow(`Tavolina #${tableNumber}`);
     if (!printWindow) toast.error("Lejo pop-ups në browser që të hapet printimi.");
+    if (!confirm(`Të mbyllim & printojmë tavolinën #${tableNumber}?`)) {
+      closePrintWindow(printWindow);
+      return;
+    }
     setClosing(true);
     try {
       const { data: openOrders } = await supabase
