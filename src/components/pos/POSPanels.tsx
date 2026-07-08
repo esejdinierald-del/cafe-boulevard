@@ -4,8 +4,8 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Printer, CheckCircle2, X, Ban, Minus } from "lucide-react";
-import { closePrintWindow, openReceiptPrintWindow, writeReceiptAndPrint } from "@/lib/receipt-print";
+import { Printer, CheckCircle2, X, Ban, Minus, BellRing } from "lucide-react";
+import { printReceipt } from "@/lib/receipt-print";
 
 interface Split {
   id: string;
@@ -81,20 +81,18 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
   };
 
   const confirm = async (split: Split) => {
-    const printWindow = openReceiptPrintWindow(kind === "bar" ? "Bileta Banak" : "Bileta Kuzhinë");
-    if (!printWindow) toast.error("Lejo pop-ups në browser që të hapet printimi.");
     setLoading(true);
     const { error } = await supabase.functions.invoke("pos-confirm-order", {
       body: { splitId: split.id },
     });
     setLoading(false);
     if (error) {
-      closePrintWindow(printWindow);
       toast.error("Gabim: " + error.message);
-    } else {
-      toast.success("U konfirmua");
-      writeReceiptAndPrint(printWindow, buildStationTicket(split), kind === "bar" ? "Bileta Banak" : "Bileta Kuzhinë");
+      return;
     }
+    toast.success("U konfirmua — duke printuar biletën");
+    // Auto-print immediately once the station accepts the order.
+    printReceipt(buildStationTicket(split), kind === "bar" ? "Bileta Banak" : "Bileta Kuzhinë");
   };
 
   if (splits.length === 0) {
@@ -108,25 +106,26 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
   return (
     <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
       {splits.map((s) => (
-        <Card key={s.id} className="p-4 space-y-2">
+        <Card key={s.id} className="kds-attention p-4 space-y-2 border-2">
           <div className="flex items-center justify-between">
-            <div className="font-bold">
+            <div className="font-bold text-lg kds-attention-text flex items-center gap-2">
+              <BellRing className="h-5 w-5" />
               {s.pos_orders?.table_number ? `Tavolina #${s.pos_orders.table_number}` : (s.pos_orders?.mode ?? "").toUpperCase()}
             </div>
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="text-sm">
               {new Date(s.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}
             </Badge>
           </div>
-          <ul className="text-sm space-y-1">
+          <ul className="text-base space-y-1 font-semibold">
             {s.items.map((it, i) => (
               <li key={i} className="flex justify-between border-b border-border/40 pb-1">
-                <span>{it.name} <span className="text-muted-foreground">x{it.quantity}</span></span>
-                {it.notes && <span className="text-xs italic text-amber-500">{it.notes}</span>}
+                <span>{it.name} <span className="text-amber-400 font-black">x{it.quantity}</span></span>
+                {it.notes && <span className="text-sm italic text-amber-500">{it.notes}</span>}
               </li>
             ))}
           </ul>
-          <Button onClick={() => confirm(s)} disabled={loading} className="w-full">
-            <CheckCircle2 className="h-4 w-4 mr-2" /> Gati
+          <Button onClick={() => confirm(s)} disabled={loading} className="w-full h-12 text-base font-bold">
+            <CheckCircle2 className="h-5 w-5 mr-2" /> Gati & Printo
           </Button>
         </Card>
       ))}
@@ -172,8 +171,6 @@ export const CashierPanel = () => {
   }, []);
 
   const printAndClose = async (orderId: string, close: boolean) => {
-    const printWindow = close ? openReceiptPrintWindow("Bileta Tavoline") : null;
-    if (close && !printWindow) toast.error("Lejo pop-ups në browser që të hapet printimi.");
     setLoading(true);
     const operatorName = localStorage.getItem("staff_name") || "Kasier";
     const { data, error } = await supabase.functions.invoke("pos-print-ticket", {
@@ -181,14 +178,15 @@ export const CashierPanel = () => {
     });
     setLoading(false);
     if (error || (data as any)?.error) {
-      closePrintWindow(printWindow);
       toast.error("Gabim: " + (error?.message || (data as any)?.error));
       return;
     }
     const receiptText = String((data as any).receiptText || "");
     setReceipt(receiptText);
-    if (close) writeReceiptAndPrint(printWindow, receiptText, "Bileta Tavoline");
-    if (close) toast.success("Porosia u mbyll");
+    if (close) {
+      printReceipt(receiptText, "Bileta Tavoline");
+      toast.success("Porosia u mbyll");
+    }
   };
 
   const cancelOrder = async (orderId: string) => {
@@ -324,12 +322,7 @@ export const CashierPanel = () => {
             <Button
               className="w-full mt-4"
               onClick={() => {
-                const printWindow = openReceiptPrintWindow("Bileta Tavoline");
-                if (!printWindow) {
-                  toast.error("Lejo pop-ups në browser që të hapet printimi.");
-                  return;
-                }
-                writeReceiptAndPrint(printWindow, receipt, "Bileta Tavoline");
+                printReceipt(receipt, "Bileta Tavoline");
               }}
             >
               <Printer className="h-4 w-4 mr-2" /> Printo
