@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
-import { LogOut, Coffee, PowerOff, Package } from "lucide-react";
+import { LogOut, Coffee, PowerOff, Package, Printer } from "lucide-react";
+import { toast } from "sonner";
 
 interface TableRow {
   id: string;
@@ -25,6 +26,7 @@ const POS = () => {
   const startOrder = usePOSStore((s) => s.startOrder);
   const [tables, setTables] = useState<TableRow[]>([]);
   const [tableTotals, setTableTotals] = useState<Record<string, number>>({});
+  const [closing, setClosing] = useState(false);
   const [checking, setChecking] = useState(true);
 
   // Gate: require staff shift token
@@ -78,6 +80,45 @@ const POS = () => {
 
   const activeTableNumber = currentOrder?.tableNumber ?? null;
 
+  const closeTable = async (tableNumber: number | string) => {
+    if (!confirm(`Të mbyllim & printojmë tavolinën #${tableNumber}?`)) return;
+    setClosing(true);
+    try {
+      const { data: openOrders } = await supabase
+        .from("pos_orders")
+        .select("id")
+        .eq("table_number", Number(tableNumber))
+        .in("status", ["open", "ready"]);
+      const ids = ((openOrders as { id: string }[]) || []).map((o) => o.id);
+      if (ids.length === 0) {
+        toast.error("Asnjë porosi e hapur për këtë tavolinë");
+        return;
+      }
+      const operatorName = localStorage.getItem("staff_name") || "Kamarier";
+      let receipt = "";
+      for (const id of ids) {
+        const { data, error } = await supabase.functions.invoke("pos-print-ticket", {
+          body: { orderId: id, closeOrder: true, operatorName },
+        });
+        const err = (data as any)?.error || error?.message;
+        if (err) throw new Error(err);
+        if ((data as any)?.receiptText) receipt = (data as any).receiptText;
+      }
+      toast.success(`Tavolina #${tableNumber} u mbyll`);
+      if (receipt) {
+        const w = window.open("", "_blank", "width=380,height=600");
+        if (w) {
+          w.document.write(`<pre style="font-family:monospace;font-size:12px;padding:12px;white-space:pre-wrap">${receipt}</pre><script>window.print()<\/script>`);
+          w.document.close();
+        }
+      }
+    } catch (e) {
+      toast.error("Gabim: " + (e as Error).message);
+    } finally {
+      setClosing(false);
+    }
+  };
+
   const handleEndShift = () => {
     if (!confirm("Të mbyllim turnin dhe të dilni?")) return;
     localStorage.removeItem("staff_shift_token");
@@ -129,28 +170,42 @@ const POS = () => {
               const isActive = String(activeTableNumber) === String(t.number);
               const total = tableTotals[String(t.number)] || 0;
               return (
-                <button
+                <div
                   key={t.id}
-                  onClick={() => startOrder("table", t.number as number)}
-                  className={`aspect-square rounded-lg flex flex-col items-center justify-center text-sm font-semibold border-2 transition ${
+                  className={`relative aspect-square rounded-lg border-2 transition ${
                     isActive
                       ? "border-amber-400 bg-amber-500/20"
                       : occupied
                       ? "border-red-500/50 bg-red-500/20 text-red-200"
-                      : "border-green-500/50 bg-green-500/10 text-green-200 hover:bg-green-500/20"
+                      : "border-green-500/50 bg-green-500/10 text-green-200"
                   }`}
                 >
-                  <span>#{t.number}</span>
-                  {total > 0 ? (
-                    <span className="text-[11px] font-bold text-amber-300 mt-1">
-                      {total.toFixed(0)} L
-                    </span>
-                  ) : (
-                    <span className="text-[10px] opacity-70 mt-1">
-                      {occupied ? "e zënë" : "e lirë"}
-                    </span>
+                  <button
+                    onClick={() => startOrder("table", t.number as number)}
+                    className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold hover:bg-white/5 rounded-lg"
+                  >
+                    <span>#{t.number}</span>
+                    {total > 0 ? (
+                      <span className="text-[11px] font-bold text-amber-300 mt-1">
+                        {total.toFixed(0)} L
+                      </span>
+                    ) : (
+                      <span className="text-[10px] opacity-70 mt-1">
+                        {occupied ? "e zënë" : "e lirë"}
+                      </span>
+                    )}
+                  </button>
+                  {total > 0 && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
+                      disabled={closing}
+                      title="Mbyll & printo tavolinën"
+                      className="absolute bottom-1 right-1 p-1 rounded bg-amber-600 hover:bg-amber-500 text-white z-10 disabled:opacity-50"
+                    >
+                      <Printer size={12} />
+                    </button>
                   )}
-                </button>
+                </div>
               );
             })}
             {tables.length === 0 && (
