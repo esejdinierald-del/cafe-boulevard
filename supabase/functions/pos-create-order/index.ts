@@ -45,7 +45,9 @@ serve(async (req) => {
 
     const productIds = cartItems.map((i: any) => i.productId);
     const { data: menuItems, error: menuErr } = await supabase
-      .from("menu_items").select("id, name, price, for_bar, for_kitchen, is_active").in("id", productIds);
+      .from("menu_items")
+      .select("id, name, price, for_bar, for_kitchen, is_active, offer_price, offer_start_time, offer_end_time")
+      .in("id", productIds);
     if (menuErr) return jsonResponse({ error: menuErr.message }, 500);
 
     const menuMap = new Map((menuItems ?? []).map((m: any) => [m.id, m]));
@@ -54,12 +56,21 @@ serve(async (req) => {
       if (!m || m.is_active === false) return jsonResponse({ error: `Produkti ${ci.productId} nuk është i disponueshëm` }, 400);
     }
 
+    const nowRome = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit", hour12: false });
+    const activePrice = (m: any): number => {
+      if (!m.offer_price || !m.offer_start_time || !m.offer_end_time) return Number(m.price);
+      const s = String(m.offer_start_time).slice(0, 5);
+      const e = String(m.offer_end_time).slice(0, 5);
+      const active = s > e ? (nowRome >= s || nowRome <= e) : (nowRome >= s && nowRome <= e);
+      return active ? Number(m.offer_price) : Number(m.price);
+    };
+
     const enrichedItems = cartItems.map((ci: any) => {
       const m: any = menuMap.get(ci.productId);
       return {
         productId: ci.productId,
         name: m.name,
-        price: m.price,
+        price: activePrice(m),
         quantity: ci.quantity,
         notes: ci.notes || "",
         forBar: m.for_bar ?? true,
