@@ -414,6 +414,33 @@ export type Database = {
         }
         Relationships: []
       }
+      recipes: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          menu_item_id: string
+          quantity_needed: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          menu_item_id: string
+          quantity_needed: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          menu_item_id?: string
+          quantity_needed?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       service_requests: {
         Row: {
           completed_at: string | null
@@ -732,6 +759,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      decrement_material: {
+        Args: { amount: number; material_id: string }
+        Returns: undefined
       }
       has_role: {
         Args: {
