@@ -143,6 +143,35 @@ export const CashierPanel = () => {
   const [adminPw, setAdminPw] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState<"active" | "history">("active");
+  // Admin-lock the whole Cashier panel.
+  const [unlocked, setUnlocked] = useState<boolean>(
+    () => sessionStorage.getItem("cashier_unlocked") === "1",
+  );
+  const [pwInput, setPwInput] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
+
+  const tryUnlock = async () => {
+    if (!pwInput.trim()) return;
+    setUnlocking(true);
+    const { data, error } = await supabase.functions.invoke("verify-admin-passcode", {
+      body: { passcode: pwInput.trim() },
+    });
+    setUnlocking(false);
+    if (!(data as any)?.valid) {
+      toast.error((data as any)?.error || error?.message || "Fjalëkalim i pasaktë");
+      return;
+    }
+    setAdminPw(pwInput.trim());
+    setUnlocked(true);
+    sessionStorage.setItem("cashier_unlocked", "1");
+    setPwInput("");
+  };
+
+  const lockNow = () => {
+    setUnlocked(false);
+    setAdminPw(null);
+    sessionStorage.removeItem("cashier_unlocked");
+  };
 
   const requireAdmin = (): string | null => {
     if (adminPw) return adminPw;
