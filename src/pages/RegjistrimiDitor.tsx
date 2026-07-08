@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, Loader2, Package2, Coffee, Lock, Boxes } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, Package2, Coffee, Lock, Boxes, Settings2, Clock } from "lucide-react";
 import {
   InventoryProductData,
   InventoryTurnData,
@@ -15,12 +15,10 @@ import {
 } from "@/types/inventory.types";
 import { InventoryCalculationService as Calc } from "@/services/inventoryCalculations";
 import { InventoryStockPropagationService as Prop } from "@/services/inventoryStockPropagation.service";
+import { InventorySalesAggregationService as Sales } from "@/services/inventorySalesAggregation.service";
+import ProductManagerDialog, { InvProductRow } from "@/components/inventory/ProductManagerDialog";
 
-interface InvProduct {
-  id: string;
-  name: string;
-  sort_order: number;
-}
+type InvProduct = InvProductRow;
 
 // Rome-local YYYY-MM-DD
 const todayIso = () => {
@@ -42,12 +40,13 @@ const RegjistrimiDitor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [closingT1, setClosingT1] = useState(false);
   const [date, setDate] = useState(todayIso());
   const [products, setProducts] = useState<InvProduct[]>([]);
   const [t1, setT1] = useState<InventoryTurnData>(emptyTurn());
   const [t2, setT2] = useState<InventoryTurnData>(emptyTurn());
+  const [turn1ClosedAt, setTurn1ClosedAt] = useState<string | null>(null);
   const [tab, setTab] = useState<"t1" | "t2">("t1");
-  const [newProductName, setNewProductName] = useState("");
   const [newCoffeeName, setNewCoffeeName] = useState("");
 
   const staffName = (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
@@ -64,12 +63,13 @@ const RegjistrimiDitor = () => {
       setLoading(true);
       try {
         const [{ data: prods }, entryRes, seed] = await Promise.all([
-          (supabase as any).from("inv_products").select("id, name, sort_order").order("sort_order").order("name"),
-          (supabase as any).from("inv_daily_entries").select("turn1_data, turn2_data").eq("entry_date", date).maybeSingle(),
+          (supabase as any).from("inv_products").select("id, name, sort_order, menu_item_ids, units_per_sale").order("sort_order").order("name"),
+          (supabase as any).from("inv_daily_entries").select("turn1_data, turn2_data, turn1_closed_at").eq("entry_date", date).maybeSingle(),
           Prop.loadNextDayStockFor(date),
         ]);
         const productList = (prods || []) as InvProduct[];
         setProducts(productList);
+        setTurn1ClosedAt(entryRes?.data?.turn1_closed_at ?? null);
 
         const loadedT1: InventoryTurnData = entryRes?.data?.turn1_data && Object.keys(entryRes.data.turn1_data).length
           ? { ...emptyTurn(), ...entryRes.data.turn1_data }
@@ -151,29 +151,40 @@ const RegjistrimiDitor = () => {
     });
   };
 
-  const addProduct = async () => {
-    const name = newProductName.trim();
-    if (!name) return;
-    const nextOrder = (products[products.length - 1]?.sort_order ?? 0) + 10;
-    const { data, error } = await (supabase as any)
+  const reloadProducts = async () => {
+    const { data } = await (supabase as any)
       .from("inv_products")
-      .insert({ name, sort_order: nextOrder })
-      .select("id, name, sort_order")
-      .single();
-    if (error) { toast.error(error.message); return; }
-    setProducts((p) => [...p, data as InvProduct]);
-    setT1((prev) => ({ ...prev, products: { ...prev.products, [name]: emptyProduct() } }));
-    setT2((prev) => ({ ...prev, products: { ...prev.products, [name]: emptyProduct() } }));
-    setNewProductName("");
+      .select("id, name, sort_order, menu_item_ids, units_per_sale")
+      .order("sort_order").order("name");
+    setProducts((data || []) as InvProduct[]);
   };
 
-  const removeProduct = async (p: InvProduct) => {
-    if (!confirm(`Fshij "${p.name}" nga lista?`)) return;
-    const { error } = await (supabase as any).from("inv_products").delete().eq("id", p.id);
-    if (error) { toast.error(error.message); return; }
-    setProducts((prev) => prev.filter((x) => x.id !== p.id));
-    setT1((prev) => { const c = { ...prev.products }; delete c[p.name]; return { ...prev, products: c }; });
-    setT2((prev) => { const c = { ...prev.products }; delete c[p.name]; return { ...prev, products: c }; });
+  const handleProductsChanged = async (opts?: {
+    renamedFrom?: string; renamedTo?: string; deletedName?: string; added?: InvProduct;
+  }) => {
+    await reloadProducts();
+    if (opts?.deletedName) {
+      const name = opts.deletedName;
+      setT1((prev) => { const c = { ...prev.products }; delete c[name]; return { ...prev, products: c }; });
+      setT2((prev) => { const c = { ...prev.products }; delete c[name]; return { ...prev, products: c }; });
+    }
+    if (opts?.renamedFrom && opts?.renamedTo && opts.renamedFrom !== opts.renamedTo) {
+      const from = opts.renamedFrom, to = opts.renamedTo;
+      const migrate = (prev: InventoryTurnData): InventoryTurnData => {
+        if (!prev.products[from]) return prev;
+        const c = { ...prev.products };
+        c[to] = c[from];
+        delete c[from];
+        return { ...prev, products: c };
+      };
+      setT1(migrate);
+      setT2(migrate);
+    }
+    if (opts?.added) {
+      const name = opts.added.name;
+      setT1((prev) => prev.products[name] ? prev : ({ ...prev, products: { ...prev.products, [name]: emptyProduct() } }));
+      setT2((prev) => prev.products[name] ? prev : ({ ...prev, products: { ...prev.products, [name]: emptyProduct() } }));
+    }
   };
 
   const addCoffee = () => {
@@ -202,11 +213,61 @@ const RegjistrimiDitor = () => {
   const removeShpenzim = (idx: number) =>
     setCurrentTurn((prev) => ({ ...prev, shpenzime: prev.shpenzime.filter((_, i) => i !== idx) }));
 
+  const closeT1 = async () => {
+    if (turn1ClosedAt && !confirm(`Turni 1 është mbyllur më ${new Date(turn1ClosedAt).toLocaleString("sq-AL", { timeZone: "Europe/Rome" })}. Rilogariti?`)) return;
+    if (!turn1ClosedAt && !confirm("Mbyll Turnin 1 dhe mbush 'Shiriti' nga shitjet e POS-it?")) return;
+    setClosingT1(true);
+    try {
+      const fromISO = Sales.romeStartOfDayISO(date);
+      const toISO = new Date().toISOString();
+      const map = await Sales.aggregateSalesByProduct(fromISO, toISO, products);
+      const updatedT1: InventoryTurnData = {
+        ...t1,
+        products: { ...t1.products },
+      };
+      products.forEach((p) => {
+        const existing = updatedT1.products[p.name] || emptyProduct();
+        updatedT1.products[p.name] = { ...existing, shiriti: map[p.name] || 0 };
+      });
+      setT1(updatedT1);
+      const { error } = await (supabase as any)
+        .from("inv_daily_entries")
+        .upsert(
+          { entry_date: date, turn1_data: updatedT1, turn2_data: t2, turn1_closed_at: toISO, updated_at: new Date().toISOString() },
+          { onConflict: "entry_date" },
+        );
+      if (error) throw error;
+      setTurn1ClosedAt(toISO);
+      toast.success("Turni 1 u mbyll. Shiriti u mbush automatikisht.");
+    } catch (e: any) {
+      toast.error("Mbyllja e T1 dështoi: " + (e.message || e));
+    } finally {
+      setClosingT1(false);
+    }
+  };
+
   const closeDay = async () => {
     if (!confirm("Mbyll ditën dhe llogarit stokun për ditën pasardhëse?")) return;
     setClosing(true);
     try {
-      const { stock, mulliriFillim } = Prop.computeNextDayStock(t2, t1);
+      // Auto-fill T2 shiriti from POS sales between turn1_closed_at and now
+      let updatedT2 = t2;
+      if (turn1ClosedAt) {
+        const map = await Sales.aggregateSalesByProduct(turn1ClosedAt, new Date().toISOString(), products);
+        updatedT2 = { ...t2, products: { ...t2.products } };
+        products.forEach((p) => {
+          const existing = updatedT2.products[p.name] || emptyProduct();
+          updatedT2.products[p.name] = { ...existing, shiriti: map[p.name] || 0 };
+        });
+        setT2(updatedT2);
+        await (supabase as any)
+          .from("inv_daily_entries")
+          .upsert(
+            { entry_date: date, turn1_data: t1, turn2_data: updatedT2, turn1_closed_at: turn1ClosedAt, updated_at: new Date().toISOString() },
+            { onConflict: "entry_date" },
+          );
+      }
+      const { stock, mulliriFillim } = Prop.computeNextDayStock(updatedT2, t1);
       const nextDate = shiftIso(date, 1);
       await Prop.persistNextDayStock(nextDate, stock, mulliriFillim);
       toast.success(`Dita u mbyll. Stoku i ${nextDate} u ruajt.`);
@@ -267,21 +328,19 @@ const RegjistrimiDitor = () => {
                 <Card className="bg-slate-900 border-slate-800 p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="font-semibold flex items-center gap-2"><Package2 size={16}/> Produktet</h2>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={newProductName}
-                        onChange={(e) => setNewProductName(e.target.value)}
-                        placeholder="Emri i produktit"
-                        className="bg-slate-950 border-slate-700 text-white h-8 w-48"
-                      />
-                      <Button size="sm" onClick={addProduct} className="bg-emerald-600 hover:bg-emerald-500 h-8">
-                        <Plus size={14} className="mr-1"/> Shto
-                      </Button>
-                    </div>
+                    <ProductManagerDialog
+                      products={products}
+                      onChanged={handleProductsChanged}
+                      trigger={
+                        <Button size="sm" className="bg-slate-800 hover:bg-slate-700 h-8">
+                          <Settings2 size={14} className="mr-1"/> Menaxho
+                        </Button>
+                      }
+                    />
                   </div>
 
                   {products.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto një më sipër.</p>
+                    <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto nga "Menaxho".</p>
                   ) : (
                     <div className="space-y-3">
                       {products.map((p) => {
@@ -291,13 +350,8 @@ const RegjistrimiDitor = () => {
                           <div key={p.id} className="border border-slate-800 rounded-lg p-3 bg-slate-950/60">
                             <div className="flex items-center justify-between mb-2">
                               <div className="font-medium">{p.name}</div>
-                              <div className="flex items-center gap-3">
-                                <div className={`text-sm font-bold tabular-nums ${difColor(dif)}`}>
-                                  Dif: {dif > 0 ? "+" : ""}{dif.toFixed(2)}
-                                </div>
-                                <button onClick={() => removeProduct(p)} className="text-slate-500 hover:text-rose-400" aria-label="Fshij">
-                                  <Trash2 size={14}/>
-                                </button>
+                              <div className={`text-sm font-bold tabular-nums ${difColor(dif)}`}>
+                                Dif: {dif > 0 ? "+" : ""}{dif.toFixed(2)}
                               </div>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -444,7 +498,16 @@ const RegjistrimiDitor = () => {
             ))}
           </Tabs>
 
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              onClick={closeT1}
+              disabled={closingT1}
+              variant="secondary"
+              className="bg-sky-700 hover:bg-sky-600 text-white"
+            >
+              {closingT1 ? <Loader2 className="animate-spin mr-2" size={16}/> : <Clock size={16} className="mr-2"/>}
+              {turn1ClosedAt ? "Rimbush Shiritin T1" : "Mbyll Turnin 1"}
+            </Button>
             <Button
               onClick={closeDay}
               disabled={closing}
@@ -454,6 +517,11 @@ const RegjistrimiDitor = () => {
               Mbyll ditën
             </Button>
           </div>
+          {turn1ClosedAt && (
+            <p className="text-xs text-slate-500 text-right">
+              T1 u mbyll: {new Date(turn1ClosedAt).toLocaleString("sq-AL", { timeZone: "Europe/Rome" })}
+            </p>
+          )}
         </div>
       )}
     </div>

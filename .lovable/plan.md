@@ -1,47 +1,86 @@
-# Dokument teknik për konsultim — Cafe Boulevard
+
+# Plan: Menaxhim Produktesh & Mbyllja T1 me Shiriti Auto
 
 ## Qëllimi
-Të prodhoj një file të vetëm Markdown që përshkruan **të gjithë kodin dhe llogjikën** e projektit, i strukturuar për t'u dërguar dikujt tjetër (ose një AI-je tjetër) me qëllim konsultimi për përmirësime të reja pa qenë nevoja të lexojë çdo skedar.
+Në `/regjistrimi-ditor`:
+1. Menaxhim i plotë i produkteve (shto / fshi / **riemërto** + **mapim me menu items**).
+2. Buton i ri **"Mbyll T1"** që lexon shitjet e T1 nga `transactions`, mbush automatikisht `Shiriti` për çdo produkt, dhe propagon `StokFillim` për T2 (njësoj si mbyllja e ditës).
 
-## Ku do ta ruaj
-`/mnt/documents/boulevard-technical-reference.md` — që të jetë menjëherë i shkarkueshëm nga ti si artefakt.
+---
 
-## Struktura e file-it
+## 1. Backend (Migration)
 
-1. **Përmbledhje e projektit** — çfarë është (PWA për kafe/restorant në Elbasan), stack (React + Vite + TS + Tailwind + Lovable Cloud/Supabase), gjuha SQ/EN, valuta Lekë, timezone Rome.
-2. **Arkitektura e përgjithshme** — diagram ASCII i flukseve: klient (QR → menu → porosi) / kamarier (PWA POS) / kuzhinë-bar (KDS) / manager dashboard / print-station.
-3. **Rutat & faqet** (`src/App.tsx` + `src/pages/*`) — çdo rutë me qëllimin, guards (PWAAuthGate, passcode), dhe komponentët kryesorë.
-4. **Modeli i të dhënave** — tabelat kryesore në Supabase (menu_items, tables, pos_orders, order_items_split, print_jobs, staff_shifts, feedback, chat_sessions, etj.), kolonat kryesore, RLS-ja në përgjithësi.
-5. **Edge Functions** — listë e të gjitha `supabase/functions/*` me qëllimin dhe input/output.
-6. **Fluksi i porosive (POS)** — nga celulari i kamarierit deri te KDS-të (bar/kuzhinë), split-imi bar/kuzhinë, çmimi aktiv (oferta që kalon mesnatën), mbyllja e tavolinës, faturimi.
-7. **Sistemi i printimit** — `print_jobs` + `/print-station` + `receipt-print.ts` + Chrome kiosk-printing (arkitektura e re) dhe fallback-et.
-8. **Menu & Oferta** — struktura e kategorive, `display_order`, `available`, oferta me `offer_start_time/offer_end_time` që mund të kalojnë mesnatën, ikona 🔥.
-9. **Autentikimi & Roles** — Staff PIN, shift management (10s/5m checks), manager passcode 2025, dashboard proxy `manage-shift`, RLS për `user_roles`.
-10. **Njoftimet** — kambana e kuzhinës (5 beeps + vibration 15s), Web Push (VAPID, `send-push`), realtime Supabase.
-11. **AI Assistant** — Gemini 2.5 Flash, kontekst dinamik nga DB, auto-clear >24h.
-12. **Feedback** — rating 1-5, akses vetëm manager/admin.
-13. **PWA & Offline** — service worker (`staff-sw.js`), manifest, iOS cache buster, standalone redirects.
-14. **Stili vizual** — Premium Dark Luxury, `boulevard.css`, Playfair + Inter, SVG ikona 1.5px, glassmorphism.
-15. **Skedarët kryesorë me role** — një tabelë kompakte "path → çfarë bën" për të gjithë skedarët në `src/` dhe `supabase/`.
-16. **Njohuritë institucionale** — përmbledhje e memoriave (`mem://`) që ndikojnë çdo vendim (geofencing 75m i pezulluar, printer arka etj.).
-17. **Pikat e njohura të kujdesit** — gjëra që lehtë prishen (RLS + GRANT, WidthType, offer time crossing midnight, kiosk-printing flags, iOS PWA cache) — që lexuesi të mos i propozojë sërish.
-18. **Çfarë NUK është implementuar / është jashtë skopit** — printera të veçantë kuzhinë/bar, fallback offline i printimit, etj.
+Shtim kolonash te `inv_products`:
+- `menu_item_ids uuid[] not null default '{}'` — lista e artikujve të menusë që konsumohen nga ky produkt inventari.
+- `units_per_sale numeric not null default 1` — sa njësi të inventarit shpenzohen për 1 shitje (p.sh. 1 shishe birrë = 1).
 
-## Si do ta ndërtoj
-- Do të kaloj shpejt nëpër: `src/App.tsx`, `src/pages/*`, `src/components/pos/*`, `src/lib/*`, `supabase/functions/*` (lista), `supabase/config.toml`, `DOKUMENTACIONI.md`, `STRUCTURE.md`, `public/manifest*`, dhe skema aktuale e DB-së.
-- Do të bëj query të skemës së DB-së për tabelat + kolonat aktuale (jo vetëm hamendësim nga migrimet).
-- Do të përmbledh, jo do të bëj copy-paste kodi të gjatë — snippet-e vetëm kur ndriçojnë llogjikën (p.sh. `activePrice` te `pos-create-order`).
-- Gjuha: **shqip**, me terma teknikë në anglisht kur duhet.
-- Objektivi i gjatësisë: ~1500–2500 rreshta, i strukturuar me tituj H2/H3 që të jetë i navigueshëm.
+Shtim kolone te `inv_daily_entries`:
+- `turn1_closed_at timestamptz null` — koha kur u mbyll T1 (kufiri i turneve).
 
-## Rezultati për ty
-Në fund të punës do të kesh:
+Politikat RLS ekzistuese vlejnë (autenticated read/write) — s'duhet gjë e re.
+
+---
+
+## 2. UI: Menaxhimi i Produkteve
+
+Zëvendëso rreshtin "Shto produkt" me një dialog **"Menaxho produktet"** (butoni hapet nga header i seksionit Produktet):
+
+- Listë e produkteve me:
+  - Input për riemërtim (auto-save on blur).
+  - Multi-select (checkbox list e kërkueshme) e `menu_items` për `menu_item_ids`.
+  - Input numerik për `units_per_sale`.
+  - Buton fshi (me konfirmim).
+- Rresht i ri "Shto produkt" (emri + zgjedhja e menu items në momentin e krijimit).
+
+**Sinkronizimi T1/T2 pas riemërtimit:** kur ndryshon emri, migro çelësin brenda `turn1_data.products` dhe `turn2_data.products` (rewrite objektin me çelës të ri, ruaj në DB).
+
+## 3. Mbyllja e Turnit 1 — Shiriti Auto
+
+Buton i ri **"Mbyll Turnin 1"** në tab-in T1 (afër "Mbyll ditën"):
+
+Rrjedha:
+1. Konfirmo veprimin.
+2. Merr `turn1_closed_at` = tani (Europe/Rome). Nëse `inv_daily_entries.turn1_closed_at` është e mbushur → mos rilogariti (paralajmëro).
+3. Query te `transactions`:
+   - `type = 'sale'`
+   - `created_at >= <fillim i ditës Rome>` **dhe** `created_at < turn1_closed_at`
+4. Për çdo transaksion, kalo nëpër `items` (JSONB) dhe grupo sasitë sipas `menu_item_id`.
+5. Për çdo `inv_product`, `Shiriti T1 += Σ(sold_qty[menu_item_id] * units_per_sale)` për të gjithë `menu_item_ids` të tij.
+6. Përditëso `turn1_data.products[name].shiriti` në DB.
+7. Ruaj `turn1_closed_at`.
+8. Auto-propagimi T1→T2.stokFillim që ekziston tashmë do të rifreskojë "Stok Fillim" të T2 me formulën aktuale (stokFillim + furnizime + shiriti − gjendje... siç është në `InventoryCalculationService.calculateStockForNextTurn`).
+
+**Ndarja e turneve për mbylljen e ditës:** kur klikohet "Mbyll ditën", `Shiriti T2` llogaritet nga transactions me `created_at >= turn1_closed_at` deri në momentin e mbylljes. E njëjta logjikë, riciklohet.
+
+## 4. Shërbimi i ri: `inventorySalesAggregation.service.ts`
+
+Metodë e re (pa prekur shërbimet ekzistuese):
+```ts
+aggregateSalesByProduct(fromISO, toISO, products): Promise<Record<productName, number>>
 ```
-<presentation-artifact path="boulevard-technical-reference.md" mime_type="text/markdown"></presentation-artifact>
-```
-Mund ta hapësh/shkarkosh menjëherë dhe t'ia japësh kujtdo dëshiron për konsultim.
+- Merr `transactions` në interval.
+- Ndërton hartë `menu_item_id → total_qty`.
+- Kthen `productName → shiriti` sipas `menu_item_ids` × `units_per_sale`.
 
-## Jashtë skopit
-- Ndryshime në kod.
-- Ekzekutim testesh apo browser automation.
-- Dokumentim i çdo rreshti kodi — vetëm llogjika + arkitektura + pikat kritike.
+## 5. Ndryshime specifike
+
+**Files të prekur:**
+- **Migration i ri:** shto kolonat te `inv_products` dhe `inv_daily_entries`.
+- **`src/types/inventory.types.ts`** — shto `menu_item_ids`, `units_per_sale` te tipi `InvProduct` (te faqja) dhe interface e re nëse duhet.
+- **`src/pages/RegjistrimiDitor.tsx`**:
+  - Zëvendëso rreshtin "Shto produkt" me dialog `ProductManagerDialog`.
+  - Shto butonin "Mbyll Turnin 1".
+  - Kur riemërton, migro çelësat në T1/T2 dhe ruaj.
+- **`src/components/inventory/ProductManagerDialog.tsx`** (i ri) — CRUD dhe multi-select menu items.
+- **`src/services/inventorySalesAggregation.service.ts`** (i ri).
+- **`src/integrations/supabase/types.ts`** — regjenerohet automatikisht pas migrimit.
+
+## 6. Jashtë fushës (nuk preket)
+- `InventoryCalculationService` dhe `InventoryStockPropagationService` — s'ndryshohen.
+- `/inventory` (materialet POS) — s'preket.
+- Sjellja e "Furnizime" mbetet e pavarur (siç kërkuar më parë).
+
+---
+
+## Pika për konfirmim
+Nëse dakord, do të filloj me migrimin, pastaj UI & shërbimi.
