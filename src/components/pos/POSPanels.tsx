@@ -449,6 +449,8 @@ export const CashierPanel = () => {
           </Card>
         </div>
       )}
+        </>
+      )}
     </div>
   );
 };
