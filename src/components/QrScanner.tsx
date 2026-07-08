@@ -12,7 +12,13 @@ const safeStop = (scanner: Html5Qrcode) => {
   try {
     const state = scanner.getState();
     if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
-      scanner.stop().catch(() => {});
+      try {
+        scanner.stop().then(() => {
+          try { scanner.clear(); } catch { /* ignore */ }
+        }).catch(() => {});
+      } catch {
+        // ignore synchronous throw
+      }
     }
   } catch {
     // ignore
