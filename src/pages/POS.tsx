@@ -6,7 +6,7 @@ import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
 import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X } from "lucide-react";
 import { toast } from "sonner";
-import { closePrintWindow, openReceiptPrintWindow, writeReceiptAndPrint } from "@/lib/receipt-print";
+import { printReceipt } from "@/lib/receipt-print";
 
 interface TableRow {
   id: string;
@@ -108,10 +108,7 @@ const POS = () => {
   };
 
   const closeTable = async (tableNumber: number | string) => {
-    const printWindow = openReceiptPrintWindow(`Tavolina #${tableNumber}`);
-    if (!printWindow) toast.error("Lejo pop-ups në browser që të hapet printimi.");
     if (!confirm(`Të mbyllim & printojmë tavolinën #${tableNumber}?`)) {
-      closePrintWindow(printWindow);
       return;
     }
     setClosing(true);
@@ -123,7 +120,6 @@ const POS = () => {
         .in("status", ["open", "ready"]);
       const ids = ((openOrders as { id: string }[]) || []).map((o) => o.id);
       if (ids.length === 0) {
-        closePrintWindow(printWindow);
         toast.error("Asnjë porosi e hapur për këtë tavolinë");
         return;
       }
@@ -138,9 +134,13 @@ const POS = () => {
         if ((data as any)?.receiptText) receipts.push(String((data as any).receiptText));
       }
       toast.success(`Tavolina #${tableNumber} u mbyll`);
-      if (receipts.length > 0) writeReceiptAndPrint(printWindow, receipts.join("\n\n------------------------------------------\n\n"), `Tavolina #${tableNumber}`);
+      if (receipts.length > 0) {
+        printReceipt(
+          receipts.join("\n\n------------------------------------------\n\n"),
+          `Tavolina #${tableNumber}`,
+        );
+      }
     } catch (e) {
-      closePrintWindow(printWindow);
       toast.error("Gabim: " + (e as Error).message);
     } finally {
       setClosing(false);
