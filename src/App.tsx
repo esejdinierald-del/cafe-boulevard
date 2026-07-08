@@ -14,6 +14,7 @@ import StaffShift from "./pages/StaffShift";
 import InstallStaff from "./pages/InstallStaff";
 import POS from "./pages/POS";
 import Inventory from "./pages/Inventory";
+import InventoryMaterials from "./pages/InventoryMaterials";
 import AppDocumentation from "./pages/AppDocumentation";
 import PrintStation from "./pages/PrintStation";
 import NotFound from "./pages/NotFound";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/staff" element={<StaffShift />} />
           <Route path="/pos" element={<POS />} />
           <Route path="/inventory" element={<Inventory />} />
+          <Route path="/inventory-materials" element={<InventoryMaterials />} />
           <Route path="/print-station" element={<PrintStation />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

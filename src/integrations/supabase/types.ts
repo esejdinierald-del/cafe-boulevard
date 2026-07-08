@@ -151,6 +151,81 @@ export type Database = {
         }
         Relationships: []
       }
+      inv_daily_entries: {
+        Row: {
+          created_at: string
+          entry_date: string
+          id: string
+          turn1_data: Json
+          turn2_data: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entry_date: string
+          id?: string
+          turn1_data?: Json
+          turn2_data?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          turn1_data?: Json
+          turn2_data?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inv_next_day_stock: {
+        Row: {
+          created_at: string
+          id: string
+          mulliri_fillim: number
+          stock_data: Json
+          stock_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mulliri_fillim?: number
+          stock_data?: Json
+          stock_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mulliri_fillim?: number
+          stock_data?: Json
+          stock_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inv_products: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       menu_items: {
         Row: {
           available: boolean | null
