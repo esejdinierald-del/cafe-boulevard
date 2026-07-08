@@ -141,14 +141,20 @@ export const CashierPanel = () => {
   const [receipt, setReceipt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [adminPw, setAdminPw] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [tab, setTab] = useState<"active" | "history">("active");
 
   const requireAdmin = (): string | null => {
     if (adminPw) return adminPw;
-    const pw = window.prompt("Fjalëkalimi i adminit për anulim:");
+    const pw = window.prompt(
+      "Fjalëkalimi i adminit për anulim\n(Passcode standard: 2025 — nëse është ndryshuar, përdor atë të ri)",
+    );
     if (!pw) return null;
     setAdminPw(pw);
     return pw;
   };
+
+  const toggleExpand = (id: string) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
 
   const load = async () => {
     const { data } = await supabase
@@ -235,84 +241,130 @@ export const CashierPanel = () => {
 
   return (
     <div className="space-y-3">
-      {orders.length === 0 && (
-        <div className="p-8 text-center text-muted-foreground">Asnjë porosi aktive.</div>
-      )}
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {orders.map((o, idx) => (
-          <Card
-            key={o.id}
-            className={`p-4 space-y-2 relative ${
-              o.status === "open"
-                ? "border-amber-500/60 animate-pulse ring-2 ring-amber-500/40"
-                : "border-green-500/60"
-            }`}
-          >
-            <Badge className="absolute -top-2 -left-2" variant="outline">#{idx + 1}</Badge>
-            <div className="flex items-center justify-between">
-              <div className="font-bold">
-                {o.table_number ? `Tavolina #${o.table_number}` : o.mode.toUpperCase()}
-              </div>
-              <Badge variant={o.status === "ready" ? "default" : "secondary"}>
-                {o.status === "ready" ? "GATI ✓" : "⏳ Duke pritur banakun"}
-              </Badge>
-            </div>
-            <ul className="text-sm space-y-1">
-              {o.items.map((it, i) => (
-                <li key={i} className="flex justify-between items-center gap-2">
-                  <span className="flex-1">{it.name} x{it.quantity}</span>
-                  <span>{(it.price * it.quantity).toFixed(0)} L</span>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-6 w-6 text-destructive hover:bg-destructive/10"
-                    onClick={() => cancelItem(o, i)}
-                    disabled={loading}
-                    title="Hiq 1 nga ky artikull (admin)"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-            <div className="flex justify-between font-bold border-t pt-2">
-              <span>Totali</span>
-              <span>{Number(o.total_amount).toFixed(0)} Lekë</span>
-            </div>
-            {o.operator_name && (
-              <div className="text-xs text-muted-foreground">Kamarieri: {o.operator_name}</div>
-            )}
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => printAndClose(o.id, false)}
-                disabled={loading}
-                className="flex-1"
-              >
-                <Printer className="h-4 w-4 mr-1" /> Parapamje
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => printAndClose(o.id, true)}
-                disabled={loading || o.status !== "ready"}
-                className="flex-1"
-              >
-                <CheckCircle2 className="h-4 w-4 mr-1" /> Printo & Mbyll
-              </Button>
-            </div>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => cancelOrder(o.id)}
-              disabled={loading}
-              className="w-full"
-            >
-              <Ban className="h-4 w-4 mr-1" /> Anulo porosinë
-            </Button>
-          </Card>
-        ))}
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-border pb-2">
+        <Button
+          variant={tab === "active" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setTab("active")}
+        >
+          Aktive ({orders.length})
+        </Button>
+        <Button
+          variant={tab === "history" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setTab("history")}
+        >
+          <History className="h-4 w-4 mr-1" /> Historiku (Admin)
+        </Button>
       </div>
+
+      {tab === "active" && (
+        <>
+          {orders.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground">Asnjë porosi aktive.</div>
+          )}
+          <div className="space-y-2">
+            {orders.map((o, idx) => {
+              const isOpen = !!expanded[o.id];
+              return (
+                <Card
+                  key={o.id}
+                  className={`overflow-hidden ${
+                    o.status === "open"
+                      ? "border-amber-500/60 ring-1 ring-amber-500/30"
+                      : "border-green-500/60"
+                  }`}
+                >
+                  <button
+                    onClick={() => toggleExpand(o.id)}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-muted/40 transition text-left"
+                  >
+                    {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    <Badge variant="outline" className="shrink-0">#{idx + 1}</Badge>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold truncate">
+                        {o.table_number ? `Tavolina #${o.table_number}` : o.mode.toUpperCase()}
+                        {o.operator_name && (
+                          <span className="text-xs text-muted-foreground font-normal ml-2">
+                            • {o.operator_name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(o.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}
+                        {" • "}{o.items.length} artikuj
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="font-bold text-amber-500">{Number(o.total_amount).toFixed(0)} L</div>
+                      <Badge variant={o.status === "ready" ? "default" : "secondary"} className="text-[10px]">
+                        {o.status === "ready" ? "GATI ✓" : "⏳ Pritje"}
+                      </Badge>
+                    </div>
+                  </button>
+
+                  {isOpen && (
+                    <div className="p-3 pt-0 space-y-3 border-t border-border/40">
+                      <ul className="text-sm space-y-1 pt-2">
+                        {o.items.map((it, i) => (
+                          <li key={i} className="flex justify-between items-center gap-2">
+                            <span className="flex-1">
+                              {it.name} <span className="text-muted-foreground">x{it.quantity}</span>
+                              {it.notes && <span className="text-xs italic text-amber-500 ml-2">({it.notes})</span>}
+                            </span>
+                            <span className="text-amber-500 font-semibold">{(it.price * it.quantity).toFixed(0)} L</span>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                              onClick={() => cancelItem(o, i)}
+                              disabled={loading}
+                              title="Hiq 1 nga ky artikull (admin)"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => printAndClose(o.id, false)}
+                          disabled={loading}
+                          className="flex-1"
+                        >
+                          <Printer className="h-4 w-4 mr-1" /> Parapamje
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => printAndClose(o.id, true)}
+                          disabled={loading || o.status !== "ready"}
+                          className="flex-1"
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-1" /> Printo & Mbyll
+                        </Button>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => cancelOrder(o.id)}
+                        disabled={loading}
+                        className="w-full"
+                      >
+                        <Ban className="h-4 w-4 mr-1" /> Anulo porosinë (Admin)
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {tab === "history" && <CashierHistoryPanel />}
 
       {receipt && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setReceipt(null)}>
