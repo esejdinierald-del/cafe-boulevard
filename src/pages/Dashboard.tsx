@@ -441,7 +441,15 @@ const Dashboard = () => {
     };
   }, [curtainActive]);
 
-  // Removed redundant 5s polling — realtime handles it
+  // Backup polling every 5s in case realtime drops
+  useEffect(() => {
+    if (curtainActive) return;
+    const poll = setInterval(() => {
+      fetchRequests();
+      fetchOrders();
+    }, 5000);
+    return () => clearInterval(poll);
+  }, [curtainActive]);
 
   // Elapsed time
   useEffect(() => {
