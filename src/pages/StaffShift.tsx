@@ -547,6 +547,16 @@ const StaffShift = () => {
   // Active shift — live notifications view
   const totalPending = requests.length + orders.length;
 
+  // Require per-staff PIN identification after shift token is validated
+  if (!staffName) {
+    return (
+      <StaffPinLogin
+        shiftToken={activeToken}
+        onSuccess={(name) => setStaffName(name)}
+      />
+    );
+  }
+
   return (
     <div
       className="min-h-screen bg-background p-3 pb-8"
