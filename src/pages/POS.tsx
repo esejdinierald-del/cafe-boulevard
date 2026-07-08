@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
-import { LogOut, Coffee, PowerOff, Package, Printer } from "lucide-react";
+import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface TableRow {
@@ -20,6 +20,15 @@ interface OpenOrderRow {
   status: string | null;
 }
 
+interface TableOrderDetail {
+  id: string;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  operator_name: string | null;
+  items: Array<{ name: string; price: number; quantity: number; notes?: string }>;
+}
+
 const POS = () => {
   const navigate = useNavigate();
   const currentOrder = usePOSStore((s) => s.currentOrder);
@@ -28,6 +37,7 @@ const POS = () => {
   const [tableTotals, setTableTotals] = useState<Record<string, number>>({});
   const [closing, setClosing] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [viewTable, setViewTable] = useState<{ number: number | string; orders: TableOrderDetail[] } | null>(null);
 
   // Gate: require staff shift token
   useEffect(() => {
@@ -65,8 +75,10 @@ const POS = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "tables" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "pos_orders" }, load)
       .subscribe();
+    const poll = setInterval(load, 5000);
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(poll);
     };
   }, [checking]);
 
@@ -79,6 +91,20 @@ const POS = () => {
   }
 
   const activeTableNumber = currentOrder?.tableNumber ?? null;
+
+  const viewTableOrders = async (tableNumber: number | string) => {
+    const { data, error } = await supabase
+      .from("pos_orders")
+      .select("id, status, total_amount, created_at, operator_name, items")
+      .eq("table_number", Number(tableNumber))
+      .in("status", ["open", "ready"])
+      .order("created_at", { ascending: true });
+    if (error) {
+      toast.error("Gabim: " + error.message);
+      return;
+    }
+    setViewTable({ number: tableNumber, orders: (data as TableOrderDetail[]) || [] });
+  };
 
   const closeTable = async (tableNumber: number | string) => {
     if (!confirm(`Të mbyllim & printojmë tavolinën #${tableNumber}?`)) return;
@@ -169,13 +195,14 @@ const POS = () => {
               const occupied = t.status === "occupied";
               const isActive = String(activeTableNumber) === String(t.number);
               const total = tableTotals[String(t.number)] || 0;
+              const hasOrders = total > 0;
               return (
                 <div
                   key={t.id}
                   className={`relative aspect-square rounded-lg border-2 transition ${
                     isActive
                       ? "border-amber-400 bg-amber-500/20"
-                      : occupied
+                      : occupied || hasOrders
                       ? "border-red-500/50 bg-red-500/20 text-red-200"
                       : "border-green-500/50 bg-green-500/10 text-green-200"
                   }`}
@@ -185,25 +212,34 @@ const POS = () => {
                     className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold hover:bg-white/5 rounded-lg"
                   >
                     <span>#{t.number}</span>
-                    {total > 0 ? (
+                    {hasOrders ? (
                       <span className="text-[11px] font-bold text-amber-300 mt-1">
                         {total.toFixed(0)} L
                       </span>
                     ) : (
                       <span className="text-[10px] opacity-70 mt-1">
-                        {occupied ? "e zënë" : "e lirë"}
+                        e lirë
                       </span>
                     )}
                   </button>
-                  {total > 0 && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
-                      disabled={closing}
-                      title="Mbyll & printo tavolinën"
-                      className="absolute bottom-1 right-1 p-1 rounded bg-amber-600 hover:bg-amber-500 text-white z-10 disabled:opacity-50"
-                    >
-                      <Printer size={12} />
-                    </button>
+                  {hasOrders && (
+                    <>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); viewTableOrders(t.number); }}
+                        title="Shiko porositë"
+                        className="absolute top-1 right-1 p-1 rounded bg-slate-700/80 hover:bg-slate-600 text-white z-10"
+                      >
+                        <Eye size={12} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
+                        disabled={closing}
+                        title="Mbyll & printo tavolinën"
+                        className="absolute bottom-1 right-1 p-1 rounded bg-amber-600 hover:bg-amber-500 text-white z-10 disabled:opacity-50"
+                      >
+                        <Printer size={12} />
+                      </button>
+                    </>
                   )}
                 </div>
               );
@@ -226,6 +262,64 @@ const POS = () => {
           <OrderPanel />
         </aside>
       </div>
+
+      {viewTable && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+          onClick={() => setViewTable(null)}
+        >
+          <div
+            className="bg-slate-800 rounded-lg max-w-lg w-full max-h-[85vh] overflow-y-auto p-5 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setViewTable(null)}
+              className="absolute top-2 right-2 p-1 rounded hover:bg-slate-700"
+            >
+              <X size={18} />
+            </button>
+            <h2 className="text-lg font-bold mb-3">Tavolina #{viewTable.number}</h2>
+            {viewTable.orders.length === 0 ? (
+              <div className="text-slate-400 text-sm">Nuk ka porosi aktive.</div>
+            ) : (
+              <div className="space-y-4">
+                {viewTable.orders.map((o, idx) => (
+                  <div key={o.id} className="border border-slate-700 rounded-lg p-3">
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                      <span>
+                        Porosi #{idx + 1} • {o.status === "ready" ? "✓ Gati" : "⏳ Në pritje"}
+                      </span>
+                      <span>{new Date(o.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}</span>
+                    </div>
+                    {o.operator_name && (
+                      <div className="text-xs text-slate-400 mb-2">Kamarieri: {o.operator_name}</div>
+                    )}
+                    <ul className="text-sm space-y-1">
+                      {(o.items || []).map((it, i) => (
+                        <li key={i} className="flex justify-between border-b border-slate-700/50 pb-1">
+                          <span>
+                            {it.name} <span className="text-slate-400">x{it.quantity}</span>
+                            {it.notes && <span className="text-xs italic text-amber-400 ml-2">({it.notes})</span>}
+                          </span>
+                          <span className="text-amber-300">{(Number(it.price) * it.quantity).toFixed(0)} L</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="flex justify-between font-bold pt-2 mt-2 border-t border-slate-700">
+                      <span>Totali</span>
+                      <span className="text-amber-300">{Number(o.total_amount).toFixed(0)} Lekë</span>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex justify-between font-bold pt-3 border-t border-slate-700 text-amber-300">
+                  <span>TOTALI I TAVOLINËS</span>
+                  <span>{viewTable.orders.reduce((s, o) => s + Number(o.total_amount), 0).toFixed(0)} Lekë</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

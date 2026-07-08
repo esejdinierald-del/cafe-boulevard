@@ -17,6 +17,9 @@ interface Product {
   description: string | null;
   category_id: string | null;
   is_active?: boolean | null;
+  offer_price?: number | null;
+  offer_start_time?: string | null;
+  offer_end_time?: string | null;
 }
 
 export const MenuGrid = () => {
@@ -28,12 +31,17 @@ export const MenuGrid = () => {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    supabase.from("menu_items").select("*").eq("available", true).then(({ data }) => {
-      setProducts((data as Product[]) || []);
-    });
-    supabase.from("categories").select("*").order("display_order").then(({ data }) => {
-      setCategories((data as Category[]) || []);
-    });
+    const load = async () => {
+      const [{ data: p }, { data: c }] = await Promise.all([
+        supabase.from("menu_items").select("*").eq("available", true),
+        supabase.from("categories").select("*").order("display_order"),
+      ]);
+      setProducts((p as Product[]) || []);
+      setCategories((c as Category[]) || []);
+    };
+    load();
+    const poll = setInterval(load, 15000);
+    return () => clearInterval(poll);
   }, []);
 
   const main = categories.filter((c) => !c.parent_id);
@@ -65,6 +73,17 @@ export const MenuGrid = () => {
     const childIds = categories.filter((c) => c.parent_id === catId).map((c) => c.id);
     return products.filter((p) => p.category_id === catId || childIds.includes(p.category_id ?? "")).length;
   };
+
+  const isOfferActive = (p: Product): boolean => {
+    if (!p.offer_price || !p.offer_start_time || !p.offer_end_time) return false;
+    const nowRome = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit", hour12: false });
+    const start = p.offer_start_time.slice(0, 5);
+    const end = p.offer_end_time.slice(0, 5);
+    if (start > end) return nowRome >= start || nowRome <= end;
+    return nowRome >= start && nowRome <= end;
+  };
+  const activePrice = (p: Product) => (isOfferActive(p) ? Number(p.offer_price) : Number(p.price));
+  const addProduct = (p: Product) => addItem(p.id, 1, "", { ...p, price: activePrice(p) });
 
   const back = () => {
     if (selectedSub) setSelectedSub(null);
@@ -108,11 +127,18 @@ export const MenuGrid = () => {
           {searchResults.map((p) => (
             <button
               key={p.id}
-              onClick={() => addItem(p.id, 1, "", p)}
+              onClick={() => addProduct(p)}
               className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition text-left"
             >
               <div className="text-white font-medium">{p.name}</div>
-              <div className="text-amber-400 text-sm mt-1">{p.price} Lekë</div>
+              {isOfferActive(p) ? (
+                <div className="text-sm mt-1 flex items-center gap-2">
+                  <span className="line-through text-slate-500">{p.price} L</span>
+                  <span className="text-amber-400 font-bold">🔥 {p.offer_price} L</span>
+                </div>
+              ) : (
+                <div className="text-amber-400 text-sm mt-1">{p.price} Lekë</div>
+              )}
             </button>
           ))}
           {searchResults.length === 0 && (
@@ -160,11 +186,18 @@ export const MenuGrid = () => {
           {productsForCategory.map((p) => (
             <button
               key={p.id}
-              onClick={() => addItem(p.id, 1, "", p)}
+              onClick={() => addProduct(p)}
               className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition text-left"
             >
               <div className="text-white font-medium">{p.name}</div>
-              <div className="text-amber-400 text-sm mt-1">{p.price} Lekë</div>
+              {isOfferActive(p) ? (
+                <div className="text-sm mt-1 flex items-center gap-2">
+                  <span className="line-through text-slate-500">{p.price} L</span>
+                  <span className="text-amber-400 font-bold">🔥 {p.offer_price} L</span>
+                </div>
+              ) : (
+                <div className="text-amber-400 text-sm mt-1">{p.price} Lekë</div>
+              )}
               {p.description && (
                 <div className="text-slate-400 text-xs mt-1 line-clamp-2">{p.description}</div>
               )}
