@@ -372,6 +372,51 @@ export type Database = {
           },
         ]
       }
+      print_jobs: {
+        Row: {
+          amount: number | null
+          attempts: number
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          printed_at: string | null
+          receipt_text: string
+          station: string
+          status: string
+          table_code: string | null
+          title: string | null
+        }
+        Insert: {
+          amount?: number | null
+          attempts?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: string
+          printed_at?: string | null
+          receipt_text: string
+          station?: string
+          status?: string
+          table_code?: string | null
+          title?: string | null
+        }
+        Update: {
+          amount?: number | null
+          attempts?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          printed_at?: string | null
+          receipt_text?: string
+          station?: string
+          status?: string
+          table_code?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string

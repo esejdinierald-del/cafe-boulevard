@@ -7,6 +7,7 @@ import { usePOSStore } from "@/stores/pos-store";
 import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X } from "lucide-react";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/receipt-print";
+import { queuePrintJob, countPendingForMe } from "@/lib/print-queue";
 import { RomeClock } from "@/components/RomeClock";
 import { isPastShiftDay } from "@/lib/rome-time";
 
@@ -41,6 +42,31 @@ const POS = () => {
   const [closing, setClosing] = useState(false);
   const [checking, setChecking] = useState(true);
   const [viewTable, setViewTable] = useState<{ number: number | string; orders: TableOrderDetail[] } | null>(null);
+  const [pendingPrints, setPendingPrints] = useState(0);
+
+  // Track our pending print jobs (waiting for the arka PC)
+  useEffect(() => {
+    let mounted = true;
+    const refresh = async () => {
+      const n = await countPendingForMe();
+      if (mounted) setPendingPrints(n);
+    };
+    refresh();
+    const ch = supabase
+      .channel("pos-my-prints")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "print_jobs" },
+        refresh,
+      )
+      .subscribe();
+    const poll = setInterval(refresh, 5000);
+    return () => {
+      mounted = false;
+      supabase.removeChannel(ch);
+      clearInterval(poll);
+    };
+  }, []);
 
   // Gate: require staff shift token
   useEffect(() => {
@@ -137,10 +163,20 @@ const POS = () => {
       }
       toast.success(`Tavolina #${tableNumber} u mbyll`);
       if (receipts.length > 0) {
-        printReceipt(
-          receipts.join("\n\n------------------------------------------\n\n"),
-          `Tavolina #${tableNumber}`,
-        );
+        const combined = receipts.join("\n\n------------------------------------------\n\n");
+        const jobId = await queuePrintJob({
+          receiptText: combined,
+          title: `Tavolina #${tableNumber}`,
+          kind: "close_table",
+          station: "arka",
+          tableCode: tableNumber,
+        });
+        if (jobId) {
+          toast.success("Bileta u dërgua tek arka për printim ✓");
+        } else {
+          // Fallback: try local print
+          printReceipt(combined, `Tavolina #${tableNumber}`);
+        }
       }
     } catch (e) {
       toast.error("Gabim: " + (e as Error).message);
@@ -179,6 +215,14 @@ const POS = () => {
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold">POS Kamarier</h1>
           <RomeClock />
+          {pendingPrints > 0 && (
+            <span
+              className="flex items-center gap-1 px-2 py-1 rounded bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-semibold animate-pulse"
+              title="Bileta të tuat në pritje të printimit tek arka"
+            >
+              <Printer size={12} /> Në pritje printimi: {pendingPrints}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
