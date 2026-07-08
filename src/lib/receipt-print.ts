@@ -37,7 +37,7 @@ const printDocument = (title: string, body: string, withAutofit = false) => `<!d
     <meta charset="utf-8" />
     <title>${escapeHtml(title)}</title>
     <style>
-      @page { size: 80mm auto; margin: 0; }
+      @page { size: 72mm 200mm; margin: 0; }
       html, body {
         margin: 0;
         padding: 0;
@@ -49,7 +49,7 @@ const printDocument = (title: string, body: string, withAutofit = false) => `<!d
       body {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
         font-weight: 700;
-        width: 80mm;
+        width: 72mm;
       }
       pre {
         margin: 0;
