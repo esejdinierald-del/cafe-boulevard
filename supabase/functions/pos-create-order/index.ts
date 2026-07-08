@@ -24,7 +24,7 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { tableNumber, mode = "table", items: cartItems, notes = null, locationId = "main", operatorName = null } = body ?? {};
+    const { tableNumber, mode = "table", items: cartItems, notes = null, locationId = null, operatorName = null } = body ?? {};
 
     if (!Array.isArray(cartItems) || cartItems.length === 0) return jsonResponse({ error: "Shporta është bosh" }, 400);
     if (!["table", "bar", "delivery", "takeaway"].includes(mode)) return jsonResponse({ error: "Mode i panjohur" }, 400);
@@ -69,14 +69,26 @@ serve(async (req) => {
 
     const totalAmount = enrichedItems.reduce((sum: number, i: any) => sum + Number(i.price) * i.quantity, 0);
 
+    const insertPayload: Record<string, unknown> = {
+      table_id: tableId,
+      table_number: mode === "table" ? tableNumber : null,
+      mode,
+      items: enrichedItems,
+      status: "open",
+      total_amount: totalAmount,
+      operator_name: operatorName,
+      notes,
+    };
+    // location_id is a UUID column — only include if a valid UUID was passed
+    if (typeof locationId === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(locationId)) {
+      insertPayload.location_id = locationId;
+    }
     const { data: order, error: orderErr } = await supabase
-      .from("pos_orders").insert({
-        table_id: tableId,
-        table_number: mode === "table" ? tableNumber : null,
-        mode, items: enrichedItems, status: "open",
-        total_amount: totalAmount, operator_name: operatorName, location_id: locationId, notes,
-      }).select().single();
-    if (orderErr) return jsonResponse({ error: orderErr.message }, 500);
+      .from("pos_orders").insert(insertPayload).select().single();
+    if (orderErr) {
+      console.error("pos_orders insert failed:", orderErr);
+      return jsonResponse({ error: orderErr.message }, 500);
+    }
 
     const barItems = enrichedItems.filter((i: any) => i.forBar);
     const kitchenItems = enrichedItems.filter((i: any) => i.forKitchen);
