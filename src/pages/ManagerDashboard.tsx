@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Plus, Trash2, Edit, Save, X, Brain, Star, Armchair } from "lucide-react";
+import { LogOut, Plus, Trash2, Edit, Save, X, Brain, Star, Armchair, Users } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
+import { StaffManagerCard } from "@/components/manager/StaffManagerCard";
+import { AdminPasscodeCard } from "@/components/manager/AdminPasscodeCard";
 
 interface Category {
   id: string;
@@ -415,6 +417,10 @@ const ManagerDashboard = () => {
             <TabsTrigger value="tables" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
               <Armchair className="mr-1 h-4 w-4" />
               Tavolinat
+            </TabsTrigger>
+            <TabsTrigger value="staff" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              <Users className="mr-1 h-4 w-4" />
+              Stafi
             </TabsTrigger>
           </TabsList>
 
@@ -889,6 +895,11 @@ const ManagerDashboard = () => {
                 )}
               </div>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="staff" className="space-y-5">
+            <StaffManagerCard />
+            <AdminPasscodeCard />
           </TabsContent>
         </Tabs>
       </div>

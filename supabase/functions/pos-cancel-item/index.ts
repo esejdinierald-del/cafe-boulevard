@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sha256 } from "../_shared/hash.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,8 +22,12 @@ serve(async (req) => {
     );
 
     const { orderId, itemIndex, adminPassword, mode } = await req.json();
-    const expected = Deno.env.get("ADMIN_PASSCODE") ?? "2025";
-    if (!adminPassword || adminPassword !== expected) {
+    if (!adminPassword) return json({ error: "Fjalëkalim i pasaktë" }, 403);
+    const { data: setting } = await supabase
+      .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
+    const expectedHash = setting?.value ?? await sha256("2025");
+    const providedHash = await sha256(String(adminPassword));
+    if (providedHash !== expectedHash) {
       return json({ error: "Fjalëkalim i pasaktë" }, 403);
     }
     if (!orderId) return json({ error: "Mungon orderId" }, 400);

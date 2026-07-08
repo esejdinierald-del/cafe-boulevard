@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import QrScanner from "@/components/QrScanner";
 import SplashScreen from "@/components/SplashScreen";
 import boulevardLogo from "@/assets/boulevard-logo.png";
+import { StaffPinLogin } from "@/components/staff/StaffPinLogin";
 
 interface ServiceRequest {
   id: string;
@@ -88,6 +89,7 @@ const StaffShift = () => {
     return !shown;
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [staffName, setStaffName] = useState<string | null>(() => localStorage.getItem("staff_name"));
   const audioContextRef = useRef<AudioContext | null>(null);
   const touchStartY = useRef(0);
 
@@ -474,6 +476,9 @@ const StaffShift = () => {
     setActiveToken(null);
     setIsValid(false);
     localStorage.removeItem("staff_shift_token");
+    localStorage.removeItem("staff_name");
+    localStorage.removeItem("staff_role");
+    setStaffName(null);
     toast.info("Turni u mbyll");
   }, []);
 
@@ -542,6 +547,16 @@ const StaffShift = () => {
   // Active shift — live notifications view
   const totalPending = requests.length + orders.length;
 
+  // Require per-staff PIN identification after shift token is validated
+  if (!staffName) {
+    return (
+      <StaffPinLogin
+        shiftToken={activeToken}
+        onSuccess={(name) => setStaffName(name)}
+      />
+    );
+  }
+
   return (
     <div
       className="min-h-screen bg-background p-3 pb-8"
@@ -602,6 +617,21 @@ const StaffShift = () => {
               Dil
             </Button>
           </div>
+          {staffName && (
+            <div className="text-[11px] text-muted-foreground">
+              Kyçur si <span className="font-semibold text-foreground">{staffName}</span>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("staff_name");
+                  localStorage.removeItem("staff_role");
+                  setStaffName(null);
+                }}
+                className="ml-2 underline hover:text-primary"
+              >
+                ndrysho përdorues
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Pending Requests */}
