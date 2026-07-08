@@ -270,6 +270,33 @@ export const CashierPanel = () => {
 
   return (
     <div className="space-y-3">
+      {!unlocked && (
+        <Card className="max-w-md mx-auto p-6 space-y-4 border-amber-500/40">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <div className="rounded-full bg-amber-500/10 p-3">
+              <Lock className="h-6 w-6 text-amber-500" />
+            </div>
+            <h2 className="text-lg font-bold">Arka është e mbyllur</h2>
+            <p className="text-sm text-muted-foreground">
+              Fut fjalëkalimin e adminit për të parë porositë dhe historikun.
+            </p>
+          </div>
+          <Input
+            type="password"
+            placeholder="Fjalëkalimi i adminit"
+            value={pwInput}
+            onChange={(e) => setPwInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }}
+            autoFocus
+          />
+          <Button className="w-full" onClick={tryUnlock} disabled={unlocking}>
+            {unlocking ? "Duke verifikuar..." : "Hap Arkën"}
+          </Button>
+        </Card>
+      )}
+
+      {unlocked && (
+        <>
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border pb-2">
         <Button
@@ -285,6 +312,15 @@ export const CashierPanel = () => {
           onClick={() => setTab("history")}
         >
           <History className="h-4 w-4 mr-1" /> Historiku (Admin)
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={lockNow}
+          className="ml-auto text-muted-foreground"
+          title="Mbyll Arkën"
+        >
+          <Lock className="h-4 w-4" />
         </Button>
       </div>
 
