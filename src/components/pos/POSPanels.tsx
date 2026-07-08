@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Printer, CheckCircle2, X, Ban, Minus, BellRing, ChevronDown, ChevronRight, History, Calendar } from "lucide-react";
+import { Printer, CheckCircle2, X, Ban, Minus, BellRing, ChevronDown, ChevronRight, History, Calendar, Lock, Download, Trash2 } from "lucide-react";
 import { printReceipt } from "@/lib/receipt-print";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -143,6 +143,35 @@ export const CashierPanel = () => {
   const [adminPw, setAdminPw] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState<"active" | "history">("active");
+  // Admin-lock the whole Cashier panel.
+  const [unlocked, setUnlocked] = useState<boolean>(
+    () => sessionStorage.getItem("cashier_unlocked") === "1",
+  );
+  const [pwInput, setPwInput] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
+
+  const tryUnlock = async () => {
+    if (!pwInput.trim()) return;
+    setUnlocking(true);
+    const { data, error } = await supabase.functions.invoke("verify-admin-passcode", {
+      body: { passcode: pwInput.trim() },
+    });
+    setUnlocking(false);
+    if (!(data as any)?.valid) {
+      toast.error((data as any)?.error || error?.message || "Fjalëkalim i pasaktë");
+      return;
+    }
+    setAdminPw(pwInput.trim());
+    setUnlocked(true);
+    sessionStorage.setItem("cashier_unlocked", "1");
+    setPwInput("");
+  };
+
+  const lockNow = () => {
+    setUnlocked(false);
+    setAdminPw(null);
+    sessionStorage.removeItem("cashier_unlocked");
+  };
 
   const requireAdmin = (): string | null => {
     if (adminPw) return adminPw;
@@ -241,6 +270,33 @@ export const CashierPanel = () => {
 
   return (
     <div className="space-y-3">
+      {!unlocked && (
+        <Card className="max-w-md mx-auto p-6 space-y-4 border-amber-500/40">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <div className="rounded-full bg-amber-500/10 p-3">
+              <Lock className="h-6 w-6 text-amber-500" />
+            </div>
+            <h2 className="text-lg font-bold">Arka është e mbyllur</h2>
+            <p className="text-sm text-muted-foreground">
+              Fut fjalëkalimin e adminit për të parë porositë dhe historikun.
+            </p>
+          </div>
+          <Input
+            type="password"
+            placeholder="Fjalëkalimi i adminit"
+            value={pwInput}
+            onChange={(e) => setPwInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }}
+            autoFocus
+          />
+          <Button className="w-full" onClick={tryUnlock} disabled={unlocking}>
+            {unlocking ? "Duke verifikuar..." : "Hap Arkën"}
+          </Button>
+        </Card>
+      )}
+
+      {unlocked && (
+        <>
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border pb-2">
         <Button
@@ -256,6 +312,15 @@ export const CashierPanel = () => {
           onClick={() => setTab("history")}
         >
           <History className="h-4 w-4 mr-1" /> Historiku (Admin)
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={lockNow}
+          className="ml-auto text-muted-foreground"
+          title="Mbyll Arkën"
+        >
+          <Lock className="h-4 w-4" />
         </Button>
       </div>
 
@@ -384,6 +449,8 @@ export const CashierPanel = () => {
           </Card>
         </div>
       )}
+        </>
+      )}
     </div>
   );
 };
@@ -399,20 +466,26 @@ interface Txn {
 }
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
+const firstOfMonthISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+};
 
 const CashierHistoryPanel = () => {
-  const [date, setDate] = useState<string>(todayISO());
+  const [fromDate, setFromDate] = useState<string>(todayISO());
+  const [toDate, setToDate] = useState<string>(todayISO());
   const [fromTime, setFromTime] = useState<string>("00:00");
   const [toTime, setToTime] = useState<string>("23:59");
   const [operator, setOperator] = useState<string>("");
   const [txns, setTxns] = useState<Txn[]>([]);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [purging, setPurging] = useState(false);
 
   const load = async () => {
     setLoading(true);
-    const start = new Date(`${date}T${fromTime}:00`).toISOString();
-    const end = new Date(`${date}T${toTime}:59`).toISOString();
+    const start = new Date(`${fromDate}T${fromTime}:00`).toISOString();
+    const end = new Date(`${toDate}T${toTime}:59`).toISOString();
     let q = supabase
       .from("transactions")
       .select("id, amount, operator_name, table_number, created_at, items")
@@ -452,14 +525,88 @@ const CashierHistoryPanel = () => {
 
   const grandTotal = txns.reduce((s, t) => s + Number(t.amount || 0), 0);
 
+  const setMonthRange = () => {
+    setFromDate(firstOfMonthISO());
+    setToDate(todayISO());
+    setFromTime("00:00");
+    setToTime("23:59");
+  };
+
+  const exportCSV = () => {
+    if (txns.length === 0) {
+      toast.error("Asnjë e dhënë për eksport në këtë interval.");
+      return;
+    }
+    const header = ["created_at", "table", "operator", "amount", "item_name", "quantity", "unit_price", "line_total"];
+    const rows: string[] = [header.join(",")];
+    for (const t of txns) {
+      const when = new Date(t.created_at).toISOString();
+      for (const it of t.items || []) {
+        const q = Number(it.quantity) || 0;
+        const p = Number(it.price) || 0;
+        rows.push([
+          when,
+          t.table_number ?? "",
+          `"${(t.operator_name || "").replace(/"/g, '""')}"`,
+          Number(t.amount || 0).toFixed(0),
+          `"${(it.name || "").replace(/"/g, '""')}"`,
+          q,
+          p.toFixed(0),
+          (p * q).toFixed(0),
+        ].join(","));
+      }
+    }
+    const csv = rows.join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `boulevard-bileta_${fromDate}_${toDate}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`U eksportuan ${txns.length} bileta`);
+  };
+
+  const purgeRange = async () => {
+    if (txns.length === 0) {
+      toast.error("Asnjë e dhënë për të fshirë.");
+      return;
+    }
+    if (!confirm(
+      `Do të fshihen ${txns.length} bileta të intervalit ${fromDate} → ${toDate}.\n` +
+      "SIGURO që ke eksportuar CSV më parë!\nVazhdo?",
+    )) return;
+    const pw = window.prompt("Fjalëkalimi i adminit për fshirje:");
+    if (!pw) return;
+    setPurging(true);
+    const start = new Date(`${fromDate}T${fromTime}:00`).toISOString();
+    const end = new Date(`${toDate}T${toTime}:59`).toISOString();
+    const { data, error } = await supabase.functions.invoke("purge-transactions", {
+      body: { adminPassword: pw, startISO: start, endISO: end },
+    });
+    setPurging(false);
+    const err = (data as any)?.error || error?.message;
+    if (err) {
+      toast.error("Gabim: " + err);
+      return;
+    }
+    toast.success(`U fshinë ${(data as any)?.deleted ?? 0} bileta`);
+    load();
+  };
+
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <Card className="p-3 grid gap-3 md:grid-cols-5 items-end">
-        <div className="space-y-1">
-          <Label className="text-xs flex items-center gap-1"><Calendar className="h-3 w-3" /> Data</Label>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        </div>
+      <Card className="p-3 space-y-3">
+        <div className="grid gap-3 md:grid-cols-6 items-end">
+          <div className="space-y-1">
+            <Label className="text-xs flex items-center gap-1"><Calendar className="h-3 w-3" /> Nga data</Label>
+            <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs flex items-center gap-1"><Calendar className="h-3 w-3" /> Deri në datën</Label>
+            <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          </div>
         <div className="space-y-1">
           <Label className="text-xs">Nga ora</Label>
           <Input type="time" value={fromTime} onChange={(e) => setFromTime(e.target.value)} />
@@ -475,6 +622,25 @@ const CashierHistoryPanel = () => {
         <Button onClick={load} disabled={loading}>
           {loading ? "Duke ngarkuar..." : "Kërko"}
         </Button>
+        </div>
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
+          <Button size="sm" variant="outline" onClick={setMonthRange}>
+            Muaji aktual
+          </Button>
+          <Button size="sm" variant="outline" onClick={exportCSV} disabled={txns.length === 0}>
+            <Download className="h-4 w-4 mr-1" /> Eksporto CSV
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={purgeRange}
+            disabled={purging || txns.length === 0}
+            title="Fshin biletat e intervalit të përzgjedhur (kërkon fjalëkalim admin)"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            {purging ? "Duke fshirë..." : "Arkivo & Fshi"}
+          </Button>
+        </div>
       </Card>
 
       {/* Summary */}
