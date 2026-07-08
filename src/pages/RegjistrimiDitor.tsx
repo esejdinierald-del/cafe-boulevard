@@ -37,7 +37,7 @@ const shiftIso = (iso: string, delta: number) => {
 const difColor = (dif: number) =>
   dif > 0 ? "text-emerald-400" : dif < 0 ? "text-rose-400" : "text-slate-400";
 
-const Inventory = () => {
+const RegjistrimiDitor = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -479,4 +479,4 @@ const Field = ({ label, value, onChange, readOnly }: FieldProps) => (
   </div>
 );
 
-export default Inventory;
+export default RegjistrimiDitor;
