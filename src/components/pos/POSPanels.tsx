@@ -49,14 +49,46 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
       .channel(`kds-${kind}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "order_items_split" }, load)
       .subscribe();
+    const poll = setInterval(load, 4000);
     return () => {
       supabase.removeChannel(ch);
+      clearInterval(poll);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
+  const printStationTicket = (s: Split) => {
+    const LINE = 42;
+    const center = (t: string) => " ".repeat(Math.max(0, Math.floor((LINE - t.length) / 2))) + t;
+    const line = "-".repeat(LINE);
+    const header = s.pos_orders?.table_number
+      ? `Tavolina #${s.pos_orders.table_number}`
+      : (s.pos_orders?.mode ?? "").toUpperCase();
+    const rows: string[] = [];
+    rows.push(center(kind === "bar" ? "*** BANAKU ***" : "*** KUZHINA ***"));
+    rows.push(center(header));
+    rows.push(line);
+    rows.push(new Date().toLocaleString("sq-AL"));
+    rows.push(line);
+    for (const it of s.items) {
+      rows.push(`${it.name}  x${it.quantity}`);
+      if (it.notes) rows.push(`  (${it.notes})`);
+    }
+    rows.push(line);
+    rows.push(center("GATI ✓"));
+    const text = rows.join("\n");
+    const w = window.open("", "_blank", "width=380,height=600");
+    if (w) {
+      w.document.write(
+        `<pre style="font-family:monospace;font-size:12px;padding:12px;white-space:pre-wrap">${text}</pre><script>window.print()<\/script>`
+      );
+      w.document.close();
+    }
+  };
+
   const confirm = async (splitId: string) => {
     setLoading(true);
+    const split = splits.find((x) => x.id === splitId);
     const { error } = await supabase.functions.invoke("pos-confirm-order", {
       body: { splitId },
     });
@@ -65,6 +97,7 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
       toast.error("Gabim: " + error.message);
     } else {
       toast.success("U konfirmua");
+      if (split) printStationTicket(split);
     }
   };
 
@@ -135,8 +168,10 @@ export const CashierPanel = () => {
       .channel("cashier-orders")
       .on("postgres_changes", { event: "*", schema: "public", table: "pos_orders" }, load)
       .subscribe();
+    const poll = setInterval(load, 4000);
     return () => {
       supabase.removeChannel(ch);
+      clearInterval(poll);
     };
   }, []);
 
