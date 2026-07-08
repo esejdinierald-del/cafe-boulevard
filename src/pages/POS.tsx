@@ -6,7 +6,7 @@ import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
 import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X } from "lucide-react";
 import { toast } from "sonner";
-import { closePrintWindow, openReceiptPrintWindow, writeReceiptAndPrint } from "@/lib/receipt-print";
+import { printReceipt } from "@/lib/receipt-print";
 
 interface TableRow {
   id: string;
@@ -108,10 +108,7 @@ const POS = () => {
   };
 
   const closeTable = async (tableNumber: number | string) => {
-    const printWindow = openReceiptPrintWindow(`Tavolina #${tableNumber}`);
-    if (!printWindow) toast.error("Lejo pop-ups në browser që të hapet printimi.");
     if (!confirm(`Të mbyllim & printojmë tavolinën #${tableNumber}?`)) {
-      closePrintWindow(printWindow);
       return;
     }
     setClosing(true);
@@ -123,7 +120,6 @@ const POS = () => {
         .in("status", ["open", "ready"]);
       const ids = ((openOrders as { id: string }[]) || []).map((o) => o.id);
       if (ids.length === 0) {
-        closePrintWindow(printWindow);
         toast.error("Asnjë porosi e hapur për këtë tavolinë");
         return;
       }
@@ -138,9 +134,13 @@ const POS = () => {
         if ((data as any)?.receiptText) receipts.push(String((data as any).receiptText));
       }
       toast.success(`Tavolina #${tableNumber} u mbyll`);
-      if (receipts.length > 0) writeReceiptAndPrint(printWindow, receipts.join("\n\n------------------------------------------\n\n"), `Tavolina #${tableNumber}`);
+      if (receipts.length > 0) {
+        printReceipt(
+          receipts.join("\n\n------------------------------------------\n\n"),
+          `Tavolina #${tableNumber}`,
+        );
+      }
     } catch (e) {
-      closePrintWindow(printWindow);
       toast.error("Gabim: " + (e as Error).message);
     } finally {
       setClosing(false);
@@ -285,6 +285,14 @@ const POS = () => {
               <div className="text-slate-400 text-sm">Nuk ka porosi aktive.</div>
             ) : (
               <div className="space-y-4">
+                {/* Full receipt-style header */}
+                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 font-mono text-[11px] leading-tight text-slate-100">
+                  <div className="text-center font-bold text-sm">BOULEVARD CAFÉ</div>
+                  <div className="text-center text-slate-400">Tavolina #{viewTable.number}</div>
+                  <div className="text-center text-slate-500">
+                    {new Date().toLocaleString("sq-AL")}
+                  </div>
+                </div>
                 {viewTable.orders.map((o, idx) => (
                   <div key={o.id} className="border border-slate-700 rounded-lg p-3">
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
@@ -300,7 +308,11 @@ const POS = () => {
                       {(o.items || []).map((it, i) => (
                         <li key={i} className="flex justify-between border-b border-slate-700/50 pb-1">
                           <span>
-                            {it.name} <span className="text-slate-400">x{it.quantity}</span>
+                            {it.name}{" "}
+                            <span className="text-slate-400">x{it.quantity}</span>{" "}
+                            <span className="text-slate-500 text-xs">
+                              ({Number(it.price).toFixed(0)} L/copë)
+                            </span>
                             {it.notes && <span className="text-xs italic text-amber-400 ml-2">({it.notes})</span>}
                           </span>
                           <span className="text-amber-300">{(Number(it.price) * it.quantity).toFixed(0)} L</span>

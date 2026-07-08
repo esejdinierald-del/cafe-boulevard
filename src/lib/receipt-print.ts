@@ -15,7 +15,7 @@ const printDocument = (title: string, body: string) => `<!doctype html>
       @page { size: 80mm auto; margin: 4mm; }
       html, body { margin: 0; padding: 0; background: #fff; color: #000; }
       body { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-      pre { margin: 0; padding: 8px; font-size: 12px; line-height: 1.25; white-space: pre-wrap; }
+      pre { margin: 0; padding: 4px 6px; font-size: 10px; line-height: 1.15; white-space: pre-wrap; }
       .status { padding: 16px; font-size: 13px; }
     </style>
   </head>
@@ -32,7 +32,11 @@ export const openReceiptPrintWindow = (title = "Bileta") => {
 };
 
 export const writeReceiptAndPrint = (printWindow: Window | null, receiptText: string, title = "Bileta") => {
-  if (!printWindow || printWindow.closed) return false;
+  if (!printWindow || printWindow.closed) {
+    // Fallback for mobile / popup-blocked: print inline in the current document.
+    printReceiptInline(receiptText, title);
+    return true;
+  }
   printWindow.document.open();
   printWindow.document.write(
     printDocument(
@@ -46,4 +50,44 @@ export const writeReceiptAndPrint = (printWindow: Window | null, receiptText: st
 
 export const closePrintWindow = (printWindow: Window | null) => {
   if (printWindow && !printWindow.closed) printWindow.close();
+};
+
+/**
+ * Inline printing — works on mobile (no popup required).
+ * Mounts a hidden print area, calls window.print(), then cleans up.
+ * Requires the global `@media print` rules in src/index.css.
+ */
+export const printReceiptInline = (receiptText: string, _title = "Bileta") => {
+  const existing = document.getElementById("boulevard-print-area");
+  if (existing) existing.remove();
+
+  const wrap = document.createElement("div");
+  wrap.id = "boulevard-print-area";
+  const pre = document.createElement("pre");
+  pre.textContent = receiptText;
+  wrap.appendChild(pre);
+  document.body.appendChild(wrap);
+
+  const cleanup = () => {
+    setTimeout(() => wrap.remove(), 500);
+    window.removeEventListener("afterprint", cleanup);
+  };
+  window.addEventListener("afterprint", cleanup);
+
+  setTimeout(() => {
+    try { window.print(); } finally { setTimeout(cleanup, 3000); }
+  }, 100);
+};
+
+/**
+ * Preferred entry point — tries popup first (best on desktop, keeps the
+ * app UI usable), falls back to inline printing on mobile / blocked popups.
+ */
+export const printReceipt = (receiptText: string, title = "Bileta") => {
+  const w = openReceiptPrintWindow(title);
+  if (w) {
+    writeReceiptAndPrint(w, receiptText, title);
+  } else {
+    printReceiptInline(receiptText, title);
+  }
 };
