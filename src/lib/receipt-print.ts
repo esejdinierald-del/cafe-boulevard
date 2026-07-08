@@ -6,7 +6,32 @@ const escapeHtml = (value: string) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
-const printDocument = (title: string, body: string) => `<!doctype html>
+// Auto-fit tuning:
+//  - 80mm roll, 0 margin. Usable width ≈ 78mm after padding.
+//  - Monospace char width ≈ font-size * 0.6.
+//  - We start at 12px bold and shrink until the widest line fits.
+const AUTOFIT_SCRIPT = `
+(function(){
+  function fit(){
+    var pre = document.querySelector('pre');
+    if (!pre) return;
+    var maxLine = 0;
+    var lines = pre.textContent.split('\\n');
+    for (var i = 0; i < lines.length; i++) if (lines[i].length > maxLine) maxLine = lines[i].length;
+    var usable = document.body.clientWidth - 12; /* padding */
+    if (usable <= 0) usable = 280;
+    var size = 12;
+    for (; size >= 7; size -= 0.5){
+      if (maxLine * size * 0.6 <= usable) break;
+    }
+    pre.style.fontSize = size + 'px';
+    pre.style.lineHeight = (size <= 9 ? 1.05 : size <= 10 ? 1.1 : 1.15);
+  }
+  fit();
+  setTimeout(function(){ window.focus(); window.print(); }, 200);
+})();`;
+
+const printDocument = (title: string, body: string, withAutofit = false) => `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -21,12 +46,17 @@ const printDocument = (title: string, body: string) => `<!doctype html>
         height: auto;
         min-height: 0;
       }
-      body { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+      body {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-weight: 700;
+        width: 80mm;
+      }
       pre {
         margin: 0;
-        padding: 2mm 3mm;
-        font-size: 10px;
+        padding: 0 3mm 2mm 3mm;
+        font-size: 11px;
         line-height: 1.1;
+        font-weight: 700;
         white-space: pre-wrap;
         page-break-after: avoid;
         page-break-inside: avoid;
@@ -34,7 +64,7 @@ const printDocument = (title: string, body: string) => `<!doctype html>
       .status { padding: 16px; font-size: 13px; }
     </style>
   </head>
-  <body>${body}</body>
+  <body>${body}${withAutofit ? `<script>${AUTOFIT_SCRIPT}<\/script>` : ""}</body>
 </html>`;
 
 export const openReceiptPrintWindow = (title = "Bileta") => {
@@ -54,10 +84,7 @@ export const writeReceiptAndPrint = (printWindow: Window | null, receiptText: st
   }
   printWindow.document.open();
   printWindow.document.write(
-    printDocument(
-      title,
-      `<pre>${escapeHtml(receiptText)}</pre><script>setTimeout(function(){ window.focus(); window.print(); }, 250);<\/script>`,
-    ),
+    printDocument(title, `<pre>${escapeHtml(receiptText)}</pre>`, true),
   );
   printWindow.document.close();
   return true;
@@ -82,6 +109,22 @@ export const printReceiptInline = (receiptText: string, _title = "Bileta") => {
   pre.textContent = receiptText;
   wrap.appendChild(pre);
   document.body.appendChild(wrap);
+
+  // Auto-fit before print: shrink font-size until the widest line fits 80mm.
+  const autoFit = () => {
+    const lines = receiptText.split("\n");
+    let maxLine = 0;
+    for (const l of lines) if (l.length > maxLine) maxLine = l.length;
+    // 80mm ≈ 302px. Minus horizontal padding (~24px) leaves ~278px usable.
+    const usable = 278;
+    let size = 12;
+    for (; size >= 7; size -= 0.5) {
+      if (maxLine * size * 0.6 <= usable) break;
+    }
+    pre.style.fontSize = `${size}px`;
+    pre.style.lineHeight = size <= 9 ? "1.05" : size <= 10 ? "1.1" : "1.15";
+  };
+  autoFit();
 
   const cleanup = () => {
     setTimeout(() => wrap.remove(), 500);
