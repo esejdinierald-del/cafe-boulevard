@@ -7,6 +7,8 @@ import { usePOSStore } from "@/stores/pos-store";
 import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X } from "lucide-react";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/receipt-print";
+import { RomeClock } from "@/components/RomeClock";
+import { isPastShiftDay } from "@/lib/rome-time";
 
 interface TableRow {
   id: string;
@@ -147,9 +149,26 @@ const POS = () => {
     }
   };
 
-  const handleEndShift = () => {
+  const handleEndShift = async () => {
     if (!confirm("Të mbyllim turnin dhe të dilni?")) return;
+    const startedDate = localStorage.getItem("staff_shift_started_date");
+    if (isPastShiftDay(startedDate)) {
+      const pw = window.prompt(
+        "Ora zyrtare (Rome/Tirana) ka kaluar 23:59 të ditës së turnit.\n" +
+        "Për të mbyllur turnin duhet fjalëkalimi i adminit:",
+      );
+      if (!pw) return;
+      const { data, error } = await supabase.functions.invoke("verify-admin-passcode", {
+        body: { passcode: pw },
+      });
+      const err = (data as any)?.error || error?.message;
+      if (!(data as any)?.valid) {
+        toast.error(err || "Fjalëkalim i pasaktë");
+        return;
+      }
+    }
     localStorage.removeItem("staff_shift_token");
+    localStorage.removeItem("staff_shift_started_date");
     usePOSStore.getState().setCurrentOrder(null);
     navigate("/staff", { replace: true });
   };
@@ -157,7 +176,10 @@ const POS = () => {
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
-        <h1 className="text-xl font-bold">POS Kamarier</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold">POS Kamarier</h1>
+          <RomeClock />
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => startOrder("bar", null)}
