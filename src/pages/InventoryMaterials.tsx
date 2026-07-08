@@ -32,7 +32,7 @@ interface Material {
   location_id: string | null;
 }
 
-const Inventory = () => {
+const InventoryMaterials = () => {
   const navigate = useNavigate();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,7 +142,7 @@ const Inventory = () => {
     <div className="min-h-screen bg-slate-900 text-white">
       <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <button
+        <button
             onClick={() => navigate("/pos")}
             className="p-2 rounded hover:bg-slate-800"
             aria-label="Kthehu tek POS"
@@ -150,7 +150,7 @@ const Inventory = () => {
             <ArrowLeft size={18} />
           </button>
           <h1 className="text-xl font-bold flex items-center gap-2">
-            <Package size={22} /> Inventari
+            <Package size={22} /> Materialet (POS)
           </h1>
         </div>
         {!isKitchen && (
@@ -355,4 +355,4 @@ const Inventory = () => {
   );
 };
 
-export default Inventory;
+export default InventoryMaterials;
