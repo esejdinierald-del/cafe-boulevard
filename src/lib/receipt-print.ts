@@ -149,3 +149,62 @@ export const printReceipt = (receiptText: string, title = "Bileta") => {
     printReceiptInline(receiptText, title);
   }
 };
+
+/**
+ * Printim via iframe i izoluar — përdoret nga /print-station.
+ * Krijon një dokument të pastër 80mm (pa CSS të app-it, pa oklch, pa temë)
+ * dhe thërret print() brenda iframe-it. Kjo shmang "Print preview failed"
+ * në Chrome kiosk-printing me printer termik.
+ */
+export const printReceiptViaIframe = (receiptText: string, title = "Bileta"): Promise<void> => {
+  return new Promise((resolve) => {
+    // Fshi iframe-in e mëparshëm nëse ka mbetur
+    const old = document.getElementById("boulevard-print-iframe");
+    if (old) old.remove();
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "boulevard-print-iframe";
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "80mm";
+    iframe.style.height = "1px";
+    iframe.style.border = "0";
+    iframe.style.opacity = "0";
+    iframe.style.pointerEvents = "none";
+    document.body.appendChild(iframe);
+
+    const cleanup = () => {
+      setTimeout(() => {
+        try { iframe.remove(); } catch { /* ignore */ }
+      }, 1500);
+      resolve();
+    };
+
+    iframe.onload = () => {
+      try {
+        const win = iframe.contentWindow;
+        if (!win) { cleanup(); return; }
+        // Prit pak që CSS/layout të stabilizohet, pastaj print
+        setTimeout(() => {
+          try {
+            win.focus();
+            win.print();
+          } catch (e) {
+            console.error("[print-iframe] print() failed", e);
+          }
+          cleanup();
+        }, 250);
+      } catch (e) {
+        console.error("[print-iframe] onload error", e);
+        cleanup();
+      }
+    };
+
+    const doc = iframe.contentDocument;
+    if (!doc) { cleanup(); return; }
+    doc.open();
+    doc.write(printDocument(title, `<pre>${escapeHtml(receiptText)}</pre>`, true));
+    doc.close();
+  });
+};
