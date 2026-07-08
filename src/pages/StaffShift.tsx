@@ -609,6 +609,9 @@ const StaffShift = () => {
               </Badge>
             )}
           </h1>
+          <div className="flex justify-center">
+            <RomeClock />
+          </div>
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <Badge variant="outline" className="gap-1">
               <Clock className="h-3 w-3" />
