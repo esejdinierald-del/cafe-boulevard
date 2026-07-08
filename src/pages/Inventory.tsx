@@ -1,482 +1,358 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, Loader2, Package2, Coffee, Lock, Boxes } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  InventoryProductData,
-  InventoryTurnData,
-  emptyProduct,
-  emptyTurn,
-} from "@/types/inventory.types";
-import { InventoryCalculationService as Calc } from "@/services/inventoryCalculations";
-import { InventoryStockPropagationService as Prop } from "@/services/inventoryStockPropagation.service";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { toast } from "sonner";
+import { Package, Plus, AlertTriangle, ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
 
-interface InvProduct {
+interface Material {
   id: string;
   name: string;
-  sort_order: number;
+  quantity: number;
+  unit: string;
+  min_threshold: number;
+  location_id: string | null;
 }
 
-// Rome-local YYYY-MM-DD
-const todayIso = () => {
-  const d = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Rome" }));
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
-const shiftIso = (iso: string, delta: number) => {
-  const [y, m, d] = iso.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  dt.setUTCDate(dt.getUTCDate() + delta);
-  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`;
-};
-
-const difColor = (dif: number) =>
-  dif > 0 ? "text-emerald-400" : dif < 0 ? "text-rose-400" : "text-slate-400";
-
-const Inventory = () => {
+const InventoryMaterials = () => {
   const navigate = useNavigate();
+  const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [closing, setClosing] = useState(false);
-  const [date, setDate] = useState(todayIso());
-  const [products, setProducts] = useState<InvProduct[]>([]);
-  const [t1, setT1] = useState<InventoryTurnData>(emptyTurn());
-  const [t2, setT2] = useState<InventoryTurnData>(emptyTurn());
-  const [tab, setTab] = useState<"t1" | "t2">("t1");
-  const [newProductName, setNewProductName] = useState("");
-  const [newCoffeeName, setNewCoffeeName] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [quantity, setQuantity] = useState<string>("");
+  const [note, setNote] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const staffName = (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
+  const staffRole = (typeof window !== "undefined"
+    ? localStorage.getItem("staff_role")
+    : null) || "waiter";
+  const staffName = (typeof window !== "undefined"
+    ? localStorage.getItem("staff_name")
+    : null) || "Kamarier";
+  const isKitchen = staffRole === "kitchen";
 
-  // Guard: same as /staff
   useEffect(() => {
     const token = localStorage.getItem("staff_shift_token");
-    if (!token) navigate("/staff", { replace: true });
+    if (!token) {
+      navigate("/staff", { replace: true });
+    }
   }, [navigate]);
 
-  // Initial load
+  const load = async () => {
+    const { data, error } = await supabase
+      .from("raw_materials")
+      .select("id, name, quantity, unit, min_threshold, location_id")
+      .order("name");
+    if (error) {
+      toast.error("Nuk u ngarkua inventari");
+    } else {
+      setMaterials(
+        (data ?? []).map((m: any) => ({
+          ...m,
+          quantity: Number(m.quantity),
+          min_threshold: Number(m.min_threshold),
+        })),
+      );
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const [{ data: prods }, entryRes, seed] = await Promise.all([
-          (supabase as any).from("inv_products").select("id, name, sort_order").order("sort_order").order("name"),
-          (supabase as any).from("inv_daily_entries").select("turn1_data, turn2_data").eq("entry_date", date).maybeSingle(),
-          Prop.loadNextDayStockFor(date),
-        ]);
-        const productList = (prods || []) as InvProduct[];
-        setProducts(productList);
+    load();
+    const channel = supabase
+      .channel("inventory-materials")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "raw_materials" },
+        load,
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
-        const loadedT1: InventoryTurnData = entryRes?.data?.turn1_data && Object.keys(entryRes.data.turn1_data).length
-          ? { ...emptyTurn(), ...entryRes.data.turn1_data }
-          : emptyTurn();
-        const loadedT2: InventoryTurnData = entryRes?.data?.turn2_data && Object.keys(entryRes.data.turn2_data).length
-          ? { ...emptyTurn(), ...entryRes.data.turn2_data }
-          : emptyTurn();
+  const lowStockCount = useMemo(
+    () => materials.filter((m) => m.quantity <= m.min_threshold).length,
+    [materials],
+  );
 
-        // Ensure product entries exist for every inv_product
-        productList.forEach((p) => {
-          if (!loadedT1.products[p.name]) {
-            const seedStock = seed?.stock?.[p.name] ?? 0;
-            loadedT1.products[p.name] = emptyProduct(seedStock);
-          }
-          if (!loadedT2.products[p.name]) {
-            loadedT2.products[p.name] = emptyProduct(Calc.calculateStockForNextTurn(loadedT1.products[p.name]));
-          }
-        });
-
-        // Seed mulliri fillim T1 from previous day's stock if available
-        if (!loadedT1.mulliriFillim && seed?.mulliriFillim) loadedT1.mulliriFillim = seed.mulliriFillim;
-
-        setT1(loadedT1);
-        setT2(loadedT2);
-      } catch (e: any) {
-        toast.error(e.message || "Gabim ngarkimi");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [date]);
-
-  // Auto-sync T2.stokFillim from T1 (theoretical) whenever T1 changes and cell in T2 is untouched (gjendje=0 && shiriti=0 && furnizime=0 -> auto)
-  useEffect(() => {
-    setT2((prev) => {
-      const merged = { ...prev, products: { ...prev.products } };
-      Object.entries(t1.products).forEach(([name, p1]) => {
-        const theoretical = Calc.calculateStockForNextTurn(p1);
-        const existing = merged.products[name] || emptyProduct();
-        // Overwrite stokFillim always — spec: T2 read-only propagation
-        merged.products[name] = { ...existing, stokFillim: theoretical };
-      });
-      if (t1.mulliriPerfund && !prev.mulliriFillim) merged.mulliriFillim = t1.mulliriPerfund;
-      return merged;
-    });
-  }, [t1]);
-
-  // Debounced autosave
-  const saveTimer = useRef<number | null>(null);
-  useEffect(() => {
-    if (loading) return;
-    if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(async () => {
-      setSaving(true);
-      try {
-        const { error } = await (supabase as any)
-          .from("inv_daily_entries")
-          .upsert(
-            { entry_date: date, turn1_data: t1, turn2_data: t2, updated_at: new Date().toISOString() },
-            { onConflict: "entry_date" },
-          );
-        if (error) throw error;
-      } catch (e: any) {
-        toast.error("Ruajtja dështoi: " + (e.message || e));
-      } finally {
-        setSaving(false);
-      }
-    }, 800);
-    return () => { if (saveTimer.current) window.clearTimeout(saveTimer.current); };
-  }, [t1, t2, date, loading]);
-
-  const currentTurn = tab === "t1" ? t1 : t2;
-  const setCurrentTurn = tab === "t1" ? setT1 : setT2;
-
-  const updateProduct = (name: string, field: keyof InventoryProductData, value: number) => {
-    setCurrentTurn((prev) => {
-      const existing = prev.products[name] || emptyProduct();
-      return { ...prev, products: { ...prev.products, [name]: { ...existing, [field]: value } } };
-    });
+  const resetForm = () => {
+    setSelectedId("");
+    setQuantity("");
+    setNote("");
   };
 
-  const addProduct = async () => {
-    const name = newProductName.trim();
-    if (!name) return;
-    const nextOrder = (products[products.length - 1]?.sort_order ?? 0) + 10;
-    const { data, error } = await (supabase as any)
-      .from("inv_products")
-      .insert({ name, sort_order: nextOrder })
-      .select("id, name, sort_order")
-      .single();
-    if (error) { toast.error(error.message); return; }
-    setProducts((p) => [...p, data as InvProduct]);
-    setT1((prev) => ({ ...prev, products: { ...prev.products, [name]: emptyProduct() } }));
-    setT2((prev) => ({ ...prev, products: { ...prev.products, [name]: emptyProduct() } }));
-    setNewProductName("");
-  };
-
-  const removeProduct = async (p: InvProduct) => {
-    if (!confirm(`Fshij "${p.name}" nga lista?`)) return;
-    const { error } = await (supabase as any).from("inv_products").delete().eq("id", p.id);
-    if (error) { toast.error(error.message); return; }
-    setProducts((prev) => prev.filter((x) => x.id !== p.id));
-    setT1((prev) => { const c = { ...prev.products }; delete c[p.name]; return { ...prev, products: c }; });
-    setT2((prev) => { const c = { ...prev.products }; delete c[p.name]; return { ...prev, products: c }; });
-  };
-
-  const addCoffee = () => {
-    const name = newCoffeeName.trim();
-    if (!name) return;
-    setCurrentTurn((prev) => ({ ...prev, coffee: { ...prev.coffee, [name]: 0 } }));
-    setNewCoffeeName("");
-  };
-
-  const setCoffee = (name: string, qty: number) =>
-    setCurrentTurn((prev) => ({ ...prev, coffee: { ...prev.coffee, [name]: qty } }));
-
-  const removeCoffee = (name: string) =>
-    setCurrentTurn((prev) => { const c = { ...prev.coffee }; delete c[name]; return { ...prev, coffee: c }; });
-
-  const addShpenzim = () =>
-    setCurrentTurn((prev) => ({ ...prev, shpenzime: [...prev.shpenzime, { emertimi: "", vlera: 0 }] }));
-
-  const updateShpenzim = (idx: number, field: "emertimi" | "vlera", value: string | number) =>
-    setCurrentTurn((prev) => {
-      const arr = prev.shpenzime.slice();
-      arr[idx] = { ...arr[idx], [field]: value as any };
-      return { ...prev, shpenzime: arr };
-    });
-
-  const removeShpenzim = (idx: number) =>
-    setCurrentTurn((prev) => ({ ...prev, shpenzime: prev.shpenzime.filter((_, i) => i !== idx) }));
-
-  const closeDay = async () => {
-    if (!confirm("Mbyll ditën dhe llogarit stokun për ditën pasardhëse?")) return;
-    setClosing(true);
+  const submitSupply = async () => {
+    const qty = Number(quantity);
+    if (!selectedId) {
+      toast.error("Zgjidh një material");
+      return;
+    }
+    if (!qty || qty <= 0) {
+      toast.error("Sasia duhet të jetë pozitive");
+      return;
+    }
+    setSubmitting(true);
     try {
-      const { stock, mulliriFillim } = Prop.computeNextDayStock(t2, t1);
-      const nextDate = shiftIso(date, 1);
-      await Prop.persistNextDayStock(nextDate, stock, mulliriFillim);
-      toast.success(`Dita u mbyll. Stoku i ${nextDate} u ruajt.`);
+      const { data, error } = await supabase.functions.invoke("pos-get-inventory", {
+        body: {
+          action: "addSupply",
+          materialId: selectedId,
+          quantity: qty,
+          note: note || null,
+          operatorName: staffName,
+          locationId: "main",
+        },
+      });
+      if (error || (data as any)?.error) {
+        throw new Error((data as any)?.error || error?.message || "Gabim gjatë furnizimit");
+      }
+      toast.success("Furnizimi u shtua me sukses");
+      setDialogOpen(false);
+      resetForm();
+      load();
     } catch (e: any) {
-      toast.error("Mbyllja dështoi: " + (e.message || e));
+      toast.error(e.message || "Gabim gjatë furnizimit");
     } finally {
-      setClosing(false);
+      setSubmitting(false);
     }
   };
 
-  const totalCoffee = useMemo(() => Calc.calculateTotalCoffee(currentTurn), [currentTurn]);
-  const mulliriDif = useMemo(
-    () => Calc.calculateMulliriDif(currentTurn.mulliriFillim, currentTurn.mulliriPerfund, totalCoffee),
-    [currentTurn, totalCoffee],
-  );
-  const totalShpenzime = useMemo(() => Calc.calculateTotalShpenzime(currentTurn), [currentTurn]);
-
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+    <div className="min-h-screen bg-slate-900 text-white">
+      <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 rounded hover:bg-slate-800" aria-label="Kthehu">
+        <button
+            onClick={() => navigate("/pos")}
+            className="p-2 rounded hover:bg-slate-800"
+            aria-label="Kthehu tek POS"
+          >
             <ArrowLeft size={18} />
           </button>
-          <div>
-            <h1 className="text-lg font-bold flex items-center gap-2">
-              <Boxes size={20} /> Regjistrimi Ditor
-            </h1>
-            <p className="text-xs text-slate-400">{staffName ? `${staffName} · ` : ""}{date}</p>
-          </div>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <Package size={22} /> Materialet (POS)
+          </h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="bg-slate-900 border-slate-700 text-white h-9 w-[150px]"
-          />
-          {saving && <span className="text-xs text-slate-500 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> ruaj…</span>}
-        </div>
+        {!isKitchen && (
+          <Button
+            onClick={() => setDialogOpen(true)}
+            className="bg-green-600 hover:bg-green-500 text-white"
+          >
+            <Plus size={16} className="mr-1" /> Shto Furnizim
+          </Button>
+        )}
       </header>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-24 text-slate-400">
-          <Loader2 className="animate-spin mr-2" size={18} /> Duke ngarkuar…
-        </div>
-      ) : (
-        <div className="p-4 max-w-5xl mx-auto space-y-6">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-            <TabsList className="bg-slate-900 border border-slate-800">
-              <TabsTrigger value="t1">Turni 1</TabsTrigger>
-              <TabsTrigger value="t2">Turni 2</TabsTrigger>
-            </TabsList>
-
-            {(["t1", "t2"] as const).map((k) => (
-              <TabsContent key={k} value={k} className="space-y-6 mt-4">
-                {/* Products */}
-                <Card className="bg-slate-900 border-slate-800 p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold flex items-center gap-2"><Package2 size={16}/> Produktet</h2>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={newProductName}
-                        onChange={(e) => setNewProductName(e.target.value)}
-                        placeholder="Emri i produktit"
-                        className="bg-slate-950 border-slate-700 text-white h-8 w-48"
-                      />
-                      <Button size="sm" onClick={addProduct} className="bg-emerald-600 hover:bg-emerald-500 h-8">
-                        <Plus size={14} className="mr-1"/> Shto
-                      </Button>
-                    </div>
-                  </div>
-
-                  {products.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto një më sipër.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {products.map((p) => {
-                        const data = (k === "t1" ? t1 : t2).products[p.name] || emptyProduct();
-                        const dif = Calc.calculateDif(data);
-                        return (
-                          <div key={p.id} className="border border-slate-800 rounded-lg p-3 bg-slate-950/60">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="font-medium">{p.name}</div>
-                              <div className="flex items-center gap-3">
-                                <div className={`text-sm font-bold tabular-nums ${difColor(dif)}`}>
-                                  Dif: {dif > 0 ? "+" : ""}{dif.toFixed(2)}
-                                </div>
-                                <button onClick={() => removeProduct(p)} className="text-slate-500 hover:text-rose-400" aria-label="Fshij">
-                                  <Trash2 size={14}/>
-                                </button>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                              <Field label="Stok Fillim" value={data.stokFillim} readOnly />
-                              <Field
-                                label="Furnizime"
-                                value={data.furnizime}
-                                onChange={(v) => (k === "t1" ? setT1 : setT2)((prev) => ({
-                                  ...prev,
-                                  products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), furnizime: v } },
-                                }))}
-                              />
-                              <Field
-                                label="Gjendje"
-                                value={data.gjendje}
-                                onChange={(v) => (k === "t1" ? setT1 : setT2)((prev) => ({
-                                  ...prev,
-                                  products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), gjendje: v } },
-                                }))}
-                              />
-                              <Field
-                                label="Shiriti"
-                                value={data.shiriti}
-                                onChange={(v) => (k === "t1" ? setT1 : setT2)((prev) => ({
-                                  ...prev,
-                                  products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), shiriti: v } },
-                                }))}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </Card>
-
-                {/* Coffee */}
-                <Card className="bg-slate-900 border-slate-800 p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold flex items-center gap-2"><Coffee size={16}/> Kafet</h2>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={newCoffeeName}
-                        onChange={(e) => setNewCoffeeName(e.target.value)}
-                        placeholder="Lloji"
-                        className="bg-slate-950 border-slate-700 text-white h-8 w-40"
-                      />
-                      <Button size="sm" onClick={addCoffee} className="bg-emerald-600 hover:bg-emerald-500 h-8">
-                        <Plus size={14} className="mr-1"/> Shto
-                      </Button>
-                    </div>
-                  </div>
-                  {Object.keys(currentTurn.coffee).length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-4">Asnjë lloj kafeje.</p>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {Object.entries(currentTurn.coffee).map(([name, qty]) => (
-                        <div key={name} className="flex items-center gap-2 border border-slate-800 rounded p-2 bg-slate-950/60">
-                          <span className="flex-1 truncate">{name}</span>
-                          <Input
-                            type="number"
-                            value={qty}
-                            onChange={(e) => setCoffee(name, Number(e.target.value) || 0)}
-                            className="bg-slate-950 border-slate-700 text-white h-8 w-24 text-right"
-                          />
-                          <button onClick={() => removeCoffee(name)} className="text-slate-500 hover:text-rose-400">
-                            <Trash2 size={14}/>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="mt-3 text-sm text-slate-400">Total kafe: <span className="font-bold text-white">{totalCoffee}</span></div>
-                </Card>
-
-                {/* Mulliri */}
-                <Card className="bg-slate-900 border-slate-800 p-4">
-                  <h2 className="font-semibold mb-3">Mulliri</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <Field
-                      label="Fillim"
-                      value={currentTurn.mulliriFillim}
-                      onChange={(v) => setCurrentTurn((prev) => ({ ...prev, mulliriFillim: v }))}
-                    />
-                    <Field
-                      label="Përfund"
-                      value={currentTurn.mulliriPerfund}
-                      onChange={(v) => setCurrentTurn((prev) => ({ ...prev, mulliriPerfund: v }))}
-                    />
-                    <div>
-                      <div className="text-xs text-slate-400 mb-1">Dif</div>
-                      <div className={`h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 font-bold tabular-nums ${difColor(mulliriDif)}`}>
-                        {mulliriDif > 0 ? "+" : ""}{mulliriDif.toFixed(2)}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-2">Dif = TotalKafe − (Përfund − Fillim)</p>
-                </Card>
-
-                {/* Xhiro + Shpenzime */}
-                <Card className="bg-slate-900 border-slate-800 p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-xs text-slate-400 mb-1">Xhiro (Lekë)</div>
-                      <Input
-                        type="number"
-                        value={currentTurn.xhiro}
-                        onChange={(e) => setCurrentTurn((prev) => ({ ...prev, xhiro: Number(e.target.value) || 0 }))}
-                        className="bg-slate-950 border-slate-700 text-white"
-                      />
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="text-xs text-slate-400">Shpenzime · Total {totalShpenzime.toFixed(0)}</div>
-                        <Button size="sm" onClick={addShpenzim} className="bg-slate-800 hover:bg-slate-700 h-7">
-                          <Plus size={12} className="mr-1"/> Shto
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {currentTurn.shpenzime.map((s, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <Input
-                              value={s.emertimi}
-                              onChange={(e) => updateShpenzim(i, "emertimi", e.target.value)}
-                              placeholder="Emërtimi"
-                              className="bg-slate-950 border-slate-700 text-white h-8 flex-1"
-                            />
-                            <Input
-                              type="number"
-                              value={s.vlera}
-                              onChange={(e) => updateShpenzim(i, "vlera", Number(e.target.value) || 0)}
-                              className="bg-slate-950 border-slate-700 text-white h-8 w-28 text-right"
-                            />
-                            <button onClick={() => removeShpenzim(i)} className="text-slate-500 hover:text-rose-400">
-                              <Trash2 size={14}/>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </TabsContent>
-            ))}
-          </Tabs>
-
-          <div className="flex justify-end">
-            <Button
-              onClick={closeDay}
-              disabled={closing}
-              className="bg-amber-600 hover:bg-amber-500 text-white"
-            >
-              {closing ? <Loader2 className="animate-spin mr-2" size={16}/> : <Lock size={16} className="mr-2"/>}
-              Mbyll ditën
-            </Button>
+      <div className="p-6 space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="border border-slate-700 bg-slate-800 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-slate-400 text-xs uppercase">Total Materiale</div>
+                <div className="text-2xl font-bold mt-1">{materials.length}</div>
+              </div>
+              <ShoppingBag className="text-slate-500" size={28} />
+            </div>
+          </div>
+          <div className="border border-slate-700 bg-slate-800 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-slate-400 text-xs uppercase">Stock i Ulët</div>
+                <div
+                  className={`text-2xl font-bold mt-1 ${
+                    lowStockCount > 0 ? "text-red-400" : "text-white"
+                  }`}
+                >
+                  {lowStockCount}
+                </div>
+              </div>
+              <AlertTriangle
+                className={lowStockCount > 0 ? "text-red-400" : "text-slate-500"}
+                size={28}
+              />
+            </div>
+          </div>
+          <div className="border border-slate-700 bg-slate-800 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-slate-400 text-xs uppercase">Sasi Totale</div>
+                <div className="text-2xl font-bold mt-1">
+                  {materials
+                    .reduce((acc, m) => acc + (m.quantity || 0), 0)
+                    .toFixed(2)}
+                </div>
+              </div>
+              <Package className="text-slate-500" size={28} />
+            </div>
           </div>
         </div>
-      )}
+
+        {isKitchen && (
+          <div className="border border-amber-500/40 bg-amber-500/10 text-amber-200 rounded-lg p-3 text-sm">
+            Ju mund të shikoni inventarin, por nuk mund të shtoni furnizime.
+          </div>
+        )}
+
+        {/* Table */}
+        <div className="border border-slate-700 rounded-lg overflow-hidden bg-slate-800">
+          {loading ? (
+            <div className="flex items-center justify-center py-12 text-slate-400">
+              <Loader2 className="animate-spin mr-2" size={18} /> Duke ngarkuar...
+            </div>
+          ) : materials.length === 0 ? (
+            <div className="text-center py-12 text-slate-500">Nuk ka materiale</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="border-slate-700 hover:bg-transparent">
+                  <TableHead className="text-slate-300">Materiali</TableHead>
+                  <TableHead className="text-slate-300 text-right">Sasia</TableHead>
+                  <TableHead className="text-slate-300">Njësia</TableHead>
+                  <TableHead className="text-slate-300 text-right">Min</TableHead>
+                  <TableHead className="text-slate-300">Statusi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {materials.map((m) => {
+                  const isLow = m.quantity <= m.min_threshold;
+                  return (
+                    <TableRow
+                      key={m.id}
+                      className={`border-slate-700 hover:bg-slate-700/40 ${
+                        isLow ? "bg-red-500/10" : ""
+                      }`}
+                    >
+                      <TableCell className="font-medium">{m.name}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {m.quantity.toFixed(3)}
+                      </TableCell>
+                      <TableCell>{m.unit}</TableCell>
+                      <TableCell className="text-right tabular-nums text-slate-400">
+                        {m.min_threshold.toFixed(3)}
+                      </TableCell>
+                      <TableCell>
+                        {isLow ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-500/20 text-red-300">
+                            <AlertTriangle size={12} /> Low
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-500/20 text-green-300">
+                            OK
+                          </span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      </div>
+
+      {/* Add Supply Dialog */}
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(o) => {
+          setDialogOpen(o);
+          if (!o) resetForm();
+        }}
+      >
+        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle>Shto Furnizim</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Zgjidh materialin dhe shto sasinë e re.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm text-slate-300 mb-1 block">Materiali</label>
+              <select
+                value={selectedId}
+                onChange={(e) => setSelectedId(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white"
+              >
+                <option value="">— zgjidh —</option>
+                {materials.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.unit})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-300 mb-1 block">Sasia</label>
+              <Input
+                type="number"
+                min="0"
+                step="0.001"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                className="bg-slate-900 border-slate-700 text-white"
+                placeholder="p.sh. 5.00"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-300 mb-1 block">Shënim (opsional)</label>
+              <Textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="bg-slate-900 border-slate-700 text-white"
+                placeholder="Furnitor, faturë, etj."
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setDialogOpen(false)}
+              className="bg-slate-700 hover:bg-slate-600 text-white"
+            >
+              Anulo
+            </Button>
+            <Button
+              onClick={submitSupply}
+              disabled={submitting}
+              className="bg-green-600 hover:bg-green-500 text-white"
+            >
+              {submitting ? (
+                <Loader2 className="animate-spin mr-2" size={16} />
+              ) : (
+                <Plus size={16} className="mr-1" />
+              )}
+              Ruaj
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
-interface FieldProps {
-  label: string;
-  value: number;
-  onChange?: (v: number) => void;
-  readOnly?: boolean;
-}
-const Field = ({ label, value, onChange, readOnly }: FieldProps) => (
-  <div>
-    <div className="text-xs text-slate-400 mb-1">{label}</div>
-    <Input
-      type="number"
-      value={value}
-      readOnly={readOnly}
-      onChange={onChange ? (e) => onChange(Number(e.target.value) || 0) : undefined}
-      className={`bg-slate-950 border-slate-700 text-white h-9 text-right tabular-nums ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`}
-    />
-  </div>
-);
-
-export default Inventory;
+export default InventoryMaterials;
