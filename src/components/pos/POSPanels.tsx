@@ -4,8 +4,10 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Printer, CheckCircle2, X, Ban, Minus, BellRing } from "lucide-react";
+import { Printer, CheckCircle2, X, Ban, Minus, BellRing, ChevronDown, ChevronRight, History, Calendar } from "lucide-react";
 import { printReceipt } from "@/lib/receipt-print";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Split {
   id: string;
