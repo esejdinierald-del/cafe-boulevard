@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePOS } from "@/hooks/use-pos";
 import { supabase } from "@/integrations/supabase/client";
+import { ChevronLeft } from "lucide-react";
 
 interface Category {
   id: string;
@@ -15,7 +16,7 @@ interface Product {
   price: number;
   description: string | null;
   category_id: string | null;
-  is_active: boolean | null;
+  is_active?: boolean | null;
 }
 
 export const MenuGrid = () => {
@@ -23,6 +24,7 @@ export const MenuGrid = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedSub, setSelectedSub] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -36,71 +38,145 @@ export const MenuGrid = () => {
 
   const main = categories.filter((c) => !c.parent_id);
   const subs = selected ? categories.filter((c) => c.parent_id === selected) : [];
-  const filtered = products.filter((p) => {
-    const matchCat = selected
-      ? p.category_id === selected || subs.some((s) => s.id === p.category_id)
-      : true;
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
+
+  // Search overrides navigation and searches across all products
+  const isSearching = search.trim().length > 0;
+
+  // Which category id to show products from
+  const activeCatId = selectedSub || selected;
+
+  const productsForCategory = activeCatId
+    ? products.filter((p) => {
+        if (p.category_id === activeCatId) return true;
+        // If a main category is picked and it has no children selected,
+        // include products from all its sub-categories too.
+        if (selected && !selectedSub) {
+          return subs.some((s) => s.id === p.category_id);
+        }
+        return false;
+      })
+    : [];
+
+  const searchResults = isSearching
+    ? products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+    : [];
+
+  const productCountByCat = (catId: string) => {
+    const childIds = categories.filter((c) => c.parent_id === catId).map((c) => c.id);
+    return products.filter((p) => p.category_id === catId || childIds.includes(p.category_id ?? "")).length;
+  };
+
+  const back = () => {
+    if (selectedSub) setSelectedSub(null);
+    else if (selected) setSelected(null);
+  };
+
+  const crumb = () => {
+    const parts: string[] = [];
+    if (selected) parts.push(main.find((c) => c.id === selected)?.name ?? "");
+    if (selectedSub) parts.push(subs.find((c) => c.id === selectedSub)?.name ?? "");
+    return parts.filter(Boolean).join(" › ");
+  };
 
   return (
     <div className="p-4 bg-slate-800 rounded-lg">
-      <input
-        type="text"
-        placeholder="Kërko produkt..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 mb-4"
-      />
-
-      <div className="flex gap-2 mb-4 overflow-x-auto">
-        {main.map((c) => (
+      <div className="flex items-center gap-2 mb-4">
+        {(selected || selectedSub) && !isSearching && (
           <button
-            key={c.id}
-            onClick={() => setSelected(selected === c.id ? null : c.id)}
-            className={`px-4 py-2 rounded-lg whitespace-nowrap transition ${
-              selected === c.id
-                ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white"
-                : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-            }`}
+            onClick={back}
+            className="flex items-center gap-1 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white text-sm"
           >
-            {c.name}
+            <ChevronLeft size={16} /> Kthehu
           </button>
-        ))}
+        )}
+        <input
+          type="text"
+          placeholder="Kërko produkt..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400"
+        />
       </div>
 
-      {subs.length > 0 && (
-        <div className="flex gap-2 mb-4 overflow-x-auto">
+      {!isSearching && (selected || selectedSub) && (
+        <div className="text-slate-400 text-xs mb-3">{crumb()}</div>
+      )}
+
+      {/* Search overrides everything */}
+      {isSearching ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {searchResults.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => addItem(p.id, 1, "", p)}
+              className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition text-left"
+            >
+              <div className="text-white font-medium">{p.name}</div>
+              <div className="text-amber-400 text-sm mt-1">{p.price} Lekë</div>
+            </button>
+          ))}
+          {searchResults.length === 0 && (
+            <div className="col-span-full text-slate-500 text-sm text-center py-6">
+              Asnjë rezultat
+            </div>
+          )}
+        </div>
+      ) : !selected ? (
+        /* Main categories */
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {main.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => { setSelected(c.id); setSelectedSub(null); }}
+              className="aspect-square p-4 bg-gradient-to-br from-slate-700 to-slate-800 hover:from-amber-600 hover:to-orange-700 border border-slate-600 rounded-lg text-white font-semibold flex flex-col items-center justify-center gap-1 transition"
+            >
+              <span className="text-center">{c.name}</span>
+              <span className="text-xs text-slate-400">{productCountByCat(c.id)} artikuj</span>
+            </button>
+          ))}
+          {main.length === 0 && (
+            <div className="col-span-full text-slate-500 text-sm text-center py-6">
+              Nuk ka kategori
+            </div>
+          )}
+        </div>
+      ) : subs.length > 0 && !selectedSub ? (
+        /* Sub-categories */
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {subs.map((c) => (
             <button
               key={c.id}
-              onClick={() => setSelected(c.id)}
-              className={`px-3 py-1 rounded-lg text-sm transition ${
-                selected === c.id ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-              }`}
+              onClick={() => setSelectedSub(c.id)}
+              className="aspect-square p-4 bg-gradient-to-br from-slate-700 to-slate-800 hover:from-amber-600 hover:to-orange-700 border border-slate-600 rounded-lg text-white font-semibold flex flex-col items-center justify-center gap-1 transition"
             >
-              {c.name}
+              <span className="text-center">{c.name}</span>
+              <span className="text-xs text-slate-400">{productCountByCat(c.id)} artikuj</span>
             </button>
           ))}
         </div>
+      ) : (
+        /* Products for the selected (sub-)category */
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {productsForCategory.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => addItem(p.id, 1, "", p)}
+              className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition text-left"
+            >
+              <div className="text-white font-medium">{p.name}</div>
+              <div className="text-amber-400 text-sm mt-1">{p.price} Lekë</div>
+              {p.description && (
+                <div className="text-slate-400 text-xs mt-1 line-clamp-2">{p.description}</div>
+              )}
+            </button>
+          ))}
+          {productsForCategory.length === 0 && (
+            <div className="col-span-full text-slate-500 text-sm text-center py-6">
+              Asnjë produkt në këtë kategori
+            </div>
+          )}
+        </div>
       )}
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {filtered.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => addItem(p.id, 1, "", p)}
-            className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition text-left"
-          >
-            <div className="text-white font-medium">{p.name}</div>
-            <div className="text-amber-400 text-sm mt-1">{p.price} Lekë</div>
-            {p.description && (
-              <div className="text-slate-400 text-xs mt-1 line-clamp-2">{p.description}</div>
-            )}
-          </button>
-        ))}
-      </div>
     </div>
   );
 };
