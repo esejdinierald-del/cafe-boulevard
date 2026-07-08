@@ -70,7 +70,12 @@ const StaffShift = () => {
   // Try saved token from localStorage, fallback to URL token
   const [activeToken, setActiveToken] = useState<string | null>(() => {
     const saved = localStorage.getItem("staff_shift_token");
-    return urlToken || saved || null;
+    const token = urlToken || saved || null;
+    // Backfill shift-start date for sessions that predate this feature.
+    if (token && !localStorage.getItem("staff_shift_started_date")) {
+      localStorage.setItem("staff_shift_started_date", romeDateISO());
+    }
+    return token;
   });
   // Counter to force re-validation even when token doesn't change
   const [validateTrigger, setValidateTrigger] = useState(0);
