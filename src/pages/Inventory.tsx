@@ -32,7 +32,7 @@ interface Material {
   location_id: string | null;
 }
 
-const InventoryMaterials = () => {
+const Inventory = () => {
   const navigate = useNavigate();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
@@ -150,7 +150,7 @@ const InventoryMaterials = () => {
             <ArrowLeft size={18} />
           </button>
           <h1 className="text-xl font-bold flex items-center gap-2">
-            <Package size={22} /> Materialet (POS)
+            <Package size={22} /> Inventari
           </h1>
         </div>
         {!isKitchen && (
@@ -355,4 +355,4 @@ const InventoryMaterials = () => {
   );
 };
 
-export default InventoryMaterials;
+export default Inventory;
