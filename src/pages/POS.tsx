@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
-import { LogOut, Coffee, PowerOff } from "lucide-react";
+import { LogOut, Coffee, PowerOff, Package } from "lucide-react";
 
 interface TableRow {
   id: string;
@@ -79,6 +79,14 @@ const POS = () => {
           >
             <Coffee size={14} /> Modalitet Banak
           </button>
+          {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
+            <button
+              onClick={() => navigate("/inventory")}
+              className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
+            >
+              <Package size={14} /> Inventari
+            </button>
+          )}
           <button
             onClick={() => navigate("/staff")}
             className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
