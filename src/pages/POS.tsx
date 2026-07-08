@@ -229,9 +229,9 @@ const POS = () => {
                       <button
                         onClick={(e) => { e.stopPropagation(); viewTableOrders(t.number); }}
                         title="Shiko porositë"
-                        className="absolute top-1 right-1 p-1 rounded bg-slate-700/80 hover:bg-slate-600 text-white z-10"
+                        className="absolute top-1 right-1 p-1.5 rounded-md bg-slate-700/90 hover:bg-slate-600 text-white z-10 shadow"
                       >
-                        <Eye size={12} />
+                        <Eye size={20} />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
@@ -317,6 +317,17 @@ const POS = () => {
                   <span>TOTALI I TAVOLINËS</span>
                   <span>{viewTable.orders.reduce((s, o) => s + Number(o.total_amount), 0).toFixed(0)} Lekë</span>
                 </div>
+                <button
+                  onClick={() => {
+                    const num = viewTable.number;
+                    setViewTable(null);
+                    closeTable(num);
+                  }}
+                  disabled={closing}
+                  className="w-full flex items-center justify-center gap-2 mt-2 py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold disabled:opacity-50"
+                >
+                  <Printer size={18} /> Mbyll & Printo Tavolinën
+                </button>
               </div>
             )}
           </div>
