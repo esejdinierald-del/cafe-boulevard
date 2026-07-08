@@ -12,10 +12,25 @@ const printDocument = (title: string, body: string) => `<!doctype html>
     <meta charset="utf-8" />
     <title>${escapeHtml(title)}</title>
     <style>
-      @page { size: 80mm auto; margin: 4mm; }
-      html, body { margin: 0; padding: 0; background: #fff; color: #000; }
+      @page { size: 80mm auto; margin: 0; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        color: #000;
+        height: auto;
+        min-height: 0;
+      }
       body { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-      pre { margin: 0; padding: 4px 6px; font-size: 10px; line-height: 1.15; white-space: pre-wrap; }
+      pre {
+        margin: 0;
+        padding: 2mm 3mm;
+        font-size: 10px;
+        line-height: 1.1;
+        white-space: pre-wrap;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+      }
       .status { padding: 16px; font-size: 13px; }
     </style>
   </head>
