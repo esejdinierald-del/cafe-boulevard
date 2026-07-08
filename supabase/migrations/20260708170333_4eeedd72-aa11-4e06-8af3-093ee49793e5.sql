@@ -1,0 +1,1 @@
+ALTER TABLE public.inv_products ADD COLUMN IF NOT EXISTS menu_item_ids uuid[] NOT NULL DEFAULT '{}'::uuid[]; ALTER TABLE public.inv_products ADD COLUMN IF NOT EXISTS units_per_sale numeric NOT NULL DEFAULT 1; ALTER TABLE public.inv_daily_entries ADD COLUMN IF NOT EXISTS turn1_closed_at timestamptz NULL;

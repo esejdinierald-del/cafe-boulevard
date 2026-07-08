@@ -156,6 +156,7 @@ export type Database = {
           created_at: string
           entry_date: string
           id: string
+          turn1_closed_at: string | null
           turn1_data: Json
           turn2_data: Json
           updated_at: string
@@ -164,6 +165,7 @@ export type Database = {
           created_at?: string
           entry_date: string
           id?: string
+          turn1_closed_at?: string | null
           turn1_data?: Json
           turn2_data?: Json
           updated_at?: string
@@ -172,6 +174,7 @@ export type Database = {
           created_at?: string
           entry_date?: string
           id?: string
+          turn1_closed_at?: string | null
           turn1_data?: Json
           turn2_data?: Json
           updated_at?: string
@@ -209,20 +212,26 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          menu_item_ids: string[]
           name: string
           sort_order: number
+          units_per_sale: number
         }
         Insert: {
           created_at?: string
           id?: string
+          menu_item_ids?: string[]
           name: string
           sort_order?: number
+          units_per_sale?: number
         }
         Update: {
           created_at?: string
           id?: string
+          menu_item_ids?: string[]
           name?: string
           sort_order?: number
+          units_per_sale?: number
         }
         Relationships: []
       }
