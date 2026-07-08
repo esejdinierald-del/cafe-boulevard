@@ -215,6 +215,14 @@ const POS = () => {
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold">POS Kamarier</h1>
           <RomeClock />
+          {pendingPrints > 0 && (
+            <span
+              className="flex items-center gap-1 px-2 py-1 rounded bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-semibold animate-pulse"
+              title="Bileta të tuat në pritje të printimit tek arka"
+            >
+              <Printer size={12} /> Në pritje printimi: {pendingPrints}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
