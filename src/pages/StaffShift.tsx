@@ -10,6 +10,8 @@ import QrScanner from "@/components/QrScanner";
 import SplashScreen from "@/components/SplashScreen";
 import boulevardLogo from "@/assets/boulevard-logo.png";
 import { StaffPinLogin } from "@/components/staff/StaffPinLogin";
+import { RomeClock } from "@/components/RomeClock";
+import { romeDateISO, isPastShiftDay } from "@/lib/rome-time";
 
 interface ServiceRequest {
   id: string;
@@ -129,6 +131,11 @@ const StaffShift = () => {
     if (urlToken) {
       setActiveToken(urlToken);
       localStorage.setItem("staff_shift_token", urlToken);
+      // Anchor the shift-day (Rome timezone) — used to require admin
+      // passcode when exiting past 23:59 of the day the shift started.
+      if (!localStorage.getItem("staff_shift_started_date")) {
+        localStorage.setItem("staff_shift_started_date", romeDateISO());
+      }
       setValidateTrigger(t => t + 1); // ensure validation fires
       // Skip splash when arriving via QR link
       if (showSplash) {
@@ -455,6 +462,9 @@ const StaffShift = () => {
     setShowScanner(false);
     setActiveToken(scannedToken);
     localStorage.setItem("staff_shift_token", scannedToken);
+    if (!localStorage.getItem("staff_shift_started_date")) {
+      localStorage.setItem("staff_shift_started_date", romeDateISO());
+    }
     setIsValid(null); // show loading
     setValidateTrigger(t => t + 1); // force re-validation even if same token
 
@@ -472,12 +482,29 @@ const StaffShift = () => {
     toast.success("QR u skanua! Dashboard u zhbllokua!");
   }, []);
 
-  const handleEndShift = useCallback(() => {
+  const handleEndShift = useCallback(async () => {
+    const startedDate = localStorage.getItem("staff_shift_started_date");
+    if (isPastShiftDay(startedDate)) {
+      const pw = window.prompt(
+        "Ora zyrtare (Rome/Tirana) ka kaluar 23:59 të ditës së turnit.\n" +
+        "Për të mbyllur turnin duhet fjalëkalimi i adminit:",
+      );
+      if (!pw) return;
+      const { data, error } = await supabase.functions.invoke("verify-admin-passcode", {
+        body: { passcode: pw },
+      });
+      const err = (data as any)?.error || error?.message;
+      if (!(data as any)?.valid) {
+        toast.error(err || "Fjalëkalim i pasaktë");
+        return;
+      }
+    }
     setActiveToken(null);
     setIsValid(false);
     localStorage.removeItem("staff_shift_token");
     localStorage.removeItem("staff_name");
     localStorage.removeItem("staff_role");
+    localStorage.removeItem("staff_shift_started_date");
     setStaffName(null);
     toast.info("Turni u mbyll");
   }, []);
