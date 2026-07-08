@@ -1,0 +1,40 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sha256 } from "../_shared/hash.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+const json = (b: unknown, s = 200) =>
+  new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    const { name, pin, shiftToken } = await req.json();
+    if (!name || !pin || !shiftToken) return json({ error: "Mungojnë të dhënat" }, 400);
+
+    // Validate shift token active
+    const now = new Date().toISOString();
+    const { data: shift } = await supabase
+      .from("shift_tokens").select("id, unlocked")
+      .eq("token", shiftToken).gte("shift_end", now).lte("shift_start", now).maybeSingle();
+    if (!shift) return json({ error: "Turn i pavlefshëm ose i skaduar" }, 403);
+
+    const { data: staff } = await supabase
+      .from("staff_members").select("id, name, role, active, pin_hash")
+      .eq("name", String(name).trim()).maybeSingle();
+    if (!staff || !staff.active) return json({ error: "Kamarier i pavlefshëm" }, 403);
+
+    const pinHash = await sha256(String(pin));
+    if (pinHash !== staff.pin_hash) return json({ error: "PIN i pasaktë" }, 403);
+
+    return json({ ok: true, name: staff.name, role: staff.role });
+  } catch (e) {
+    return json({ error: (e as Error).message }, 500);
+  }
+});
