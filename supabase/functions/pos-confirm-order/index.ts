@@ -33,6 +33,34 @@ serve(async (req) => {
     const allConfirmed = (siblings ?? []).every((s: any) => s.status === "confirmed");
     if (allConfirmed) {
       await supabase.from("pos_orders").update({ status: "ready" }).eq("id", split.order_id).neq("status", "closed");
+
+      // Decrement raw materials based on recipes (once, when the whole order is ready)
+      try {
+        const { data: order } = await supabase
+          .from("pos_orders").select("items").eq("id", split.order_id).single();
+        const items: any[] = Array.isArray((order as any)?.items) ? (order as any).items : [];
+        const productIds = items.map((i) => i.productId).filter(Boolean);
+        if (productIds.length > 0) {
+          const { data: recipes } = await supabase
+            .from("recipes")
+            .select("menu_item_id, material_id, quantity_needed")
+            .in("menu_item_id", productIds);
+          for (const it of items) {
+            const rs = (recipes ?? []).filter((r: any) => r.menu_item_id === it.productId);
+            for (const r of rs as any[]) {
+              const amount = Number(r.quantity_needed) * Number(it.quantity);
+              if (amount > 0) {
+                await supabase.rpc("decrement_material", {
+                  material_id: r.material_id,
+                  amount,
+                });
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error("decrement_material failed", (e as Error).message);
+      }
     }
 
     return jsonResponse({ success: true, orderReady: allConfirmed });

@@ -110,15 +110,14 @@ export const CashierPanel = () => {
   const [orders, setOrders] = useState<POSOrder[]>([]);
   const [receipt, setReceipt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [adminOk, setAdminOk] = useState(false);
+  const [adminPw, setAdminPw] = useState<string | null>(null);
 
-  const requireAdmin = (): boolean => {
-    if (adminOk) return true;
+  const requireAdmin = (): string | null => {
+    if (adminPw) return adminPw;
     const pw = window.prompt("Fjalëkalimi i adminit për anulim:");
-    if (pw === null) return false;
-    if (pw !== "2025") { toast.error("Fjalëkalim i pasaktë"); return false; }
-    setAdminOk(true);
-    return true;
+    if (!pw) return null;
+    setAdminPw(pw);
+    return pw;
   };
 
   const load = async () => {
@@ -157,72 +156,45 @@ export const CashierPanel = () => {
   };
 
   const cancelOrder = async (orderId: string) => {
-    if (!requireAdmin()) return;
+    const pw = requireAdmin();
+    if (!pw) return;
     if (!confirm("Anulo këtë porosi? Ky veprim nuk mund të zhbëhet.")) return;
     setLoading(true);
-    // Free table if any
-    const { data: order } = await supabase.from("pos_orders").select("table_id").eq("id", orderId).single();
-    const { error: delSplits } = await supabase.from("order_items_split").delete().eq("order_id", orderId);
-    if (delSplits) { setLoading(false); toast.error("Gabim: " + delSplits.message); return; }
-    const { error: delOrder } = await supabase.from("pos_orders").delete().eq("id", orderId);
+    const { data, error } = await supabase.functions.invoke("pos-cancel-item", {
+      body: { orderId, mode: "order", adminPassword: pw },
+    });
     setLoading(false);
-    if (delOrder) { toast.error("Gabim: " + delOrder.message); return; }
-    if ((order as any)?.table_id) {
-      await supabase.from("tables").update({ status: "available" }).eq("id", (order as any).table_id);
+    const errMsg = (data as any)?.error || error?.message;
+    if (errMsg) {
+      if (errMsg.includes("Fjalëkalim")) setAdminPw(null);
+      toast.error("Gabim: " + errMsg);
+      return;
     }
     toast.success("Porosia u anulua");
   };
 
-  // Cancel a single item (decrement qty by 1) with admin password
+  // Cancel a single item (decrement qty by 1) — atomic via edge function
   const cancelItem = async (order: POSOrder, index: number) => {
-    if (!requireAdmin()) return;
+    const pw = requireAdmin();
+    if (!pw) return;
     const item = order.items[index];
     if (!item) return;
-    const newItems = order.items
-      .map((it, i) => (i === index ? { ...it, quantity: it.quantity - 1 } : it))
-      .filter((it) => it.quantity > 0);
-
-    // If order becomes empty → cancel entire order (delete + free table)
-    if (newItems.length === 0) {
-      setLoading(true);
-      const { data: full } = await supabase.from("pos_orders").select("table_id").eq("id", order.id).single();
-      await supabase.from("order_items_split").delete().eq("order_id", order.id);
-      await supabase.from("pos_orders").delete().eq("id", order.id);
-      if ((full as any)?.table_id) {
-        await supabase.from("tables").update({ status: "available" }).eq("id", (full as any).table_id);
-      }
-      setLoading(false);
-      toast.success(`U hoq "${item.name}". Porosia u mbyll (bosh).`);
+    setLoading(true);
+    const { data, error } = await supabase.functions.invoke("pos-cancel-item", {
+      body: { orderId: order.id, itemIndex: index, adminPassword: pw },
+    });
+    setLoading(false);
+    const errMsg = (data as any)?.error || error?.message;
+    if (errMsg) {
+      if (errMsg.includes("Fjalëkalim")) setAdminPw(null);
+      toast.error("Gabim: " + errMsg);
       return;
     }
-
-    const newTotal = newItems.reduce((s, it: any) => s + Number(it.price) * it.quantity, 0);
-    setLoading(true);
-    const { error } = await supabase
-      .from("pos_orders")
-      .update({ items: newItems as any, total_amount: newTotal })
-      .eq("id", order.id);
-
-    // Sync splits: rebuild bar/kitchen splits from newItems (preserve status where possible)
-    if (!error) {
-      const { data: splits } = await supabase
-        .from("order_items_split")
-        .select("id, type, status")
-        .eq("order_id", order.id);
-      for (const sp of (splits as any[]) || []) {
-        const filtered = newItems.filter((it: any) =>
-          sp.type === "bar" ? it.forBar !== false : it.forKitchen === true
-        );
-        if (filtered.length === 0) {
-          await supabase.from("order_items_split").delete().eq("id", sp.id);
-        } else {
-          await supabase.from("order_items_split").update({ items: filtered as any }).eq("id", sp.id);
-        }
-      }
+    if ((data as any)?.cancelledOrder) {
+      toast.success(`U hoq "${item.name}". Porosia u mbyll (bosh).`);
+    } else {
+      toast.success(`U hoq 1x "${item.name}" (-${Number(item.price).toFixed(0)} L)`);
     }
-    setLoading(false);
-    if (error) { toast.error("Gabim: " + error.message); return; }
-    toast.success(`U hoq 1x "${item.name}" (-${Number(item.price).toFixed(0)} L)`);
   };
 
   return (
