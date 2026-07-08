@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Printer, CheckCircle2, X, Ban, Minus, BellRing, ChevronDown, ChevronRight, History, Calendar, Lock, Download, Trash2 } from "lucide-react";
 import { printReceipt } from "@/lib/receipt-print";
+import { queuePrintJob } from "@/lib/print-queue";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -93,8 +94,19 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
       return;
     }
     toast.success("U konfirmua — duke printuar biletën");
-    // Auto-print immediately once the station accepts the order.
-    printReceipt(buildStationTicket(split), kind === "bar" ? "Bileta Banak" : "Bileta Kuzhinë");
+    // Send to the central arka printer queue.
+    const title = kind === "bar" ? "Bileta Banak" : "Bileta Kuzhinë";
+    const jobId = await queuePrintJob({
+      receiptText: buildStationTicket(split),
+      title,
+      kind: kind === "bar" ? "bar" : "kitchen",
+      station: "arka",
+      tableCode: split.pos_orders?.table_number ?? null,
+    });
+    if (!jobId) {
+      // Fallback: print locally if queueing failed
+      printReceipt(buildStationTicket(split), title);
+    }
   };
 
   if (splits.length === 0) {
@@ -221,7 +233,13 @@ export const CashierPanel = () => {
     const receiptText = String((data as any).receiptText || "");
     setReceipt(receiptText);
     if (close) {
-      printReceipt(receiptText, "Bileta Tavoline");
+      const jobId = await queuePrintJob({
+        receiptText,
+        title: "Bileta Tavoline",
+        kind: "close_table",
+        station: "arka",
+      });
+      if (!jobId) printReceipt(receiptText, "Bileta Tavoline");
       toast.success("Porosia u mbyll");
     }
   };
@@ -440,8 +458,18 @@ export const CashierPanel = () => {
             <pre className="font-mono text-xs whitespace-pre leading-tight">{receipt}</pre>
             <Button
               className="w-full mt-4"
-              onClick={() => {
-                printReceipt(receipt, "Bileta Tavoline");
+              onClick={async () => {
+                const jobId = await queuePrintJob({
+                  receiptText: receipt,
+                  title: "Bileta Tavoline",
+                  kind: "manual",
+                  station: "arka",
+                });
+                if (jobId) {
+                  toast.success("U dërgua tek printeri i arkës");
+                } else {
+                  printReceipt(receipt, "Bileta Tavoline");
+                }
               }}
             >
               <Printer className="h-4 w-4 mr-2" /> Printo
