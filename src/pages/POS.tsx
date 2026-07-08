@@ -13,11 +13,18 @@ interface TableRow {
   status: string | null;
 }
 
+interface OpenOrderRow {
+  table_number: number | null;
+  total_amount: number | null;
+  status: string | null;
+}
+
 const POS = () => {
   const navigate = useNavigate();
   const currentOrder = usePOSStore((s) => s.currentOrder);
   const startOrder = usePOSStore((s) => s.startOrder);
   const [tables, setTables] = useState<TableRow[]>([]);
+  const [tableTotals, setTableTotals] = useState<Record<string, number>>({});
   const [checking, setChecking] = useState(true);
 
   // Gate: require staff shift token
@@ -34,11 +41,21 @@ const POS = () => {
   useEffect(() => {
     if (checking) return;
     const load = async () => {
-      const { data } = await supabase
-        .from("tables")
-        .select("id, number, name, status")
-        .order("number");
-      setTables((data as TableRow[]) || []);
+      const [{ data: tRows }, { data: oRows }] = await Promise.all([
+        supabase.from("tables").select("id, number, name, status").order("number"),
+        supabase
+          .from("pos_orders")
+          .select("table_number, total_amount, status")
+          .in("status", ["open", "ready"]),
+      ]);
+      setTables((tRows as TableRow[]) || []);
+      const totals: Record<string, number> = {};
+      for (const o of (oRows as OpenOrderRow[]) || []) {
+        if (o.table_number == null) continue;
+        const key = String(o.table_number);
+        totals[key] = (totals[key] || 0) + Number(o.total_amount || 0);
+      }
+      setTableTotals(totals);
     };
     load();
     const channel = supabase
@@ -110,6 +127,7 @@ const POS = () => {
             {tables.map((t) => {
               const occupied = t.status === "occupied";
               const isActive = String(activeTableNumber) === String(t.number);
+              const total = tableTotals[String(t.number)] || 0;
               return (
                 <button
                   key={t.id}
@@ -123,9 +141,15 @@ const POS = () => {
                   }`}
                 >
                   <span>#{t.number}</span>
-                  <span className="text-[10px] opacity-70 mt-1">
-                    {occupied ? "e zënë" : "e lirë"}
-                  </span>
+                  {total > 0 ? (
+                    <span className="text-[11px] font-bold text-amber-300 mt-1">
+                      {total.toFixed(0)} L
+                    </span>
+                  ) : (
+                    <span className="text-[10px] opacity-70 mt-1">
+                      {occupied ? "e zënë" : "e lirë"}
+                    </span>
+                  )}
                 </button>
               );
             })}
