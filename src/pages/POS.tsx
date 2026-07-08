@@ -6,6 +6,7 @@ import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
 import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X } from "lucide-react";
 import { toast } from "sonner";
+import { closePrintWindow, openReceiptPrintWindow, writeReceiptAndPrint } from "@/lib/receipt-print";
 
 interface TableRow {
   id: string;
@@ -107,7 +108,12 @@ const POS = () => {
   };
 
   const closeTable = async (tableNumber: number | string) => {
-    if (!confirm(`Të mbyllim & printojmë tavolinën #${tableNumber}?`)) return;
+    const printWindow = openReceiptPrintWindow(`Tavolina #${tableNumber}`);
+    if (!printWindow) toast.error("Lejo pop-ups në browser që të hapet printimi.");
+    if (!confirm(`Të mbyllim & printojmë tavolinën #${tableNumber}?`)) {
+      closePrintWindow(printWindow);
+      return;
+    }
     setClosing(true);
     try {
       const { data: openOrders } = await supabase
@@ -117,28 +123,24 @@ const POS = () => {
         .in("status", ["open", "ready"]);
       const ids = ((openOrders as { id: string }[]) || []).map((o) => o.id);
       if (ids.length === 0) {
+        closePrintWindow(printWindow);
         toast.error("Asnjë porosi e hapur për këtë tavolinë");
         return;
       }
       const operatorName = localStorage.getItem("staff_name") || "Kamarier";
-      let receipt = "";
+      const receipts: string[] = [];
       for (const id of ids) {
         const { data, error } = await supabase.functions.invoke("pos-print-ticket", {
           body: { orderId: id, closeOrder: true, operatorName },
         });
         const err = (data as any)?.error || error?.message;
         if (err) throw new Error(err);
-        if ((data as any)?.receiptText) receipt = (data as any).receiptText;
+        if ((data as any)?.receiptText) receipts.push(String((data as any).receiptText));
       }
       toast.success(`Tavolina #${tableNumber} u mbyll`);
-      if (receipt) {
-        const w = window.open("", "_blank", "width=380,height=600");
-        if (w) {
-          w.document.write(`<pre style="font-family:monospace;font-size:12px;padding:12px;white-space:pre-wrap">${receipt}</pre><script>window.print()<\/script>`);
-          w.document.close();
-        }
-      }
+      if (receipts.length > 0) writeReceiptAndPrint(printWindow, receipts.join("\n\n------------------------------------------\n\n"), `Tavolina #${tableNumber}`);
     } catch (e) {
+      closePrintWindow(printWindow);
       toast.error("Gabim: " + (e as Error).message);
     } finally {
       setClosing(false);

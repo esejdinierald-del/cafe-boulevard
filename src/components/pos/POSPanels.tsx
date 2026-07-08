@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Printer, CheckCircle2, X, Ban, Minus } from "lucide-react";
+import { closePrintWindow, openReceiptPrintWindow, writeReceiptAndPrint } from "@/lib/receipt-print";
 
 interface Split {
   id: string;
@@ -57,7 +58,7 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
-  const printStationTicket = (s: Split) => {
+  const buildStationTicket = (s: Split) => {
     const LINE = 42;
     const center = (t: string) => " ".repeat(Math.max(0, Math.floor((LINE - t.length) / 2))) + t;
     const line = "-".repeat(LINE);
@@ -76,28 +77,23 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
     }
     rows.push(line);
     rows.push(center("GATI ✓"));
-    const text = rows.join("\n");
-    const w = window.open("", "_blank", "width=380,height=600");
-    if (w) {
-      w.document.write(
-        `<pre style="font-family:monospace;font-size:12px;padding:12px;white-space:pre-wrap">${text}</pre><script>window.print()<\/script>`
-      );
-      w.document.close();
-    }
+    return rows.join("\n");
   };
 
-  const confirm = async (splitId: string) => {
+  const confirm = async (split: Split) => {
+    const printWindow = openReceiptPrintWindow(kind === "bar" ? "Bileta Banak" : "Bileta Kuzhinë");
+    if (!printWindow) toast.error("Lejo pop-ups në browser që të hapet printimi.");
     setLoading(true);
-    const split = splits.find((x) => x.id === splitId);
     const { error } = await supabase.functions.invoke("pos-confirm-order", {
-      body: { splitId },
+      body: { splitId: split.id },
     });
     setLoading(false);
     if (error) {
+      closePrintWindow(printWindow);
       toast.error("Gabim: " + error.message);
     } else {
       toast.success("U konfirmua");
-      if (split) printStationTicket(split);
+      writeReceiptAndPrint(printWindow, buildStationTicket(split), kind === "bar" ? "Bileta Banak" : "Bileta Kuzhinë");
     }
   };
 
@@ -129,7 +125,7 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
               </li>
             ))}
           </ul>
-          <Button onClick={() => confirm(s.id)} disabled={loading} className="w-full">
+          <Button onClick={() => confirm(s)} disabled={loading} className="w-full">
             <CheckCircle2 className="h-4 w-4 mr-2" /> Gati
           </Button>
         </Card>
@@ -176,6 +172,8 @@ export const CashierPanel = () => {
   }, []);
 
   const printAndClose = async (orderId: string, close: boolean) => {
+    const printWindow = close ? openReceiptPrintWindow("Bileta Tavoline") : null;
+    if (close && !printWindow) toast.error("Lejo pop-ups në browser që të hapet printimi.");
     setLoading(true);
     const operatorName = localStorage.getItem("staff_name") || "Kasier";
     const { data, error } = await supabase.functions.invoke("pos-print-ticket", {
@@ -183,10 +181,13 @@ export const CashierPanel = () => {
     });
     setLoading(false);
     if (error || (data as any)?.error) {
+      closePrintWindow(printWindow);
       toast.error("Gabim: " + (error?.message || (data as any)?.error));
       return;
     }
-    setReceipt((data as any).receiptText);
+    const receiptText = String((data as any).receiptText || "");
+    setReceipt(receiptText);
+    if (close) writeReceiptAndPrint(printWindow, receiptText, "Bileta Tavoline");
     if (close) toast.success("Porosia u mbyll");
   };
 
@@ -320,7 +321,17 @@ export const CashierPanel = () => {
               <X className="h-4 w-4" />
             </Button>
             <pre className="font-mono text-xs whitespace-pre leading-tight">{receipt}</pre>
-            <Button className="w-full mt-4" onClick={() => window.print()}>
+            <Button
+              className="w-full mt-4"
+              onClick={() => {
+                const printWindow = openReceiptPrintWindow("Bileta Tavoline");
+                if (!printWindow) {
+                  toast.error("Lejo pop-ups në browser që të hapet printimi.");
+                  return;
+                }
+                writeReceiptAndPrint(printWindow, receipt, "Bileta Tavoline");
+              }}
+            >
               <Printer className="h-4 w-4 mr-2" /> Printo
             </Button>
           </Card>
