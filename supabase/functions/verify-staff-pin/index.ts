@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sha256 } from "../_shared/hash.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,12 +25,11 @@ Deno.serve(async (req) => {
     if (!shift) return json({ error: "Turn i pavlefshëm ose i skaduar" }, 403);
 
     const { data: staff } = await supabase
-      .from("staff_members").select("id, name, role, active, pin_hash")
+      .from("staff_members").select("id, name, role, is_active, pin_code")
       .eq("name", String(name).trim()).maybeSingle();
-    if (!staff || !staff.active) return json({ error: "Kamarier i pavlefshëm" }, 403);
+    if (!staff || !staff.is_active) return json({ error: "Kamarier i pavlefshëm" }, 403);
 
-    const pinHash = await sha256(String(pin));
-    if (pinHash !== staff.pin_hash) return json({ error: "PIN i pasaktë" }, 403);
+    if (String(pin) !== staff.pin_code) return json({ error: "PIN i pasaktë" }, 403);
 
     return json({ ok: true, name: staff.name, role: staff.role });
   } catch (e) {
