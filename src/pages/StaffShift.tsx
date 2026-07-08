@@ -617,6 +617,21 @@ const StaffShift = () => {
               Dil
             </Button>
           </div>
+          {staffName && (
+            <div className="text-[11px] text-muted-foreground">
+              Kyçur si <span className="font-semibold text-foreground">{staffName}</span>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("staff_name");
+                  localStorage.removeItem("staff_role");
+                  setStaffName(null);
+                }}
+                className="ml-2 underline hover:text-primary"
+              >
+                ndrysho përdorues
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Pending Requests */}
