@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Printer, RefreshCcw, CheckCircle2, AlertTriangle } from "lucide-react";
-import { printReceiptInline } from "@/lib/receipt-print";
+import { printReceiptViaIframe } from "@/lib/receipt-print";
 import { toast } from "sonner";
 
 interface Job {
@@ -78,18 +78,15 @@ const PrintStation = () => {
         return;
       }
 
-      // Actually print
-      printReceiptInline(job.receipt_text, job.title || "Bileta");
+      // Actually print — përdor iframe të izoluar (pa temën e app-it)
       beep();
+      await printReceiptViaIframe(job.receipt_text, job.title || "Bileta");
 
-      // Mark printed after a brief delay so the print dialog can dispatch
-      setTimeout(async () => {
-        await supabase
-          .from("print_jobs")
-          .update({ status: "printed", printed_at: new Date().toISOString() })
-          .eq("id", job.id);
-        loadRecent();
-      }, 1200);
+      await supabase
+        .from("print_jobs")
+        .update({ status: "printed", printed_at: new Date().toISOString() })
+        .eq("id", job.id);
+      loadRecent();
     } catch (e) {
       console.error("[print-station] error", e);
       const newStatus = job.attempts + 1 >= 3 ? "failed" : "pending";
