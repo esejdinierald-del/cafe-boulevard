@@ -1,86 +1,30 @@
+## Problemi
 
-# Plan: Menaxhim Produktesh & Mbyllja T1 me Shiriti Auto
+Rruga `/inventory` ekziston te `src/App.tsx` dhe faqja `src/pages/Inventory.tsx` ngarkohet mirë kur ka `staff_shift_token` në localStorage. Kur mungon, `useEffect`-i te Inventory bën `navigate("/staff", { replace: true })` menjëherë — pra pa turn aktiv, user-i "del jashtë" faqes dhe zbret te ekrani i stafit, që lehtë ngatërrohet me 404.
 
-## Qëllimi
-Në `/regjistrimi-ditor`:
-1. Menaxhim i plotë i produkteve (shto / fshi / **riemërto** + **mapim me menu items**).
-2. Buton i ri **"Mbyll T1"** që lexon shitjet e T1 nga `transactions`, mbush automatikisht `Shiriti` për çdo produkt, dhe propagon `StokFillim` për T2 (njësoj si mbyllja e ditës).
+Reprodukim i konfirmuar: hyrja direkte te `http://localhost:8080/inventory` ridrejtohet te `/staff`. Nuk ka error runtime, nuk ka route të munguar.
 
----
+## Çka do bëjmë
 
-## 1. Backend (Migration)
+1. **Rregullo guard-in te `src/pages/Inventory.tsx`**
+   - Në vend të `navigate("/staff", { replace: true })` sapo mungon token-i, shfaq një ekran të vogël "Kërkohet turn aktiv" me buton *"Hap Stafi"* që të çon te `/staff`.
+   - Kjo eliminon efektin "404 / faqe tjetër" kur user-i shkruan URL-në direkt ose e hap nga një tab i vjetër.
 
-Shtim kolonash te `inv_products`:
-- `menu_item_ids uuid[] not null default '{}'` — lista e artikujve të menusë që konsumohen nga ky produkt inventari.
-- `units_per_sale numeric not null default 1` — sa njësi të inventarit shpenzohen për 1 shitje (p.sh. 1 shishe birrë = 1).
+2. **Konfirmo lidhjen nga `/pos`**
+   - Butoni "Inventari" te `POS.tsx:236` tashmë navigon saktë; do vetëm ta verifikojmë që në sesion me turn aktiv faqja hapet pa ridrejtim.
 
-Shtim kolone te `inv_daily_entries`:
-- `turn1_closed_at timestamptz null` — koha kur u mbyll T1 (kufiri i turneve).
+3. **Verifikim**
+   - Playwright: `/inventory` pa token → tregon ekranin e ri (jo redirect).
+   - Playwright: `/inventory` me token të vendosur në localStorage → ngarkon tabelën e materialeve.
 
-Politikat RLS ekzistuese vlejnë (autenticated read/write) — s'duhet gjë e re.
+## Detaje teknike
 
----
+- Ndryshim vetëm te `src/pages/Inventory.tsx` (frontend, guard UI).
+- Pa migrime DB, pa ndryshime edge functions, pa prekje te `RegjistrimiDitor`, `POS` apo rrjeti.
 
-## 2. UI: Menaxhimi i Produkteve
+## Jashtë fushëveprimit
 
-Zëvendëso rreshtin "Shto produkt" me një dialog **"Menaxho produktet"** (butoni hapet nga header i seksionit Produktet):
+- Nuk prek `/regjistrimi-ditor`, `inv_products` apo shërbimet e inventarit të ditës.
+- Nuk ndryshon logjikën e autentikimit të stafit (PIN, shift tokens).
 
-- Listë e produkteve me:
-  - Input për riemërtim (auto-save on blur).
-  - Multi-select (checkbox list e kërkueshme) e `menu_items` për `menu_item_ids`.
-  - Input numerik për `units_per_sale`.
-  - Buton fshi (me konfirmim).
-- Rresht i ri "Shto produkt" (emri + zgjedhja e menu items në momentin e krijimit).
-
-**Sinkronizimi T1/T2 pas riemërtimit:** kur ndryshon emri, migro çelësin brenda `turn1_data.products` dhe `turn2_data.products` (rewrite objektin me çelës të ri, ruaj në DB).
-
-## 3. Mbyllja e Turnit 1 — Shiriti Auto
-
-Buton i ri **"Mbyll Turnin 1"** në tab-in T1 (afër "Mbyll ditën"):
-
-Rrjedha:
-1. Konfirmo veprimin.
-2. Merr `turn1_closed_at` = tani (Europe/Rome). Nëse `inv_daily_entries.turn1_closed_at` është e mbushur → mos rilogariti (paralajmëro).
-3. Query te `transactions`:
-   - `type = 'sale'`
-   - `created_at >= <fillim i ditës Rome>` **dhe** `created_at < turn1_closed_at`
-4. Për çdo transaksion, kalo nëpër `items` (JSONB) dhe grupo sasitë sipas `menu_item_id`.
-5. Për çdo `inv_product`, `Shiriti T1 += Σ(sold_qty[menu_item_id] * units_per_sale)` për të gjithë `menu_item_ids` të tij.
-6. Përditëso `turn1_data.products[name].shiriti` në DB.
-7. Ruaj `turn1_closed_at`.
-8. Auto-propagimi T1→T2.stokFillim që ekziston tashmë do të rifreskojë "Stok Fillim" të T2 me formulën aktuale (stokFillim + furnizime + shiriti − gjendje... siç është në `InventoryCalculationService.calculateStockForNextTurn`).
-
-**Ndarja e turneve për mbylljen e ditës:** kur klikohet "Mbyll ditën", `Shiriti T2` llogaritet nga transactions me `created_at >= turn1_closed_at` deri në momentin e mbylljes. E njëjta logjikë, riciklohet.
-
-## 4. Shërbimi i ri: `inventorySalesAggregation.service.ts`
-
-Metodë e re (pa prekur shërbimet ekzistuese):
-```ts
-aggregateSalesByProduct(fromISO, toISO, products): Promise<Record<productName, number>>
-```
-- Merr `transactions` në interval.
-- Ndërton hartë `menu_item_id → total_qty`.
-- Kthen `productName → shiriti` sipas `menu_item_ids` × `units_per_sale`.
-
-## 5. Ndryshime specifike
-
-**Files të prekur:**
-- **Migration i ri:** shto kolonat te `inv_products` dhe `inv_daily_entries`.
-- **`src/types/inventory.types.ts`** — shto `menu_item_ids`, `units_per_sale` te tipi `InvProduct` (te faqja) dhe interface e re nëse duhet.
-- **`src/pages/RegjistrimiDitor.tsx`**:
-  - Zëvendëso rreshtin "Shto produkt" me dialog `ProductManagerDialog`.
-  - Shto butonin "Mbyll Turnin 1".
-  - Kur riemërton, migro çelësat në T1/T2 dhe ruaj.
-- **`src/components/inventory/ProductManagerDialog.tsx`** (i ri) — CRUD dhe multi-select menu items.
-- **`src/services/inventorySalesAggregation.service.ts`** (i ri).
-- **`src/integrations/supabase/types.ts`** — regjenerohet automatikisht pas migrimit.
-
-## 6. Jashtë fushës (nuk preket)
-- `InventoryCalculationService` dhe `InventoryStockPropagationService` — s'ndryshohen.
-- `/inventory` (materialet POS) — s'preket.
-- Sjellja e "Furnizime" mbetet e pavarur (siç kërkuar më parë).
-
----
-
-## Pika për konfirmim
-Nëse dakord, do të filloj me migrimin, pastaj UI & shërbimi.
+Nëse "404" që sheh është diçka tjetër (p.sh. faqja `NotFound` me tekstin *"Faqja nuk u gjet"*, ose ekrani i ErrorBoundary), më thuaj sakt çfarë sheh dhe nga cili device/URL — ndryshon diagnoza.

@@ -41,6 +41,9 @@ const Inventory = () => {
   const [quantity, setQuantity] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
+  const [hasToken, setHasToken] = useState<boolean>(
+    typeof window !== "undefined" && !!localStorage.getItem("staff_shift_token"),
+  );
 
   const staffRole = (typeof window !== "undefined"
     ? localStorage.getItem("staff_role")
@@ -51,11 +54,8 @@ const Inventory = () => {
   const isKitchen = staffRole === "kitchen";
 
   useEffect(() => {
-    const token = localStorage.getItem("staff_shift_token");
-    if (!token) {
-      navigate("/staff", { replace: true });
-    }
-  }, [navigate]);
+    setHasToken(!!localStorage.getItem("staff_shift_token"));
+  }, []);
 
   const load = async () => {
     const { data, error } = await supabase
@@ -77,6 +77,10 @@ const Inventory = () => {
   };
 
   useEffect(() => {
+    if (!hasToken) {
+      setLoading(false);
+      return;
+    }
     load();
     const channel = supabase
       .channel("inventory-materials")
@@ -89,7 +93,27 @@ const Inventory = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [hasToken]);
+
+  if (!hasToken) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full space-y-4 text-center border border-slate-700 bg-slate-800 rounded-lg p-6">
+          <Package className="mx-auto text-amber-400" size={36} />
+          <h1 className="text-xl font-bold">Kërkohet turn aktiv</h1>
+          <p className="text-sm text-slate-400">
+            Për të hyrë te Inventari duhet të kesh një turn aktiv të stafit.
+          </p>
+          <Button
+            onClick={() => navigate("/staff")}
+            className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold"
+          >
+            Hap Stafi
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const lowStockCount = useMemo(
     () => materials.filter((m) => m.quantity <= m.min_threshold).length,
