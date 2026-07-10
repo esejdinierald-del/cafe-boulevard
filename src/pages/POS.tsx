@@ -259,7 +259,9 @@ const POS = () => {
         <aside className="bg-slate-800 rounded-lg p-3 max-h-[85vh] overflow-y-auto">
           <div className="text-slate-400 text-xs uppercase font-semibold mb-2">Tavolinat</div>
           <div className="grid grid-cols-3 lg:grid-cols-2 gap-2">
-            {tables.map((t) => {
+            {[...tables]
+              .sort((a, b) => Number(a.number) - Number(b.number))
+              .map((t) => {
               const occupied = t.status === "occupied";
               const isActive = String(activeTableNumber) === String(t.number);
               const total = tableTotals[String(t.number)] || 0;
