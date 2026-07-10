@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { inventorySupabase as supabase } from "@/integrations/supabase/inventory-client";
+import { supabase as mainSupabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -37,6 +38,8 @@ const difColor = (dif: number) =>
 
 const RegjistrimiDitor = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [guardChecking, setGuardChecking] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -51,14 +54,43 @@ const RegjistrimiDitor = () => {
 
   const staffName = (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
 
-  // Guard: same as /staff
+  // Guard: same shift-token system as /staff.
+  // Read token from URL (?token=...) or localStorage, validate via validate-shift edge fn.
   useEffect(() => {
-    const token = localStorage.getItem("staff_shift_token");
-    if (!token) navigate("/staff", { replace: true });
-  }, [navigate]);
+    let cancelled = false;
+    (async () => {
+      const urlToken = searchParams.get("token");
+      if (urlToken) {
+        localStorage.setItem("staff_shift_token", urlToken);
+        setSearchParams({}, { replace: true });
+      }
+      const token = urlToken || localStorage.getItem("staff_shift_token");
+      if (!token) {
+        navigate("/staff", { replace: true });
+        return;
+      }
+      try {
+        const { data, error } = await mainSupabase.functions.invoke("validate-shift", {
+          body: { token },
+        });
+        if (cancelled) return;
+        if (error || !data?.valid) {
+          localStorage.removeItem("staff_shift_token");
+          navigate("/staff", { replace: true });
+          return;
+        }
+        setGuardChecking(false);
+      } catch {
+        if (cancelled) return;
+        navigate("/staff", { replace: true });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Initial load
   useEffect(() => {
+    if (guardChecking) return;
     (async () => {
       setLoading(true);
       try {
@@ -100,7 +132,7 @@ const RegjistrimiDitor = () => {
         setLoading(false);
       }
     })();
-  }, [date]);
+  }, [date, guardChecking]);
 
   // Auto-sync T2.stokFillim from T1 (theoretical) whenever T1 changes and cell in T2 is untouched (gjendje=0 && shiriti=0 && furnizime=0 -> auto)
   useEffect(() => {
@@ -310,7 +342,7 @@ const RegjistrimiDitor = () => {
         </div>
       </header>
 
-      {loading ? (
+      {guardChecking || loading ? (
         <div className="flex items-center justify-center py-24 text-slate-400">
           <Loader2 className="animate-spin mr-2" size={18} /> Duke ngarkuar…
         </div>
