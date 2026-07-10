@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { inventorySupabase } from "@/integrations/supabase/inventory-client";
 import {
   Dialog,
   DialogContent,
@@ -58,7 +59,7 @@ const ProductManagerDialog = ({ trigger, products, onChanged }: Props) => {
     const name = newName.trim();
     if (!name) return;
     const nextOrder = (products[products.length - 1]?.sort_order ?? 0) + 10;
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (inventorySupabase as any)
       .from("inv_products")
       .insert({ name, sort_order: nextOrder, menu_item_ids: newIds, units_per_sale: newUnits })
       .select("id, name, sort_order, menu_item_ids, units_per_sale")
@@ -71,7 +72,7 @@ const ProductManagerDialog = ({ trigger, products, onChanged }: Props) => {
 
   const removeProduct = async (p: InvProductRow) => {
     if (!confirm(`Fshij "${p.name}"?`)) return;
-    const { error } = await (supabase as any).from("inv_products").delete().eq("id", p.id);
+    const { error } = await (inventorySupabase as any).from("inv_products").delete().eq("id", p.id);
     if (error) return toast.error(error.message);
     onChanged({ deletedName: p.name });
     toast.success("U fshi");
@@ -168,7 +169,7 @@ const ProductRow = ({
     const newName = name.trim();
     if (!newName) return toast.error("Emri s'mund të jetë bosh");
     setSaving(true);
-    const { error } = await (supabase as any)
+    const { error } = await (inventorySupabase as any)
       .from("inv_products")
       .update({ name: newName, menu_item_ids: ids, units_per_sale: units })
       .eq("id", product.id);
