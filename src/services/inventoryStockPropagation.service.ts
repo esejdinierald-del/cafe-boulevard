@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { inventorySupabase as supabase } from "@/integrations/supabase/inventory-client";
 import { InventoryTurnData, InventoryProductData, emptyProduct } from "@/types/inventory.types";
 import { InventoryCalculationService as Calc } from "./inventoryCalculations";
 
