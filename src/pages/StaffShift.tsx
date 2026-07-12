@@ -584,11 +584,9 @@ const StaffShift = () => {
              {/* Invisible admin bypass — 5 quick taps on the logo prompts for admin password */}
              <button
                type="button"
-               aria-hidden="true"
-               tabIndex={-1}
+               aria-label="Admin bypass"
                onClick={handleLogoTap}
-               className="absolute left-1/2 -translate-x-1/2 top-0 w-24 h-24 opacity-0 bg-transparent"
-               style={{ WebkitTapHighlightColor: "transparent" }}
+               className="absolute left-1/2 -translate-x-1/2 top-0 w-24 h-24 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 active:bg-primary/20"
              />
              <h1 className="text-2xl font-bold text-foreground">Boulevard Café</h1>
             <p className="text-muted-foreground text-sm">Stafi — Thirrjet Live</p>
