@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sha256 } from "../_shared/hash.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,13 +13,66 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { action, id, token, shift_start, shift_end } = await req.json();
+    const { action, id, token, shift_start, shift_end, adminPassword } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const now = new Date().toISOString();
+
+    // ACTION: admin_bypass — verify admin passcode and return an active
+    // shift token (creates one covering the next 12h if none is active).
+    if (action === "admin_bypass") {
+      if (!adminPassword) {
+        return new Response(JSON.stringify({ error: "Mungon fjalëkalimi" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      const { data: setting } = await supabase
+        .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
+      const expectedHash = setting?.value ?? (await sha256("2025"));
+      const providedHash = await sha256(String(adminPassword));
+      if (providedHash !== expectedHash) {
+        return new Response(JSON.stringify({ error: "Fjalëkalim i pasaktë" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      // Return existing active token if any
+      const { data: existing } = await supabase
+        .from("shift_tokens")
+        .select("token, shift_end")
+        .gte("shift_end", now)
+        .lte("shift_start", now)
+        .maybeSingle();
+      if (existing) {
+        return new Response(
+          JSON.stringify({ token: existing.token, shift_end: existing.shift_end }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Create a new 12h token
+      const start = new Date();
+      const end = new Date(start.getTime() + 12 * 60 * 60 * 1000);
+      const newToken = crypto.randomUUID().replace(/-/g, "").substring(0, 12);
+      const { error } = await supabase.from("shift_tokens").insert({
+        token: newToken,
+        shift_start: start.toISOString(),
+        shift_end: end.toISOString(),
+        unlocked: true,
+      });
+      if (error) {
+        return new Response(JSON.stringify({ error: "Failed to create token" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      return new Response(
+        JSON.stringify({ token: newToken, shift_end: end.toISOString() }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Actions that require manager authentication
     const MANAGER_ACTIONS = ['create', 'extend', 'close'];
