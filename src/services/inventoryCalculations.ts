@@ -1,9 +1,10 @@
 import { InventoryProductData, InventoryTurnData } from "@/types/inventory.types";
 
 export class InventoryCalculationService {
-  /** Dif = Shiriti + Gjendje − StokFillim − Furnizime */
+  /** Dif = Shiriti + Gjendje − StokFillim
+   *  (Furnizime shtohet automatikisht te StokFillim në momentin e futjes, jo term i veçantë) */
   static calculateDif(p: InventoryProductData): number {
-    return (p.shiriti || 0) + (p.gjendje || 0) - (p.stokFillim || 0) - (p.furnizime || 0);
+    return (p.shiriti || 0) + (p.gjendje || 0) - (p.stokFillim || 0);
   }
 
   static calculateMulliriDif(fillim: number, perfund: number, totalKafe: number): number {
@@ -18,9 +19,9 @@ export class InventoryCalculationService {
     return (turn.shpenzime || []).reduce((s, x) => s + (Number(x.vlera) || 0), 0);
   }
 
-  /** Teorik: stokFillim + furnizime − shiriti */
+  /** Teorik: stokFillim − shiriti (furnizime tashmë folded në stokFillim) */
   static calculateStockForNextTurn(p: InventoryProductData): number {
-    return (p.stokFillim || 0) + (p.furnizime || 0) - (p.shiriti || 0);
+    return (p.stokFillim || 0) - (p.shiriti || 0);
   }
 
   static calculateStockFromGjendje(p: InventoryProductData): number {
