@@ -99,6 +99,43 @@ const StaffShift = () => {
   const [staffName, setStaffName] = useState<string | null>(() => localStorage.getItem("staff_name"));
   const audioContextRef = useRef<AudioContext | null>(null);
   const touchStartY = useRef(0);
+  const bypassTapsRef = useRef<{ count: number; timer: number | null }>({ count: 0, timer: null });
+
+  const handleAdminBypass = useCallback(async () => {
+    const pw = window.prompt("Fjalëkalimi i Admin-it për të kaluar QR-në:");
+    if (!pw) return;
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-shift", {
+        body: { action: "admin_bypass", adminPassword: pw },
+      });
+      if (error || (data as any)?.error || !(data as any)?.token) {
+        toast.error((data as any)?.error || "Fjalëkalim i pasaktë");
+        return;
+      }
+      const newToken = (data as any).token as string;
+      localStorage.setItem("staff_shift_token", newToken);
+      if (!localStorage.getItem("staff_shift_started_date")) {
+        localStorage.setItem("staff_shift_started_date", romeDateISO());
+      }
+      setActiveToken(newToken);
+      setValidateTrigger(t => t + 1);
+      toast.success("✅ QR u anashkalua nga admin-i");
+    } catch {
+      toast.error("Gabim në verifikim");
+    }
+  }, []);
+
+  const handleLogoTap = useCallback(() => {
+    const ref = bypassTapsRef.current;
+    ref.count += 1;
+    if (ref.timer) window.clearTimeout(ref.timer);
+    if (ref.count >= 5) {
+      ref.count = 0;
+      handleAdminBypass();
+      return;
+    }
+    ref.timer = window.setTimeout(() => { ref.count = 0; }, 1500);
+  }, [handleAdminBypass]);
 
   useEffect(() => {
     // Only mark this device as a staff PWA when explicitly opened via ?app=ios
@@ -542,8 +579,17 @@ const StaffShift = () => {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
         <div className="max-w-sm w-full text-center space-y-8">
            {/* Logo */}
-           <div className="space-y-2">
+           <div className="space-y-2 relative">
              <img src={boulevardLogo} alt="Boulevard Café Logo" className="w-24 h-24 mx-auto rounded-2xl shadow-lg object-contain" />
+             {/* Invisible admin bypass — 5 quick taps on the logo prompts for admin password */}
+             <button
+               type="button"
+               aria-hidden="true"
+               tabIndex={-1}
+               onClick={handleLogoTap}
+               className="absolute left-1/2 -translate-x-1/2 top-0 w-24 h-24 opacity-0 bg-transparent"
+               style={{ WebkitTapHighlightColor: "transparent" }}
+             />
              <h1 className="text-2xl font-bold text-foreground">Boulevard Café</h1>
             <p className="text-muted-foreground text-sm">Stafi — Thirrjet Live</p>
           </div>
