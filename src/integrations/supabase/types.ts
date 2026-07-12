@@ -642,6 +642,45 @@ export type Database = {
         }
         Relationships: []
       }
+      shift_turns: {
+        Row: {
+          created_at: string
+          entry_date: string
+          id: string
+          is_locked: boolean
+          locked_at: string | null
+          sequence_number: number
+          staff_name: string
+          started_at: string
+          turn_data: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entry_date: string
+          id?: string
+          is_locked?: boolean
+          locked_at?: string | null
+          sequence_number: number
+          staff_name?: string
+          started_at?: string
+          turn_data?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          is_locked?: boolean
+          locked_at?: string | null
+          sequence_number?: number
+          staff_name?: string
+          started_at?: string
+          turn_data?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       song_requests: {
         Row: {
           approved_at: string | null
