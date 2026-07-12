@@ -18,6 +18,7 @@ import { InventoryCalculationService as Calc } from "@/services/inventoryCalcula
 import { InventoryStockPropagationService as Prop } from "@/services/inventoryStockPropagation.service";
 import { InventorySalesAggregationService as Sales } from "@/services/inventorySalesAggregation.service";
 import ProductManagerDialog, { InvProductRow } from "@/components/inventory/ProductManagerDialog";
+import { useDifStartDates } from "@/hooks/useDifStartDates";
 
 type InvProduct = InvProductRow;
 
@@ -365,6 +366,61 @@ const RegjistrimiDitor = () => {
   );
   const totalShpenzime = useMemo(() => Calc.calculateTotalShpenzime(currentTurn), [currentTurn]);
 
+  const productNames = useMemo(() => products.map((p) => p.name), [products]);
+  const difStartMap = useDifStartDates(productNames, date);
+
+  // Furnizime handler: shto/zbrit delta te stokFillim
+  const setFurnizime = (productName: string, newVal: number) => {
+    setCurrentTurn((prev) => {
+      const existing = prev.products[productName] || emptyProduct();
+      const oldVal = existing.furnizime || 0;
+      const delta = newVal - oldVal;
+      return {
+        ...prev,
+        products: {
+          ...prev.products,
+          [productName]: {
+            ...existing,
+            furnizime: newVal,
+            stokFillim: (existing.stokFillim || 0) + delta,
+          },
+        },
+      };
+    });
+  };
+
+  // Kopjo në turnin pasardhës (të së njëjtës datë)
+  const copyToNextTurn = async () => {
+    if (!selectedTurn) return;
+    const idx = turns.findIndex((t) => t.id === selectedTurn.id);
+    const next = turns[idx + 1];
+    if (!next) return toast.error("S'ka turn pasardhës.");
+    if (next.is_locked) return toast.error("Turni pasardhës është i kyçur.");
+    const merged = Prop.syncT1ToT2(selectedTurn.turn_data, next.turn_data);
+    try {
+      const { error } = await (supabase as any)
+        .from("shift_turns").update({ turn_data: merged }).eq("id", next.id);
+      if (error) throw error;
+      setTurns((prev) => prev.map((t) => t.id === next.id ? { ...t, turn_data: merged } : t));
+      toast.success("Të dhënat u kopjuan te turni pasardhës.");
+    } catch (e: any) { toast.error(e.message || "Dështoi"); }
+  };
+
+  // Rivendos stokun nga Gjendja (admin-only)
+  const rebaseFromGjendje = async () => {
+    const pass = prompt("Fjalëkalimi i adminit:");
+    if (pass !== "2025") return toast.error("Fjalëkalim i pasaktë.");
+    if (!confirm("Rivendos stokun e ditës pasardhëse duke përdorur 'Gjendja' aktuale?")) return;
+    try {
+      const last = turns[turns.length - 1];
+      const prev = turns.length > 1 ? turns[turns.length - 2] : last;
+      const { stock, mulliriFillim } = Prop.computeNextDayStockFromGjendje(last.turn_data, prev.turn_data);
+      const nextDate = shiftIso(date, 1);
+      await Prop.persistNextDayStock(nextDate, stock, mulliriFillim);
+      toast.success(`Stoku i ${nextDate} u rivendos nga Gjendja.`);
+    } catch (e: any) { toast.error(e.message || "Dështoi"); }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
@@ -421,65 +477,87 @@ const RegjistrimiDitor = () => {
                 <Card className="bg-slate-900 border-slate-800 p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="font-semibold flex items-center gap-2"><Package2 size={16}/> Produktet</h2>
-                    <ProductManagerDialog
-                      products={products}
-                      onChanged={handleProductsChanged}
-                      trigger={
-                        <Button size="sm" className="bg-slate-800 hover:bg-slate-700 h-8">
-                          <Settings2 size={14} className="mr-1"/> Menaxho
-                        </Button>
-                      }
-                    />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {editable && (
+                        <>
+                          <Button size="sm" onClick={copyToNextTurn} className="bg-slate-800 hover:bg-slate-700 h-8">
+                            Kopjo në turnin pasardhës →
+                          </Button>
+                          <Button size="sm" onClick={rebaseFromGjendje} className="bg-amber-700 hover:bg-amber-600 h-8">
+                            Rivendos nga Gjendja
+                          </Button>
+                        </>
+                      )}
+                      <ProductManagerDialog
+                        products={products}
+                        onChanged={handleProductsChanged}
+                        trigger={
+                          <Button size="sm" className="bg-slate-800 hover:bg-slate-700 h-8">
+                            <Settings2 size={14} className="mr-1"/> Menaxho
+                          </Button>
+                        }
+                      />
+                    </div>
                   </div>
 
                   {products.length === 0 ? (
                     <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto nga "Menaxho".</p>
                   ) : (
-                    <div className="space-y-3">
-                      {products.map((p) => {
-                        const data = t.turn_data.products[p.name] || emptyProduct();
-                        const dif = Calc.calculateDif(data);
-                        return (
-                          <div key={p.id} className="border border-slate-800 rounded-lg p-3 bg-slate-950/60">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="font-medium">{p.name}</div>
-                              <div className={`text-sm font-bold tabular-nums ${difColor(dif)}`}>
-                                Dif: {dif > 0 ? "+" : ""}{dif.toFixed(2)}
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                              <Field label="Stok Fillim" value={data.stokFillim} readOnly />
-                              <Field
-                                label="Furnizime"
-                                value={data.furnizime}
-                                readOnly={!editable}
-                                onChange={(v) => setCurrentTurn((prev) => ({
-                                  ...prev,
-                                  products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), furnizime: v } },
-                                }))}
-                              />
-                              <Field
-                                label="Gjendje"
-                                value={data.gjendje}
-                                readOnly={!editable}
-                                onChange={(v) => setCurrentTurn((prev) => ({
-                                  ...prev,
-                                  products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), gjendje: v } },
-                                }))}
-                              />
-                              <Field
-                                label="Shiriti"
-                                value={data.shiriti}
-                                readOnly={!editable}
-                                onChange={(v) => setCurrentTurn((prev) => ({
-                                  ...prev,
-                                  products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), shiriti: v } },
-                                }))}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="overflow-x-auto -mx-4 px-4">
+                      <table className="w-full text-sm border-collapse min-w-[720px]">
+                        <thead>
+                          <tr className="text-xs text-slate-400 border-b border-slate-800">
+                            <th className="text-left py-2 pr-2 font-medium">Produkti</th>
+                            <th className="text-right py-2 px-2 font-medium">Stok Fillim</th>
+                            <th className="text-right py-2 px-2 font-medium">Gjendje</th>
+                            <th className="text-right py-2 px-2 font-medium">Shiriti</th>
+                            <th className="text-right py-2 px-2 font-medium">Furnizime</th>
+                            <th className="text-right py-2 px-2 font-medium">Dif</th>
+                            <th className="text-right py-2 pl-2 font-medium">Dif fillon</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {products.map((p) => {
+                            const data = t.turn_data.products[p.name] || emptyProduct();
+                            const dif = Calc.calculateDif(data);
+                            const difStart = difStartMap[p.name] || null;
+                            return (
+                              <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-950/40">
+                                <td className="py-1.5 pr-2 font-medium">{p.name}</td>
+                                <td className="py-1.5 px-1">
+                                  <RowField value={data.stokFillim} readOnly />
+                                </td>
+                                <td className="py-1.5 px-1">
+                                  <RowField
+                                    value={data.gjendje}
+                                    readOnly={!editable}
+                                    onChange={(v) => setCurrentTurn((prev) => ({
+                                      ...prev,
+                                      products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), gjendje: v } },
+                                    }))}
+                                  />
+                                </td>
+                                <td className="py-1.5 px-1">
+                                  <RowField value={data.shiriti} readOnly />
+                                </td>
+                                <td className="py-1.5 px-1">
+                                  <RowField
+                                    value={data.furnizime}
+                                    readOnly={!editable}
+                                    onChange={(v) => setFurnizime(p.name, v)}
+                                  />
+                                </td>
+                                <td className={`py-1.5 px-2 text-right font-bold tabular-nums ${difColor(dif)}`}>
+                                  {dif > 0 ? "+" : ""}{dif.toFixed(2)}
+                                </td>
+                                <td className="py-1.5 pl-2 text-right text-xs text-slate-400 tabular-nums">
+                                  {difStart || "—"}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                 </Card>
@@ -503,25 +581,42 @@ const RegjistrimiDitor = () => {
                   {Object.keys(t.turn_data.coffee).length === 0 ? (
                     <p className="text-sm text-slate-500 text-center py-4">Asnjë lloj kafeje.</p>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {Object.entries(t.turn_data.coffee).map(([name, qty]) => (
-                        <div key={name} className="flex items-center gap-2 border border-slate-800 rounded p-2 bg-slate-950/60">
-                          <span className="flex-1 truncate">{name}</span>
-                          <Input
-                            type="number"
-                            value={qty}
-                            readOnly={!editable}
-                            onChange={(e) => setCoffee(name, Number(e.target.value) || 0)}
-                            className="bg-slate-950 border-slate-700 text-white h-8 w-24 text-right"
-                          />
-                          {editable && <button onClick={() => removeCoffee(name)} className="text-slate-500 hover:text-rose-400">
-                            <Trash2 size={14}/>
-                          </button>}
-                        </div>
-                      ))}
-                    </div>
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="text-xs text-slate-400 border-b border-slate-800">
+                          <th className="text-left py-2 pr-2 font-medium">Lloji</th>
+                          <th className="text-right py-2 pl-2 font-medium">Sasia</th>
+                          {editable && <th className="w-8" />}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(t.turn_data.coffee).map(([name, qty]) => (
+                          <tr key={name} className="border-b border-slate-800/60">
+                            <td className="py-1.5 pr-2 truncate">{name}</td>
+                            <td className="py-1.5 pl-2">
+                              <RowField
+                                value={qty}
+                                readOnly={!editable}
+                                onChange={(v) => setCoffee(name, v)}
+                              />
+                            </td>
+                            {editable && (
+                              <td className="py-1.5 pl-1">
+                                <button onClick={() => removeCoffee(name)} className="text-slate-500 hover:text-rose-400">
+                                  <Trash2 size={14}/>
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                        <tr className="border-t-2 border-slate-700 bg-slate-950/40">
+                          <td className="py-2 pr-2 font-bold">TOTALI</td>
+                          <td className="py-2 pl-2 text-right font-bold tabular-nums">{totalCoffee}</td>
+                          {editable && <td />}
+                        </tr>
+                      </tbody>
+                    </table>
                   )}
-                  <div className="mt-3 text-sm text-slate-400">Total kafe: <span className="font-bold text-white">{totalCoffee}</span></div>
                 </Card>
 
                 {/* Mulliri */}
@@ -645,6 +740,17 @@ const Field = ({ label, value, onChange, readOnly }: FieldProps) => (
       className={`bg-slate-950 border-slate-700 text-white h-9 text-right tabular-nums ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`}
     />
   </div>
+);
+
+const RowField = ({ value, onChange, readOnly }: { value: number; onChange?: (v: number) => void; readOnly?: boolean }) => (
+  <Input
+    type="number"
+    step="0.01"
+    value={value}
+    readOnly={readOnly}
+    onChange={onChange ? (e) => onChange(Number(e.target.value) || 0) : undefined}
+    className={`bg-slate-950 border-slate-700 text-white h-8 text-right tabular-nums w-full min-w-[80px] ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`}
+  />
 );
 
 export default RegjistrimiDitor;
