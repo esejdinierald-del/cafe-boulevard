@@ -28,13 +28,20 @@ interface MenuItemLite {
 }
 
 interface Props {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
   products: InvProductRow[];
   onChanged: (opts?: { renamedFrom?: string; renamedTo?: string; deletedName?: string; added?: InvProductRow }) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-const ProductManagerDialog = ({ trigger, products, onChanged }: Props) => {
-  const [open, setOpen] = useState(false);
+const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, onOpenChange }: Props) => {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp !== undefined ? openProp : openState;
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v);
+    if (openProp === undefined) setOpenState(v);
+  };
   const [menuItems, setMenuItems] = useState<MenuItemLite[]>([]);
   const [loading, setLoading] = useState(false);
   const [newName, setNewName] = useState("");
@@ -80,7 +87,7 @@ const ProductManagerDialog = ({ trigger, products, onChanged }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
       <DialogContent className="bg-slate-950 border-slate-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Menaxho produktet</DialogTitle>

@@ -65,6 +65,20 @@ const RegjistrimiDitor = () => {
   const [myTurnId, setMyTurnId] = useState<string | null>(null);
   const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null);
   const [newCoffeeName, setNewCoffeeName] = useState("");
+  const [adminUnlocked, setAdminUnlocked] = useState<boolean>(() =>
+    typeof window !== "undefined" && sessionStorage.getItem("inv_admin_unlocked") === "1"
+  );
+  const [productMgrOpen, setProductMgrOpen] = useState(false);
+
+  const requestAdminAccess = () => {
+    if (adminUnlocked) { setProductMgrOpen(true); return; }
+    const pass = window.prompt("Fjalëkalimi i administratorit për menaxhimin e produkteve:");
+    if (pass === null) return;
+    if (pass !== "2025") { toast.error("Fjalëkalim i pasaktë"); return; }
+    sessionStorage.setItem("inv_admin_unlocked", "1");
+    setAdminUnlocked(true);
+    setProductMgrOpen(true);
+  };
 
   const staffName = (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
 
@@ -649,15 +663,13 @@ const RegjistrimiDitor = () => {
                           </Button>
                         </>
                       )}
-                      <ProductManagerDialog
-                        products={products}
-                        onChanged={handleProductsChanged}
-                        trigger={
-                          <Button size="sm" className="bg-slate-800 hover:bg-slate-700 h-8">
-                            <Settings2 size={14} className="mr-1"/> Menaxho
-                          </Button>
-                        }
-                      />
+                      <Button
+                        size="sm"
+                        className="bg-slate-800 hover:bg-slate-700 h-8"
+                        onClick={requestAdminAccess}
+                      >
+                        <ShieldCheck size={14} className="mr-1"/> Menaxho (Admin)
+                      </Button>
                     </div>
                   </div>
 
@@ -941,6 +953,13 @@ const RegjistrimiDitor = () => {
               );
             })}
           </Tabs>
+
+          <ProductManagerDialog
+            products={products}
+            onChanged={handleProductsChanged}
+            open={productMgrOpen}
+            onOpenChange={(v) => { if (!v || adminUnlocked) setProductMgrOpen(v); }}
+          />
 
           <div className="flex flex-wrap justify-end gap-2">
             {isMine && (
