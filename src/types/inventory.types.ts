@@ -20,6 +20,9 @@ export interface InventoryTurnData {
   /** ISO timestamp when staff clicked "Konfirmo Gjendjen" — after this,
    * furnizime & gjendje are locked and stok fillim / dif become visible. */
   gjendjeConfirmedAt?: string | null;
+  /** ISO timestamp when staff clicked "Fut Gjendjen" — after this,
+   * the Gjendje column becomes visible and editable. Before this it's hidden. */
+  gjendjeInputAt?: string | null;
 }
 
 export interface InventoryDailyEntry {
@@ -43,4 +46,5 @@ export const emptyTurn = (): InventoryTurnData => ({
   mulliriPerfund: 0,
   shpenzime: [],
   gjendjeConfirmedAt: null,
+  gjendjeInputAt: null,
 });
