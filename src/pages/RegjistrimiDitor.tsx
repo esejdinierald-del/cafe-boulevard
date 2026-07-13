@@ -80,6 +80,21 @@ const RegjistrimiDitor = () => {
     setProductMgrOpen(true);
   };
 
+  const toggleAdminMode = () => {
+    if (adminUnlocked) {
+      sessionStorage.removeItem("inv_admin_unlocked");
+      setAdminUnlocked(false);
+      toast.success("Modaliteti admin u çaktivizua");
+      return;
+    }
+    const pass = window.prompt("Fjalëkalimi i administratorit për editim manual të Stok Fillim:");
+    if (pass === null) return;
+    if (pass !== "2025") { toast.error("Fjalëkalim i pasaktë"); return; }
+    sessionStorage.setItem("inv_admin_unlocked", "1");
+    setAdminUnlocked(true);
+    toast.success("Modaliteti admin aktiv — Stok Fillim i editueshëm");
+  };
+
   const staffName = (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
 
   // Guard: same shift-token system as /staff.
@@ -591,6 +606,30 @@ const RegjistrimiDitor = () => {
     } catch (e: any) { toast.error(e.message || "Dështoi"); }
   };
 
+  // Admin: edit Stok Fillim manually on ANY turn (even locked / not mine) to fix Dif.
+  const adminSetStokFillim = async (turnId: string, productName: string, value: number) => {
+    const target = turns.find((t) => t.id === turnId);
+    if (!target) return;
+    const existing = target.turn_data.products[productName] || emptyProduct();
+    const updated: InventoryTurnData = {
+      ...target.turn_data,
+      products: {
+        ...target.turn_data.products,
+        [productName]: { ...existing, stokFillim: value },
+      },
+    };
+    setTurns((prev) => prev.map((t) => (t.id === turnId ? { ...t, turn_data: updated } : t)));
+    try {
+      const { error } = await (supabase as any)
+        .from("shift_turns")
+        .update({ turn_data: updated })
+        .eq("id", turnId);
+      if (error) throw error;
+    } catch (e: any) {
+      toast.error("Ruajtja e Stok Fillim dështoi: " + (e.message || e));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="sticky top-0 z-10 flex items-center justify-between px-2 sm:px-4 py-2 sm:py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
@@ -640,7 +679,9 @@ const RegjistrimiDitor = () => {
               const canEditGjendje = editable && !isConfirmed;
               // Before "Perfundova": only Gjendja column is visible (editable).
               // After confirm or on locked/read-only turns: Stok Fillim, Shiriti, Dif also visible.
-              const showOtherCols = isConfirmed || !editable;
+              // Admin (unlocked) always sees full columns to fix Dif on any turn.
+              const showOtherCols = isConfirmed || !editable || adminUnlocked;
+              const canAdminEditStok = adminUnlocked;
               return (
               <TabsContent key={t.id} value={t.id} className="space-y-6 mt-4">
                 {!editable && (
@@ -669,6 +710,14 @@ const RegjistrimiDitor = () => {
                         onClick={requestAdminAccess}
                       >
                         <ShieldCheck size={14} className="mr-1"/> Menaxho (Admin)
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={toggleAdminMode}
+                        className={adminUnlocked ? "bg-emerald-700 hover:bg-emerald-600 h-8" : "bg-slate-800 hover:bg-slate-700 h-8"}
+                        title="Aktivizo modalitetin admin për të edituar Stok Fillim manualisht"
+                      >
+                        <ShieldCheck size={14} className="mr-1"/> {adminUnlocked ? "Admin ON" : "Admin"}
                       </Button>
                     </div>
                   </div>
@@ -711,7 +760,11 @@ const RegjistrimiDitor = () => {
                                 <td className="py-1 pr-1 font-medium text-xs sm:text-sm">{p.name}</td>
                                 {showOtherCols && (
                                   <td className="py-1 px-0.5">
-                                    <RowField value={data.stokFillim} readOnly />
+                                    <RowField
+                                      value={data.stokFillim}
+                                      readOnly={!canAdminEditStok}
+                                      onChange={canAdminEditStok ? (v) => adminSetStokFillim(t.id, p.name, v) : undefined}
+                                    />
                                   </td>
                                 )}
                                 {showOtherCols && (
