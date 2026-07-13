@@ -906,6 +906,10 @@ const ManagerDashboard = () => {
             <StaffManagerCard />
             <AdminPasscodeCard />
           </TabsContent>
+
+          <TabsContent value="recipes" className="space-y-5">
+            <RecipeManagerCard />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
