@@ -30,7 +30,8 @@ serve(async (req) => {
     if (!adminPassword) return json({ error: "Fjalëkalim i pasaktë" }, 403);
     const { data: setting } = await supabase
       .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
-    const expectedHash = setting?.value ?? await sha256("2025");
+    const expectedHash = setting?.value;
+    if (!expectedHash) return json({ error: "Admin passcode nuk është konfiguruar" }, 500);
     const providedHash = await sha256(String(adminPassword));
     if (providedHash !== expectedHash) {
       return json({ error: "Fjalëkalim i pasaktë" }, 403);

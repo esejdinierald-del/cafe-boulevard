@@ -531,7 +531,7 @@ const Dashboard = () => {
 
   const handleApproveSong = async (id: string) => {
     try {
-      await supabase.functions.invoke("manage-songs", { body: { action: "approve", id } });
+      await supabase.functions.invoke("manage-songs", { body: { action: "approve", id, shiftToken } });
       // Realtime UPDATE event do ta shtojë automatikisht në playlist
     } catch {
       toast.error("Gabim në miratim");
@@ -540,7 +540,7 @@ const Dashboard = () => {
 
   const handleRejectSong = async (id: string) => {
     try {
-      await supabase.functions.invoke("manage-songs", { body: { action: "reject", id } });
+      await supabase.functions.invoke("manage-songs", { body: { action: "reject", id, shiftToken } });
     } catch {
       toast.error("Gabim në refuzim");
     }
@@ -553,7 +553,7 @@ const Dashboard = () => {
       lastVideoIdRef.current = ended.video_id;
       // Mark as played in DB (fire and forget — realtime will sync)
       supabase.functions
-        .invoke("manage-songs", { body: { action: "played", id: ended.id } })
+        .invoke("manage-songs", { body: { action: "played", id: ended.id, shiftToken } })
         .catch(() => {});
     }
     const queue = playlistRef.current;
