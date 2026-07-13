@@ -591,6 +591,30 @@ const RegjistrimiDitor = () => {
     } catch (e: any) { toast.error(e.message || "Dështoi"); }
   };
 
+  // Admin: edit Stok Fillim manually on ANY turn (even locked / not mine) to fix Dif.
+  const adminSetStokFillim = async (turnId: string, productName: string, value: number) => {
+    const target = turns.find((t) => t.id === turnId);
+    if (!target) return;
+    const existing = target.turn_data.products[productName] || emptyProduct();
+    const updated: InventoryTurnData = {
+      ...target.turn_data,
+      products: {
+        ...target.turn_data.products,
+        [productName]: { ...existing, stokFillim: value },
+      },
+    };
+    setTurns((prev) => prev.map((t) => (t.id === turnId ? { ...t, turn_data: updated } : t)));
+    try {
+      const { error } = await (supabase as any)
+        .from("shift_turns")
+        .update({ turn_data: updated })
+        .eq("id", turnId);
+      if (error) throw error;
+    } catch (e: any) {
+      toast.error("Ruajtja e Stok Fillim dështoi: " + (e.message || e));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="sticky top-0 z-10 flex items-center justify-between px-2 sm:px-4 py-2 sm:py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
