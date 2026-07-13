@@ -18,6 +18,15 @@
 | `/manager` | `src/pages/ManagerDashboard.tsx` | Manager — menu mgmt, offers, AI knowledge |
 | `/install` | `src/pages/Install.tsx` | All — PWA install instructions |
 | `/dokumentacion` | `src/pages/AppDocumentation.tsx` | Internal — app docs |
+| `/install-staff` | `src/pages/InstallStaff.tsx` | Staff — PWA install for staff app |
+| `/pos` | `src/pages/POS.tsx` | Bar/Kitchen — POS + KDS |
+| `/inventory` | `src/pages/Inventory.tsx` | Admin — raw materials + supplies |
+| `/regjistrimi-ditor` | `src/pages/RegjistrimiDitor.tsx` | Admin/Staff — daily inventory (Dif = Shiriti + Gjendje − StokFillim) |
+| `/print-station` | `src/pages/PrintStation.tsx` | PC — cloud print queue consumer |
+| `/porosi-furnitor` | `src/pages/SupplierOrders.tsx` | Admin — supplier orders |
+| `/analytics` | `src/pages/Analytics.tsx` | Admin — sales/analytics |
+| `/admin-tools` | `src/pages/AdminTools.tsx` | Admin — misc admin utilities |
+| `/.lovable/oauth/consent` | `src/pages/OAuthConsent.tsx` | OAuth (MCP) — consent screen |
 
 ## Key Components
 - `src/components/StaffChatDialog.tsx` — AI chat powered by staff-chat Edge Function
@@ -48,21 +57,55 @@
 | `send-push` | Send Web Push notification to subscribed staff |
 | `push-subscribe` | Save a push subscription to push_subscriptions table |
 | `cleanup-chat-sessions` | Delete expired chat sessions (cron) |
+| `list-orders` | Staff-only proxy that returns pending/active orders (x-shift-token) |
+| `update-order-status` | Staff-only accept / reject for pending customer orders |
+| `verify-admin-passcode` | Server-side admin passcode check (hashed, rate-limited) |
+| `verify-staff-pin` | Server-side staff PIN check (rate-limited) |
+| `manage-admin-passcode` | Rotate admin passcode |
+| `manage-staff` | CRUD staff_members (admin only) |
+| `manage-shift-turn` | Server-side start/lock of shift_turns |
+| `manage-inv-product` | Admin CRUD for inv_products |
+| `manage-playlist` / `manage-songs` | Music playlist controls |
+| `pos-create-order` / `pos-confirm-order` / `pos-cancel-item` / `pos-print-ticket` | POS order lifecycle |
+| `pos-get-inventory` | Inventory snapshot for POS |
+| `get-table-name` | Resolve table label for a token |
+| `list-staff-names` | Public list of active staff names for login screen |
+| `scan-mulliri` | Gemini OCR for coffee grinder counter |
+| `purge-transactions` | Admin cleanup of stale transactions |
+| `mcp` | OAuth-protected MCP server |
 
 ## Database Tables
 | Table | Purpose |
 |---|---|
 | `categories` | Menu categories (name, name_en, display_order) |
 | `menu_items` | Menu products (name, price, image_url, available, bilingual) |
-| `orders` | Customer orders (items jsonb, total_price, status, table_number) |
-| `service_requests` | Waiter/bill calls from customers (pending → completed) |
+| `orders` | Customer orders from `/menu` (items jsonb, status pending/accepted/rejected/completed). Anon INSERT limited to `status='pending'`; SELECT via `list-orders` only. |
+| `pos_orders` | POS orders opened by staff at the bar/tables |
+| `order_items_split` | Per-item split for POS (kitchen vs bar routing) |
+| `transactions` | Sales ledger (created on POS confirm) |
+| `fiscal_receipts` | Fiscal-numbered receipts (auto from transactions) |
+| `tables` | Physical tables + status |
+| `service_requests` | Waiter/bill calls from customers |
 | `chat_sessions` | Active AI chat sessions per table |
-| `shift_tokens` | Staff shift auth tokens (active/expired) |
+| `shift_tokens` | Staff shift auth tokens |
+| `shift_turns` | Per-turn logs (staff_name, sequence, locked_at) |
+| `staff_members` | Staff roster with PIN codes |
 | `ai_knowledge` | Custom knowledge base for staff AI chat |
-| `feedback` | Customer feedback submissions |
+| `feedback` | Customer feedback (1–5 stars) |
 | `push_subscriptions` | Web Push endpoint/key storage per staff device |
-| `user_roles` | Manager/admin role assignments |
-| `table_devices` | Registered table devices |
+| `user_roles` | Manager/admin role assignments (separate from profiles) |
+| `raw_materials` | Inventory raw materials (kg / units) |
+| `recipes` | Menu item → raw material decrement recipes |
+| `supplies` | Supply/restock log |
+| `product_costs` | Costing per product |
+| `supplier_orders` | Orders sent to suppliers |
+| `inv_products` | Daily-registration product catalog |
+| `inv_daily_entries` | Daily Dif entries per date (turn1_data, turn2_data) |
+| `inv_next_day_stock` | Carry-over stock for the next day |
+| `print_jobs` | Cloud print queue consumed by `/print-station` |
+| `playlist_state` / `song_requests` | Music playlist state |
+| `app_settings` | Server-side settings (admin passcode hash, etc.) |
+| `app_logs` / `audit_log` | Application + row-level audit trail |
 
 ## Storage Buckets
 - `menu-images` (public) — product images served at /storage/v1/object/public/menu-images/
