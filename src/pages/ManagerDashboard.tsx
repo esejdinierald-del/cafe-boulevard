@@ -393,10 +393,18 @@ const ManagerDashboard = () => {
             <img src={logo} alt="Logo" className="h-14 w-auto drop-shadow-lg" />
             <h1 className="text-2xl font-display font-bold gradient-text-gold">Manager Dashboard</h1>
           </div>
-          <Button variant="burgundy" onClick={handleLogout} className="font-display font-bold">
-            <LogOut className="mr-2 h-5 w-5" />
-            Dil
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => (window.location.href = "/analytics")} className="font-display font-semibold">
+              📊 Analitika
+            </Button>
+            <Button variant="outline" onClick={() => (window.location.href = "/porosi-furnitor")} className="font-display font-semibold">
+              📦 Furnitorë
+            </Button>
+            <Button variant="burgundy" onClick={handleLogout} className="font-display font-bold">
+              <LogOut className="mr-2 h-5 w-5" />
+              Dil
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="categories" className="space-y-6">

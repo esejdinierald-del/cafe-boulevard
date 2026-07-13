@@ -17,6 +17,8 @@ import Inventory from "./pages/Inventory";
 import RegjistrimiDitor from "./pages/RegjistrimiDitor";
 import AppDocumentation from "./pages/AppDocumentation";
 import PrintStation from "./pages/PrintStation";
+import SupplierOrders from "./pages/SupplierOrders";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
@@ -44,6 +46,8 @@ const App = () => (
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/regjistrimi-ditor" element={<RegjistrimiDitor />} />
           <Route path="/print-station" element={<PrintStation />} />
+          <Route path="/porosi-furnitor" element={<SupplierOrders />} />
+          <Route path="/analytics" element={<Analytics />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           </Routes>
