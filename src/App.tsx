@@ -1,28 +1,36 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import Menu from "./pages/Menu";
-import ManagerLogin from "./pages/ManagerLogin";
-import ManagerDashboard from "./pages/ManagerDashboard";
-
-import Install from "./pages/Install";
-import StaffShift from "./pages/StaffShift";
-import InstallStaff from "./pages/InstallStaff";
-import POS from "./pages/POS";
-import Inventory from "./pages/Inventory";
-import RegjistrimiDitor from "./pages/RegjistrimiDitor";
-import AppDocumentation from "./pages/AppDocumentation";
-import PrintStation from "./pages/PrintStation";
-import SupplierOrders from "./pages/SupplierOrders";
-import Analytics from "./pages/Analytics";
-import AdminTools from "./pages/AdminTools";
-import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+
+// Code-split heavy/rarely-used routes so the customer-facing / bundle stays small.
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Menu = lazy(() => import("./pages/Menu"));
+const ManagerLogin = lazy(() => import("./pages/ManagerLogin"));
+const ManagerDashboard = lazy(() => import("./pages/ManagerDashboard"));
+const Install = lazy(() => import("./pages/Install"));
+const StaffShift = lazy(() => import("./pages/StaffShift"));
+const InstallStaff = lazy(() => import("./pages/InstallStaff"));
+const POS = lazy(() => import("./pages/POS"));
+const Inventory = lazy(() => import("./pages/Inventory"));
+const RegjistrimiDitor = lazy(() => import("./pages/RegjistrimiDitor"));
+const AppDocumentation = lazy(() => import("./pages/AppDocumentation"));
+const PrintStation = lazy(() => import("./pages/PrintStation"));
+const SupplierOrders = lazy(() => import("./pages/SupplierOrders"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const AdminTools = lazy(() => import("./pages/AdminTools"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+
+const RouteFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
+    Duke ngarkuar…
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -33,6 +41,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ErrorBoundary>
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
@@ -56,6 +65,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </ErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>
