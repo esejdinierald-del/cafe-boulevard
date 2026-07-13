@@ -400,6 +400,9 @@ const ManagerDashboard = () => {
             <Button variant="outline" onClick={() => (window.location.href = "/porosi-furnitor")} className="font-display font-semibold">
               📦 Furnitorë
             </Button>
+            <Button variant="outline" onClick={() => (window.location.href = "/admin-tools")} className="font-display font-semibold">
+              🛠 Mjete Admin
+            </Button>
             <Button variant="burgundy" onClick={handleLogout} className="font-display font-bold">
               <LogOut className="mr-2 h-5 w-5" />
               Dil
