@@ -1,73 +1,78 @@
-# Welcome to your Lovable project
+# Boulevard Café
 
-## Project info
+Aplikacion i plotë menaxhimi për kafenenë Boulevard (Elbasan): menu për klientët me QR, POS për kamarierët, KDS për kuzhinën, Arka, Dashboard menaxheri, Inventar & Regjistrim Ditor, turne stafi me QR/PIN, printim në cloud, AI assistant, feedback dhe push notifications.
 
-**URL**: https://lovable.dev/projects/30c98c39-bb2e-41a9-b886-997668cfe827
+**Live**: https://cafe-boulevard.lovable.app
 
-## How can I edit this code?
+## Stack
 
-There are several ways of editing your application.
+- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, shadcn-ui, React Router, React Query
+- **Backend**: Lovable Cloud (Supabase) — Postgres + RLS, Realtime, Edge Functions (Deno), Storage
+- **PWA**: manifest + service worker për stafin dhe klientët
+- **Gjuhë**: Shqip / English (bilingual)
+- **Timezone**: Europe/Rome — **Valuta**: Lekë
 
-**Use Lovable**
+## Modulet
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/30c98c39-bb2e-41a9-b886-997668cfe827) and start prompting.
+| Rrugë | Përshkrim |
+| --- | --- |
+| `/` | Landing i klientit (thirr kamarier, kërko faturë, hap menynë) |
+| `/menu` | Menyja e plotë me kategori, oferta 🔥, porosi direkte |
+| `/pos` | Paneli i kamarierit — tavolina, porosi, split, mbyllje turni |
+| `/dashboard` | KDS Kuzhinë + Bar + Arka + historik (admin, passcode `2025`) |
+| `/manager-login` → `/manager` | Menaxhimi i menusë, kategorive, stafit, recetave, admin passcode |
+| `/inventory` | Furnizime ditore për produktet kryesore |
+| `/regjistrimi-ditor` | Regjistrim gjendje/shirit/dif për 2 turne me formulë të kontrolluar |
+| `/staff` | Login stafi me QR ose PIN, geofencing 75m |
+| `/print-station` | Klient PC që tërheq nga `print_jobs` dhe printon në 80mm |
 
-Changes made via Lovable will be committed automatically to this repo.
+## Logjika kryesore
 
-**Use your preferred IDE**
+- **Porositë**: kamarieri krijon → banaku konfirmon (`pos-confirm-order`) → shitja regjistrohet menjëherë te `transactions` → material inventari zbritet nga `recipes` → mbyllja tek Arka thjesht liron tavolinën pa dublikatë.
+- **Regjistrimi Ditor**: `Dif = Shiriti + Gjendje − StokFillim`. Për kafe: `Dif = shitjeKafe + mulliriFillim − mulliriPerfund` (mulliri lexohet OCR nga foto me `scan-mulliri`).
+- **Turne**: `shift_turns` dinamike, ownership me `staff_name` te localStorage, edge function `manage-shift` proxy për RLS.
+- **Admin mode**: passcode `2025` te DB — mund të editojë Stok Fillim manualisht në çdo turn.
+- **Realtime**: subscription te `transactions` + polling backup 20s për Shiritin.
+- **Push**: VAPID + `send-push` edge function për njoftime në background.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Zhvillimi lokal
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm run dev      # http://localhost:8080
+npm run build
+npm run lint
 ```
 
-**Edit a file directly in GitHub**
+Variablat te `.env` (auto-managed nga Lovable Cloud):
+```
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+VITE_SUPABASE_PROJECT_ID=
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Struktura e projektit
 
-**Use GitHub Codespaces**
+```
+src/
+  pages/            # Rrugët kryesore (Menu, POS, Dashboard, RegjistrimiDitor, ...)
+  components/       # UI, ikona custom SVG, POS, inventory, manager, staff
+  hooks/            # use-pos, use-language, useCoffeeSalesTotal, useDifStartDates ...
+  services/         # inventoryCalculations, inventoryStockPropagation, salesAggregation
+  integrations/     # Supabase client (auto-gen)
+  lib/              # rome-time, receipt-print, print-queue, utils
+  styles/           # boulevard.css (dark luxury tokens)
+supabase/
+  functions/        # 25+ Edge Functions (POS, staff, push, OCR, admin ...)
+  migrations/       # SQL skema + RLS + GRANTs
+public/             # PWA manifests, staff-sw.js, QR codes
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Konsulta të plota
 
-## What technologies are used for this project?
+Për debugging më të thellë ose reviews me AI të jashtme, gjenerohet snapshot i plotë (kod + skemë):
+`/mnt/documents/boulevard-cafe-full-snapshot.md`.
 
-This project is built with:
+## Publikimi
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/30c98c39-bb2e-41a9-b886-997668cfe827) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Publikohet përmes Lovable (Share → Publish). Domeni custom lidhet nga Project → Settings → Domains.
