@@ -46,17 +46,21 @@ export function usePOS() {
   async function submitOrder(_authToken: string) {
     if (!currentOrder || currentOrder.items.length === 0) throw new Error("Shporta është bosh");
     const waiterName = (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || null;
+    const shiftToken =
+      typeof window !== "undefined" ? localStorage.getItem("staff_shift_token") : null;
     const { data, error } = await supabase.functions.invoke("pos-create-order", {
       body: {
         tableNumber: currentOrder.tableNumber,
         mode: currentOrder.mode,
         operatorName: waiterName,
+        shiftToken: shiftToken ?? undefined,
         items: currentOrder.items.map((i) => ({
           productId: i.productId,
           quantity: i.quantity,
           notes: i.notes,
         })),
       },
+      headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
     });
     if (error) throw error;
     if ((data as any)?.error) throw new Error((data as any).error);
