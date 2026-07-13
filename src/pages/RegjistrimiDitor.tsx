@@ -664,7 +664,9 @@ const RegjistrimiDitor = () => {
               const canEditGjendje = editable && !isConfirmed;
               // Before "Perfundova": only Gjendja column is visible (editable).
               // After confirm or on locked/read-only turns: Stok Fillim, Shiriti, Dif also visible.
-              const showOtherCols = isConfirmed || !editable;
+              // Admin (unlocked) always sees full columns to fix Dif on any turn.
+              const showOtherCols = isConfirmed || !editable || adminUnlocked;
+              const canAdminEditStok = adminUnlocked;
               return (
               <TabsContent key={t.id} value={t.id} className="space-y-6 mt-4">
                 {!editable && (
@@ -735,7 +737,11 @@ const RegjistrimiDitor = () => {
                                 <td className="py-1 pr-1 font-medium text-xs sm:text-sm">{p.name}</td>
                                 {showOtherCols && (
                                   <td className="py-1 px-0.5">
-                                    <RowField value={data.stokFillim} readOnly />
+                                    <RowField
+                                      value={data.stokFillim}
+                                      readOnly={!canAdminEditStok}
+                                      onChange={canAdminEditStok ? (v) => adminSetStokFillim(t.id, p.name, v) : undefined}
+                                    />
                                   </td>
                                 )}
                                 {showOtherCols && (
