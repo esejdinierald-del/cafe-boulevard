@@ -57,6 +57,7 @@ const RegjistrimiDitor = () => {
   const [closing, setClosing] = useState(false);
   const [closingTurn, setClosingTurn] = useState(false);
   const [confirmingGjendje, setConfirmingGjendje] = useState(false);
+  const [openingGjendje, setOpeningGjendje] = useState(false);
   const [date, setDate] = useState(todayIso());
   const [products, setProducts] = useState<InvProduct[]>([]);
   const [turns, setTurns] = useState<ShiftTurn[]>([]);
@@ -340,6 +341,27 @@ const RegjistrimiDitor = () => {
   };
 
   // ---------- Confirm gjendje for the active turn ----------
+  // Reveal Gjendje input column
+  const openGjendjeInput = async () => {
+    if (!selectedTurn || !isMine) return;
+    if (selectedTurn.turn_data.gjendjeInputAt) return;
+    setOpeningGjendje(true);
+    try {
+      const now = new Date().toISOString();
+      const updated: InventoryTurnData = { ...selectedTurn.turn_data, gjendjeInputAt: now };
+      const { error } = await (supabase as any)
+        .from("shift_turns")
+        .update({ turn_data: updated })
+        .eq("id", selectedTurn.id);
+      if (error) throw error;
+      setTurns((prev) => prev.map((t) => (t.id === selectedTurn.id ? { ...t, turn_data: updated } : t)));
+    } catch (e: any) {
+      toast.error("Dështoi: " + (e.message || e));
+    } finally {
+      setOpeningGjendje(false);
+    }
+  };
+
   const confirmGjendje = async () => {
     if (!selectedTurn || !isMine) return;
     if (selectedTurn.turn_data.gjendjeConfirmedAt) return;
