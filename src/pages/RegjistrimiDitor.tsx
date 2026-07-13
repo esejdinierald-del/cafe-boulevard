@@ -573,7 +573,10 @@ const RegjistrimiDitor = () => {
             {turns.map((t) => {
               const editable = t.id === myTurnId && !t.is_locked;
               const isConfirmed = !!t.turn_data.gjendjeConfirmedAt;
-              const canEditGjendje = editable && !isConfirmed;
+              const gjendjeOpened = !!t.turn_data.gjendjeInputAt;
+              const showGjendjeCol = gjendjeOpened || isConfirmed || !editable;
+              const canEditFurnizime = editable && !isConfirmed;
+              const canEditGjendje = editable && !isConfirmed && gjendjeOpened;
               return (
               <TabsContent key={t.id} value={t.id} className="space-y-6 mt-4">
                 {!editable && (
@@ -614,9 +617,13 @@ const RegjistrimiDitor = () => {
                         <ShieldCheck size={14}/>
                         Gjendja u konfirmua në {new Date(t.turn_data.gjendjeConfirmedAt!).toLocaleString("sq-AL", { timeZone: "Europe/Rome" })}. Furnizime dhe Gjendja janë të bllokuara. Shiriti vazhdon të përditësohet nga POS.
                       </div>
-                    ) : (
+                    ) : gjendjeOpened ? (
                       <div className="mb-3 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded px-3 py-2">
-                        Fut <b>Furnizimet</b> dhe <b>Gjendjen reale</b>. Kur të mbarosh, shtyp <b>Konfirmo Gjendjen</b> për të parë Stok Fillim & Dif.
+                        Fut <b>Gjendjen reale</b> për çdo produkt. Kur të mbarosh, shtyp <b>Konfirmo Gjendjen</b>.
+                      </div>
+                    ) : (
+                      <div className="mb-3 text-xs text-sky-300 bg-sky-500/10 border border-sky-500/30 rounded px-3 py-2">
+                        Furnizimet u regjistruan te <b>Inventari</b>. Shiriti përditësohet automatikisht nga POS. Kur të jesh gati për numërimin, shtyp <b>Fut Gjendjen</b>.
                       </div>
                     )
                   )}
@@ -630,7 +637,7 @@ const RegjistrimiDitor = () => {
                           <tr className="text-xs text-slate-400 border-b border-slate-800">
                             <th className="text-left py-2 pr-2 font-medium">Produkti</th>
                             <th className="text-right py-2 px-2 font-medium">Furnizime</th>
-                            <th className="text-right py-2 px-2 font-medium">Gjendje</th>
+                            {showGjendjeCol && <th className="text-right py-2 px-2 font-medium">Gjendje</th>}
                             <th className="text-right py-2 px-2 font-medium">Shiriti</th>
                             {(isConfirmed || !editable) && <th className="text-right py-2 px-2 font-medium">Stok Fillim</th>}
                             {(isConfirmed || !editable) && <th className="text-right py-2 px-2 font-medium">Dif</th>}
@@ -648,20 +655,22 @@ const RegjistrimiDitor = () => {
                                 <td className="py-1.5 px-1">
                                   <RowField
                                     value={data.furnizime}
-                                    readOnly={!canEditGjendje}
+                                    readOnly={!canEditFurnizime}
                                     onChange={(v) => setFurnizime(p.name, v)}
                                   />
                                 </td>
-                                <td className="py-1.5 px-1">
-                                  <RowField
-                                    value={data.gjendje}
-                                    readOnly={!canEditGjendje}
-                                    onChange={(v) => setCurrentTurn((prev) => ({
-                                      ...prev,
-                                      products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), gjendje: v } },
-                                    }))}
-                                  />
-                                </td>
+                                {showGjendjeCol && (
+                                  <td className="py-1.5 px-1">
+                                    <RowField
+                                      value={data.gjendje}
+                                      readOnly={!canEditGjendje}
+                                      onChange={(v) => setCurrentTurn((prev) => ({
+                                        ...prev,
+                                        products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), gjendje: v } },
+                                      }))}
+                                    />
+                                  </td>
+                                )}
                                 <td className="py-1.5 px-1">
                                   <RowField value={data.shiriti} readOnly />
                                 </td>
@@ -688,14 +697,25 @@ const RegjistrimiDitor = () => {
 
                   {editable && !isConfirmed && (
                     <div className="mt-4 flex justify-end">
-                      <Button
-                        onClick={confirmGjendje}
-                        disabled={confirmingGjendje}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
-                      >
-                        {confirmingGjendje ? <Loader2 className="animate-spin mr-2" size={16}/> : <CheckCircle2 size={16} className="mr-2"/>}
-                        Konfirmo Gjendjen
-                      </Button>
+                      {!gjendjeOpened ? (
+                        <Button
+                          onClick={openGjendjeInput}
+                          disabled={openingGjendje}
+                          className="bg-sky-600 hover:bg-sky-500 text-white font-semibold"
+                        >
+                          {openingGjendje ? <Loader2 className="animate-spin mr-2" size={16}/> : <Plus size={16} className="mr-2"/>}
+                          Fut Gjendjen
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={confirmGjendje}
+                          disabled={confirmingGjendje}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                        >
+                          {confirmingGjendje ? <Loader2 className="animate-spin mr-2" size={16}/> : <CheckCircle2 size={16} className="mr-2"/>}
+                          Konfirmo Gjendjen
+                        </Button>
+                      )}
                     </div>
                   )}
                 </Card>
