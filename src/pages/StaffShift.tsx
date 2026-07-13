@@ -466,6 +466,7 @@ const StaffShift = () => {
           // Send push to other devices
           supabase.functions.invoke("send-push", {
             body: { title: "🍽️ POROSIA GATI!", body: "Klient në banakun — hajde merr!", type: "kitchen" },
+            headers: activeToken ? { "x-shift-token": activeToken } : undefined,
           }).catch(() => {});
           setTimeout(async () => {
             await supabase.functions.invoke("complete-request", {
@@ -478,6 +479,7 @@ const StaffShift = () => {
           // Send push to other devices
           supabase.functions.invoke("send-push", {
             body: { title: `🔔 ${type} - ${r.table_number}`, body: `Kërkesë e re nga ${r.table_number}`, type: "service" },
+            headers: activeToken ? { "x-shift-token": activeToken } : undefined,
           }).catch(() => {});
         }
       })

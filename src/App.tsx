@@ -19,7 +19,6 @@ const InstallStaff = lazy(() => import("./pages/InstallStaff"));
 const POS = lazy(() => import("./pages/POS"));
 const Inventory = lazy(() => import("./pages/Inventory"));
 const RegjistrimiDitor = lazy(() => import("./pages/RegjistrimiDitor"));
-const AppDocumentation = lazy(() => import("./pages/AppDocumentation"));
 const PrintStation = lazy(() => import("./pages/PrintStation"));
 const SupplierOrders = lazy(() => import("./pages/SupplierOrders"));
 const Analytics = lazy(() => import("./pages/Analytics"));
@@ -48,8 +47,6 @@ const App = () => (
           <Route path="/menu" element={<Menu />} />
           <Route path="/manager-login" element={<ManagerLogin />} />
           <Route path="/manager" element={<ManagerDashboard />} />
-          {/* /dokumentacion removed — all docs sent via email only */}
-          <Route path="/dokumentacion" element={<AppDocumentation />} />
           <Route path="/install" element={<Install />} />
           <Route path="/install-staff" element={<InstallStaff />} />
           <Route path="/staff" element={<StaffShift />} />
