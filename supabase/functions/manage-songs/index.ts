@@ -1,8 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-shift-token",
 };
 
 function extractVideoId(url: string): string | null {
@@ -36,7 +37,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { action, table_number, url, id } = await req.json();
+    const body = await req.json();
+    const { action, table_number, url, id } = body;
+
+    // Staff-only actions require a valid shift token; customer 'request' stays public
+    if (action === "approve" || action === "reject" || action === "played") {
+      const auth = await requireShiftToken(req, body);
+      if (!auth.ok) return auth.response;
+    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
