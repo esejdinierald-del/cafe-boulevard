@@ -36,23 +36,23 @@ serve(async (req) => {
 
       // Regjistro shitjen menjëherë sapo banaku konfirmon (nuk pritet mbyllja te Arka).
       try {
-        const { data: existingTxn } = await supabase
-          .from("transactions").select("id").eq("order_id", split.order_id).eq("type", "sale").maybeSingle();
-        if (!existingTxn) {
-          const { data: ord } = await supabase
-            .from("pos_orders")
-            .select("id, total_amount, items, operator_name, location_id, table_number")
-            .eq("id", split.order_id).single();
-          if (ord) {
-            await supabase.from("transactions").insert({
-              order_id: ord.id,
-              type: "sale",
-              amount: ord.total_amount,
-              items: ord.items,
-              operator_name: ord.operator_name,
-              location_id: ord.location_id,
-              table_number: ord.table_number,
-            });
+        const { data: ord } = await supabase
+          .from("pos_orders")
+          .select("id, total_amount, items, operator_name, location_id, table_number")
+          .eq("id", split.order_id).single();
+        if (ord) {
+          const { error: txnErr } = await supabase.from("transactions").insert({
+            order_id: ord.id,
+            type: "sale",
+            amount: ord.total_amount,
+            items: ord.items,
+            operator_name: ord.operator_name,
+            location_id: ord.location_id,
+            table_number: ord.table_number,
+          });
+          // 23505 = unique_violation — transaksioni ekziston tashmë, injoro në heshtje.
+          if (txnErr && (txnErr as any).code !== "23505") {
+            console.error("auto-sale transaction insert failed", txnErr.message);
           }
         }
       } catch (e) {
