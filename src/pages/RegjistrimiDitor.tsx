@@ -1059,8 +1059,9 @@ const RowField = ({ value, onChange, readOnly }: { value: number; onChange?: (v:
     type="number"
     step="0.01"
     inputMode="decimal"
-    value={value}
+    value={!readOnly && value === 0 ? "" : value}
     readOnly={readOnly}
+    onFocus={(e) => e.currentTarget.select()}
     onChange={onChange ? (e) => onChange(Number(e.target.value) || 0) : undefined}
     className={`bg-slate-950 border-slate-700 text-white h-7 text-right tabular-nums w-full min-w-[56px] text-xs sm:text-sm px-1.5 ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`}
   />
