@@ -37,8 +37,7 @@ const Inventory = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string>("");
-  const [quantity, setQuantity] = useState<string>("");
+  const [supplyQtys, setSupplyQtys] = useState<Record<string, string>>({});
   const [note, setNote] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [hasToken, setHasToken] = useState<boolean>(
@@ -121,40 +120,42 @@ const Inventory = () => {
   );
 
   const resetForm = () => {
-    setSelectedId("");
-    setQuantity("");
+    setSupplyQtys({});
     setNote("");
   };
 
-  const submitSupply = async () => {
-    const qty = Number(quantity);
-    if (!selectedId) {
-      toast.error("Zgjidh një material");
-      return;
-    }
-    if (!qty || qty <= 0) {
-      toast.error("Sasia duhet të jetë pozitive");
+  const submitSupplies = async () => {
+    const rows = materials
+      .map((m) => ({ material: m, qty: Number(supplyQtys[m.id] || 0) }))
+      .filter((r) => r.qty > 0);
+    if (rows.length === 0) {
+      toast.error("Fut sasi për të paktën një artikull");
       return;
     }
     setSubmitting(true);
+    let ok = 0;
+    let fail = 0;
     try {
-      const { data, error } = await supabase.functions.invoke("pos-get-inventory", {
-        body: {
-          action: "addSupply",
-          materialId: selectedId,
-          quantity: qty,
-          note: note || null,
-          operatorName: staffName,
-          locationId: "main",
-        },
-      });
-      if (error || (data as any)?.error) {
-        throw new Error((data as any)?.error || error?.message || "Gabim gjatë furnizimit");
+      for (const r of rows) {
+        const { data, error } = await supabase.functions.invoke("pos-get-inventory", {
+          body: {
+            action: "addSupply",
+            materialId: r.material.id,
+            quantity: r.qty,
+            note: note || null,
+            operatorName: staffName,
+            locationId: "main",
+          },
+        });
+        if (error || (data as any)?.error) fail++;
+        else ok++;
       }
-      toast.success("Furnizimi u shtua me sukses");
+      if (ok > 0) toast.success(`Furnizimet u ruajtën (${ok}${fail ? `, ${fail} dështuan` : ""})`);
+      if (fail > 0 && ok === 0) throw new Error("Të gjitha furnizimet dështuan");
       setDialogOpen(false);
       resetForm();
-      load();
+      // Direct to daily registration where stok fillim is already updated and shiriti runs live from POS.
+      navigate("/regjistrimi-ditor");
     } catch (e: any) {
       toast.error(e.message || "Gabim gjatë furnizimit");
     } finally {
@@ -303,53 +304,56 @@ const Inventory = () => {
           if (!o) resetForm();
         }}
       >
-        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Shto Furnizim</DialogTitle>
             <DialogDescription className="text-slate-400">
-              Zgjidh materialin dhe shto sasinë e re.
+              Fut sasinë e furnizuar për çdo artikull. Lëri bosh ato që nuk janë furnizuar.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm text-slate-300 mb-1 block">Materiali</label>
-              <select
-                value={selectedId}
-                onChange={(e) => setSelectedId(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white"
-              >
-                <option value="">— zgjidh —</option>
-                {materials.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name} ({m.unit})
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+            {materials.length === 0 ? (
+              <p className="text-sm text-slate-500 text-center py-6">Asnjë artikull inventari</p>
+            ) : (
+              materials.map((m) => (
+                <div
+                  key={m.id}
+                  className="grid grid-cols-[1fr_auto_auto] gap-2 items-center py-1.5 border-b border-slate-700/50"
+                >
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">{m.name}</div>
+                    <div className="text-[11px] text-slate-500">
+                      stok: {m.quantity.toFixed(2)} {m.unit}
+                    </div>
+                  </div>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.001"
+                    value={supplyQtys[m.id] || ""}
+                    onChange={(e) =>
+                      setSupplyQtys((p) => ({ ...p, [m.id]: e.target.value }))
+                    }
+                    className="bg-slate-900 border-slate-700 text-white h-9 w-24 text-right"
+                    placeholder="0"
+                  />
+                  <span className="text-xs text-slate-400 w-10">{m.unit}</span>
+                </div>
+              ))
+            )}
+          </div>
 
-            <div>
-              <label className="text-sm text-slate-300 mb-1 block">Sasia</label>
-              <Input
-                type="number"
-                min="0"
-                step="0.001"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                className="bg-slate-900 border-slate-700 text-white"
-                placeholder="p.sh. 5.00"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-slate-300 mb-1 block">Shënim (opsional)</label>
-              <Textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="bg-slate-900 border-slate-700 text-white"
-                placeholder="Furnitor, faturë, etj."
-              />
-            </div>
+          <div className="pt-3 border-t border-slate-700">
+            <label className="text-sm text-slate-300 mb-1 block">Shënim (opsional)</label>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="bg-slate-900 border-slate-700 text-white"
+              placeholder="Furnitor, faturë, etj."
+              rows={2}
+            />
           </div>
 
           <DialogFooter>
@@ -361,7 +365,7 @@ const Inventory = () => {
               Anulo
             </Button>
             <Button
-              onClick={submitSupply}
+              onClick={submitSupplies}
               disabled={submitting}
               className="bg-green-600 hover:bg-green-500 text-white"
             >
@@ -370,7 +374,7 @@ const Inventory = () => {
               ) : (
                 <Plus size={16} className="mr-1" />
               )}
-              Ruaj
+              Ruaj Furnizimet
             </Button>
           </DialogFooter>
         </DialogContent>

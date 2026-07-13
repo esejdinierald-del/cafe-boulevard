@@ -1,82 +1,42 @@
-# Inventari me receta + workflow i bllokimit të kolonave
+## Ndryshimet në /inventory dhe /regjistrimi-ditor
 
-Kërkesa ka dy pjesë të lidhura. Të dyja ndërtohen tani; shiriti mbetet automatik (jo manual).
+### 1. Faqja /inventory — Shto Furnizim me listë të plotë artikujsh
 
-## Pjesa A — Receta & lidhja menu ↔ produkt kryesor
+**Aktualisht**: Hapet një dialog me një `select` ku zgjidhet një material dhe futet sasia (një nga një).
 
-**Objektivi:** Kur shitet një menu-item (p.sh. Negroni, Pizza Margarita, Gotë Vere), të zbriten sasi të sakta në ml/g/copë nga një ose më shumë produkte kryesore inventari (Gin, Vermouth, Miell, Mocarella…).
+**E re**: Kur klikohet "Shto Furnizim", hapet një dialog i madh që shfaq **të gjithë artikujt kryesorë** (nga `raw_materials`) si listë me nga një input sasie për secilin. Stafi mbush vetëm ato që ka furnizuar (të tjerat lihen bosh/0), shton një shënim të përgjithshëm opsional, dhe shtyp **"Ruaj Furnizimet"**.
 
-Infrastruktura ekziston tashmë:
-- `recipes` table: `menu_item_id → material_id → quantity_needed`
-- `raw_materials` mbështet njësi `ml, g, kg, L, cope`
-- `pos-confirm-order` Edge Function tashmë thërret `decrement_material` kur porosia bëhet "Gati"
+- Vetëm rreshtat me sasi > 0 dërgohen si furnizime (loop me `pos-get-inventory` action `addSupply`).
+- Pas ruajtjes → toast sukses → **redirect automatik në `/regjistrimi-ditor`**.
+- Lista e materialeve menaxhohet nga admin te `Manager Dashboard → Inventari` (ekzistuese via `ProductManagerDialog`); nuk kërkon modul të ri.
 
-Çfarë ndërtohet:
+### 2. Faqja /regjistrimi-ditor — Fazë e re "Pritje Gjendje"
 
-1. **Faqe e re "Receta" në Manager Dashboard** (`/manager` → tab i ri "Receta")
-   - Listim i menu-items me kutinë e recetës
-   - Për çdo menu-item: shto/hiq rreshta `(raw_material, sasi, njësi)`
-   - Për kokteje/pizza: shumë rreshta (Negroni = Gin 10ml + Vermouth 20ml + Campari 10ml)
-   - Filtri sipas kategorisë + kërkim
+**Aktualisht** (nga turni i mëparshëm):
+- Faza 1: Furnizime + Gjendje të dukshme, editohen bashkë, pastaj "Konfirmo Gjendjen".
+- Faza 2: Gjithçka e kyçur, Stok Fillim & Dif të dukshme.
 
-2. **Përditësim i `raw_materials`** me produktet kryesore që mungojnë
-   - Ndarje sipas njësisë: `ml` për alkool të hapur/kokteje, `cope` për kanace, `g/kg` për ushqime
-   - Migracion SQL që shton produktet e reja standard (Gin, Rum, Tequila, Triple Sec, Campari, Vermouth i ëmbël, Cola, Fanta, Ivi, Çaj i ftohtë, Bravo, Verë e hapur, Miell për pizza, Mocarella, Bazë sallate, Vezë, etj.)
-   - Vlerat fillestare = 0; menaxheri i vendos në UI
+**E re** — tri faza:
+- **Faza A (pas hyrjes nga /inventory)**: Furnizime tashmë të futura & të kyçura. **Gjendja fshihet**, **Stok Fillim & Dif fshihen**. Shfaqet vetëm kolona **Shiriti** (live nga POS) + Furnizime read-only. Butoni **"Fut Gjendjen"** shfaqet për ta hapur inputin e Gjendjes.
+- **Faza B**: Pas klikimit "Fut Gjendjen" → shfaqet kolona Gjendje editable + butoni **"Konfirmo Gjendjen"**.
+- **Faza C**: Pas konfirmimit → Stok Fillim & Dif të dukshme, gjithçka e kyçur.
 
-3. **Seed automatik i recetave** për shembujt që dha përdoruesi:
-   - Coca-Cola, Fanta, Ivi, Çaj i ftohtë, Bravo → 1 copë kanace
-   - Gotë vere → 200ml verë e hapur (0.2L)
-   - Gotë vere 0.5L → 500ml verë e hapur
-   - Negroni → 10ml Gin + 20ml Vermouth i ëmbël + 10ml Campari
-   - Long Island Iced Tea → 15ml Vodka + 15ml Gin + 15ml Tequila + 15ml Rum + 15ml Triple Sec + 25ml lëng limoni + 20ml shurup + 40ml Cola
-   - Të tjerat i shton menaxheri manualisht në UI
+**Shiriti**: gjithmonë auto nga transaksionet POS (subscription realtime ekzistues), asnjëherë manual. Anulimet zbresin automatikisht.
 
-## Pjesa B — Workflow i kolonave në Regjistrimi Ditor
+**Lista e produkteve**: e njëjtë me `raw_materials` (jo më `inv_products` — mapping-u bëhet përmes `recipes`). Kafeja mbetet rresht i veçantë siç është.
 
-**Rrjedha e re për çdo produkt në një turn:**
+### 3. Detaje teknike
 
-```
-Faza 1 (turn aktiv, staf duke punuar):
-  [Furnizime] editable    [Gjendja reale] editable
-  StokFillim, Dif = TË FSHEHURA
-  Shiriti = auto nga POS (rritet me shitje, zbret me anulim)
+- **Update `src/pages/Inventory.tsx`**: zëvendëso dialogun me formë multi-row (një rresht për çdo material me input sasie + shënim global). Loop insert-e furnizimesh. `navigate("/regjistrimi-ditor")` pas suksesit.
+- **Update `src/pages/RegjistrimiDitor.tsx`**:
+  - Shto flag `furnizimeLocked` (default `true` nëse hyn nga /inventory, ose set kur ka furnizime > 0 sot).
+  - Shto flag `gjendjeInputVisible` (kontrollohet nga butoni "Fut Gjendjen").
+  - Rendering me tre faza në vend të dy.
+  - Ndrysho burimin e produkteve nga `inv_products` te `raw_materials` (nëse nuk është bërë tashmë) — konfirmim i kërkuar.
+- **Turn data** në `turn_data`: shto `furnizime_locked_at`, `gjendje_input_at`, `gjendje_confirmed_at`.
+- Nuk preket receipe logic, POS, KDS, ose auth.
 
-Butoni "Konfirmo Gjendjen":
-  → bllokon Furnizime + Gjendja reale
-  → shfaq StokFillim (nga turni i mëparshëm + propagim, staf nuk e prek dot)
-  → shfaq Dif = StokFillim + Furnizime − Shiriti − Gjendja
-  → Shiriti mbetet i lidhur me POS (vazhdon të lëvizë deri sa turni mbyllet)
-```
+### Pyetje për konfirmim para se të filloj
 
-**Zbatimi teknik:**
-- Në `shift_turns.turn_data` shtoj flag `gjendje_confirmed_at` (timestamp)
-- Në UI-në e tabelës së produkteve: kolonat renditen `Furnizime | Gjendja | [Konfirmo] → Stok Fillim | Shiriti | Dif`
-- Para konfirmimit: vetëm Furnizime + Gjendja + Shiriti (readonly) të dukshme; Stok Fillim/Dif me placeholder "—"
-- Pas konfirmimit: të gjitha kolonat të dukshme, vetëm Shiriti vazhdon të përditësohet
-- Butoni "Konfirmo Gjendjen" (jeshil) del në fund të tabelës, i disabled deri sa të plotësohet Gjendja për të paktën një produkt
-- Konfirmimi nuk kërkon passcode (kushdo me shift aktiv, sipas përgjigjes së pyetjes)
-- Pas konfirmimit butoni zëvendësohet me shirit "🔒 Gjendja u konfirmua në HH:MM"
-
-**Shiriti live nga POS:**
-- Realtime subscription në `transactions` në faqen e Regjistrimit Ditor
-- Kur mbërrin një transaksion i ri me `created_at >= turn.started_at`, ri-aggregoj shitjet dhe përditësoj `shiriti` për çdo produkt
-- Kjo bëhet edhe kur porosi anulohet (transaksioni fshihet ose bëhet negative) → shiriti zbret
-
-## Renditja e ndërtimit
-
-1. Migracion: shto `gjendje_confirmed_at` në turn_data (jsonb, s'kërkon schema change), shto produktet e reja në `raw_materials`, seed recetat bazë
-2. Ndërto `RecipeManager.tsx` në `src/components/manager/`
-3. Regjistroje si tab të ri në `ManagerDashboard.tsx`
-4. Modifiko `RegjistrimiDitor.tsx`: tabelën e produkteve me kolonat me faza + butoni Konfirmo
-5. Shto realtime subscription për Shiriti live
-6. Verifiko me build
-
-## Çfarë NUK përfshihet (për prompt të dytë sipas nevojës)
-
-- UI për ndryshim direkt të `raw_materials.quantity` (menaxheri i azhurnon nga fatura ose /inventory ekzistuese)
-- Konfirmim me passcode admin (u zgjodh "kushdo me shift")
-- Sistem kafe/alkool/shpenzime templates (mbetet i pandryshuar)
-- Alarme low-stock automatike (raw_materials.min_threshold ekziston, mund të lidhet më vonë)
-
-Nëse plani është ok, e ndërtoj në një hap.
+1. Te `/regjistrimi-ditor`, produktet duhet të jenë **të gjithë `raw_materials`** (Coca Cola, Fanta, Gin, ... duke përfshirë ata në ml/g), apo vetëm një nënbashkësi (p.sh. jo përbërës të vegjël si "Domate", "Mocarella")? Nëse nënbashkësi, si të filtrohet — flag i ri `track_daily` në `raw_materials`?
+2. "Fut Gjendjen" — a mund ta shtypë kushdo me shift aktiv (si `Konfirmo Gjendjen`), apo kërkon passcode admin?
