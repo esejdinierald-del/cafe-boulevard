@@ -104,9 +104,8 @@ export function PackageTable() {
               const isOpen = open === d.name;
               const hasHigh = d.vulnerabilities.some((v) => v.severity === "high");
               return (
-                <>
+                <tbody key={d.name} className="contents">
                   <tr
-                    key={d.name}
                     onClick={() => setOpen(isOpen ? null : d.name)}
                     className="cursor-pointer border-t border-white/5 transition hover:bg-white/[0.03]"
                   >
@@ -160,7 +159,7 @@ export function PackageTable() {
                       </td>
                     </tr>
                   )}
-                </>
+                </tbody>
               );
             })}
           </tbody>
