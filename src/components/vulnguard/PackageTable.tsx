@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { ChevronDown, Copy, ExternalLink, Search } from "lucide-react";
 import { toast } from "sonner";
 import { scan, Severity } from "@/data/vuln-scan";
@@ -104,7 +104,7 @@ export function PackageTable() {
               const isOpen = open === d.name;
               const hasHigh = d.vulnerabilities.some((v) => v.severity === "high");
               return (
-                <tbody key={d.name} className="contents">
+                <Fragment key={d.name}>
                   <tr
                     onClick={() => setOpen(isOpen ? null : d.name)}
                     className="cursor-pointer border-t border-white/5 transition hover:bg-white/[0.03]"
@@ -159,9 +159,10 @@ export function PackageTable() {
                       </td>
                     </tr>
                   )}
-                </tbody>
+                </Fragment>
               );
             })}
+          </tbody>
           </tbody>
         </table>
       </div>
