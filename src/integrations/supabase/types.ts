@@ -38,6 +38,33 @@ export type Database = {
         }
         Relationships: []
       }
+      app_logs: {
+        Row: {
+          actor: string | null
+          created_at: string
+          event: string
+          id: string
+          metadata: Json | null
+          severity: string
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string
+          event: string
+          id?: string
+          metadata?: Json | null
+          severity?: string
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string
+          event?: string
+          id?: string
+          metadata?: Json | null
+          severity?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -540,6 +567,44 @@ export type Database = {
         }
         Relationships: []
       }
+      product_costs: {
+        Row: {
+          cost_per_unit: number
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          material_id: string
+          updated_at: string
+        }
+        Insert: {
+          cost_per_unit: number
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          material_id: string
+          updated_at?: string
+        }
+        Update: {
+          cost_per_unit?: number
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          material_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_costs_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "raw_materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -571,6 +636,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          is_critical: boolean
           location_id: string | null
           min_threshold: number | null
           name: string
@@ -581,6 +647,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          is_critical?: boolean
           location_id?: string | null
           min_threshold?: number | null
           name: string
@@ -591,6 +658,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          is_critical?: boolean
           location_id?: string | null
           min_threshold?: number | null
           name?: string
@@ -792,6 +860,45 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_orders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          items: Json
+          notes: string | null
+          received_at: string | null
+          sent_at: string | null
+          status: string
+          supplier_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          received_at?: string | null
+          sent_at?: string | null
+          status?: string
+          supplier_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          received_at?: string | null
+          sent_at?: string | null
+          status?: string
+          supplier_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       supplies: {
         Row: {
           created_at: string | null
@@ -950,6 +1057,7 @@ export type Database = {
         Returns: {
           created_at: string | null
           id: string
+          is_critical: boolean
           location_id: string | null
           min_threshold: number | null
           name: string
