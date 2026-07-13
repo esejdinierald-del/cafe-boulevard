@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sha256 } from "../_shared/hash.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { token } = await req.json();
+    const { token, adminPassword } = await req.json();
 
     if (!token || typeof token !== "string" || token.length < 6 || token.length > 50) {
       return new Response(
@@ -26,6 +27,21 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const now = new Date().toISOString();
+
+    // Optional admin PIN path — validated server-side against app_settings.
+    // If provided, it must match to authorize the unlock.
+    if (adminPassword) {
+      const { data: setting } = await supabase
+        .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
+      const expectedHash = setting?.value ?? (await sha256("2025"));
+      const providedHash = await sha256(String(adminPassword));
+      if (providedHash !== expectedHash) {
+        return new Response(
+          JSON.stringify({ error: "Fjalëkalim i pasaktë" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     // Validate the token exists and is within shift range
     const { data: shift, error: fetchError } = await supabase
