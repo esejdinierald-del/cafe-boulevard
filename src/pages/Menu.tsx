@@ -253,7 +253,7 @@ const Menu = () => {
             boxShadow: '0 10px 40px -10px hsl(0 0% 0% / 0.5)',
           }}
         >
-          <button
+          <button type="button"
             onClick={() => navigate(`/?tabela=${tableNumber}`)}
             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
             style={{
@@ -271,7 +271,7 @@ const Menu = () => {
               <p className="font-display font-bold text-sm gradient-text-gold">{tableNumber || t.table}</p>
             </div>
           </div>
-          <button
+          <button type="button"
             onClick={toggleLanguage}
             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
             style={{
@@ -295,7 +295,7 @@ const Menu = () => {
               {/* Group tabs (BANAKU / GUZHINA / DREKA) */}
               <div className="grid grid-cols-3 gap-2 mb-3 w-full">
                 {['BANAKU', 'GUZHINA', 'DREKA'].map(group => (
-                  <button
+                  <button type="button"
                     key={group}
                     onClick={() => {
                       setSelectedGroup(group);
@@ -320,7 +320,7 @@ const Menu = () => {
               </div>
               <div className="grid grid-cols-3 gap-1.5 pb-2">
                 {categories.filter(c => c.group_name === selectedGroup).map(category => (
-                  <button
+                  <button type="button"
                     key={category.id}
                     onClick={() => setSelectedCategoryId(category.id)}
                     className="px-2 py-1.5 rounded-lg font-display font-bold text-[10px] leading-tight transition-all duration-300 text-center"
@@ -363,7 +363,7 @@ const Menu = () => {
                           <div className="w-full h-24 mb-2 rounded-xl overflow-hidden"
                             style={{ boxShadow: '0 4px 15px -5px hsl(0 0% 0% / 0.5)' }}
                           >
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                            <img src={item.image_url} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                           </div>
                         )}
                         <div className="flex flex-col mb-2">
@@ -402,7 +402,7 @@ const Menu = () => {
                             <div className="flex items-center gap-1 shrink-0">
                             {cart[item.id] ? (
                               <>
-                                <button
+                                <button type="button"
                                   onClick={() => removeFromCart(item.id)}
                                   className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                                   style={{
@@ -414,7 +414,7 @@ const Menu = () => {
                                   <Minus className="h-4 w-4" />
                                 </button>
                                 <span className="font-bold text-sm w-6 text-center" style={{ color: 'hsl(0 0% 90%)' }}>{cart[item.id]}</span>
-                                <button
+                                <button type="button"
                                   onClick={() => addToCart(item.id)}
                                   className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                                   style={{
@@ -427,7 +427,7 @@ const Menu = () => {
                                 </button>
                               </>
                             ) : (
-                              <button
+                              <button type="button"
                                 onClick={() => addToCart(item.id)}
                                 className="h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110"
                                 style={{
@@ -481,7 +481,7 @@ const Menu = () => {
                         </div>
                         <div className="flex items-center gap-2 ml-2">
                           <span className="font-bold whitespace-nowrap gradient-text-gold">{price * qty} {t.currency}</span>
-                          <button
+                          <button type="button"
                             onClick={() => removeFromCart(itemId)}
                             className="h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                             style={{
@@ -528,7 +528,7 @@ const Menu = () => {
                       <p className="text-xl font-display font-bold gradient-text-gold">{getTotalPrice()} {t.currency}</p>
                     </div>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={handleSubmitOrder}
                     disabled={checking}
                     className="px-6 py-3 rounded-xl font-display font-bold text-base transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50"

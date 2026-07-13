@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { inventorySupabase } from "@/integrations/supabase/inventory-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,7 +65,7 @@ const Inventory = () => {
         .from("raw_materials")
         .select("id, name, quantity, unit, min_threshold, location_id")
         .order("name"),
-      (inventorySupabase as any)
+      (supabase as any)
         .from("inv_products")
         .select("name, sort_order")
         .order("sort_order")
@@ -206,7 +205,7 @@ const Inventory = () => {
     <div className="min-h-screen bg-slate-900 text-white">
       <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
         <div className="flex items-center gap-3">
-        <button
+        <button type="button"
             onClick={() => navigate("/pos")}
             className="p-2 rounded hover:bg-slate-800"
             aria-label="Kthehu tek POS"

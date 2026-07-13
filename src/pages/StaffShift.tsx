@@ -369,12 +369,10 @@ const StaffShift = () => {
   // Register service worker and push subscription
   const registerPushSubscription = useCallback(async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.log('Push notifications not supported');
       return;
     }
     try {
       const registration = await navigator.serviceWorker.register('/staff-sw.js', { scope: '/' });
-      console.log('Staff SW registered:', registration.scope);
 
       // Wait for SW to be ready
       const ready = await navigator.serviceWorker.ready;
@@ -387,7 +385,6 @@ const StaffShift = () => {
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
         });
-        console.log('Push subscription created');
       }
 
       // Send subscription to backend
@@ -400,7 +397,6 @@ const StaffShift = () => {
           shift_token: activeToken,
         },
       });
-      console.log('Push subscription saved to backend');
     } catch (err) {
       console.error('Push subscription failed:', err);
     }
@@ -715,7 +711,7 @@ const StaffShift = () => {
           {staffName && (
             <div className="text-[11px] text-muted-foreground">
               Kyçur si <span className="font-semibold text-foreground">{staffName}</span>
-              <button
+              <button type="button"
                 onClick={() => {
                   localStorage.removeItem("staff_name");
                   localStorage.removeItem("staff_role");

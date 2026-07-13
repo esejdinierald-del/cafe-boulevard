@@ -227,33 +227,33 @@ const POS = () => {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => startOrder("bar", null)}
             className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
           >
             <Coffee size={14} /> Modalitet Banak
           </button>
-          <button
+          <button type="button"
             onClick={() => setExternalOpen(true)}
             className="flex items-center gap-2 px-3 py-2 rounded bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-sm font-semibold"
           >
             <Truck size={14} /> Glovo/Bolt
           </button>
           {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
-            <button
+            <button type="button"
               onClick={() => navigate("/inventory")}
               className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
             >
               <Package size={14} /> Inventari
             </button>
           )}
-          <button
+          <button type="button"
             onClick={() => navigate("/staff")}
             className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
           >
             <LogOut size={14} /> Kthehu te Turni
           </button>
-          <button
+          <button type="button"
             onClick={handleEndShift}
             className="flex items-center gap-2 px-3 py-2 rounded bg-red-700 hover:bg-red-600 text-sm"
           >
@@ -287,7 +287,7 @@ const POS = () => {
                       : "border-green-500/50 bg-green-500/10 text-green-200"
                   }`}
                 >
-                  <button
+                  <button type="button"
                     onClick={() => startOrder("table", t.number as number)}
                     className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold hover:bg-white/5 rounded-lg"
                   >
@@ -304,14 +304,14 @@ const POS = () => {
                   </button>
                   {hasOrders && (
                     <>
-                      <button
+                      <button type="button"
                         onClick={(e) => { e.stopPropagation(); viewTableOrders(t.number); }}
                         title="Shiko porositë"
                         className="absolute top-1 right-1 p-1.5 rounded-md bg-slate-700/90 hover:bg-slate-600 text-white z-10 shadow"
                       >
                         <Eye size={20} />
                       </button>
-                      <button
+                      <button type="button"
                         onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
                         disabled={closing}
                         title="Mbyll & printo tavolinën"
@@ -352,7 +352,7 @@ const POS = () => {
             className="bg-slate-800 rounded-lg max-w-lg w-full max-h-[85vh] overflow-y-auto p-5 relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
+            <button type="button"
               onClick={() => setViewTable(null)}
               className="absolute top-2 right-2 p-1 rounded hover:bg-slate-700"
             >
@@ -407,7 +407,7 @@ const POS = () => {
                   <span>TOTALI I TAVOLINËS</span>
                   <span>{viewTable.orders.reduce((s, o) => s + Number(o.total_amount), 0).toFixed(0)} Lekë</span>
                 </div>
-                <button
+                <button type="button"
                   onClick={() => {
                     const num = viewTable.number;
                     setViewTable(null);

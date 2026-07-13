@@ -601,7 +601,7 @@ const ManagerDashboard = () => {
                       <div className="space-y-4">
                         <div className="flex gap-4">
                           {item.image_url && (
-                            <img src={item.image_url} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
+                            <img src={item.image_url} alt={item.name} loading="lazy" decoding="async" className="w-24 h-24 object-cover rounded-lg" />
                           )}
                           <div className="flex-1 space-y-3">
                             <Input
@@ -690,7 +690,7 @@ const ManagerDashboard = () => {
                     ) : (
                       <div className="flex gap-4">
                         {item.image_url && (
-                          <img src={item.image_url} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
+                          <img src={item.image_url} alt={item.name} loading="lazy" decoding="async" className="w-24 h-24 object-cover rounded-lg" />
                         )}
                         <div className="flex-1">
                           <h3 className="font-bold">{item.name}</h3>

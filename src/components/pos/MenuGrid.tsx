@@ -101,7 +101,7 @@ export const MenuGrid = () => {
     <div className="p-4 bg-slate-800 rounded-lg">
       <div className="flex items-center gap-2 mb-4">
         {(selected || selectedSub) && !isSearching && (
-          <button
+          <button type="button"
             onClick={back}
             className="flex items-center gap-1 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white text-sm"
           >
@@ -125,7 +125,7 @@ export const MenuGrid = () => {
       {isSearching ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {searchResults.map((p) => (
-            <button
+            <button type="button"
               key={p.id}
               onClick={() => addProduct(p)}
               className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition text-left"
@@ -151,7 +151,7 @@ export const MenuGrid = () => {
         /* Main categories */
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {main.map((c) => (
-            <button
+            <button type="button"
               key={c.id}
               onClick={() => { setSelected(c.id); setSelectedSub(null); }}
               className="aspect-square p-4 bg-gradient-to-br from-slate-700 to-slate-800 hover:from-amber-600 hover:to-orange-700 border border-slate-600 rounded-lg text-white font-semibold flex flex-col items-center justify-center gap-1 transition"
@@ -170,7 +170,7 @@ export const MenuGrid = () => {
         /* Sub-categories */
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {subs.map((c) => (
-            <button
+            <button type="button"
               key={c.id}
               onClick={() => setSelectedSub(c.id)}
               className="aspect-square p-4 bg-gradient-to-br from-slate-700 to-slate-800 hover:from-amber-600 hover:to-orange-700 border border-slate-600 rounded-lg text-white font-semibold flex flex-col items-center justify-center gap-1 transition"
@@ -184,7 +184,7 @@ export const MenuGrid = () => {
         /* Products for the selected (sub-)category */
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {productsForCategory.map((p) => (
-            <button
+            <button type="button"
               key={p.id}
               onClick={() => addProduct(p)}
               className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition text-left"

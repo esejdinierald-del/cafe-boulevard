@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { inventorySupabase as supabase } from "@/integrations/supabase/inventory-client";
+import { supabase as supabase } from "@/integrations/supabase/client";
 import { supabase as mainSupabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -607,7 +607,7 @@ const RegjistrimiDitor = () => {
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="sticky top-0 z-10 flex items-center justify-between px-2 sm:px-4 py-2 sm:py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <button onClick={() => navigate(-1)} className="p-1.5 rounded hover:bg-slate-800 shrink-0" aria-label="Kthehu">
+          <button type="button" onClick={() => navigate(-1)} className="p-1.5 rounded hover:bg-slate-800 shrink-0" aria-label="Kthehu">
             <ArrowLeft size={16} />
           </button>
           <div className="min-w-0">
@@ -825,7 +825,7 @@ const RegjistrimiDitor = () => {
                             </td>
                             {editable && (
                               <td className="py-1.5 pl-1">
-                                <button onClick={() => removeCoffee(name)} className="text-slate-500 hover:text-rose-400">
+                                <button type="button" onClick={() => removeCoffee(name)} className="text-slate-500 hover:text-rose-400">
                                   <Trash2 size={14}/>
                                 </button>
                               </td>
@@ -966,7 +966,7 @@ const RegjistrimiDitor = () => {
                               onChange={(e) => updateShpenzim(i, "vlera", Number(e.target.value) || 0)}
                               className="bg-slate-950 border-slate-700 text-white h-8 w-20 sm:w-28 text-right text-sm px-2"
                             />
-                            {editable && <button onClick={() => removeShpenzim(i)} className="text-slate-500 hover:text-rose-400">
+                            {editable && <button type="button" onClick={() => removeShpenzim(i)} className="text-slate-500 hover:text-rose-400">
                               <Trash2 size={14}/>
                             </button>}
                           </div>

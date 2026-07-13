@@ -76,7 +76,7 @@ export const WelcomeGreeting = ({ language, onDismiss, onOpenChat }: WelcomeGree
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-secondary via-accent to-secondary" />
         
         {/* Close button */}
-        <button 
+        <button type="button" 
           onClick={handleDismiss}
           className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-white/10 transition-colors"
         >

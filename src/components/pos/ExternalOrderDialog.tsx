@@ -118,7 +118,7 @@ export function ExternalOrderDialog({ open, onClose, onCreated }: Props) {
             <h2 className="text-lg font-bold">Porosi e Jashtme</h2>
             <p className="text-xs text-slate-400">Regjistrim i shpejtë për delivery</p>
           </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-slate-700">
+          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-slate-700">
             <X size={18} />
           </button>
         </div>
@@ -126,7 +126,7 @@ export function ExternalOrderDialog({ open, onClose, onCreated }: Props) {
         <div className="p-4 border-b border-slate-700 grid grid-cols-2 gap-2">
           <div className="flex gap-2">
             {(["glovo", "bolt"] as const).map((p) => (
-              <button
+              <button type="button"
                 key={p}
                 onClick={() => setPlatform(p)}
                 className={`flex-1 py-2 rounded font-semibold text-sm ${
@@ -159,7 +159,7 @@ export function ExternalOrderDialog({ open, onClose, onCreated }: Props) {
                 className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm"
               />
               <div className="flex gap-1 overflow-x-auto pb-1">
-                <button
+                <button type="button"
                   onClick={() => setActiveCat(null)}
                   className={`px-2 py-1 rounded text-xs whitespace-nowrap ${
                     !activeCat ? "bg-amber-500 text-slate-900" : "bg-slate-700"
@@ -168,7 +168,7 @@ export function ExternalOrderDialog({ open, onClose, onCreated }: Props) {
                   Të gjitha
                 </button>
                 {cats.map((c) => (
-                  <button
+                  <button type="button"
                     key={c.id}
                     onClick={() => setActiveCat(c.id)}
                     className={`px-2 py-1 rounded text-xs whitespace-nowrap ${
@@ -182,7 +182,7 @@ export function ExternalOrderDialog({ open, onClose, onCreated }: Props) {
             </div>
             <div className="overflow-y-auto p-2 grid grid-cols-2 gap-2">
               {filtered.map((m) => (
-                <button
+                <button type="button"
                   key={m.id}
                   onClick={() => add(m)}
                   className="text-left p-2 rounded bg-slate-900 hover:bg-slate-700 border border-slate-700"
@@ -206,17 +206,17 @@ export function ExternalOrderDialog({ open, onClose, onCreated }: Props) {
                 <li key={l.productId} className="p-2 rounded bg-slate-900 border border-slate-700 text-xs">
                   <div className="flex justify-between">
                     <span className="font-medium">{l.name}</span>
-                    <button onClick={() => remove(l.productId)} className="text-red-400">
+                    <button type="button" onClick={() => remove(l.productId)} className="text-red-400">
                       <Trash2 size={12} />
                     </button>
                   </div>
                   <div className="flex items-center justify-between mt-1">
                     <div className="flex items-center gap-1">
-                      <button onClick={() => dec(l.productId)} className="p-1 bg-slate-700 rounded">
+                      <button type="button" onClick={() => dec(l.productId)} className="p-1 bg-slate-700 rounded">
                         <Minus size={10} />
                       </button>
                       <span className="w-6 text-center">{l.quantity}</span>
-                      <button onClick={() => add({ id: l.productId, name: l.name, price: l.price, category_id: null })} className="p-1 bg-slate-700 rounded">
+                      <button type="button" onClick={() => add({ id: l.productId, name: l.name, price: l.price, category_id: null })} className="p-1 bg-slate-700 rounded">
                         <Plus size={10} />
                       </button>
                     </div>
@@ -233,7 +233,7 @@ export function ExternalOrderDialog({ open, onClose, onCreated }: Props) {
                 <span>Totali</span>
                 <span className="text-amber-300">{total.toFixed(0)} L</span>
               </div>
-              <button
+              <button type="button"
                 onClick={submit}
                 disabled={busy || cart.length === 0}
                 className="w-full py-2 rounded bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold disabled:opacity-50"

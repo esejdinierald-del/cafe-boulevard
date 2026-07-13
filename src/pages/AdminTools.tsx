@@ -74,7 +74,7 @@ const AdminTools = () => {
     <div className="min-h-screen bg-slate-900 text-white">
       <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/manager")} className="p-2 rounded hover:bg-slate-800">
+          <button type="button" onClick={() => navigate("/manager")} className="p-2 rounded hover:bg-slate-800">
             <ArrowLeft size={18} />
           </button>
           <h1 className="text-xl font-bold">Mjete Admin</h1>
@@ -90,7 +90,7 @@ const AdminTools = () => {
             { id: "backup", label: "💾 Backup" },
           ] as const
         ).map((t) => (
-          <button
+          <button type="button"
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-3 py-1.5 rounded text-sm whitespace-nowrap ${
@@ -143,7 +143,7 @@ function HealthTab() {
             </>
           )}
         </div>
-        <button
+        <button type="button"
           onClick={run}
           disabled={loading}
           className="flex items-center gap-2 px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold disabled:opacity-50"
@@ -199,7 +199,7 @@ function ErrorsTab() {
     <div className="space-y-4">
       <div className="flex items-center gap-2 flex-wrap">
         {["all", "info", "warning", "error", "critical"].map((s) => (
-          <button
+          <button type="button"
             key={s}
             onClick={() => setSeverity(s)}
             className={`px-2 py-1 rounded text-xs ${
@@ -209,7 +209,7 @@ function ErrorsTab() {
             {s}
           </button>
         ))}
-        <button onClick={load} disabled={loading} className="ml-auto px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs">
+        <button type="button" onClick={load} disabled={loading} className="ml-auto px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs">
           <RefreshCw size={12} className={`inline mr-1 ${loading ? "animate-spin" : ""}`} /> Rifresko
         </button>
       </div>
@@ -324,7 +324,7 @@ function FiscalTab() {
           onChange={(e) => setMonth(e.target.value)}
           className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm"
         />
-        <button
+        <button type="button"
           onClick={exportCSV}
           disabled={rows.length === 0}
           className="flex items-center gap-2 px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold text-sm disabled:opacity-50"
@@ -425,7 +425,7 @@ function BackupTab() {
         <p className="text-xs text-slate-500">
           Nuk përfshin: porositë, transaksionet, logje — këto janë historik operacional dhe qëndrojnë vetëm në DB.
         </p>
-        <button
+        <button type="button"
           onClick={doBackup}
           disabled={busy}
           className="mt-2 flex items-center gap-2 px-4 py-2 rounded bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold disabled:opacity-50"

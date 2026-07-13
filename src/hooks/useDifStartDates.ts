@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { inventorySupabase as supabase } from "@/integrations/supabase/inventory-client";
+import { supabase as supabase } from "@/integrations/supabase/client";
 import { InventoryCalculationService as Calc } from "@/services/inventoryCalculations";
 import { InventoryProductData, InventoryTurnData, emptyProduct } from "@/types/inventory.types";
 

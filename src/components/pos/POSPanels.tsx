@@ -369,7 +369,7 @@ export const CashierPanel = () => {
                       : "border-green-500/60"
                   }`}
                 >
-                  <button
+                  <button type="button"
                     onClick={() => toggleExpand(o.id)}
                     className="w-full flex items-center gap-3 p-3 hover:bg-muted/40 transition text-left"
                   >
@@ -729,7 +729,7 @@ const CashierHistoryPanel = () => {
           const open = !!expanded[t.id];
           return (
             <Card key={t.id} className="overflow-hidden">
-              <button
+              <button type="button"
                 onClick={() => setExpanded((e) => ({ ...e, [t.id]: !e[t.id] }))}
                 className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/40"
               >
