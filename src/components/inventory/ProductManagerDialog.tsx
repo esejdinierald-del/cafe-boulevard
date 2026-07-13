@@ -31,10 +31,17 @@ interface Props {
   trigger: React.ReactNode;
   products: InvProductRow[];
   onChanged: (opts?: { renamedFrom?: string; renamedTo?: string; deletedName?: string; added?: InvProductRow }) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-const ProductManagerDialog = ({ trigger, products, onChanged }: Props) => {
-  const [open, setOpen] = useState(false);
+const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, onOpenChange }: Props) => {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp !== undefined ? openProp : openState;
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v);
+    if (openProp === undefined) setOpenState(v);
+  };
   const [menuItems, setMenuItems] = useState<MenuItemLite[]>([]);
   const [loading, setLoading] = useState(false);
   const [newName, setNewName] = useState("");
