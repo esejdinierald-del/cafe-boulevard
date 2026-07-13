@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     }
 
     // Actions that require manager authentication
-    const MANAGER_ACTIONS = ['create', 'extend', 'close'];
+    const MANAGER_ACTIONS = ['create', 'extend', 'close', 'get_or_create'];
 
     if (MANAGER_ACTIONS.includes(action)) {
       const authHeader = req.headers.get('Authorization');
@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .eq('role', 'manager')
+        .in('role', ['manager', 'admin'])
         .maybeSingle();
 
       if (!roleData) {
