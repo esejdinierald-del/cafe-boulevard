@@ -22,6 +22,18 @@ import { useDifStartDates } from "@/hooks/useDifStartDates";
 import { useCoffeeSalesTotal } from "@/hooks/useCoffeeSalesTotal";
 import { ShiftTurnApi } from "@/lib/inventory-api";
 
+// Verify admin passcode server-side via edge function (no hardcoded value on client).
+async function verifyAdminPasscode(passcode: string): Promise<boolean> {
+  try {
+    const { data } = await mainSupabase.functions.invoke("verify-admin-passcode", {
+      body: { passcode },
+    });
+    return !!(data as any)?.valid;
+  } catch {
+    return false;
+  }
+}
+
 type InvProduct = InvProductRow;
 
 interface ShiftTurn {
@@ -71,17 +83,18 @@ const RegjistrimiDitor = () => {
   );
   const [productMgrOpen, setProductMgrOpen] = useState(false);
 
-  const requestAdminAccess = () => {
+  const requestAdminAccess = async () => {
     if (adminUnlocked) { setProductMgrOpen(true); return; }
     const pass = window.prompt("Fjalëkalimi i administratorit për menaxhimin e produkteve:");
     if (pass === null) return;
-    if (pass !== "2025") { toast.error("Fjalëkalim i pasaktë"); return; }
+    const ok = await verifyAdminPasscode(pass);
+    if (!ok) { toast.error("Fjalëkalim i pasaktë"); return; }
     sessionStorage.setItem("inv_admin_unlocked", "1");
     setAdminUnlocked(true);
     setProductMgrOpen(true);
   };
 
-  const toggleAdminMode = () => {
+  const toggleAdminMode = async () => {
     if (adminUnlocked) {
       sessionStorage.removeItem("inv_admin_unlocked");
       setAdminUnlocked(false);
@@ -90,7 +103,8 @@ const RegjistrimiDitor = () => {
     }
     const pass = window.prompt("Fjalëkalimi i administratorit për editim manual të Stok Fillim:");
     if (pass === null) return;
-    if (pass !== "2025") { toast.error("Fjalëkalim i pasaktë"); return; }
+    const ok = await verifyAdminPasscode(pass);
+    if (!ok) { toast.error("Fjalëkalim i pasaktë"); return; }
     sessionStorage.setItem("inv_admin_unlocked", "1");
     setAdminUnlocked(true);
     toast.success("Modaliteti admin aktiv — Stok Fillim i editueshëm");
@@ -555,7 +569,9 @@ const RegjistrimiDitor = () => {
   // Rivendos stokun nga Gjendja (admin-only)
   const rebaseFromGjendje = async () => {
     const pass = prompt("Fjalëkalimi i adminit:");
-    if (pass !== "2025") return toast.error("Fjalëkalim i pasaktë.");
+    if (!pass) return;
+    const ok = await verifyAdminPasscode(pass);
+    if (!ok) return toast.error("Fjalëkalim i pasaktë.");
     if (!confirm("Rivendos stokun e ditës pasardhëse duke përdorur 'Gjendja' aktuale?")) return;
     try {
       const last = turns[turns.length - 1];
