@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw, QrCode, LogOut } from "lucide-react";
+import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw, QrCode, LogOut, X } from "lucide-react";
 import { toast } from "sonner";
 import QrScanner from "@/components/QrScanner";
 import SplashScreen from "@/components/SplashScreen";
@@ -445,6 +445,25 @@ const StaffShift = () => {
       });
       if (error || !data?.success) throw new Error("Failed");
       toast.success(`✅ Porosia ${tableNumber} — U krye!`);
+      setOrders(prev => prev.filter(o => o.id !== id));
+    } catch {
+      toast.error("Gabim në përditësim");
+    }
+    setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+  }, [activeToken]);
+
+  const handleDecideOrder = useCallback(async (id: string, tableNumber: string, decision: "accepted" | "rejected") => {
+    setCompletingIds(prev => new Set(prev).add(id));
+    const token = activeToken || localStorage.getItem("staff_shift_token") || "";
+    try {
+      const { data, error } = await supabase.functions.invoke("update-order-status", {
+        body: { id, status: decision, shiftToken: token },
+        headers: { "x-shift-token": token },
+      });
+      if (error || !(data as any)?.success) throw new Error("Failed");
+      toast.success(decision === "accepted"
+        ? `✅ Porosia ${tableNumber} — u pranua`
+        : `🚫 Porosia ${tableNumber} — u refuzua`);
       setOrders(prev => prev.filter(o => o.id !== id));
     } catch {
       toast.error("Gabim në përditësim");
