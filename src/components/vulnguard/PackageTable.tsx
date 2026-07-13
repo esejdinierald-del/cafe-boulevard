@@ -163,7 +163,6 @@ export function PackageTable() {
               );
             })}
           </tbody>
-          </tbody>
         </table>
       </div>
     </div>
