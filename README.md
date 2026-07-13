@@ -31,7 +31,7 @@ Aplikacion i plotë menaxhimi për kafenenë Boulevard (Elbasan): menu për klie
 
 ## Logjika kryesore
 
-- **Porositë**: kamarieri krijon → banaku konfirmon (`pos-confirm-order`) → shitja regjistrohet menjëherë te `transactions` → material inventari zbritet nga `recipes` → mbyllja tek Arka thjesht liron tavolinën pa dublikatë.
+- **Porositë**: kamarieri krijon → banaku konfirmon (`pos-confirm-order`) → shitja regjistrohet menjëherë te `transactions` (me `UNIQUE (order_id, type)` ku `type='sale'`) → material inventari zbritet nga `recipes` → mbyllja tek Arka thjesht liron tavolinën pa dublikatë. Race-condition në konfirmim të dyfishtë kapet nga constraint `23505` dhe injorohet në heshtje.
 - **Regjistrimi Ditor**: `Dif = Shiriti + Gjendje − StokFillim`. Për kafe: `Dif = shitjeKafe + mulliriFillim − mulliriPerfund` (mulliri lexohet OCR nga foto me `scan-mulliri`).
 - **Turne**: `shift_turns` dinamike, ownership me `staff_name` te localStorage, edge function `manage-shift` proxy për RLS.
 - **Admin mode**: passcode `2025` te DB — mund të editojë Stok Fillim manualisht në çdo turn.
