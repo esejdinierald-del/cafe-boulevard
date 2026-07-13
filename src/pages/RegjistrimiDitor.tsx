@@ -333,11 +333,7 @@ const RegjistrimiDitor = () => {
         const existing = updated.products[p.name] || emptyProduct();
         updated.products[p.name] = { ...existing, shiriti: map[p.name] || 0 };
       });
-      const { error } = await (supabase as any)
-        .from("shift_turns")
-        .update({ turn_data: updated, is_locked: true, locked_at: toISO })
-        .eq("id", selectedTurn.id);
-      if (error) throw error;
+      await ShiftTurnApi.lock(selectedTurn.id, updated, toISO);
       const newList = turns.map((t) =>
         t.id === selectedTurn.id ? { ...t, turn_data: updated, is_locked: true, locked_at: toISO } : t,
       );
@@ -361,11 +357,7 @@ const RegjistrimiDitor = () => {
     try {
       const now = new Date().toISOString();
       const updated: InventoryTurnData = { ...selectedTurn.turn_data, gjendjeInputAt: now };
-      const { error } = await (supabase as any)
-        .from("shift_turns")
-        .update({ turn_data: updated })
-        .eq("id", selectedTurn.id);
-      if (error) throw error;
+      await ShiftTurnApi.updateTurnData(selectedTurn.id, updated);
       setTurns((prev) => prev.map((t) => (t.id === selectedTurn.id ? { ...t, turn_data: updated } : t)));
     } catch (e: any) {
       toast.error("Dështoi: " + (e.message || e));
@@ -382,11 +374,7 @@ const RegjistrimiDitor = () => {
     try {
       const now = new Date().toISOString();
       const updated: InventoryTurnData = { ...selectedTurn.turn_data, gjendjeConfirmedAt: now };
-      const { error } = await (supabase as any)
-        .from("shift_turns")
-        .update({ turn_data: updated })
-        .eq("id", selectedTurn.id);
-      if (error) throw error;
+      await ShiftTurnApi.updateTurnData(selectedTurn.id, updated);
       setTurns((prev) => prev.map((t) => (t.id === selectedTurn.id ? { ...t, turn_data: updated } : t)));
       toast.success("Gjendja u konfirmua.");
     } catch (e: any) {
@@ -558,9 +546,7 @@ const RegjistrimiDitor = () => {
     if (next.is_locked) return toast.error("Turni pasardhës është i kyçur.");
     const merged = Prop.syncT1ToT2(selectedTurn.turn_data, next.turn_data);
     try {
-      const { error } = await (supabase as any)
-        .from("shift_turns").update({ turn_data: merged }).eq("id", next.id);
-      if (error) throw error;
+      await ShiftTurnApi.updateTurnData(next.id, merged);
       setTurns((prev) => prev.map((t) => t.id === next.id ? { ...t, turn_data: merged } : t));
       toast.success("Të dhënat u kopjuan te turni pasardhës.");
     } catch (e: any) { toast.error(e.message || "Dështoi"); }
@@ -595,11 +581,7 @@ const RegjistrimiDitor = () => {
     };
     setTurns((prev) => prev.map((t) => (t.id === turnId ? { ...t, turn_data: updated } : t)));
     try {
-      const { error } = await (supabase as any)
-        .from("shift_turns")
-        .update({ turn_data: updated })
-        .eq("id", turnId);
-      if (error) throw error;
+      await ShiftTurnApi.updateTurnData(turnId, updated);
     } catch (e: any) {
       toast.error("Ruajtja e Stok Fillim dështoi: " + (e.message || e));
     }
