@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { inventorySupabase } from "@/integrations/supabase/inventory-client";
+import { InvProductApi } from "@/lib/inventory-api";
 import {
   Dialog,
   DialogContent,
@@ -66,21 +66,19 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
     const name = newName.trim();
     if (!name) return;
     const nextOrder = (products[products.length - 1]?.sort_order ?? 0) + 10;
-    const { data, error } = await (inventorySupabase as any)
-      .from("inv_products")
-      .insert({ name, sort_order: nextOrder, menu_item_ids: newIds, units_per_sale: newUnits })
-      .select("id, name, sort_order, menu_item_ids, units_per_sale")
-      .single();
-    if (error) return toast.error(error.message);
+    let data: InvProductRow;
+    try {
+      const res = await InvProductApi.insert({ name, sort_order: nextOrder, menu_item_ids: newIds, units_per_sale: newUnits });
+      data = res.product as InvProductRow;
+    } catch (e: any) { return toast.error(e.message); }
     setNewName(""); setNewIds([]); setNewUnits(1);
-    onChanged({ added: data as InvProductRow });
+    onChanged({ added: data });
     toast.success("Produkti u shtua");
   };
 
   const removeProduct = async (p: InvProductRow) => {
     if (!confirm(`Fshij "${p.name}"?`)) return;
-    const { error } = await (inventorySupabase as any).from("inv_products").delete().eq("id", p.id);
-    if (error) return toast.error(error.message);
+    try { await InvProductApi.delete(p.id); } catch (e: any) { return toast.error(e.message); }
     onChanged({ deletedName: p.name });
     toast.success("U fshi");
   };
@@ -176,12 +174,10 @@ const ProductRow = ({
     const newName = name.trim();
     if (!newName) return toast.error("Emri s'mund të jetë bosh");
     setSaving(true);
-    const { error } = await (inventorySupabase as any)
-      .from("inv_products")
-      .update({ name: newName, menu_item_ids: ids, units_per_sale: units })
-      .eq("id", product.id);
+    try {
+      await InvProductApi.update({ id: product.id, name: newName, menu_item_ids: ids, units_per_sale: units });
+    } catch (e: any) { setSaving(false); return toast.error(e.message); }
     setSaving(false);
-    if (error) return toast.error(error.message);
     const renamed = newName !== product.name;
     onSaved(renamed ? product.name : undefined, renamed ? newName : undefined);
     toast.success("U ruajt");
