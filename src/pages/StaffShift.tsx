@@ -437,21 +437,6 @@ const StaffShift = () => {
     setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
   }, [activeToken]);
 
-  const handleCompleteOrder = useCallback(async (id: string, tableNumber: string) => {
-    setCompletingIds(prev => new Set(prev).add(id));
-    try {
-      const { data, error } = await supabase.functions.invoke("complete-request", {
-        body: { id, type: "order", shift_token: activeToken },
-      });
-      if (error || !data?.success) throw new Error("Failed");
-      toast.success(`✅ Porosia ${tableNumber} — U krye!`);
-      setOrders(prev => prev.filter(o => o.id !== id));
-    } catch {
-      toast.error("Gabim në përditësim");
-    }
-    setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
-  }, [activeToken]);
-
   const handleDecideOrder = useCallback(async (id: string, tableNumber: string, decision: "accepted" | "rejected") => {
     setCompletingIds(prev => new Set(prev).add(id));
     const token = activeToken || localStorage.getItem("staff_shift_token") || "";
