@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-shift-token",
 };
 
 function jsonResponse(body: unknown, status = 200) {
@@ -17,6 +18,8 @@ serve(async (req) => {
 
     if (req.method === "POST") {
       const body = await req.json();
+      const auth = await requireShiftToken(req, body);
+      if (!auth.ok) return auth.response;
       if (body.action === "addSupply") {
         const { materialId, quantity, note = null, operatorName, locationId = null } = body;
         if (!materialId || !operatorName || typeof quantity !== "number" || quantity <= 0) {
@@ -35,6 +38,9 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const lowStockOnly = url.searchParams.get("lowStockOnly") === "true";
+
+    const auth = await requireShiftToken(req, null);
+    if (!auth.ok) return auth.response;
 
     const { data: materials, error } = await supabase.from("raw_materials").select("*").order("name");
     if (error) return jsonResponse({ error: error.message }, 500);
