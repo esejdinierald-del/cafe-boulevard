@@ -188,27 +188,18 @@ const RegjistrimiDitor = () => {
           });
           seedTurn.mulliriFillim = last ? last.turn_data.mulliriPerfund : (seed?.mulliriFillim ?? 0);
 
-          const { data: inserted, error: insErr } = await (supabase as any)
-            .from("shift_turns")
-            .insert({
-              entry_date: date,
-              staff_name: staffName || "Panjohur",
-              sequence_number: nextSeq,
-              turn_data: seedTurn,
-            })
-            .select()
-            .single();
-          if (insErr) throw insErr;
+          const { turn: inserted } = await ShiftTurnApi.insert({
+            entry_date: date,
+            staff_name: staffName || "Panjohur",
+            sequence_number: nextSeq,
+            turn_data: seedTurn,
+          });
           const newTurn: ShiftTurn = { ...inserted, turn_data: { ...emptyTurn(), ...(inserted.turn_data || seedTurn) } };
           list = [...list, newTurn];
           mineId = newTurn.id;
         } else if (staffName && last.staff_name !== staffName) {
           // Take ownership of unlocked turn.
-          const { error: updErr } = await (supabase as any)
-            .from("shift_turns")
-            .update({ staff_name: staffName })
-            .eq("id", last.id);
-          if (updErr) throw updErr;
+          await ShiftTurnApi.updateStaffName(last.id, staffName);
           list = list.map((t) => (t.id === last.id ? { ...t, staff_name: staffName } : t));
           mineId = last.id;
         } else {
@@ -232,18 +223,12 @@ const RegjistrimiDitor = () => {
     const first = list[0].turn_data;
     const last = list[list.length - 1].turn_data;
     try {
-      await (supabase as any)
-        .from("inv_daily_entries")
-        .upsert(
-          {
-            entry_date: date,
-            turn1_data: first,
-            turn2_data: last,
-            turn1_closed_at: list[0].locked_at,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "entry_date" },
-        );
+      await ShiftTurnApi.backupDaily({
+        entry_date: date,
+        turn1_data: first,
+        turn2_data: last,
+        turn1_closed_at: list[0].locked_at,
+      });
     } catch {
       /* backup best-effort */
     }
@@ -274,11 +259,7 @@ const RegjistrimiDitor = () => {
     saveTimer.current = window.setTimeout(async () => {
       setSaving(true);
       try {
-        const { error } = await (supabase as any)
-          .from("shift_turns")
-          .update({ turn_data: payload })
-          .eq("id", id);
-        if (error) throw error;
+        await ShiftTurnApi.updateTurnData(id, payload);
       } catch (e: any) {
         toast.error("Ruajtja dështoi: " + (e.message || e));
       } finally {
