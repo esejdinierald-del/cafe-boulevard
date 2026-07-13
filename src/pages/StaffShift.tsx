@@ -510,15 +510,29 @@ const StaffShift = () => {
     setIsValid(null); // show loading
     setValidateTrigger(t => t + 1); // force re-validation even if same token
 
-    // Unlock dashboard curtain via edge function
+    // Unlock dashboard curtain via edge function — requires admin passcode server-side.
+    const adminPassword = window.prompt(
+      "QR u skanua. Për të zhbllokuar dashboard-in, shkruaj fjalëkalimin e adminit:",
+    );
+    if (!adminPassword) {
+      toast.info("Zhbllokimi u anulua. Token-i i turnit u ruajt.");
+      return;
+    }
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      await supabase.functions.invoke("unlock-shift", {
-        body: { token: scannedToken },
+      const { data, error } = await supabase.functions.invoke("unlock-shift", {
+        body: { token: scannedToken, adminPassword },
         headers: { Authorization: `Bearer ${session?.access_token}` },
       });
+      const err = (data as any)?.error || error?.message;
+      if (err) {
+        toast.error("Zhbllokimi dështoi: " + err);
+        return;
+      }
     } catch (e) {
       console.error("Failed to unlock shift:", e);
+      toast.error("Zhbllokimi dështoi.");
+      return;
     }
 
     toast.success("QR u skanua! Dashboard u zhbllokua!");
