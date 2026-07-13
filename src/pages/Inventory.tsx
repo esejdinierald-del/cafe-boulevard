@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { inventorySupabase } from "@/integrations/supabase/inventory-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,20 +58,39 @@ const Inventory = () => {
   }, []);
 
   const load = async () => {
-    const { data, error } = await supabase
-      .from("raw_materials")
-      .select("id, name, quantity, unit, min_threshold, location_id")
-      .order("name");
+    // Sync with /regjistrimi-ditor: only show materials whose name matches an inv_product.
+    const [{ data: rawData, error }, { data: invProds }] = await Promise.all([
+      supabase
+        .from("raw_materials")
+        .select("id, name, quantity, unit, min_threshold, location_id")
+        .order("name"),
+      (inventorySupabase as any)
+        .from("inv_products")
+        .select("name, sort_order")
+        .order("sort_order")
+        .order("name"),
+    ]);
     if (error) {
       toast.error("Nuk u ngarkua inventari");
     } else {
-      setMaterials(
-        (data ?? []).map((m: any) => ({
+      const norm = (s: string) => (s || "").trim().toLowerCase();
+      const invNames = new Set((invProds ?? []).map((p: any) => norm(p.name)));
+      const invOrder = new Map<string, number>(
+        (invProds ?? []).map((p: any, i: number) => [norm(p.name), p.sort_order ?? i]),
+      );
+      const filtered = (rawData ?? [])
+        .filter((m: any) => invNames.size === 0 || invNames.has(norm(m.name)))
+        .map((m: any) => ({
           ...m,
           quantity: Number(m.quantity),
           min_threshold: Number(m.min_threshold),
-        })),
-      );
+        }))
+        .sort((a: any, b: any) => {
+          const oa = invOrder.get(norm(a.name)) ?? 9999;
+          const ob = invOrder.get(norm(b.name)) ?? 9999;
+          return oa - ob || a.name.localeCompare(b.name);
+        });
+      setMaterials(filtered);
     }
     setLoading(false);
   };
