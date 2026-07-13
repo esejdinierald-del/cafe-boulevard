@@ -99,6 +99,14 @@ export default function Analytics() {
   const totalRev = daily.reduce((s, d) => s + d.total, 0);
   const avgDay = daily.length ? totalRev / daily.length : 0;
 
+  if (!authorized) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        Duke verifikuar aksesin…
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
