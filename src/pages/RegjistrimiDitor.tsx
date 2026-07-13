@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, Loader2, Package2, Coffee, Lock, Boxes, Settings2, Clock } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, Package2, Coffee, Lock, Boxes, Settings2, Clock, CheckCircle2, ShieldCheck } from "lucide-react";
 import {
   InventoryProductData,
   InventoryTurnData,
