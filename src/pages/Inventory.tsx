@@ -179,7 +179,7 @@ const Inventory = () => {
             quantity: r.qty,
             note: note || null,
             operatorName: staffName,
-            locationId: "main",
+            locationId: null,
           },
         });
         if (error || (data as any)?.error) fail++;

@@ -18,13 +18,14 @@ serve(async (req) => {
     if (req.method === "POST") {
       const body = await req.json();
       if (body.action === "addSupply") {
-        const { materialId, quantity, note = null, operatorName, locationId = "main" } = body;
+        const { materialId, quantity, note = null, operatorName, locationId = null } = body;
         if (!materialId || !operatorName || typeof quantity !== "number" || quantity <= 0) {
           return jsonResponse({ error: "Të dhëna të pavlefshme për furnizim" }, 400);
         }
+        const locId = locationId && /^[0-9a-f-]{36}$/i.test(String(locationId)) ? locationId : null;
         const { data, error } = await supabase.rpc("add_supply", {
           p_material_id: materialId, p_quantity: quantity, p_note: note,
-          p_operator_name: operatorName, p_location_id: locationId,
+          p_operator_name: operatorName, p_location_id: locId,
         });
         if (error) return jsonResponse({ error: error.message }, 500);
         return jsonResponse({ material: data });
