@@ -22,25 +22,29 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (!adminPassword || typeof adminPassword !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Fjalëkalimi i adminit është i detyrueshëm" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const now = new Date().toISOString();
 
-    // Optional admin PIN path — validated server-side against app_settings.
-    // If provided, it must match to authorize the unlock.
-    if (adminPassword) {
-      const { data: setting } = await supabase
-        .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
-      const expectedHash = setting?.value ?? (await sha256("2025"));
-      const providedHash = await sha256(String(adminPassword));
-      if (providedHash !== expectedHash) {
-        return new Response(
-          JSON.stringify({ error: "Fjalëkalim i pasaktë" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    // Mandatory admin PIN — validated server-side against app_settings.
+    const { data: setting } = await supabase
+      .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
+    const expectedHash = setting?.value ?? (await sha256("2025"));
+    const providedHash = await sha256(String(adminPassword));
+    if (providedHash !== expectedHash) {
+      return new Response(
+        JSON.stringify({ error: "Fjalëkalim i pasaktë" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Validate the token exists and is within shift range
