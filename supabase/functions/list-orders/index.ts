@@ -27,11 +27,18 @@ serve(async (req) => {
 
     const status = (body && typeof (body as any).status === "string") ? (body as any).status : "pending";
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("orders")
       .select("*")
-      .eq("status", status)
       .order("created_at", { ascending: true });
+
+    if (status === "all") {
+      query = query.in("status", ["pending", "completed"]);
+    } else {
+      query = query.eq("status", status);
+    }
+
+    const { data, error } = await query;
 
     if (error) return json({ error: error.message }, 500);
     return json({ orders: data ?? [] });

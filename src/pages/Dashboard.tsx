@@ -62,6 +62,8 @@ const Dashboard = () => {
   const notificationTypeRef = useRef<'voice' | 'sound'>('voice');
   const titleIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const originalTitleRef = useRef<string>('Boulevard Staff');
+  const seenOrderIdsRef = useRef<Set<string>>(new Set());
+  const ordersPrimedRef = useRef(false);
 
   // Curtain state - QR overlay
   const [curtainActive, setCurtainActive] = useState(true);
@@ -332,9 +334,31 @@ const Dashboard = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      if (!shiftToken) return;
+      const { data, error } = await supabase.functions.invoke("list-orders", {
+        body: { shiftToken, status: "all" },
+      });
       if (error) throw error;
-      setOrders((data || []) as Order[]);
+      const list = ((data as any)?.orders ?? []) as Order[];
+      // Newest first to match previous behaviour
+      list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Detect new pending orders (poll-based, since realtime is disabled for anon)
+      if (ordersPrimedRef.current) {
+        for (const o of list) {
+          if (o.status === 'pending' && !seenOrderIdsRef.current.has(o.id)) {
+            playAudioNotification('order', o.table_number);
+            scheduleRepeatNotification(o.id, 'order', o.table_number);
+            toast.success('Porosi e re!', { description: `${o.table_number} - ${o.items.length} artikuj` });
+          }
+        }
+      }
+      seenOrderIdsRef.current = new Set(list.map(o => o.id));
+      ordersPrimedRef.current = true;
+      // Clear reminders for orders no longer pending
+      for (const o of list) {
+        if (o.status !== 'pending') clearRepeatNotification(o.id);
+      }
+      setOrders(list);
     } catch { toast.error('Gabim në marrjen e porosive'); }
   };
 
@@ -405,25 +429,6 @@ const Dashboard = () => {
       })
       .subscribe();
 
-    const ordersChannel = supabase
-      .channel('orders')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
-        const o = payload.new as Order;
-        setOrders(prev => [o, ...prev]);
-        playAudioNotification('order', o.table_number);
-        scheduleRepeatNotification(o.id, 'order', o.table_number);
-        toast.success('Porosi e re!', { description: `${o.table_number} - ${o.items.length} artikuj` });
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload) => {
-        const u = payload.new as Order;
-        setOrders(prev => prev.map(o => o.id === u.id ? u : o));
-        if (u.status !== 'pending') clearRepeatNotification(u.id);
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'orders' }, (payload) => {
-        setOrders(prev => prev.filter(o => o.id !== (payload.old as Order).id));
-      })
-      .subscribe();
-
     const deleteChannel = supabase
       .channel('service-requests-delete')
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'service_requests' }, (payload) => {
@@ -433,7 +438,6 @@ const Dashboard = () => {
 
     return () => {
       supabase.removeChannel(channel);
-      supabase.removeChannel(ordersChannel);
       supabase.removeChannel(deleteChannel);
       repeatTimersRef.current.forEach(t => clearTimeout(t));
       repeatTimersRef.current.clear();
@@ -447,7 +451,7 @@ const Dashboard = () => {
     const poll = setInterval(() => {
       fetchRequests();
       fetchOrders();
-    }, 5000);
+    }, 3000);
     return () => clearInterval(poll);
   }, [curtainActive]);
 
