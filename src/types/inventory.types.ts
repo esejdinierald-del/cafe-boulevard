@@ -17,6 +17,9 @@ export interface InventoryTurnData {
   mulliriFillim: number;
   mulliriPerfund: number;
   shpenzime: InventoryShpenzim[];
+  /** ISO timestamp when staff clicked "Konfirmo Gjendjen" — after this,
+   * furnizime & gjendje are locked and stok fillim / dif become visible. */
+  gjendjeConfirmedAt?: string | null;
 }
 
 export interface InventoryDailyEntry {
@@ -39,4 +42,5 @@ export const emptyTurn = (): InventoryTurnData => ({
   mulliriFillim: 0,
   mulliriPerfund: 0,
   shpenzime: [],
+  gjendjeConfirmedAt: null,
 });

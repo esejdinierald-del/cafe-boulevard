@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, Loader2, Package2, Coffee, Lock, Boxes, Settings2, Clock } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, Package2, Coffee, Lock, Boxes, Settings2, Clock, CheckCircle2, ShieldCheck } from "lucide-react";
 import {
   InventoryProductData,
   InventoryTurnData,
@@ -56,6 +56,7 @@ const RegjistrimiDitor = () => {
   const [saving, setSaving] = useState(false);
   const [closing, setClosing] = useState(false);
   const [closingTurn, setClosingTurn] = useState(false);
+  const [confirmingGjendje, setConfirmingGjendje] = useState(false);
   const [date, setDate] = useState(todayIso());
   const [products, setProducts] = useState<InvProduct[]>([]);
   const [turns, setTurns] = useState<ShiftTurn[]>([]);
@@ -338,6 +339,89 @@ const RegjistrimiDitor = () => {
     }
   };
 
+  // ---------- Confirm gjendje for the active turn ----------
+  const confirmGjendje = async () => {
+    if (!selectedTurn || !isMine) return;
+    if (selectedTurn.turn_data.gjendjeConfirmedAt) return;
+    const hasAnyGjendje = Object.values(selectedTurn.turn_data.products).some(
+      (p) => (p.gjendje || 0) > 0,
+    );
+    if (!hasAnyGjendje) {
+      if (!confirm("Asnjë produkt s'ka gjendje reale të plotësuar. Konfirmo prapëseprapë?")) return;
+    } else if (!confirm("Konfirmo gjendjen reale? Furnizime dhe Gjendja bllokohen; Stok Fillim & Dif bëhen të dukshme.")) {
+      return;
+    }
+    setConfirmingGjendje(true);
+    try {
+      const now = new Date().toISOString();
+      const updated: InventoryTurnData = { ...selectedTurn.turn_data, gjendjeConfirmedAt: now };
+      const { error } = await (supabase as any)
+        .from("shift_turns")
+        .update({ turn_data: updated })
+        .eq("id", selectedTurn.id);
+      if (error) throw error;
+      setTurns((prev) => prev.map((t) => (t.id === selectedTurn.id ? { ...t, turn_data: updated } : t)));
+      toast.success("Gjendja u konfirmua.");
+    } catch (e: any) {
+      toast.error("Dështoi: " + (e.message || e));
+    } finally {
+      setConfirmingGjendje(false);
+    }
+  };
+
+  // ---------- Live Shiriti: re-aggregate from POS whenever a transaction changes ----------
+  useEffect(() => {
+    if (guardChecking || loading || !myTurnId) return;
+    const mine = turns.find((t) => t.id === myTurnId);
+    if (!mine || mine.is_locked || products.length === 0) return;
+
+    let cancelled = false;
+    let debounce: number | null = null;
+
+    const refreshShiriti = async () => {
+      try {
+        const fromISO = mine.started_at;
+        const toISO = new Date().toISOString();
+        const map = await Sales.aggregateSalesByProduct(fromISO, toISO, products);
+        if (cancelled) return;
+        setTurns((prev) => prev.map((t) => {
+          if (t.id !== myTurnId) return t;
+          const nextProducts = { ...t.turn_data.products };
+          products.forEach((p) => {
+            const existing = nextProducts[p.name] || emptyProduct();
+            nextProducts[p.name] = { ...existing, shiriti: map[p.name] || 0 };
+          });
+          return { ...t, turn_data: { ...t.turn_data, products: nextProducts } };
+        }));
+      } catch { /* silent */ }
+    };
+
+    // Initial fetch
+    refreshShiriti();
+
+    const scheduleRefresh = () => {
+      if (debounce) window.clearTimeout(debounce);
+      debounce = window.setTimeout(refreshShiriti, 700);
+    };
+
+    // Realtime listener on transactions (main backend)
+    const channel = mainSupabase
+      .channel(`shiriti-live-${myTurnId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, scheduleRefresh)
+      .subscribe();
+
+    // Fallback poll every 20s in case realtime misses
+    const poll = window.setInterval(refreshShiriti, 20000);
+
+    return () => {
+      cancelled = true;
+      if (debounce) window.clearTimeout(debounce);
+      window.clearInterval(poll);
+      mainSupabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myTurnId, products, guardChecking, loading]);
+
   const closeDay = async () => {
     if (!turns.length) return;
     if (!confirm("Mbyll ditën dhe llogarit stokun për ditën pasardhëse?")) return;
@@ -466,6 +550,8 @@ const RegjistrimiDitor = () => {
 
             {turns.map((t) => {
               const editable = t.id === myTurnId && !t.is_locked;
+              const isConfirmed = !!t.turn_data.gjendjeConfirmedAt;
+              const canEditGjendje = editable && !isConfirmed;
               return (
               <TabsContent key={t.id} value={t.id} className="space-y-6 mt-4">
                 {!editable && (
@@ -500,19 +586,32 @@ const RegjistrimiDitor = () => {
                     </div>
                   </div>
 
-                  {products.length === 0 ? (
+                  {editable && (
+                    isConfirmed ? (
+                      <div className="mb-3 flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-3 py-2">
+                        <ShieldCheck size={14}/>
+                        Gjendja u konfirmua në {new Date(t.turn_data.gjendjeConfirmedAt!).toLocaleString("sq-AL", { timeZone: "Europe/Rome" })}. Furnizime dhe Gjendja janë të bllokuara. Shiriti vazhdon të përditësohet nga POS.
+                      </div>
+                    ) : (
+                      <div className="mb-3 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded px-3 py-2">
+                        Fut <b>Furnizimet</b> dhe <b>Gjendjen reale</b>. Kur të mbarosh, shtyp <b>Konfirmo Gjendjen</b> për të parë Stok Fillim & Dif.
+                      </div>
+                    )
+                  )}
+
+                   {products.length === 0 ? (
                     <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto nga "Menaxho".</p>
                   ) : (
                     <div className="overflow-x-auto -mx-4 px-4">
-                      <table className="w-full text-sm border-collapse min-w-[720px]">
+                      <table className="w-full text-sm border-collapse min-w-[640px]">
                         <thead>
                           <tr className="text-xs text-slate-400 border-b border-slate-800">
                             <th className="text-left py-2 pr-2 font-medium">Produkti</th>
-                            <th className="text-right py-2 px-2 font-medium">Stok Fillim</th>
+                            <th className="text-right py-2 px-2 font-medium">Furnizime</th>
                             <th className="text-right py-2 px-2 font-medium">Gjendje</th>
                             <th className="text-right py-2 px-2 font-medium">Shiriti</th>
-                            <th className="text-right py-2 px-2 font-medium">Furnizime</th>
-                            <th className="text-right py-2 px-2 font-medium">Dif</th>
+                            {(isConfirmed || !editable) && <th className="text-right py-2 px-2 font-medium">Stok Fillim</th>}
+                            {(isConfirmed || !editable) && <th className="text-right py-2 px-2 font-medium">Dif</th>}
                             <th className="text-right py-2 pl-2 font-medium">Dif fillon</th>
                           </tr>
                         </thead>
@@ -525,12 +624,16 @@ const RegjistrimiDitor = () => {
                               <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-950/40">
                                 <td className="py-1.5 pr-2 font-medium">{p.name}</td>
                                 <td className="py-1.5 px-1">
-                                  <RowField value={data.stokFillim} readOnly />
+                                  <RowField
+                                    value={data.furnizime}
+                                    readOnly={!canEditGjendje}
+                                    onChange={(v) => setFurnizime(p.name, v)}
+                                  />
                                 </td>
                                 <td className="py-1.5 px-1">
                                   <RowField
                                     value={data.gjendje}
-                                    readOnly={!editable}
+                                    readOnly={!canEditGjendje}
                                     onChange={(v) => setCurrentTurn((prev) => ({
                                       ...prev,
                                       products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), gjendje: v } },
@@ -540,16 +643,16 @@ const RegjistrimiDitor = () => {
                                 <td className="py-1.5 px-1">
                                   <RowField value={data.shiriti} readOnly />
                                 </td>
-                                <td className="py-1.5 px-1">
-                                  <RowField
-                                    value={data.furnizime}
-                                    readOnly={!editable}
-                                    onChange={(v) => setFurnizime(p.name, v)}
-                                  />
-                                </td>
-                                <td className={`py-1.5 px-2 text-right font-bold tabular-nums ${difColor(dif)}`}>
-                                  {dif > 0 ? "+" : ""}{dif.toFixed(2)}
-                                </td>
+                                {(isConfirmed || !editable) && (
+                                  <td className="py-1.5 px-1">
+                                    <RowField value={data.stokFillim} readOnly />
+                                  </td>
+                                )}
+                                {(isConfirmed || !editable) && (
+                                  <td className={`py-1.5 px-2 text-right font-bold tabular-nums ${difColor(dif)}`}>
+                                    {dif > 0 ? "+" : ""}{dif.toFixed(2)}
+                                  </td>
+                                )}
                                 <td className="py-1.5 pl-2 text-right text-xs text-slate-400 tabular-nums">
                                   {difStart || "—"}
                                 </td>
@@ -558,6 +661,19 @@ const RegjistrimiDitor = () => {
                           })}
                         </tbody>
                       </table>
+                    </div>
+                  )}
+
+                  {editable && !isConfirmed && (
+                    <div className="mt-4 flex justify-end">
+                      <Button
+                        onClick={confirmGjendje}
+                        disabled={confirmingGjendje}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                      >
+                        {confirmingGjendje ? <Loader2 className="animate-spin mr-2" size={16}/> : <CheckCircle2 size={16} className="mr-2"/>}
+                        Konfirmo Gjendjen
+                      </Button>
                     </div>
                   )}
                 </Card>
