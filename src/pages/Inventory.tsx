@@ -108,6 +108,11 @@ const Inventory = () => {
         { event: "*", schema: "public", table: "raw_materials" },
         load,
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "inv_products" },
+        load,
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
