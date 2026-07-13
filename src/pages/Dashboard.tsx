@@ -681,6 +681,14 @@ const Dashboard = () => {
 
   const getRequestIcon = (type: string) => type === 'waiter' ? <Bell className="h-5 w-5" /> : <Receipt className="h-5 w-5" />;
 
+  if (!authorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
+        Duke verifikuar akses…
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-3 flex flex-col relative" onClick={enableAudio}>
       <audio ref={audioRef} />
