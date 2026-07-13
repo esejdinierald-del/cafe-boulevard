@@ -423,6 +423,10 @@ const ManagerDashboard = () => {
               <Users className="mr-1 h-4 w-4" />
               Stafi
             </TabsTrigger>
+            <TabsTrigger value="recipes" className="rounded-xl font-display font-semibold text-base data-[state=active]:bg-secondary data-[state=active]:text-foreground">
+              <ChefHat className="mr-1 h-4 w-4" />
+              Receta
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-5">
