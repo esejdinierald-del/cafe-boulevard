@@ -34,6 +34,31 @@ serve(async (req) => {
     if (allConfirmed) {
       await supabase.from("pos_orders").update({ status: "ready" }).eq("id", split.order_id).neq("status", "closed");
 
+      // Regjistro shitjen menjëherë sapo banaku konfirmon (nuk pritet mbyllja te Arka).
+      try {
+        const { data: existingTxn } = await supabase
+          .from("transactions").select("id").eq("order_id", split.order_id).eq("type", "sale").maybeSingle();
+        if (!existingTxn) {
+          const { data: ord } = await supabase
+            .from("pos_orders")
+            .select("id, total_amount, items, operator_name, location_id, table_number")
+            .eq("id", split.order_id).single();
+          if (ord) {
+            await supabase.from("transactions").insert({
+              order_id: ord.id,
+              type: "sale",
+              amount: ord.total_amount,
+              items: ord.items,
+              operator_name: ord.operator_name,
+              location_id: ord.location_id,
+              table_number: ord.table_number,
+            });
+          }
+        }
+      } catch (e) {
+        console.error("auto-sale transaction failed", (e as Error).message);
+      }
+
       // Decrement raw materials based on recipes (once, when the whole order is ready)
       try {
         const { data: order } = await supabase
