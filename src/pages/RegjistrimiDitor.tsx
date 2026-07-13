@@ -395,14 +395,7 @@ const RegjistrimiDitor = () => {
   const confirmGjendje = async () => {
     if (!selectedTurn || !isMine) return;
     if (selectedTurn.turn_data.gjendjeConfirmedAt) return;
-    const hasAnyGjendje = Object.values(selectedTurn.turn_data.products).some(
-      (p) => (p.gjendje || 0) > 0,
-    );
-    if (!hasAnyGjendje) {
-      if (!confirm("Asnjë produkt s'ka gjendje reale të plotësuar. Konfirmo prapëseprapë?")) return;
-    } else if (!confirm("Konfirmo gjendjen reale? Furnizime dhe Gjendja bllokohen; Stok Fillim & Dif bëhen të dukshme.")) {
-      return;
-    }
+    if (!confirm("Konfirmo gjendjen? Stok Fillim, Shiriti dhe Dif bëhen të dukshme.")) return;
     setConfirmingGjendje(true);
     try {
       const now = new Date().toISOString();
