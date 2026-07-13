@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,8 @@ interface SongRequest {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [authorized, setAuthorized] = useState(false);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
