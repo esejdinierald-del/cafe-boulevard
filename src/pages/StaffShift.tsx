@@ -408,14 +408,19 @@ const StaffShift = () => {
 
   const fetchData = useCallback(async (showIndicator = false) => {
     if (showIndicator) setIsRefreshing(true);
+    const token = activeToken || localStorage.getItem("staff_shift_token") || "";
     const [reqRes, ordRes] = await Promise.all([
       supabase.from("service_requests").select("*").eq("status", "pending").neq("request_type", "kitchen_ready").order("created_at", { ascending: true }),
-      supabase.from("orders").select("*").eq("status", "pending").order("created_at", { ascending: true }),
+      supabase.functions.invoke("list-orders", {
+        body: { status: "pending", shiftToken: token },
+        headers: { "x-shift-token": token },
+      }),
     ]);
     if (reqRes.data) setRequests(reqRes.data as ServiceRequest[]);
-    if (ordRes.data) setOrders(ordRes.data as unknown as Order[]);
+    const ordData = (ordRes as any)?.data?.orders;
+    if (Array.isArray(ordData)) setOrders(ordData as unknown as Order[]);
     if (showIndicator) setTimeout(() => setIsRefreshing(false), 300);
-  }, []);
+  }, [activeToken]);
 
   const handleCompleteRequest = useCallback(async (id: string, tableNumber: string) => {
     setCompletingIds(prev => new Set(prev).add(id));
@@ -447,10 +452,10 @@ const StaffShift = () => {
     setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
   }, [activeToken]);
 
-  // Realtime + polling
   useEffect(() => {
     if (!isValid) return;
     fetchData();
+    const pollId = setInterval(() => fetchData(), 4000);
     const channel = supabase
       .channel("staff-shift-realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "service_requests" }, (payload) => {
@@ -476,19 +481,9 @@ const StaffShift = () => {
           }).catch(() => {});
         }
       })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
-        fetchData();
-        const o = payload.new as any;
-        repeatNotification(`🛒 Porosi - ${o.table_number}`, `Porosi e re ${o.total_price} L nga ${o.table_number}`);
-        // Send push to other devices
-        supabase.functions.invoke("send-push", {
-          body: { title: `🛒 Porosi - ${o.table_number}`, body: `Porosi e re ${o.total_price} L nga ${o.table_number}`, type: "order" },
-        }).catch(() => {});
-      })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_requests" }, () => fetchData())
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, () => fetchData())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { clearInterval(pollId); supabase.removeChannel(channel); };
   }, [isValid, fetchData, repeatNotification]);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
