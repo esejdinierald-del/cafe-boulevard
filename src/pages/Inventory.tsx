@@ -58,7 +58,8 @@ const Inventory = () => {
   }, []);
 
   const load = async () => {
-    // Sync with /regjistrimi-ditor: only show materials whose name matches an inv_product.
+    // Sync with /regjistrimi-ditor: list is driven by inv_products.
+    // Missing raw_materials are created on the fly so supplies always land on a real row.
     const [{ data: rawData, error }, { data: invProds }] = await Promise.all([
       supabase
         .from("raw_materials")
@@ -74,23 +75,32 @@ const Inventory = () => {
       toast.error("Nuk u ngarkua inventari");
     } else {
       const norm = (s: string) => (s || "").trim().toLowerCase();
-      const invNames = new Set((invProds ?? []).map((p: any) => norm(p.name)));
-      const invOrder = new Map<string, number>(
-        (invProds ?? []).map((p: any, i: number) => [norm(p.name), p.sort_order ?? i]),
-      );
-      const filtered = (rawData ?? [])
-        .filter((m: any) => invNames.size === 0 || invNames.has(norm(m.name)))
-        .map((m: any) => ({
-          ...m,
-          quantity: Number(m.quantity),
-          min_threshold: Number(m.min_threshold),
-        }))
-        .sort((a: any, b: any) => {
-          const oa = invOrder.get(norm(a.name)) ?? 9999;
-          const ob = invOrder.get(norm(b.name)) ?? 9999;
-          return oa - ob || a.name.localeCompare(b.name);
-        });
-      setMaterials(filtered);
+      const rawByName = new Map<string, any>();
+      (rawData ?? []).forEach((r: any) => rawByName.set(norm(r.name), r));
+
+      const invList = invProds ?? [];
+      // Auto-create any missing raw_materials so the list matches inv_products 1:1.
+      const missing = invList.filter((p: any) => !rawByName.has(norm(p.name)));
+      if (missing.length > 0) {
+        const { data: inserted } = await supabase
+          .from("raw_materials")
+          .insert(missing.map((p: any) => ({ name: p.name, quantity: 0, unit: "cope", min_threshold: 0 })))
+          .select("id, name, quantity, unit, min_threshold, location_id");
+        (inserted ?? []).forEach((r: any) => rawByName.set(norm(r.name), r));
+      }
+
+      const list = invList
+        .map((p: any) => {
+          const r = rawByName.get(norm(p.name));
+          if (!r) return null;
+          return {
+            ...r,
+            quantity: Number(r.quantity),
+            min_threshold: Number(r.min_threshold),
+          };
+        })
+        .filter(Boolean) as Material[];
+      setMaterials(list);
     }
     setLoading(false);
   };
