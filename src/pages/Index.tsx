@@ -265,7 +265,7 @@ const Index = () => {
 
       {/* Language toggle */}
       <div className="absolute top-4 right-4 z-20">
-        <button onClick={toggleLanguage} className="blvd-lang-btn">
+        <button type="button" onClick={toggleLanguage} className="blvd-lang-btn">
           <Languages className="h-5 w-5" />
         </button>
       </div>
@@ -338,7 +338,7 @@ const Index = () => {
                     className="blvd-table-input"
                   />
                   <div className="pr-3 flex-shrink-0 relative z-10">
-                    <button onClick={confirmTableAndRun} className="blvd-check-btn">
+                    <button type="button" onClick={confirmTableAndRun} className="blvd-check-btn">
                       <CheckIcon />
                     </button>
                   </div>
@@ -346,46 +346,46 @@ const Index = () => {
               )}
 
               {/* 2. Call Waiter — Dark */}
-              <button onClick={handleCallWaiter} disabled={checking} className="blvd-btn-dark">
+              <button type="button" onClick={handleCallWaiter} disabled={checking} className="blvd-btn-dark">
                 <span className="blvd-icon-gold"><BellIcon /></span>
                 <span>{t.callWaiter}</span>
               </button>
 
               {/* 3. Request Bill — GOLD */}
-              <button onClick={handleRequestBill} disabled={checking} className="blvd-btn-gold">
+              <button type="button" onClick={handleRequestBill} disabled={checking} className="blvd-btn-gold">
                 <span className="blvd-shimmer" />
                 <span className="blvd-icon-dark"><ReceiptIcon /></span>
                 <span className="relative z-10">{t.requestBill}</span>
               </button>
 
               {/* 4. Order from Menu — Dark */}
-              <button onClick={() => navigate(`/menu?tabela=${tableNumber.trim() || ""}`)} className="blvd-btn-dark">
+              <button type="button" onClick={() => navigate(`/menu?tabela=${tableNumber.trim() || ""}`)} className="blvd-btn-dark">
                 <span className="blvd-icon-gold"><UtensilsIcon /></span>
                 <span>{t.orderMenu}</span>
               </button>
 
               {/* 5. Ask Staff — GOLD */}
-              <button onClick={() => setChatOpen(true)} className="blvd-btn-gold">
+              <button type="button" onClick={() => setChatOpen(true)} className="blvd-btn-gold">
                 <span className="blvd-shimmer" style={{ animationDelay: '2s' }} />
                 <span className="blvd-icon-dark"><ChatIcon /></span>
                 <span className="relative z-10">{t.askStaff}</span>
               </button>
 
               {/* Request Song — Dark */}
-              <button onClick={() => setSongDialogOpen(true)} className="blvd-btn-dark">
+              <button type="button" onClick={() => setSongDialogOpen(true)} className="blvd-btn-dark">
                 <span className="blvd-icon-gold text-xl">🎵</span>
                 <span>{t.requestSong}</span>
               </button>
 
               {/* 6. Rate Us — Dark */}
-              <button onClick={() => setFeedbackOpen(true)} className="blvd-btn-dark">
+              <button type="button" onClick={() => setFeedbackOpen(true)} className="blvd-btn-dark">
                 <span className="blvd-icon-gold"><StarIcon /></span>
                 <span>{t.rateUs}</span>
               </button>
             </div>
 
             {/* Hidden manager link */}
-            <button onClick={() => navigate("/manager-login")} className="blvd-manager-dot">•</button>
+            <button type="button" onClick={() => navigate("/manager-login")} className="blvd-manager-dot">•</button>
           </div>
         </div>
       </div>
@@ -411,7 +411,7 @@ const Index = () => {
               autoFocus
             />
             <div className="flex gap-2">
-              <button
+              <button type="button"
                 onClick={handleRequestSong}
                 disabled={submittingSong}
                 className="blvd-btn-gold flex-1 h-12"
@@ -420,7 +420,7 @@ const Index = () => {
                   {submittingSong ? t.sending : t.sendSong}
                 </span>
               </button>
-              <button
+              <button type="button"
                 onClick={() => setSongDialogOpen(false)}
                 className="blvd-btn-dark h-12 px-6"
               >

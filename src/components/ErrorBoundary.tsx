@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-slate-400 text-sm break-words">
               {this.state.error.message || "Gabim i papritur."}
             </p>
-            <button
+            <button type="button"
               onClick={this.reset}
               className="px-4 py-2 rounded bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold"
             >

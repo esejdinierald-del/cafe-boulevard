@@ -99,7 +99,7 @@ export const RecipeManagerCard = () => {
             const open = openId === mi.id;
             return (
               <div key={mi.id} className="border border-border rounded-lg bg-background/40 overflow-hidden">
-                <button
+                <button type="button"
                   onClick={() => setOpenId(open ? null : mi.id)}
                   className="w-full flex items-center justify-between px-3 py-2 hover:bg-muted/40"
                 >

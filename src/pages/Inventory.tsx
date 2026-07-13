@@ -206,7 +206,7 @@ const Inventory = () => {
     <div className="min-h-screen bg-slate-900 text-white">
       <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
         <div className="flex items-center gap-3">
-        <button
+        <button type="button"
             onClick={() => navigate("/pos")}
             className="p-2 rounded hover:bg-slate-800"
             aria-label="Kthehu tek POS"

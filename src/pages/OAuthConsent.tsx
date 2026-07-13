@@ -97,14 +97,14 @@ export default function OAuthConsent() {
           Ky autorizim nuk kalon rregullat e sigurisë (RLS) të aplikacionit.
         </p>
         <div className="flex gap-3">
-          <button
+          <button type="button"
             disabled={busy}
             onClick={() => decide(true)}
             className="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold disabled:opacity-50"
           >
             Aprovo
           </button>
-          <button
+          <button type="button"
             disabled={busy}
             onClick={() => decide(false)}
             className="flex-1 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-medium disabled:opacity-50"

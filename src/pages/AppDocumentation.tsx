@@ -120,7 +120,7 @@ const AppDocumentation = () => {
     <div className="min-h-screen bg-[#faf9f6] text-[#1a1a1a]">
       {/* Top Bar */}
       <div className="print:hidden fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e8e0d4] px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate("/")} className="flex items-center gap-2 text-sm text-[#8a7a5a] hover:text-[#5a4a2a] transition-colors">
+        <button type="button" onClick={() => navigate("/")} className="flex items-center gap-2 text-sm text-[#8a7a5a] hover:text-[#5a4a2a] transition-colors">
           <ArrowLeft className="h-4 w-4" />
           Kthehu
         </button>

@@ -47,20 +47,20 @@ export const OrderPanel = () => {
             <div className="flex items-center justify-between gap-2">
               <div className="text-white text-sm font-medium flex-1">{item.name}</div>
               <div className="flex items-center gap-1">
-                <button
+                <button type="button"
                   onClick={() => addItem(item.productId, -1, item.notes, item)}
                   className="bg-red-600 text-white p-1 rounded"
                 >
                   <Minus size={14} />
                 </button>
                 <span className="text-white text-sm w-6 text-center">{item.quantity}</span>
-                <button
+                <button type="button"
                   onClick={() => addItem(item.productId, 1, item.notes, item)}
                   className="bg-green-600 text-white p-1 rounded"
                 >
                   <Plus size={14} />
                 </button>
-                <button
+                <button type="button"
                   onClick={() => removeItem(item.productId)}
                   className="bg-red-800 text-white p-1 rounded"
                 >
@@ -88,7 +88,7 @@ export const OrderPanel = () => {
           <span>{total.toFixed(0)} Lekë</span>
         </div>
 
-        <button
+        <button type="button"
           onClick={handleSubmit}
           disabled={loading || currentOrder.items.length === 0}
           className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-2 rounded hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50"
@@ -97,7 +97,7 @@ export const OrderPanel = () => {
           {loading ? "Duke dërguar..." : "Dërgo Porosinë"}
         </button>
 
-        <button
+        <button type="button"
           onClick={() => usePOSStore.getState().setCurrentOrder(null)}
           className="w-full bg-slate-700 text-white py-2 rounded hover:bg-slate-600 transition"
         >

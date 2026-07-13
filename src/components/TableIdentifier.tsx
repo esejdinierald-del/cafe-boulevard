@@ -41,7 +41,7 @@ export const TableIdentifier = ({ language, tableNumber, isGeneric, onUpdate }: 
 
   if (!editing) {
     return (
-      <button
+      <button type="button"
         onClick={() => setEditing(true)}
         className="flex items-center gap-1.5 text-sm text-secondary/70 hover:text-secondary transition-colors mx-auto"
       >
