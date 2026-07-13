@@ -827,15 +827,27 @@ const StaffShift = () => {
                       <p className="text-xs text-muted-foreground">
                         {new Date(o.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}
                       </p>
-                      <Button
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); handleCompleteOrder(o.id, o.table_number); }}
-                        disabled={isCompleting}
-                        className="bg-success hover:bg-success/90 text-success-foreground h-10 px-3"
-                      >
-                        {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                        <span className="ml-1 text-xs">U krye</span>
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleDecideOrder(o.id, o.table_number, "rejected"); }}
+                          disabled={isCompleting}
+                          variant="outline"
+                          className="h-10 px-3 border-destructive/40 text-destructive hover:bg-destructive/10"
+                        >
+                          {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+                          <span className="ml-1 text-xs">Refuzo</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleDecideOrder(o.id, o.table_number, "accepted"); }}
+                          disabled={isCompleting}
+                          className="bg-success hover:bg-success/90 text-success-foreground h-10 px-3"
+                        >
+                          {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                          <span className="ml-1 text-xs">Prano</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
