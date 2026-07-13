@@ -164,7 +164,10 @@ const Inventory = () => {
       .map((m) => ({ material: m, qty: Number(supplyQtys[m.id] || 0) }))
       .filter((r) => r.qty > 0);
     if (rows.length === 0) {
-      toast.error("Fut sasi për të paktën një artikull");
+      // Kalo pa furnizim — asnjë artikull nuk ka sasi.
+      setDialogOpen(false);
+      resetForm();
+      navigate("/regjistrimi-ditor");
       return;
     }
     setSubmitting(true);
@@ -365,7 +368,7 @@ const Inventory = () => {
               ) : (
                 <Plus size={16} className="mr-1" />
               )}
-              Ruaj Furnizimet
+              Ruaj / Kalo
             </Button>
           </DialogFooter>
         </DialogContent>
