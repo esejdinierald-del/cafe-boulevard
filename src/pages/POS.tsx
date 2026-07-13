@@ -156,8 +156,10 @@ const POS = () => {
       const operatorName = localStorage.getItem("staff_name") || "Kamarier";
       const receipts: string[] = [];
       for (const id of ids) {
+        const shiftToken = localStorage.getItem("staff_shift_token") || undefined;
         const { data, error } = await supabase.functions.invoke("pos-print-ticket", {
-          body: { orderId: id, closeOrder: true, operatorName },
+          body: { orderId: id, closeOrder: true, operatorName, shiftToken },
+          headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
         });
         const err = (data as any)?.error || error?.message;
         if (err) throw new Error(err);
