@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sha256 } from "../_shared/hash.ts";
+import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +12,14 @@ const json = (b: unknown, s = 200) =>
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  maybeCleanup();
+  const rl = checkRateLimit({
+    key: clientKey(req, "verify-admin-passcode"),
+    max: 5,
+    windowMs: 5 * 60_000,
+    blockMs: 15 * 60_000,
+  });
+  if (!rl.ok) return json({ valid: false, error: "Shumë tentativa. Provo më vonë.", retryAfterSec: rl.retryAfterSec }, 429);
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",

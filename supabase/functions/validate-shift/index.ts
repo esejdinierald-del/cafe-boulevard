@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,19 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  maybeCleanup();
+  const rl = checkRateLimit({
+    key: clientKey(req, "validate-shift"),
+    max: 60,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) {
+    return new Response(
+      JSON.stringify({ valid: false, error: "Rate limit", retryAfterSec: rl.retryAfterSec }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(rl.retryAfterSec) } },
+    );
   }
 
   try {
