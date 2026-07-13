@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-shift-token",
 };
 
 function jsonResponse(body: unknown, status = 200) {
@@ -14,7 +15,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
-    const { splitId } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const auth = await requireShiftToken(req, body);
+    if (!auth.ok) return auth.response;
+    const { splitId } = body;
     if (!splitId) return jsonResponse({ error: "Mungon splitId" }, 400);
 
     const { data: split, error: splitErr } = await supabase
