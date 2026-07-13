@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, Loader2, Package2, Coffee, Lock, Boxes, Settings2, Clock, CheckCircle2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, Package2, Coffee, Lock, Boxes, Settings2, Clock, CheckCircle2, ShieldCheck, Camera } from "lucide-react";
 import {
   InventoryProductData,
   InventoryTurnData,
@@ -19,6 +19,7 @@ import { InventoryStockPropagationService as Prop } from "@/services/inventorySt
 import { InventorySalesAggregationService as Sales } from "@/services/inventorySalesAggregation.service";
 import ProductManagerDialog, { InvProductRow } from "@/components/inventory/ProductManagerDialog";
 import { useDifStartDates } from "@/hooks/useDifStartDates";
+import { useCoffeeSalesTotal } from "@/hooks/useCoffeeSalesTotal";
 
 type InvProduct = InvProductRow;
 
@@ -472,6 +473,55 @@ const RegjistrimiDitor = () => {
   );
   const totalShpenzime = useMemo(() => Calc.calculateTotalShpenzime(currentTurn), [currentTurn]);
 
+  // ---------- Kafe Kryesor: auto-sum coffee menu-item sales (makiato, lece, ...) ----------
+  const shiftFrom = selectedTurn?.started_at ?? null;
+  const shiftTo = selectedTurn?.locked_at ?? new Date().toISOString();
+  const [coffeeRefresh, setCoffeeRefresh] = useState(0);
+  const { total: coffeeSalesAuto } = useCoffeeSalesTotal(shiftFrom, shiftTo, coffeeRefresh);
+  // Refresh on POS transactions realtime + interval
+  useEffect(() => {
+    if (!selectedTurn || selectedTurn.is_locked) return;
+    const ch = mainSupabase
+      .channel(`coffee-auto-${selectedTurn.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" },
+          () => setCoffeeRefresh((n) => n + 1))
+      .subscribe();
+    const iv = window.setInterval(() => setCoffeeRefresh((n) => n + 1), 20000);
+    return () => { window.clearInterval(iv); mainSupabase.removeChannel(ch); };
+  }, [selectedTurn?.id, selectedTurn?.is_locked]);
+
+  // Formula: shitje kafe (POS) + mulliri fillim - mulliri perfundim
+  const kafeKryesorDif =
+    coffeeSalesAuto + (currentTurn.mulliriFillim || 0) - (currentTurn.mulliriPerfund || 0);
+
+  // ---------- OCR mulliri perfund from photo ----------
+  const [scanning, setScanning] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const handleScanFile = async (file: File) => {
+    if (!selectedTurn || !isMine) return;
+    setScanning(true);
+    try {
+      const b64: string = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result).split(",")[1] || "");
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+      const { data, error } = await mainSupabase.functions.invoke("scan-mulliri", {
+        body: { imageBase64: b64, mimeType: file.type || "image/jpeg" },
+      });
+      if (error) throw error;
+      if (!data?.total) throw new Error(data?.error || "Nuk u lexua numri");
+      setCurrentTurn((prev) => ({ ...prev, mulliriPerfund: Number(data.total) }));
+      toast.success(`Mulliri Përfund: ${data.total}`);
+    } catch (e: any) {
+      toast.error("Skanimi dështoi: " + (e.message || e));
+    } finally {
+      setScanning(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const productNames = useMemo(() => products.map((p) => p.name), [products]);
   const difStartMap = useDifStartDates(productNames, date);
 
@@ -779,7 +829,30 @@ const RegjistrimiDitor = () => {
 
                 {/* Mulliri */}
                 <Card className="bg-slate-900 border-slate-800 p-4">
-                  <h2 className="font-semibold mb-3">Mulliri</h2>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-semibold">Mulliri</h2>
+                    {editable && (
+                      <>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleScanFile(f); }}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={scanning}
+                          className="bg-amber-600 hover:bg-amber-500 h-8"
+                        >
+                          {scanning ? <Loader2 className="animate-spin mr-1" size={14}/> : <Camera size={14} className="mr-1"/>}
+                          Skano Përfund
+                        </Button>
+                      </>
+                    )}
+                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     <Field
                       label="Fillim"
@@ -801,6 +874,42 @@ const RegjistrimiDitor = () => {
                     </div>
                   </div>
                   <p className="text-xs text-slate-500 mt-2">Dif = TotalKafe − (Përfund − Fillim)</p>
+
+                  {/* Kafe Kryesor — auto nga POS */}
+                  <div className="mt-4 pt-4 border-t border-slate-800">
+                    <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <Coffee size={14}/> Kafe Kryesor (auto nga POS)
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div>
+                        <div className="text-xs text-slate-400 mb-1">Shitje kafe</div>
+                        <div className="h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 tabular-nums font-semibold">
+                          {coffeeSalesAuto}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-400 mb-1">+ Fillim</div>
+                        <div className="h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 tabular-nums">
+                          {t.turn_data.mulliriFillim || 0}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-400 mb-1">− Përfund</div>
+                        <div className="h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 tabular-nums">
+                          {t.turn_data.mulliriPerfund || 0}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-400 mb-1">Dif Kafe</div>
+                        <div className={`h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 font-bold tabular-nums ${difColor(kafeKryesorDif)}`}>
+                          {kafeKryesorDif > 0 ? "+" : ""}{kafeKryesorDif.toFixed(0)}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Formula: Shitje kafe (POS: makiato, lece, etj.) + Mulliri Fillim − Mulliri Përfund
+                    </p>
+                  </div>
                 </Card>
 
                 {/* Xhiro + Shpenzime */}
