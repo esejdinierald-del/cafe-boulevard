@@ -1,10 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sha256 } from "../_shared/hash.ts";
+import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-shift-token",
 };
 
 const json = (body: unknown, status = 200) =>
@@ -16,12 +17,16 @@ const json = (body: unknown, status = 200) =>
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
+    const parsedBody = await req.json();
+    const auth = await requireShiftToken(req, parsedBody);
+    if (!auth.ok) return auth.response;
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    const { orderId, itemIndex, adminPassword, mode } = await req.json();
+    const { orderId, itemIndex, adminPassword, mode } = parsedBody;
     if (!adminPassword) return json({ error: "Fjalëkalim i pasaktë" }, 403);
     const { data: setting } = await supabase
       .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();

@@ -1,7 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
 async function invoke<T = any>(name: string, body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke(name, { body });
+  const shiftToken =
+    typeof window !== "undefined" ? localStorage.getItem("staff_shift_token") : null;
+  const { data, error } = await supabase.functions.invoke(name, {
+    body: { ...body, shiftToken: shiftToken ?? undefined },
+    headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
+  });
   if (error) throw new Error(error.message || "Gabim rrjeti");
   if (data && (data as any).error) throw new Error((data as any).error);
   return data as T;

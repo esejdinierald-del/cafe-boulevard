@@ -250,7 +250,12 @@ export const CashierPanel = () => {
     if (!confirm("Anulo këtë porosi? Ky veprim nuk mund të zhbëhet.")) return;
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("pos-cancel-item", {
-      body: { orderId, mode: "order", adminPassword: pw },
+      body: {
+        orderId,
+        mode: "order",
+        adminPassword: pw,
+        shiftToken: typeof window !== "undefined" ? localStorage.getItem("staff_shift_token") : undefined,
+      },
     });
     setLoading(false);
     const errMsg = (data as any)?.error || error?.message;
@@ -270,7 +275,12 @@ export const CashierPanel = () => {
     if (!item) return;
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("pos-cancel-item", {
-      body: { orderId: order.id, itemIndex: index, adminPassword: pw },
+      body: {
+        orderId: order.id,
+        itemIndex: index,
+        adminPassword: pw,
+        shiftToken: typeof window !== "undefined" ? localStorage.getItem("staff_shift_token") : undefined,
+      },
     });
     setLoading(false);
     const errMsg = (data as any)?.error || error?.message;
