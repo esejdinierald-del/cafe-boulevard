@@ -98,6 +98,31 @@ const Dashboard = () => {
   useEffect(() => { currentSongRef.current = currentSong; }, [currentSong]);
   useEffect(() => { playlistRef.current = playlist; }, [playlist]);
 
+  // Server-side auth gate: require authenticated manager/admin
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/manager-login", { replace: true });
+        return;
+      }
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .in("role", ["manager", "admin"])
+        .maybeSingle();
+      if (!roleData) {
+        toast.error("Nuk keni akses në dashboard");
+        navigate("/manager-login", { replace: true });
+        return;
+      }
+      if (active) setAuthorized(true);
+    })();
+    return () => { active = false; };
+  }, [navigate]);
+
   // Generate or fetch active shift token via edge function (bypasses RLS)
   const ensureShiftToken = async () => {
     const now = new Date();
