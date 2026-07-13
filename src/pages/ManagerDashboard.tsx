@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Plus, Trash2, Edit, Save, X, Brain, Star, Armchair, Users } from "lucide-react";
+import { LogOut, Plus, Trash2, Edit, Save, X, Brain, Star, Armchair, Users, ChefHat } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ import logo from "@/assets/boulevard-logo.png";
 import coffeeBackground from "@/assets/coffee-background.png";
 import { StaffManagerCard } from "@/components/manager/StaffManagerCard";
 import { AdminPasscodeCard } from "@/components/manager/AdminPasscodeCard";
+import { RecipeManagerCard } from "@/components/manager/RecipeManagerCard";
 
 interface Category {
   id: string;
