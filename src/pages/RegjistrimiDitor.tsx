@@ -663,21 +663,13 @@ const RegjistrimiDitor = () => {
                           </Button>
                         </>
                       )}
-                      <ProductManagerDialog
-                        products={products}
-                        onChanged={handleProductsChanged}
-                        open={productMgrOpen}
-                        onOpenChange={setProductMgrOpen}
-                        trigger={
-                          <Button
-                            size="sm"
-                            className="bg-slate-800 hover:bg-slate-700 h-8"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); requestAdminAccess(); }}
-                          >
-                            <ShieldCheck size={14} className="mr-1"/> Menaxho (Admin)
-                          </Button>
-                        }
-                      />
+                      <Button
+                        size="sm"
+                        className="bg-slate-800 hover:bg-slate-700 h-8"
+                        onClick={requestAdminAccess}
+                      >
+                        <ShieldCheck size={14} className="mr-1"/> Menaxho (Admin)
+                      </Button>
                     </div>
                   </div>
 
