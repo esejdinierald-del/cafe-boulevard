@@ -8,8 +8,9 @@ async function logToDb(severity: Severity, message: string, metadata: Record<str
   try {
     await supabase.from("app_logs").insert({
       severity,
-      message: message.slice(0, 1000),
+      event: message.slice(0, 500),
       metadata: {
+        message,
         ...metadata,
         url: typeof window !== "undefined" ? window.location.href : null,
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
