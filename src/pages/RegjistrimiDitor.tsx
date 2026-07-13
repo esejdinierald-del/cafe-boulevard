@@ -550,6 +550,8 @@ const RegjistrimiDitor = () => {
 
             {turns.map((t) => {
               const editable = t.id === myTurnId && !t.is_locked;
+              const isConfirmed = !!t.turn_data.gjendjeConfirmedAt;
+              const canEditGjendje = editable && !isConfirmed;
               return (
               <TabsContent key={t.id} value={t.id} className="space-y-6 mt-4">
                 {!editable && (
@@ -584,19 +586,32 @@ const RegjistrimiDitor = () => {
                     </div>
                   </div>
 
-                  {products.length === 0 ? (
+                  {editable && (
+                    isConfirmed ? (
+                      <div className="mb-3 flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-3 py-2">
+                        <ShieldCheck size={14}/>
+                        Gjendja u konfirmua në {new Date(t.turn_data.gjendjeConfirmedAt!).toLocaleString("sq-AL", { timeZone: "Europe/Rome" })}. Furnizime dhe Gjendja janë të bllokuara. Shiriti vazhdon të përditësohet nga POS.
+                      </div>
+                    ) : (
+                      <div className="mb-3 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded px-3 py-2">
+                        Fut <b>Furnizimet</b> dhe <b>Gjendjen reale</b>. Kur të mbarosh, shtyp <b>Konfirmo Gjendjen</b> për të parë Stok Fillim & Dif.
+                      </div>
+                    )
+                  )}
+
+                   {products.length === 0 ? (
                     <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto nga "Menaxho".</p>
                   ) : (
                     <div className="overflow-x-auto -mx-4 px-4">
-                      <table className="w-full text-sm border-collapse min-w-[720px]">
+                      <table className="w-full text-sm border-collapse min-w-[640px]">
                         <thead>
                           <tr className="text-xs text-slate-400 border-b border-slate-800">
                             <th className="text-left py-2 pr-2 font-medium">Produkti</th>
-                            <th className="text-right py-2 px-2 font-medium">Stok Fillim</th>
+                            <th className="text-right py-2 px-2 font-medium">Furnizime</th>
                             <th className="text-right py-2 px-2 font-medium">Gjendje</th>
                             <th className="text-right py-2 px-2 font-medium">Shiriti</th>
-                            <th className="text-right py-2 px-2 font-medium">Furnizime</th>
-                            <th className="text-right py-2 px-2 font-medium">Dif</th>
+                            {(isConfirmed || !editable) && <th className="text-right py-2 px-2 font-medium">Stok Fillim</th>}
+                            {(isConfirmed || !editable) && <th className="text-right py-2 px-2 font-medium">Dif</th>}
                             <th className="text-right py-2 pl-2 font-medium">Dif fillon</th>
                           </tr>
                         </thead>
@@ -609,12 +624,16 @@ const RegjistrimiDitor = () => {
                               <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-950/40">
                                 <td className="py-1.5 pr-2 font-medium">{p.name}</td>
                                 <td className="py-1.5 px-1">
-                                  <RowField value={data.stokFillim} readOnly />
+                                  <RowField
+                                    value={data.furnizime}
+                                    readOnly={!canEditGjendje}
+                                    onChange={(v) => setFurnizime(p.name, v)}
+                                  />
                                 </td>
                                 <td className="py-1.5 px-1">
                                   <RowField
                                     value={data.gjendje}
-                                    readOnly={!editable}
+                                    readOnly={!canEditGjendje}
                                     onChange={(v) => setCurrentTurn((prev) => ({
                                       ...prev,
                                       products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), gjendje: v } },
@@ -624,16 +643,16 @@ const RegjistrimiDitor = () => {
                                 <td className="py-1.5 px-1">
                                   <RowField value={data.shiriti} readOnly />
                                 </td>
-                                <td className="py-1.5 px-1">
-                                  <RowField
-                                    value={data.furnizime}
-                                    readOnly={!editable}
-                                    onChange={(v) => setFurnizime(p.name, v)}
-                                  />
-                                </td>
-                                <td className={`py-1.5 px-2 text-right font-bold tabular-nums ${difColor(dif)}`}>
-                                  {dif > 0 ? "+" : ""}{dif.toFixed(2)}
-                                </td>
+                                {(isConfirmed || !editable) && (
+                                  <td className="py-1.5 px-1">
+                                    <RowField value={data.stokFillim} readOnly />
+                                  </td>
+                                )}
+                                {(isConfirmed || !editable) && (
+                                  <td className={`py-1.5 px-2 text-right font-bold tabular-nums ${difColor(dif)}`}>
+                                    {dif > 0 ? "+" : ""}{dif.toFixed(2)}
+                                  </td>
+                                )}
                                 <td className="py-1.5 pl-2 text-right text-xs text-slate-400 tabular-nums">
                                   {difStart || "—"}
                                 </td>
@@ -642,6 +661,19 @@ const RegjistrimiDitor = () => {
                           })}
                         </tbody>
                       </table>
+                    </div>
+                  )}
+
+                  {editable && !isConfirmed && (
+                    <div className="mt-4 flex justify-end">
+                      <Button
+                        onClick={confirmGjendje}
+                        disabled={confirmingGjendje}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                      >
+                        {confirmingGjendje ? <Loader2 className="animate-spin mr-2" size={16}/> : <CheckCircle2 size={16} className="mr-2"/>}
+                        Konfirmo Gjendjen
+                      </Button>
                     </div>
                   )}
                 </Card>
