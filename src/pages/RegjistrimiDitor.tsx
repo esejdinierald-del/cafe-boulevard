@@ -56,6 +56,7 @@ const RegjistrimiDitor = () => {
   const [saving, setSaving] = useState(false);
   const [closing, setClosing] = useState(false);
   const [closingTurn, setClosingTurn] = useState(false);
+  const [confirmingGjendje, setConfirmingGjendje] = useState(false);
   const [date, setDate] = useState(todayIso());
   const [products, setProducts] = useState<InvProduct[]>([]);
   const [turns, setTurns] = useState<ShiftTurn[]>([]);
