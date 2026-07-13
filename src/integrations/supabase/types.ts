@@ -56,6 +56,42 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor_name: string | null
+          actor_user_id: string | null
+          created_at: string
+          id: number
+          new_data: Json | null
+          old_data: Json | null
+          row_id: string | null
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: number
+          new_data?: Json | null
+          old_data?: Json | null
+          row_id?: string | null
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: number
+          new_data?: Json | null
+          old_data?: Json | null
+          row_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string | null
@@ -411,6 +447,7 @@ export type Database = {
           notes: string | null
           operator_name: string | null
           printed_at: string | null
+          source: string
           status: string | null
           table_id: string | null
           table_number: number | null
@@ -426,6 +463,7 @@ export type Database = {
           notes?: string | null
           operator_name?: string | null
           printed_at?: string | null
+          source?: string
           status?: string | null
           table_id?: string | null
           table_number?: number | null
@@ -441,6 +479,7 @@ export type Database = {
           notes?: string | null
           operator_name?: string | null
           printed_at?: string | null
+          source?: string
           status?: string | null
           table_id?: string | null
           table_number?: number | null
