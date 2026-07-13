@@ -81,14 +81,17 @@ export function ExternalOrderDialog({ open, onClose, onCreated }: Props) {
     setBusy(true);
     try {
       const operatorName = localStorage.getItem("staff_name") || "Kamarier";
+      const shiftToken = localStorage.getItem("staff_shift_token");
       const { data, error } = await supabase.functions.invoke("pos-create-order", {
         body: {
           mode: "delivery",
           source: platform,
           externalRef: ref || null,
           operatorName,
+          shiftToken: shiftToken ?? undefined,
           items: cart.map((c) => ({ productId: c.productId, quantity: c.quantity })),
         },
+        headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
       });
       const err = (data as any)?.error || error?.message;
       if (err) throw new Error(err);
