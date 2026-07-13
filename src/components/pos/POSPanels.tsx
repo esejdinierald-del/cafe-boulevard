@@ -85,8 +85,10 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
 
   const confirm = async (split: Split) => {
     setLoading(true);
+    const shiftToken = localStorage.getItem("staff_shift_token") || undefined;
     const { error } = await supabase.functions.invoke("pos-confirm-order", {
-      body: { splitId: split.id },
+      body: { splitId: split.id, shiftToken },
+      headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
     });
     setLoading(false);
     if (error) {
@@ -222,8 +224,10 @@ export const CashierPanel = () => {
   const printAndClose = async (orderId: string, close: boolean) => {
     setLoading(true);
     const operatorName = localStorage.getItem("staff_name") || "Kasier";
+    const shiftToken = localStorage.getItem("staff_shift_token") || undefined;
     const { data, error } = await supabase.functions.invoke("pos-print-ticket", {
-      body: { orderId, closeOrder: close, operatorName: close ? operatorName : null },
+      body: { orderId, closeOrder: close, operatorName: close ? operatorName : null, shiftToken },
+      headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
     });
     setLoading(false);
     if (error || (data as any)?.error) {
