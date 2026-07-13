@@ -579,24 +579,24 @@ const RegjistrimiDitor = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 rounded hover:bg-slate-800" aria-label="Kthehu">
-            <ArrowLeft size={18} />
+      <header className="sticky top-0 z-10 flex items-center justify-between px-2 sm:px-4 py-2 sm:py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <button onClick={() => navigate(-1)} className="p-1.5 rounded hover:bg-slate-800 shrink-0" aria-label="Kthehu">
+            <ArrowLeft size={16} />
           </button>
-          <div>
-            <h1 className="text-lg font-bold flex items-center gap-2">
-              <Boxes size={20} /> Regjistrimi Ditor
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-lg font-bold flex items-center gap-1.5 truncate">
+              <Boxes size={16} className="shrink-0" /> <span className="truncate">Regjistrimi Ditor</span>
             </h1>
-            <p className="text-xs text-slate-400">{staffName ? `${staffName} · ` : ""}{date}</p>
+            <p className="text-[10px] sm:text-xs text-slate-400 truncate">{staffName ? `${staffName} · ` : ""}{date}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <Input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="bg-slate-900 border-slate-700 text-white h-9 w-[150px]"
+            className="bg-slate-900 border-slate-700 text-white h-8 w-[120px] sm:w-[150px] text-xs px-2"
           />
           {saving && <span className="text-xs text-slate-500 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> ruaj…</span>}
         </div>
@@ -609,7 +609,7 @@ const RegjistrimiDitor = () => {
       ) : !selectedTurn ? (
         <div className="p-6 text-center text-slate-400">S'ka turne për këtë datë.</div>
       ) : (
-        <div className="p-4 max-w-5xl mx-auto space-y-6">
+        <div className="p-2 sm:p-4 max-w-5xl mx-auto space-y-3 sm:space-y-6">
           <Tabs value={selectedTurnId ?? ""} onValueChange={(v) => setSelectedTurnId(v)}>
             <TabsList className="bg-slate-900 border border-slate-800 flex-wrap h-auto">
               {turns.map((t) => (
@@ -635,9 +635,9 @@ const RegjistrimiDitor = () => {
                   </div>
                 )}
                 {/* Products */}
-                <Card className="bg-slate-900 border-slate-800 p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold flex items-center gap-2"><Package2 size={16}/> Produktet</h2>
+                <Card className="bg-slate-900 border-slate-800 p-2 sm:p-4">
+                  <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+                    <h2 className="font-semibold flex items-center gap-2 text-sm sm:text-base"><Package2 size={14}/> Produktet</h2>
                     <div className="flex items-center gap-2 flex-wrap">
                       {editable && (
                         <>
@@ -677,16 +677,16 @@ const RegjistrimiDitor = () => {
                    {products.length === 0 ? (
                     <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto nga "Menaxho".</p>
                   ) : (
-                    <div className="overflow-x-auto -mx-4 px-4">
-                      <table className="w-full text-sm border-collapse min-w-[640px]">
+                    <div className="overflow-x-auto -mx-2 sm:-mx-4 px-2 sm:px-4">
+                      <table className="w-full text-xs sm:text-sm border-collapse min-w-[480px]">
                         <thead>
-                          <tr className="text-xs text-slate-400 border-b border-slate-800">
-                            <th className="text-left py-2 pr-2 font-medium">Produkti</th>
-                            {showOtherCols && <th className="text-right py-2 px-2 font-medium">Stok Fillim</th>}
-                            {showOtherCols && <th className="text-right py-2 px-2 font-medium">Shiriti</th>}
-                            {showOtherCols && <th className="text-right py-2 px-2 font-medium">Dif</th>}
-                            <th className="text-right py-2 px-2 font-medium">Gjendje</th>
-                            <th className="text-right py-2 pl-2 font-medium">Dif fillon</th>
+                          <tr className="text-[10px] sm:text-xs text-slate-400 border-b border-slate-800">
+                            <th className="text-left py-1.5 pr-1 font-medium">Produkti</th>
+                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Stok</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Shirit</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Dif</th>}
+                            <th className="text-right py-1.5 px-1 font-medium">Gjendje</th>
+                            <th className="text-right py-1.5 pl-1 font-medium">Fillon</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -696,23 +696,23 @@ const RegjistrimiDitor = () => {
                             const difStart = difStartMap[p.name] || null;
                             return (
                               <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-950/40">
-                                <td className="py-1.5 pr-2 font-medium">{p.name}</td>
+                                <td className="py-1 pr-1 font-medium text-xs sm:text-sm">{p.name}</td>
                                 {showOtherCols && (
-                                  <td className="py-1.5 px-1">
+                                  <td className="py-1 px-0.5">
                                     <RowField value={data.stokFillim} readOnly />
                                   </td>
                                 )}
                                 {showOtherCols && (
-                                  <td className="py-1.5 px-1">
+                                  <td className="py-1 px-0.5">
                                     <RowField value={data.shiriti} readOnly />
                                   </td>
                                 )}
                                 {showOtherCols && (
-                                  <td className={`py-1.5 px-2 text-right font-bold tabular-nums ${difColor(dif)}`}>
+                                  <td className={`py-1 px-1 text-right font-bold tabular-nums text-xs sm:text-sm ${difColor(dif)}`}>
                                     {dif > 0 ? "+" : ""}{dif.toFixed(2)}
                                   </td>
                                 )}
-                                <td className="py-1.5 px-1">
+                                <td className="py-1 px-0.5">
                                   <RowField
                                     value={data.gjendje}
                                     readOnly={!canEditGjendje}
@@ -722,7 +722,7 @@ const RegjistrimiDitor = () => {
                                     }))}
                                   />
                                 </td>
-                                <td className="py-1.5 pl-2 text-right text-xs text-slate-400 tabular-nums">
+                                <td className="py-1 pl-1 text-right text-[10px] sm:text-xs text-slate-400 tabular-nums">
                                   {difStart || "—"}
                                 </td>
                               </tr>
@@ -748,9 +748,9 @@ const RegjistrimiDitor = () => {
                 </Card>
 
                 {/* Coffee */}
-                <Card className="bg-slate-900 border-slate-800 p-4">
+                <Card className="bg-slate-900 border-slate-800 p-2 sm:p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold flex items-center gap-2"><Coffee size={16}/> Kafet</h2>
+                    <h2 className="font-semibold flex items-center gap-2 text-sm sm:text-base"><Coffee size={14}/> Kafet</h2>
                     {editable && <div className="flex items-center gap-2">
                       <Input
                         value={newCoffeeName}
@@ -805,9 +805,9 @@ const RegjistrimiDitor = () => {
                 </Card>
 
                 {/* Mulliri */}
-                <Card className="bg-slate-900 border-slate-800 p-4">
+                <Card className="bg-slate-900 border-slate-800 p-2 sm:p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold">Mulliri</h2>
+                    <h2 className="font-semibold text-sm sm:text-base">Mulliri</h2>
                     {editable && (
                       <>
                         <input
@@ -890,16 +890,17 @@ const RegjistrimiDitor = () => {
                 </Card>
 
                 {/* Xhiro + Shpenzime */}
-                <Card className="bg-slate-900 border-slate-800 p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="bg-slate-900 border-slate-800 p-2 sm:p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <div className="text-xs text-slate-400 mb-1">Xhiro (Lekë)</div>
                       <Input
                         type="number"
+                        inputMode="decimal"
                         value={t.turn_data.xhiro}
                         readOnly={!editable}
                         onChange={(e) => setCurrentTurn((prev) => ({ ...prev, xhiro: Number(e.target.value) || 0 }))}
-                        className="bg-slate-950 border-slate-700 text-white"
+                        className="bg-slate-950 border-slate-700 text-white h-9 text-sm"
                       />
                     </div>
                     <div>
@@ -917,14 +918,15 @@ const RegjistrimiDitor = () => {
                               readOnly={!editable}
                               onChange={(e) => updateShpenzim(i, "emertimi", e.target.value)}
                               placeholder="Emërtimi"
-                              className="bg-slate-950 border-slate-700 text-white h-8 flex-1"
+                              className="bg-slate-950 border-slate-700 text-white h-8 flex-1 text-sm px-2"
                             />
                             <Input
                               type="number"
+                              inputMode="decimal"
                               value={s.vlera}
                               readOnly={!editable}
                               onChange={(e) => updateShpenzim(i, "vlera", Number(e.target.value) || 0)}
-                              className="bg-slate-950 border-slate-700 text-white h-8 w-28 text-right"
+                              className="bg-slate-950 border-slate-700 text-white h-8 w-20 sm:w-28 text-right text-sm px-2"
                             />
                             {editable && <button onClick={() => removeShpenzim(i)} className="text-slate-500 hover:text-rose-400">
                               <Trash2 size={14}/>
@@ -975,13 +977,14 @@ interface FieldProps {
 }
 const Field = ({ label, value, onChange, readOnly }: FieldProps) => (
   <div>
-    <div className="text-xs text-slate-400 mb-1">{label}</div>
+    <div className="text-[10px] sm:text-xs text-slate-400 mb-1">{label}</div>
     <Input
       type="number"
+      inputMode="decimal"
       value={value}
       readOnly={readOnly}
       onChange={onChange ? (e) => onChange(Number(e.target.value) || 0) : undefined}
-      className={`bg-slate-950 border-slate-700 text-white h-9 text-right tabular-nums ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`}
+      className={`bg-slate-950 border-slate-700 text-white h-8 sm:h-9 text-right tabular-nums text-sm px-2 ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`}
     />
   </div>
 );
@@ -990,10 +993,11 @@ const RowField = ({ value, onChange, readOnly }: { value: number; onChange?: (v:
   <Input
     type="number"
     step="0.01"
+    inputMode="decimal"
     value={value}
     readOnly={readOnly}
     onChange={onChange ? (e) => onChange(Number(e.target.value) || 0) : undefined}
-    className={`bg-slate-950 border-slate-700 text-white h-8 text-right tabular-nums w-full min-w-[80px] ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`}
+    className={`bg-slate-950 border-slate-700 text-white h-7 text-right tabular-nums w-full min-w-[56px] text-xs sm:text-sm px-1.5 ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`}
   />
 );
 
