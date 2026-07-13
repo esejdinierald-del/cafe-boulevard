@@ -4,9 +4,10 @@ import { z } from "zod";
 import { TABLES } from "./list-tables";
 
 function supabaseForUser(ctx: ToolContext) {
+  const env = (globalThis as any).process?.env ?? {};
   return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY!,
+    env.SUPABASE_URL,
+    env.SUPABASE_PUBLISHABLE_KEY ?? env.SUPABASE_ANON_KEY,
     {
       global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
       auth: { persistSession: false, autoRefreshToken: false },
