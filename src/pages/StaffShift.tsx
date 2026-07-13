@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw, QrCode, LogOut } from "lucide-react";
+import { Bell, Receipt, Volume2, Clock, AlertTriangle, CheckCircle2, Loader2, RefreshCw, QrCode, LogOut, X } from "lucide-react";
 import { toast } from "sonner";
 import QrScanner from "@/components/QrScanner";
 import SplashScreen from "@/components/SplashScreen";
@@ -437,14 +437,18 @@ const StaffShift = () => {
     setCompletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
   }, [activeToken]);
 
-  const handleCompleteOrder = useCallback(async (id: string, tableNumber: string) => {
+  const handleDecideOrder = useCallback(async (id: string, tableNumber: string, decision: "accepted" | "rejected") => {
     setCompletingIds(prev => new Set(prev).add(id));
+    const token = activeToken || localStorage.getItem("staff_shift_token") || "";
     try {
-      const { data, error } = await supabase.functions.invoke("complete-request", {
-        body: { id, type: "order", shift_token: activeToken },
+      const { data, error } = await supabase.functions.invoke("update-order-status", {
+        body: { id, status: decision, shiftToken: token },
+        headers: { "x-shift-token": token },
       });
-      if (error || !data?.success) throw new Error("Failed");
-      toast.success(`✅ Porosia ${tableNumber} — U krye!`);
+      if (error || !(data as any)?.success) throw new Error("Failed");
+      toast.success(decision === "accepted"
+        ? `✅ Porosia ${tableNumber} — u pranua`
+        : `🚫 Porosia ${tableNumber} — u refuzua`);
       setOrders(prev => prev.filter(o => o.id !== id));
     } catch {
       toast.error("Gabim në përditësim");
@@ -808,15 +812,27 @@ const StaffShift = () => {
                       <p className="text-xs text-muted-foreground">
                         {new Date(o.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}
                       </p>
-                      <Button
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); handleCompleteOrder(o.id, o.table_number); }}
-                        disabled={isCompleting}
-                        className="bg-success hover:bg-success/90 text-success-foreground h-10 px-3"
-                      >
-                        {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                        <span className="ml-1 text-xs">U krye</span>
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleDecideOrder(o.id, o.table_number, "rejected"); }}
+                          disabled={isCompleting}
+                          variant="outline"
+                          className="h-10 px-3 border-destructive/40 text-destructive hover:bg-destructive/10"
+                        >
+                          {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+                          <span className="ml-1 text-xs">Refuzo</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleDecideOrder(o.id, o.table_number, "accepted"); }}
+                          disabled={isCompleting}
+                          className="bg-success hover:bg-success/90 text-success-foreground h-10 px-3"
+                        >
+                          {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                          <span className="ml-1 text-xs">Prano</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
