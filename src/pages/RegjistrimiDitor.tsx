@@ -65,6 +65,20 @@ const RegjistrimiDitor = () => {
   const [myTurnId, setMyTurnId] = useState<string | null>(null);
   const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null);
   const [newCoffeeName, setNewCoffeeName] = useState("");
+  const [adminUnlocked, setAdminUnlocked] = useState<boolean>(() =>
+    typeof window !== "undefined" && sessionStorage.getItem("inv_admin_unlocked") === "1"
+  );
+  const [productMgrOpen, setProductMgrOpen] = useState(false);
+
+  const requestAdminAccess = () => {
+    if (adminUnlocked) { setProductMgrOpen(true); return; }
+    const pass = window.prompt("Fjalëkalimi i administratorit për menaxhimin e produkteve:");
+    if (pass === null) return;
+    if (pass !== "2025") { toast.error("Fjalëkalim i pasaktë"); return; }
+    sessionStorage.setItem("inv_admin_unlocked", "1");
+    setAdminUnlocked(true);
+    setProductMgrOpen(true);
+  };
 
   const staffName = (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
 
