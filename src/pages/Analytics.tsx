@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp, BarChart3 } from "lucide-react";
+import { toast } from "sonner";
 import {
   BarChart,
   Bar,
@@ -26,10 +27,36 @@ interface Txn {
 const fmt = (n: number) => `${Math.round(n).toLocaleString("sq-AL")} L`;
 
 export default function Analytics() {
+  const navigate = useNavigate();
   const [txns, setTxns] = useState<Txn[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/manager-login", { replace: true });
+        return;
+      }
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "manager")
+        .single();
+      if (!roleData) {
+        toast.error("Nuk keni akses");
+        navigate("/", { replace: true });
+        return;
+      }
+      setAuthorized(true);
+    };
+    checkAuth();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!authorized) return;
     (async () => {
       const from = new Date();
       from.setDate(from.getDate() - 30);
@@ -42,7 +69,7 @@ export default function Analytics() {
       if (!error && data) setTxns(data as unknown as Txn[]);
       setLoading(false);
     })();
-  }, []);
+  }, [authorized]);
 
   const daily = useMemo(() => {
     const map = new Map<string, number>();
@@ -71,6 +98,14 @@ export default function Analytics() {
 
   const totalRev = daily.reduce((s, d) => s + d.total, 0);
   const avgDay = daily.length ? totalRev / daily.length : 0;
+
+  if (!authorized) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        Duke verifikuar aksesin…
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
