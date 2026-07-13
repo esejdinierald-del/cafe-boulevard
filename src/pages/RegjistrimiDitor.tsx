@@ -80,6 +80,21 @@ const RegjistrimiDitor = () => {
     setProductMgrOpen(true);
   };
 
+  const toggleAdminMode = () => {
+    if (adminUnlocked) {
+      sessionStorage.removeItem("inv_admin_unlocked");
+      setAdminUnlocked(false);
+      toast.success("Modaliteti admin u çaktivizua");
+      return;
+    }
+    const pass = window.prompt("Fjalëkalimi i administratorit për editim manual të Stok Fillim:");
+    if (pass === null) return;
+    if (pass !== "2025") { toast.error("Fjalëkalim i pasaktë"); return; }
+    sessionStorage.setItem("inv_admin_unlocked", "1");
+    setAdminUnlocked(true);
+    toast.success("Modaliteti admin aktiv — Stok Fillim i editueshëm");
+  };
+
   const staffName = (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
 
   // Guard: same shift-token system as /staff.
@@ -695,6 +710,14 @@ const RegjistrimiDitor = () => {
                         onClick={requestAdminAccess}
                       >
                         <ShieldCheck size={14} className="mr-1"/> Menaxho (Admin)
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={toggleAdminMode}
+                        className={adminUnlocked ? "bg-emerald-700 hover:bg-emerald-600 h-8" : "bg-slate-800 hover:bg-slate-700 h-8"}
+                        title="Aktivizo modalitetin admin për të edituar Stok Fillim manualisht"
+                      >
+                        <ShieldCheck size={14} className="mr-1"/> {adminUnlocked ? "Admin ON" : "Admin"}
                       </Button>
                     </div>
                   </div>
