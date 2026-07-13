@@ -1,6 +1,7 @@
 import { inventorySupabase as supabase } from "@/integrations/supabase/inventory-client";
 import { InventoryTurnData, InventoryProductData, emptyProduct } from "@/types/inventory.types";
 import { InventoryCalculationService as Calc } from "./inventoryCalculations";
+import { ShiftTurnApi } from "@/lib/inventory-api";
 
 export class InventoryStockPropagationService {
   static syncT1ToT2(t1: InventoryTurnData, existingT2: InventoryTurnData): InventoryTurnData {
@@ -41,18 +42,11 @@ export class InventoryStockPropagationService {
   }
 
   static async persistNextDayStock(dateStr: string, stock: { [k: string]: number }, mulliriFillim: number) {
-    const { error } = await (supabase as any)
-      .from("inv_next_day_stock")
-      .upsert(
-        {
-          stock_date: dateStr,
-          stock_data: stock,
-          mulliri_fillim: mulliriFillim,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "stock_date" },
-      );
-    if (error) throw error;
+    await ShiftTurnApi.persistNextDayStock({
+      stock_date: dateStr,
+      stock_data: stock,
+      mulliri_fillim: mulliriFillim,
+    });
   }
 
   static async loadNextDayStockFor(dateStr: string): Promise<{ stock: { [k: string]: number }; mulliriFillim: number } | null> {
