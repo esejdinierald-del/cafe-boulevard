@@ -1,9 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-shift-token",
 };
 
 function base64urlToUint8Array(base64url: string): Uint8Array {
@@ -203,7 +204,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { title, body, type } = await req.json();
+    const parsedBody = await req.json();
+    const auth = await requireShiftToken(req, parsedBody);
+    if (!auth.ok) return auth.response;
+    const { title, body, type } = parsedBody ?? {};
 
     if (!title || !body) {
       return new Response(
