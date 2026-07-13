@@ -20,7 +20,6 @@ import PrintStation from "./pages/PrintStation";
 import SupplierOrders from "./pages/SupplierOrders";
 import Analytics from "./pages/Analytics";
 import AdminTools from "./pages/AdminTools";
-import VulnGuard from "./pages/VulnGuard";
 import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -52,7 +51,6 @@ const App = () => (
           <Route path="/porosi-furnitor" element={<SupplierOrders />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/admin-tools" element={<AdminTools />} />
-          <Route path="/vulnguard" element={<VulnGuard />} />
           <Route path=".lovable/oauth/consent" element={<OAuthConsent />} />
           <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
