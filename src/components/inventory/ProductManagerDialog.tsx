@@ -28,7 +28,7 @@ interface MenuItemLite {
 }
 
 interface Props {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
   products: InvProductRow[];
   onChanged: (opts?: { renamedFrom?: string; renamedTo?: string; deletedName?: string; added?: InvProductRow }) => void;
   open?: boolean;
@@ -87,7 +87,7 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
       <DialogContent className="bg-slate-950 border-slate-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Menaxho produktet</DialogTitle>
