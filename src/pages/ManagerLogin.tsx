@@ -81,7 +81,11 @@ const ManagerLogin = () => {
         }
 
         toast.success("Mirë se vini!");
-        navigate('/manager');
+        const nextParam = searchParams.get('next');
+        const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')
+          ? nextParam
+          : '/manager';
+        navigate(safeNext);
       }
     } catch (error: any) {
       console.error('Auth error:', error);
