@@ -224,50 +224,6 @@ const Inventory = () => {
       </header>
 
       <div className="p-6 space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="border border-slate-700 bg-slate-800 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-slate-400 text-xs uppercase">Total Materiale</div>
-                <div className="text-2xl font-bold mt-1">{materials.length}</div>
-              </div>
-              <ShoppingBag className="text-slate-500" size={28} />
-            </div>
-          </div>
-          <div className="border border-slate-700 bg-slate-800 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-slate-400 text-xs uppercase">Stock i Ulët</div>
-                <div
-                  className={`text-2xl font-bold mt-1 ${
-                    lowStockCount > 0 ? "text-red-400" : "text-white"
-                  }`}
-                >
-                  {lowStockCount}
-                </div>
-              </div>
-              <AlertTriangle
-                className={lowStockCount > 0 ? "text-red-400" : "text-slate-500"}
-                size={28}
-              />
-            </div>
-          </div>
-          <div className="border border-slate-700 bg-slate-800 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-slate-400 text-xs uppercase">Sasi Totale</div>
-                <div className="text-2xl font-bold mt-1">
-                  {materials
-                    .reduce((acc, m) => acc + (m.quantity || 0), 0)
-                    .toFixed(2)}
-                </div>
-              </div>
-              <Package className="text-slate-500" size={28} />
-            </div>
-          </div>
-        </div>
-
         {isKitchen && (
           <div className="border border-amber-500/40 bg-amber-500/10 text-amber-200 rounded-lg p-3 text-sm">
             Ju mund të shikoni inventarin, por nuk mund të shtoni furnizime.
