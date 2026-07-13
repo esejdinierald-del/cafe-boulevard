@@ -24,7 +24,7 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { tableNumber, mode = "table", items: cartItems, notes = null, locationId = null, operatorName = null } = body ?? {};
+    const { tableNumber, mode = "table", items: cartItems, notes = null, locationId = null, operatorName = null, source = "pos", externalRef = null } = body ?? {};
 
     if (!Array.isArray(cartItems) || cartItems.length === 0) return jsonResponse({ error: "Shporta është bosh" }, 400);
     if (!["table", "bar", "delivery", "takeaway"].includes(mode)) return jsonResponse({ error: "Mode i panjohur" }, 400);
@@ -88,7 +88,8 @@ serve(async (req) => {
       status: "open",
       total_amount: totalAmount,
       operator_name: operatorName,
-      notes,
+      notes: externalRef ? `${notes ? notes + " | " : ""}Ref: ${externalRef}` : notes,
+      source: ["pos", "glovo", "bolt", "delivery", "takeaway"].includes(source) ? source : "pos",
     };
     // location_id is a UUID column — only include if a valid UUID was passed
     if (typeof locationId === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(locationId)) {
