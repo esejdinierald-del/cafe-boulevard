@@ -25,6 +25,9 @@ Aplikacion i plotë menaxhimi për kafenenë Boulevard (Elbasan): menu për klie
 | `/regjistrimi-ditor` | Regjistrim gjendje/shirit/dif për 2 turne me formulë të kontrolluar |
 | `/staff` | Login stafi me QR ose PIN, geofencing 75m |
 | `/print-station` | Klient PC që tërheq nga `print_jobs` dhe printon në 80mm |
+| `/analytics` | Xhiro 30-ditore + top produkte (Recharts) |
+| `/porosi-furnitor` | Porosi drejtuar furnitorëve (draft/sent/received) |
+| `/admin-tools` | Health check, error logs, regjistër fiskal, backup JSON (admin `2025`) |
 
 ## Logjika kryesore
 
@@ -34,6 +37,10 @@ Aplikacion i plotë menaxhimi për kafenenë Boulevard (Elbasan): menu për klie
 - **Admin mode**: passcode `2025` te DB — mund të editojë Stok Fillim manualisht në çdo turn.
 - **Realtime**: subscription te `transactions` + polling backup 20s për Shiritin.
 - **Push**: VAPID + `send-push` edge function për njoftime në background.
+- **Siguri & Audit**: RLS e shtrënguar, `DELETE` vetëm admin, `audit_log` trigger për 8 tabela kritike, `app_logs` për errors dhe events (kapur automatikisht nga `error-logger.ts`).
+- **Regjistër fiskal i brendshëm**: `fiscal_receipts` me numërim sekuencial vjetor (p.sh. `2026-000001`) i gjeneruar nga trigger te `transactions`; eksportohet CSV nga `/admin-tools`.
+- **Porosi të jashtme**: Glovo / Bolt shënohen manualisht me `source` te `pos_orders` përmes `ExternalOrderDialog`.
+- **Backup**: eksport JSON i konfigurimit (menu, kategori, staf, receta, produkte, ai_knowledge, app_settings) nga `/admin-tools`.
 
 ## Zhvillimi lokal
 
@@ -72,6 +79,7 @@ public/             # PWA manifests, staff-sw.js, QR codes
 
 Për debugging më të thellë ose reviews me AI të jashtme, gjenerohet snapshot i plotë (kod + skemë):
 `/mnt/documents/boulevard-cafe-full-snapshot.md`.
+Zip i plotë i projektit: `/mnt/documents/boulevard-cafe-project.zip`.
 
 ## Publikimi
 
