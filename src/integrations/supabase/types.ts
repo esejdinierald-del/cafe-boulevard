@@ -214,6 +214,68 @@ export type Database = {
         }
         Relationships: []
       }
+      fiscal_receipts: {
+        Row: {
+          created_at: string
+          fiscal_number: string
+          fiscal_year: number
+          id: string
+          issued_at: string
+          items: Json | null
+          net_amount: number
+          operator_name: string | null
+          seq_in_year: number
+          source: string
+          table_number: number | null
+          total_amount: number
+          transaction_id: string | null
+          vat_amount: number
+          vat_rate: number
+        }
+        Insert: {
+          created_at?: string
+          fiscal_number: string
+          fiscal_year: number
+          id?: string
+          issued_at?: string
+          items?: Json | null
+          net_amount: number
+          operator_name?: string | null
+          seq_in_year: number
+          source?: string
+          table_number?: number | null
+          total_amount: number
+          transaction_id?: string | null
+          vat_amount: number
+          vat_rate?: number
+        }
+        Update: {
+          created_at?: string
+          fiscal_number?: string
+          fiscal_year?: number
+          id?: string
+          issued_at?: string
+          items?: Json | null
+          net_amount?: number
+          operator_name?: string | null
+          seq_in_year?: number
+          source?: string
+          table_number?: number | null
+          total_amount?: number
+          transaction_id?: string | null
+          vat_amount?: number
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fiscal_receipts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inv_daily_entries: {
         Row: {
           created_at: string
