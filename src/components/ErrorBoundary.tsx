@@ -1,4 +1,5 @@
 import { Component, ReactNode } from "react";
+import { logCritical } from "@/lib/error-logger";
 
 interface Props { children: ReactNode }
 interface State { error: Error | null }
@@ -12,6 +13,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: unknown) {
     console.error("[ErrorBoundary]", error, info);
+    logCritical(error.message || "ErrorBoundary caught", {
+      stack: error.stack,
+      componentStack: (info as { componentStack?: string })?.componentStack,
+    });
   }
 
   reset = () => {

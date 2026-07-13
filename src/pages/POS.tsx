@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
-import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X } from "lucide-react";
+import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/receipt-print";
 import { queuePrintJob, countPendingForMe } from "@/lib/print-queue";
 import { RomeClock } from "@/components/RomeClock";
 import { isPastShiftDay } from "@/lib/rome-time";
+import { ExternalOrderDialog } from "@/components/pos/ExternalOrderDialog";
 
 interface TableRow {
   id: string;
@@ -43,6 +44,7 @@ const POS = () => {
   const [checking, setChecking] = useState(true);
   const [viewTable, setViewTable] = useState<{ number: number | string; orders: TableOrderDetail[] } | null>(null);
   const [pendingPrints, setPendingPrints] = useState(0);
+  const [externalOpen, setExternalOpen] = useState(false);
 
   // Track our pending print jobs (waiting for the arka PC)
   useEffect(() => {
@@ -231,6 +233,12 @@ const POS = () => {
           >
             <Coffee size={14} /> Modalitet Banak
           </button>
+          <button
+            onClick={() => setExternalOpen(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-sm font-semibold"
+          >
+            <Truck size={14} /> Glovo/Bolt
+          </button>
           {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
             <button
               onClick={() => navigate("/inventory")}
@@ -253,6 +261,8 @@ const POS = () => {
           </button>
         </div>
       </header>
+
+      <ExternalOrderDialog open={externalOpen} onClose={() => setExternalOpen(false)} />
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_360px] gap-3 p-3">
         {/* Left: tables */}
