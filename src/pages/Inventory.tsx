@@ -175,6 +175,7 @@ const Inventory = () => {
     let fail = 0;
     try {
       for (const r of rows) {
+        const shiftToken = localStorage.getItem("staff_shift_token") || undefined;
         const { data, error } = await supabase.functions.invoke("pos-get-inventory", {
           body: {
             action: "addSupply",
@@ -183,7 +184,9 @@ const Inventory = () => {
             note: note || null,
             operatorName: staffName,
             locationId: null,
+            shiftToken,
           },
+          headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
         });
         if (error || (data as any)?.error) fail++;
         else ok++;
