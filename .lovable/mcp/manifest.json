@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "sdk_version": "0.21.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://taqrxxikhwghmeofrpzs.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "boulevard-cafe-mcp",
+      "version": "0.1.0",
+      "title": "Boulevard Café MCP"
+    },
+    "tools": [
+      {
+        "name": "list_tables",
+        "title": "List database tables",
+        "description": "List all public tables available in the Boulevard Café database.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "select_rows",
+        "title": "Read rows from a table",
+        "description": "Read rows from a Boulevard Café public table. Respects RLS as the signed-in user. Use `list_tables` first to see valid names.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "table": {
+              "type": "string",
+              "enum": [
+                "menu_items",
+                "categories",
+                "tables",
+                "pos_orders",
+                "transactions",
+                "raw_materials",
+                "recipes",
+                "supplies",
+                "inv_products",
+                "inv_daily_entries",
+                "inv_next_day_stock",
+                "shift_turns",
+                "staff_members",
+                "user_roles",
+                "supplier_orders",
+                "product_costs",
+                "fiscal_receipts",
+                "audit_log",
+                "app_logs",
+                "feedback",
+                "print_jobs",
+                "orders",
+                "order_items_split",
+                "service_requests",
+                "song_requests",
+                "chat_sessions",
+                "ai_knowledge",
+                "app_settings"
+              ],
+              "description": "Table name"
+            },
+            "columns": {
+              "description": "Comma-separated columns, or '*' for all. Default '*'.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Row limit (max 200). Default 50.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "orderBy": {
+              "description": "Column to order by.",
+              "type": "string"
+            },
+            "ascending": {
+              "description": "Ascending order. Default false (newest first when using created_at).",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "table"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
