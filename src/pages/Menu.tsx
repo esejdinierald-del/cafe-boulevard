@@ -363,7 +363,7 @@ const Menu = () => {
                           <div className="w-full h-24 mb-2 rounded-xl overflow-hidden"
                             style={{ boxShadow: '0 4px 15px -5px hsl(0 0% 0% / 0.5)' }}
                           >
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                            <img src={item.image_url} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                           </div>
                         )}
                         <div className="flex flex-col mb-2">
