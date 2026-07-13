@@ -954,6 +954,13 @@ const RegjistrimiDitor = () => {
             })}
           </Tabs>
 
+          <ProductManagerDialog
+            products={products}
+            onChanged={handleProductsChanged}
+            open={productMgrOpen}
+            onOpenChange={(v) => { if (!v || adminUnlocked) setProductMgrOpen(v); }}
+          />
+
           <div className="flex flex-wrap justify-end gap-2">
             {isMine && (
               <Button
