@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,8 @@ interface SongRequest {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [authorized, setAuthorized] = useState(false);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,6 +97,31 @@ const Dashboard = () => {
   const playlistRef = useRef<SongRequest[]>([]);
   useEffect(() => { currentSongRef.current = currentSong; }, [currentSong]);
   useEffect(() => { playlistRef.current = playlist; }, [playlist]);
+
+  // Server-side auth gate: require authenticated manager/admin
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/manager-login", { replace: true });
+        return;
+      }
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .in("role", ["manager", "admin"])
+        .maybeSingle();
+      if (!roleData) {
+        toast.error("Nuk keni akses në dashboard");
+        navigate("/manager-login", { replace: true });
+        return;
+      }
+      if (active) setAuthorized(true);
+    })();
+    return () => { active = false; };
+  }, [navigate]);
 
   // Generate or fetch active shift token via edge function (bypasses RLS)
   const ensureShiftToken = async () => {
@@ -652,6 +680,14 @@ const Dashboard = () => {
   };
 
   const getRequestIcon = (type: string) => type === 'waiter' ? <Bell className="h-5 w-5" /> : <Receipt className="h-5 w-5" />;
+
+  if (!authorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
+        Duke verifikuar akses…
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-3 flex flex-col relative" onClick={enableAudio}>
