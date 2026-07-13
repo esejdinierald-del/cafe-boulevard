@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { inventorySupabase } from "@/integrations/supabase/inventory-client";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,7 +66,7 @@ const Inventory = () => {
         .from("raw_materials")
         .select("id, name, quantity, unit, min_threshold, location_id")
         .order("name"),
-      (inventorySupabase as any)
+      (supabase as any)
         .from("inv_products")
         .select("name, sort_order")
         .order("sort_order")
