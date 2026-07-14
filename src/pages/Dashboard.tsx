@@ -65,30 +65,10 @@ const Dashboard = () => {
   useEffect(() => { currentSongRef.current = currentSong; }, [currentSong]);
   useEffect(() => { playlistRef.current = playlist; }, [playlist]);
 
-  // Server-side auth gate: require authenticated manager/admin
+  // Public counter dashboard — access is gated by the QR shift curtain, not by login.
   useEffect(() => {
-    let active = true;
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/manager-login?next=/dashboard", { replace: true });
-        return;
-      }
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .in("role", ["manager", "admin"])
-        .maybeSingle();
-      if (!roleData) {
-        toast.error("Nuk keni akses në dashboard");
-        navigate("/manager-login?next=/dashboard", { replace: true });
-        return;
-      }
-      if (active) setAuthorized(true);
-    })();
-    return () => { active = false; };
-  }, [navigate]);
+    setAuthorized(true);
+  }, []);
 
   // Visual notification - flashing tab title
   useEffect(() => {
