@@ -637,9 +637,9 @@ const RegjistrimiDitor = () => {
       ) : (
         <div className="p-2 max-w-5xl mx-auto space-y-2">
           <Tabs value={selectedTurnId ?? ""} onValueChange={(v) => setSelectedTurnId(v)}>
-            <TabsList className="bg-slate-900 border border-slate-800 flex-wrap h-auto">
+            <TabsList className="bg-slate-900 border border-slate-800 flex-wrap h-auto p-1">
               {turns.map((t) => (
-                <TabsTrigger key={t.id} value={t.id} className="gap-1">
+                <TabsTrigger key={t.id} value={t.id} className="gap-1 text-xs px-2 py-1 h-auto data-[state=active]:bg-slate-700">
                   #{t.sequence_number} {t.staff_name}
                   {t.is_locked && <Lock size={10} className="opacity-60"/>}
                 </TabsTrigger>
