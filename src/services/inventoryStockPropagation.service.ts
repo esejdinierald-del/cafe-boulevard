@@ -1,7 +1,7 @@
-import { supabase as supabase } from "@/integrations/supabase/client";
 import { InventoryTurnData, InventoryProductData, emptyProduct } from "@/types/inventory.types";
 import { InventoryCalculationService as Calc } from "./inventoryCalculations";
 import { ShiftTurnApi } from "@/lib/inventory-api";
+import { staffRead } from "@/lib/staff-read";
 
 export class InventoryStockPropagationService {
   static syncT1ToT2(t1: InventoryTurnData, existingT2: InventoryTurnData): InventoryTurnData {
@@ -50,11 +50,10 @@ export class InventoryStockPropagationService {
   }
 
   static async loadNextDayStockFor(dateStr: string): Promise<{ stock: { [k: string]: number }; mulliriFillim: number } | null> {
-    const { data, error } = await (supabase as any)
-      .from("inv_next_day_stock")
-      .select("stock_data, mulliri_fillim")
-      .eq("stock_date", dateStr)
-      .maybeSingle();
+    const { data, error } = await staffRead<{ stock_data: any; mulliri_fillim: number } | null>(
+      "inv_next_day_stock.by_date",
+      { stockDate: dateStr },
+    );
     if (error || !data) return null;
     return { stock: (data.stock_data || {}) as { [k: string]: number }, mulliriFillim: Number(data.mulliri_fillim) || 0 };
   }

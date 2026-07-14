@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { Package, Plus, AlertTriangle, ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
 import LowStockCard from "@/components/inventory/LowStockCard";
+import { staffRead } from "@/lib/staff-read";
 
 interface Material {
   id: string;
@@ -60,18 +61,13 @@ const Inventory = () => {
   const load = async () => {
     // Sync with /regjistrimi-ditor: list is driven by inv_products.
     // Missing raw_materials are created on the fly so supplies always land on a real row.
-    const [{ data: rawData, error }, { data: invProds }] = await Promise.all([
-      supabase
-        .from("raw_materials")
-        .select("id, name, quantity, unit, min_threshold, location_id")
-        .order("name"),
-      (supabase as any)
-        .from("inv_products")
-        .select("name, sort_order")
-        .order("sort_order")
-        .order("name"),
+    const [rawRes, invRes] = await Promise.all([
+      staffRead<Material[]>("raw_materials.list"),
+      staffRead<Array<{ name: string; sort_order: number }>>("inv_products.list"),
     ]);
-    if (error) {
+    const rawData = rawRes.data;
+    const invProds = invRes.data;
+    if (rawRes.error || invRes.error) {
       toast.error("Nuk u ngarkua inventari");
     } else {
       const norm = (s: string) => (s || "").trim().toLowerCase();
@@ -111,22 +107,8 @@ const Inventory = () => {
       return;
     }
     load();
-    const channel = supabase
-      .channel("inventory-materials")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "raw_materials" },
-        load,
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "inv_products" },
-        load,
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const poll = setInterval(load, 8000);
+    return () => clearInterval(poll);
   }, [hasToken]);
 
   if (!hasToken) {

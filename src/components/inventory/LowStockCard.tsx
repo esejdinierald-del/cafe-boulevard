@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { staffRead } from "@/lib/staff-read";
 
 interface Material {
   id: string;
@@ -17,10 +17,8 @@ export default function LowStockCard() {
   const [items, setItems] = useState<Material[]>([]);
 
   const load = async () => {
-    const { data } = await supabase
-      .from("raw_materials")
-      .select("id, name, quantity, unit, min_threshold, is_critical");
-    const rows = ((data as unknown as Material[]) || []).filter(
+    const { data } = await staffRead<Material[]>("raw_materials.list");
+    const rows = ((data as Material[]) || []).filter(
       (m) => m.min_threshold > 0 && m.quantity <= m.min_threshold
     );
     setItems(rows);
@@ -28,13 +26,8 @@ export default function LowStockCard() {
 
   useEffect(() => {
     load();
-    const ch = supabase
-      .channel("low-stock")
-      .on("postgres_changes", { event: "*", schema: "public", table: "raw_materials" }, load)
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
+    const poll = setInterval(load, 8000);
+    return () => clearInterval(poll);
   }, []);
 
   if (items.length === 0) return null;

@@ -152,12 +152,15 @@ const RegjistrimiDitor = () => {
     (async () => {
       setLoading(true);
       try {
-        const [{ data: prods }, { data: existingTurns, error: turnsErr }, seed] = await Promise.all([
-          (supabase as any).from("inv_products").select("id, name, sort_order, menu_item_ids, units_per_sale").order("sort_order").order("name"),
-          (supabase as any).from("shift_turns").select("*").eq("entry_date", date).order("sequence_number"),
+        const [prodsRes, turnsRes, seed] = await Promise.all([
+          (await import("@/lib/staff-read")).staffRead<any[]>("inv_products.list"),
+          (await import("@/lib/staff-read")).staffRead<any[]>("shift_turns.by_date", { entryDate: date }),
           Prop.loadNextDayStockFor(date),
         ]);
-        if (turnsErr) throw turnsErr;
+        if (prodsRes.error) throw new Error(prodsRes.error);
+        if (turnsRes.error) throw new Error(turnsRes.error);
+        const prods = prodsRes.data;
+        const existingTurns = turnsRes.data;
         const productList = (prods || []) as InvProduct[];
         setProducts(productList);
 

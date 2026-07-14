@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { staffRead } from "@/lib/staff-read";
 
 export interface InvProductWithMapping {
   name: string;
@@ -15,13 +15,10 @@ interface SaleItem {
 export class InventorySalesAggregationService {
   /** Build a map menu_item_id -> total sold quantity in the interval. */
   static async fetchSoldQtyByMenuItem(fromISO: string, toISO: string): Promise<Record<string, number>> {
-    const { data, error } = await (supabase as any)
-      .from("transactions")
-      .select("items, created_at, type")
-      .eq("type", "sale")
-      .gte("created_at", fromISO)
-      .lt("created_at", toISO);
-    if (error) throw error;
+    const { data, error } = await staffRead<any[]>("transactions.range", {
+      fromISO, toISO, type: "sale",
+    });
+    if (error) throw new Error(error);
     const map: Record<string, number> = {};
     (data || []).forEach((row: any) => {
       const items: SaleItem[] = Array.isArray(row.items) ? row.items : [];

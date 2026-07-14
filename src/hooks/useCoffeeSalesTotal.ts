@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { staffRead } from "@/lib/staff-read";
 
 /**
  * Sum of coffee menu-item sales (makiato, lece, americano, etc.) within an interval.
@@ -20,19 +20,13 @@ export function useCoffeeSalesTotal(fromISO: string | null, toISO: string | null
     (async () => {
       setLoading(true);
       try {
-        // 1) find coffee raw_materials
-        const { data: mats } = await supabase
-          .from("raw_materials")
-          .select("id, name")
-          .ilike("name", "%kaf%");
-        const matIds = (mats || []).map((m: any) => m.id);
-        if (!matIds.length) { if (!cancelled) setTotal(0); return; }
-
-        // 2) recipes linking menu_items to these materials
-        const { data: recs } = await supabase
-          .from("recipes")
-          .select("menu_item_id, quantity_needed, material_id")
-          .in("material_id", matIds);
+        // 1+2) find coffee materials + their recipes via edge function
+        const { data: matRec } = await staffRead<{
+          materials: Array<{ id: string; name: string }>;
+          recipes: Array<{ menu_item_id: string; quantity_needed: number; material_id: string }>;
+        }>("recipes.by_material_pattern", { pattern: "%kaf%" });
+        const recs = matRec?.recipes ?? [];
+        if (!matRec?.materials?.length) { if (!cancelled) setTotal(0); return; }
         const dosePerItem: Record<string, number> = {};
         (recs || []).forEach((r: any) => {
           // Assume 0.007 kg = 1 dose; fall back to 1 if quantity_needed missing.
@@ -44,12 +38,9 @@ export function useCoffeeSalesTotal(fromISO: string | null, toISO: string | null
         if (!itemIds.length) { if (!cancelled) setTotal(0); return; }
 
         // 3) sum sold qty in interval
-        const { data: txns } = await supabase
-          .from("transactions")
-          .select("items, created_at, type")
-          .eq("type", "sale")
-          .gte("created_at", fromISO)
-          .lt("created_at", toISO);
+        const { data: txns } = await staffRead<any[]>("transactions.range", {
+          fromISO, toISO, type: "sale",
+        });
         let sum = 0;
         (txns || []).forEach((row: any) => {
           const items = Array.isArray(row.items) ? row.items : [];

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase as supabase } from "@/integrations/supabase/client";
 import { InventoryCalculationService as Calc } from "@/services/inventoryCalculations";
+import { staffRead } from "@/lib/staff-read";
 import { InventoryProductData, InventoryTurnData, emptyProduct } from "@/types/inventory.types";
 
 /**
@@ -19,12 +19,10 @@ export function useDifStartDates(productNames: string[], upToDate: string) {
       from.setUTCDate(from.getUTCDate() - 30);
       const fromIso = from.toISOString().slice(0, 10);
 
-      const { data } = await (supabase as any)
-        .from("shift_turns")
-        .select("entry_date, turn_data")
-        .gte("entry_date", fromIso)
-        .lte("entry_date", upToDate)
-        .order("entry_date");
+      const { data } = await staffRead<Array<{ entry_date: string; turn_data: any }>>(
+        "shift_turns.range",
+        { from: fromIso, to: upToDate },
+      );
       if (cancelled) return;
 
       // group by date -> per-product total Dif

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Printer, RefreshCcw, CheckCircle2, AlertTriangle } from "lucide-react";
 import { printReceiptViaIframe } from "@/lib/receipt-print";
 import { toast } from "sonner";
@@ -25,6 +26,8 @@ interface Job {
 const STATION = "arka";
 
 const PrintStation = () => {
+  const [passcode, setPasscode] = useState<string>(() => sessionStorage.getItem("print_station_pass") || "");
+  const [authed, setAuthed] = useState<boolean>(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [enabled, setEnabled] = useState<boolean>(() => {
     return localStorage.getItem("print_station_enabled") === "1";
@@ -50,14 +53,19 @@ const PrintStation = () => {
   }, []);
 
   const loadRecent = useCallback(async () => {
-    const { data } = await supabase
-      .from("print_jobs")
-      .select("*")
-      .eq("station", STATION)
-      .order("created_at", { ascending: false })
-      .limit(30);
-    setJobs((data as unknown as Job[]) || []);
-  }, []);
+    if (!passcode) return;
+    const { data, error } = await supabase.functions.invoke("print-station", {
+      body: { action: "list_recent", station: STATION, adminPassword: passcode },
+      headers: { "x-admin-passcode": passcode },
+    });
+    if ((data as any)?.error || error) {
+      if (authed) toast.error((data as any)?.error || error?.message || "Gabim");
+      setAuthed(false);
+      return;
+    }
+    setAuthed(true);
+    setJobs(((data as any)?.data as Job[]) || []);
+  }, [passcode, authed]);
 
   const processJob = useCallback(async (job: Job) => {
     if (processing.current.has(job.id)) return;
@@ -65,54 +73,40 @@ const PrintStation = () => {
     if (!enabled) return;
     processing.current.add(job.id);
     try {
-      // Claim: mark printing + increment attempts
-      const { data: claim, error: claimErr } = await supabase
-        .from("print_jobs")
-        .update({ status: "printing", attempts: job.attempts + 1 })
-        .eq("id", job.id)
-        .eq("status", "pending")
-        .select("id")
-        .maybeSingle();
-      if (claimErr || !claim) {
-        // Someone else claimed it, or update denied.
-        return;
-      }
+      const { data: claimRes } = await supabase.functions.invoke("print-station", {
+        body: { action: "claim", id: job.id, attempts: job.attempts, adminPassword: passcode },
+        headers: { "x-admin-passcode": passcode },
+      });
+      if (!(claimRes as any)?.claimed) return;
 
       // Actually print — përdor iframe të izoluar (pa temën e app-it)
       beep();
       await printReceiptViaIframe(job.receipt_text, job.title || "Bileta");
 
-      await supabase
-        .from("print_jobs")
-        .update({ status: "printed", printed_at: new Date().toISOString() })
-        .eq("id", job.id);
+      await supabase.functions.invoke("print-station", {
+        body: { action: "mark_printed", id: job.id, adminPassword: passcode },
+        headers: { "x-admin-passcode": passcode },
+      });
       loadRecent();
     } catch (e) {
       console.error("[print-station] error", e);
       const newStatus = job.attempts + 1 >= 3 ? "failed" : "pending";
-      await supabase.from("print_jobs").update({ status: newStatus }).eq("id", job.id);
+      await supabase.functions.invoke("print-station", {
+        body: { action: "set_status", id: job.id, status: newStatus, adminPassword: passcode },
+        headers: { "x-admin-passcode": passcode },
+      });
     } finally {
       setTimeout(() => processing.current.delete(job.id), 3000);
     }
-  }, [beep, enabled, loadRecent]);
+  }, [beep, enabled, loadRecent, passcode]);
 
-  // Poll pending queue every 2s + realtime subscribe
+  // Poll pending queue every 2.5s (no realtime — anon has no SELECT on print_jobs).
   useEffect(() => {
+    if (!passcode) return;
     loadRecent();
-    const ch = supabase
-      .channel("print-station")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "print_jobs" },
-        () => loadRecent(),
-      )
-      .subscribe();
     const poll = setInterval(loadRecent, 2500);
-    return () => {
-      supabase.removeChannel(ch);
-      clearInterval(poll);
-    };
-  }, [loadRecent]);
+    return () => clearInterval(poll);
+  }, [loadRecent, passcode]);
 
   // Auto-process pending jobs
   useEffect(() => {
@@ -137,23 +131,49 @@ const PrintStation = () => {
   };
 
   const requeue = async (job: Job) => {
-    await supabase
-      .from("print_jobs")
-      .update({ status: "pending", attempts: 0 })
-      .eq("id", job.id);
+    await supabase.functions.invoke("print-station", {
+      body: { action: "requeue", id: job.id, adminPassword: passcode },
+      headers: { "x-admin-passcode": passcode },
+    });
     loadRecent();
   };
 
   const markPrinted = async (job: Job) => {
-    await supabase
-      .from("print_jobs")
-      .update({ status: "printed", printed_at: new Date().toISOString() })
-      .eq("id", job.id);
+    await supabase.functions.invoke("print-station", {
+      body: { action: "mark_printed", id: job.id, adminPassword: passcode },
+      headers: { "x-admin-passcode": passcode },
+    });
     loadRecent();
   };
 
   const pendingCount = jobs.filter((j) => j.status === "pending").length;
   const failedCount = jobs.filter((j) => j.status === "failed").length;
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-background text-foreground p-6 flex items-center justify-center">
+        <Card className="p-6 w-full max-w-sm space-y-4">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <Printer className="h-5 w-5" /> Printer Station
+          </h1>
+          <p className="text-sm text-muted-foreground">Fut kodin e admin-it për të hapur stacionin e printimit.</p>
+          <Input
+            type="password"
+            placeholder="Kodi admin"
+            value={passcode}
+            onChange={(e) => setPasscode(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { sessionStorage.setItem("print_station_pass", passcode); loadRecent(); } }}
+          />
+          <Button
+            className="w-full"
+            onClick={() => { sessionStorage.setItem("print_station_pass", passcode); loadRecent(); }}
+          >
+            Hyr
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
