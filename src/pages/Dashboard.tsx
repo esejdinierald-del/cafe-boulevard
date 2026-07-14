@@ -117,9 +117,14 @@ const Dashboard = () => {
   const btnStyle: React.CSSProperties = {
     height: `${layout.btnHeight}px`,
     fontSize: `${layout.btnFont}px`,
-    paddingLeft: `${Math.max(10, layout.btnHeight * 0.35)}px`,
-    paddingRight: `${Math.max(10, layout.btnHeight * 0.35)}px`,
+    paddingLeft: `${Math.max(12, layout.btnHeight * 0.4)}px`,
+    paddingRight: `${Math.max(12, layout.btnHeight * 0.4)}px`,
+    letterSpacing: "0.01em",
   };
+  // Shared class so every top-toolbar button feels part of the same family.
+  const chip =
+    "gap-2 touch-manipulation rounded-xl border shadow-sm font-semibold transition-all " +
+    "hover:-translate-y-[1px] hover:shadow-md active:translate-y-0";
   const moveBtn = (from: string, to: string) => {
     if (from === to) return;
     setBtnOrder((prev) => {
