@@ -637,8 +637,8 @@ const Dashboard = () => {
               </Button>
               <Button variant="outline" size="sm"
                 onClick={() => setActiveTab('cashier')}
-                className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm ${activeTab === 'cashier' ? 'bg-secondary/20 border-secondary/40 hover:bg-secondary/30' : ''}`}>
-                <Receipt className="h-4 w-4 text-secondary" /><span className="font-bold text-secondary">Arka</span>
+                className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
+                <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
               </Button>
               <Button variant="outline" size="sm"
                 onClick={async () => {
