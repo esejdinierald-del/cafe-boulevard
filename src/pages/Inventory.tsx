@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Package, Plus, AlertTriangle, ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
-import LowStockCard from "@/components/inventory/LowStockCard";
 import { staffRead } from "@/lib/staff-read";
 
 interface Material {
@@ -216,7 +215,6 @@ const Inventory = () => {
       </header>
 
       <div className="p-6 space-y-6">
-        <LowStockCard />
         {isKitchen && (
           <div className="border border-amber-500/40 bg-amber-500/10 text-amber-200 rounded-lg p-3 text-sm">
             Ju mund të shikoni inventarin, por nuk mund të shtoni furnizime.
