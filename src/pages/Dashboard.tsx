@@ -3,50 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Bell, Receipt, CheckCircle, X, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX } from "lucide-react";
 import { toast } from "sonner";
-import { QRCodeSVG } from "qrcode.react";
-import boulevardLogo from "@/assets/boulevard-logo.png";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import YouTube from "react-youtube";
 import { KDSPanel, CashierPanel } from "@/components/pos/POSPanels";
-
-interface ServiceRequest {
-  id: string;
-  table_number: string;
-  request_type: string;
-  status: string;
-  created_at: string;
-  completed_at: string | null;
-}
-
-interface Order {
-  id: string;
-  table_number: string;
-  items: Array<{
-    id: string;
-    name: string;
-    price: number;
-    quantity: number;
-  }>;
-  total_price: number;
-  status: string;
-  created_at: string;
-  completed_at: string | null;
-  notes: string | null;
-}
-
-interface SongRequest {
-  id: string;
-  table_number: string;
-  youtube_url: string;
-  video_id: string;
-  title: string;
-  thumbnail: string;
-  status: string;
-  created_at: string;
-}
+import { useShiftCurtain } from "@/hooks/useShiftCurtain";
+import { QRCurtain } from "@/components/dashboard/QRCurtain";
+import {
+  RequestsOrdersPanel,
+  type ServiceRequest,
+  type Order,
+} from "@/components/dashboard/RequestsOrdersPanel";
+import { SongsPanel, type SongRequest } from "@/components/dashboard/SongsPanel";
 
 const Dashboard = () => {
   const navigate = useNavigate();
