@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { staffRead } from "@/lib/staff-read";
 
 export type PrintJobKind = "close_table" | "order" | "kitchen" | "bar" | "manual";
