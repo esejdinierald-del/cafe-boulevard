@@ -16,6 +16,7 @@ import {
   type Order,
 } from "@/components/dashboard/RequestsOrdersPanel";
 import { SongsPanel, type SongRequest } from "@/components/dashboard/SongsPanel";
+import { staffRead } from "@/lib/staff-read";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -42,6 +43,8 @@ const Dashboard = () => {
 
   // Music tab state
   const [activeTab, setActiveTab] = useState<"requests" | "songs" | "bar" | "kitchen" | "cashier">("requests");
+  const [barPending, setBarPending] = useState(0);
+  const [kitchenPending, setKitchenPending] = useState(0);
   const [songRequests, setSongRequests] = useState<SongRequest[]>([]);
   const [playlist, setPlaylist] = useState<SongRequest[]>([]);
   const [currentSong, setCurrentSong] = useState<SongRequest | null>(null);
@@ -64,6 +67,26 @@ const Dashboard = () => {
   const playlistRef = useRef<SongRequest[]>([]);
   useEffect(() => { currentSongRef.current = currentSong; }, [currentSong]);
   useEffect(() => { playlistRef.current = playlist; }, [playlist]);
+
+  // Poll pending KDS split counts so tab buttons can pulse when new orders arrive
+  // and the operator is on a different tab.
+  useEffect(() => {
+    let cancelled = false;
+    const pull = async () => {
+      try {
+        const [{ data: bar }, { data: kit }] = await Promise.all([
+          staffRead<any[]>("order_items_split.pending", { kind: "bar" }),
+          staffRead<any[]>("order_items_split.pending", { kind: "kitchen" }),
+        ]);
+        if (cancelled) return;
+        setBarPending(Array.isArray(bar) ? bar.length : 0);
+        setKitchenPending(Array.isArray(kit) ? kit.length : 0);
+      } catch {}
+    };
+    pull();
+    const t = setInterval(pull, 4000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, []);
 
   // Public counter dashboard — access is gated by the QR shift curtain, not by login.
   useEffect(() => {
@@ -695,12 +718,30 @@ const Dashboard = () => {
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
           <TabsList className="grid w-full grid-cols-5 mb-3">
-            <TabsTrigger value="requests">📋 Thirrje & Porosi</TabsTrigger>
+            <TabsTrigger
+              value="requests"
+              className={activeTab !== "requests" && (pendingRequests.length + pendingOrders.length) > 0 ? "animate-pulse text-primary font-semibold" : ""}
+            >
+              📋 Thirrje & Porosi
+              {activeTab !== "requests" && (pendingRequests.length + pendingOrders.length) > 0 && (
+                <span className="ml-1">({pendingRequests.length + pendingOrders.length})</span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="songs">
               🎵 Këngët ({songRequests.filter((s) => s.status === "pending").length})
             </TabsTrigger>
-            <TabsTrigger value="bar">🍹 Bar KDS</TabsTrigger>
-            <TabsTrigger value="kitchen">🍽️ Kuzhina KDS</TabsTrigger>
+            <TabsTrigger
+              value="bar"
+              className={activeTab !== "bar" && barPending > 0 ? "animate-pulse text-primary font-semibold" : ""}
+            >
+              🍹 Bar KDS{activeTab !== "bar" && barPending > 0 ? ` (${barPending})` : ""}
+            </TabsTrigger>
+            <TabsTrigger
+              value="kitchen"
+              className={activeTab !== "kitchen" && kitchenPending > 0 ? "animate-pulse text-primary font-semibold" : ""}
+            >
+              🍽️ Kuzhina KDS{activeTab !== "kitchen" && kitchenPending > 0 ? ` (${kitchenPending})` : ""}
+            </TabsTrigger>
             <TabsTrigger value="cashier">💳 Arka</TabsTrigger>
           </TabsList>
 
