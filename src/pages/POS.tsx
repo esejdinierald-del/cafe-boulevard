@@ -46,6 +46,7 @@ const POS = () => {
   const [viewTable, setViewTable] = useState<{ number: number | string; orders: TableOrderDetail[] } | null>(null);
   const [pendingPrints, setPendingPrints] = useState(0);
   const [externalOpen, setExternalOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<"tables" | "menu">("tables");
 
   // Track our pending print jobs (waiting for the arka PC)
   useEffect(() => {
