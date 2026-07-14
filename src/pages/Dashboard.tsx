@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw, Move, X, ExternalLink } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
@@ -64,6 +64,41 @@ const Dashboard = () => {
   useEffect(() => {
     localStorage.setItem("dashboard-btn-order", JSON.stringify(btnOrder));
   }, [btnOrder]);
+  // Detached (floating) buttons — pulled OUT of the top control bar
+  const [detached, setDetached] = useState<Record<string, { x: number; y: number }>>(() => {
+    try {
+      const s = localStorage.getItem("dashboard-btn-detached");
+      if (s) return JSON.parse(s);
+    } catch {}
+    return {};
+  });
+  useEffect(() => {
+    localStorage.setItem("dashboard-btn-detached", JSON.stringify(detached));
+  }, [detached]);
+  const detachBtn = (key: string) => {
+    setDetached((p) => ({ ...p, [key]: p[key] ?? { x: 24, y: 120 } }));
+  };
+  const dockBtn = (key: string) => {
+    setDetached((p) => {
+      const n = { ...p };
+      delete n[key];
+      return n;
+    });
+  };
+  const floatDragRef = useRef<{ key: string; dx: number; dy: number } | null>(null);
+  const onFloatPointerDown = (key: string) => (e: React.PointerEvent) => {
+    const pos = detached[key] ?? { x: 24, y: 120 };
+    floatDragRef.current = { key, dx: e.clientX - pos.x, dy: e.clientY - pos.y };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onFloatPointerMove = (e: React.PointerEvent) => {
+    const d = floatDragRef.current;
+    if (!d) return;
+    const x = Math.max(0, Math.min(window.innerWidth - 60, e.clientX - d.dx));
+    const y = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - d.dy));
+    setDetached((p) => ({ ...p, [d.key]: { x, y } }));
+  };
+  const onFloatPointerUp = () => { floatDragRef.current = null; };
   // Layout / dimension settings — persisted to localStorage
   const DEFAULT_LAYOUT = { zoom: 100, maxWidth: 1280, btnHeight: 40, btnFont: 14, bannerPadY: 12, bannerFont: 18 };
   const [layout, setLayout] = useState(() => {
@@ -630,6 +665,70 @@ const Dashboard = () => {
     );
   }
 
+  const btnMap: Record<string, JSX.Element> = {
+    voice: (
+      <Button variant={notificationType === 'voice' ? 'default' : 'outline'} size="sm"
+        onClick={() => handleNotificationTypeChange('voice')} style={btnStyle} className="gap-1.5 touch-manipulation">
+        <Volume2 className="h-4 w-4" /><span className="font-semibold">Zë</span>
+      </Button>
+    ),
+    sound: (
+      <Button variant={notificationType === 'sound' ? 'default' : 'outline'} size="sm"
+        onClick={() => handleNotificationTypeChange('sound')} style={btnStyle} className="gap-1.5 touch-manipulation">
+        <Bell className="h-4 w-4" /><span className="font-semibold">Tingull</span>
+      </Button>
+    ),
+    test: (
+      <Button variant="outline" size="sm"
+        onClick={() => { enableAudio(); playBellSound(); }}
+        style={btnStyle} className="gap-1.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30">
+        <Volume2 className="h-4 w-4 text-success" /><span className="font-bold text-success">TEST</span>
+      </Button>
+    ),
+    qr: (
+      <Button variant="outline" size="sm"
+        onClick={() => setCurtainActive(true)}
+        style={btnStyle} className="gap-1.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30">
+        <QrCode className="h-4 w-4 text-primary" /><span className="font-bold text-primary">QR</span>
+      </Button>
+    ),
+    arka: (
+      <Button variant="outline" size="sm"
+        onClick={() => setActiveTab('cashier')}
+        style={btnStyle}
+        className={`gap-1.5 touch-manipulation font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
+        <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
+      </Button>
+    ),
+    ready: (
+      <Button variant="outline" size="sm"
+        onClick={async () => {
+          const { error } = await supabase.from('service_requests').insert({
+            table_number: 'Banaku',
+            request_type: 'kitchen_ready',
+            status: 'pending',
+          });
+          if (error) toast.error('Gabim në dërgim');
+          else toast.success('🔔 Thirrja u dërgua te kamarieri!');
+        }}
+        style={btnStyle} className="gap-1.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
+        <UtensilsCrossed className="h-4 w-4 text-accent-foreground" /><span className="font-bold text-accent-foreground">Porosia Gati 🔔</span>
+      </Button>
+    ),
+    mute: (
+      <Button variant="outline" size="sm"
+        onClick={() => {
+          setMuteNotifications((m) => !m);
+          toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
+        }}
+        style={btnStyle}
+        className={`gap-1.5 touch-manipulation ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
+        {muteNotifications ? <VolumeX className="h-4 w-4 text-destructive" /> : <Volume2 className="h-4 w-4" />}
+        <span className="font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
+      </Button>
+    ),
+  };
+
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-3 flex flex-col relative"
@@ -714,70 +813,7 @@ const Dashboard = () => {
             </div>
             <div className="flex gap-2 flex-wrap items-center">
               {(() => {
-                const btnMap: Record<string, JSX.Element> = {
-                  voice: (
-                    <Button variant={notificationType === 'voice' ? 'default' : 'outline'} size="sm"
-                      onClick={() => handleNotificationTypeChange('voice')} style={btnStyle} className="gap-1.5 touch-manipulation">
-                      <Volume2 className="h-4 w-4" /><span className="font-semibold">Zë</span>
-                    </Button>
-                  ),
-                  sound: (
-                    <Button variant={notificationType === 'sound' ? 'default' : 'outline'} size="sm"
-                      onClick={() => handleNotificationTypeChange('sound')} style={btnStyle} className="gap-1.5 touch-manipulation">
-                      <Bell className="h-4 w-4" /><span className="font-semibold">Tingull</span>
-                    </Button>
-                  ),
-                  test: (
-                    <Button variant="outline" size="sm"
-                      onClick={() => { enableAudio(); playBellSound(); }}
-                      style={btnStyle} className="gap-1.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30">
-                      <Volume2 className="h-4 w-4 text-success" /><span className="font-bold text-success">TEST</span>
-                    </Button>
-                  ),
-                  qr: (
-                    <Button variant="outline" size="sm"
-                      onClick={() => setCurtainActive(true)}
-                      style={btnStyle} className="gap-1.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30">
-                      <QrCode className="h-4 w-4 text-primary" /><span className="font-bold text-primary">QR</span>
-                    </Button>
-                  ),
-                  arka: (
-                    <Button variant="outline" size="sm"
-                      onClick={() => setActiveTab('cashier')}
-                      style={btnStyle}
-                      className={`gap-1.5 touch-manipulation font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
-                      <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
-                    </Button>
-                  ),
-                  ready: (
-                    <Button variant="outline" size="sm"
-                      onClick={async () => {
-                        const { error } = await supabase.from('service_requests').insert({
-                          table_number: 'Banaku',
-                          request_type: 'kitchen_ready',
-                          status: 'pending',
-                        });
-                        if (error) toast.error('Gabim në dërgim');
-                        else toast.success('🔔 Thirrja u dërgua te kamarieri!');
-                      }}
-                      style={btnStyle} className="gap-1.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
-                      <UtensilsCrossed className="h-4 w-4 text-accent-foreground" /><span className="font-bold text-accent-foreground">Porosia Gati 🔔</span>
-                    </Button>
-                  ),
-                  mute: (
-                    <Button variant="outline" size="sm"
-                      onClick={() => {
-                        setMuteNotifications((m) => !m);
-                        toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
-                      }}
-                      style={btnStyle}
-                      className={`gap-1.5 touch-manipulation ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
-                      {muteNotifications ? <VolumeX className="h-4 w-4 text-destructive" /> : <Volume2 className="h-4 w-4" />}
-                      <span className="font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
-                    </Button>
-                  ),
-                };
-                return btnOrder.map((key) => {
+                return btnOrder.filter((k) => !detached[k]).map((key) => {
                   const el = btnMap[key];
                   if (!el) return null;
                   return (
@@ -804,9 +840,19 @@ const Dashboard = () => {
                       className={reorderMode ? "relative cursor-move ring-2 ring-primary/40 rounded-lg animate-pulse-slow" : ""}
                     >
                       {reorderMode && (
-                        <div className="absolute -top-2 -left-2 z-10 bg-primary text-primary-foreground rounded-full p-0.5 shadow">
-                          <GripVertical className="h-3 w-3" />
-                        </div>
+                        <>
+                          <div className="absolute -top-2 -left-2 z-10 bg-primary text-primary-foreground rounded-full p-0.5 shadow">
+                            <GripVertical className="h-3 w-3" />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); detachBtn(key); }}
+                            title="Nxirr jashtë banerit"
+                            className="absolute -top-2 -right-2 z-20 bg-secondary text-secondary-foreground rounded-full p-1 shadow hover:scale-110 transition"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </button>
+                        </>
                       )}
                       <div className={reorderMode ? "pointer-events-none" : ""}>{el}</div>
                     </div>
@@ -980,6 +1026,44 @@ const Dashboard = () => {
           <p className="text-xs text-muted-foreground">Boulevard Café Elbasan • WhatsApp: +355 67 401 0030</p>
         </div>
       </div>
+
+      {/* ===== FLOATING (DETACHED) BUTTONS ===== */}
+      {Object.entries(detached).map(([key, pos]) => {
+        const el = btnMap[key];
+        if (!el) return null;
+        return (
+          <div
+            key={`float-${key}`}
+            style={{ position: "fixed", left: pos.x, top: pos.y, zIndex: 50 }}
+            className={`select-none ${reorderMode ? "ring-2 ring-primary/60 rounded-lg shadow-lg" : "shadow-md rounded-lg"}`}
+          >
+            {reorderMode && (
+              <>
+                <button
+                  type="button"
+                  onPointerDown={onFloatPointerDown(key)}
+                  onPointerMove={onFloatPointerMove}
+                  onPointerUp={onFloatPointerUp}
+                  onPointerCancel={onFloatPointerUp}
+                  title="Tërhiq për ta zhvendosur"
+                  className="absolute -top-3 -left-3 z-30 bg-primary text-primary-foreground rounded-full p-1 shadow cursor-move touch-none"
+                >
+                  <Move className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => dockBtn(key)}
+                  title="Rikthe në baner"
+                  className="absolute -top-3 -right-3 z-30 bg-destructive text-destructive-foreground rounded-full p-1 shadow hover:scale-110 transition"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </>
+            )}
+            <div className={reorderMode ? "pointer-events-none" : ""}>{el}</div>
+          </div>
+        );
+      })}
     </div>
   );
 };
