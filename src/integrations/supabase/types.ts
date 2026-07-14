@@ -1155,6 +1155,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      confirm_pos_split: { Args: { p_split_id: string }; Returns: Json }
       decrement_material: {
         Args: { amount: number; material_id: string }
         Returns: undefined
