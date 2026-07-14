@@ -1,14 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sha256 } from "../_shared/hash.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-const json = (b: unknown, s = 200) =>
-  new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+import { adminCorsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
+  const corsHeaders = adminCorsHeaders(req);
+  const json = (b: unknown, s = 200) =>
+    new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
     const supabase = createClient(

@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireShiftToken } from "../_shared/verify-shift-token.ts";
+import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -201,6 +202,14 @@ async function sendPushToSubscription(
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+  maybeCleanup();
+  const rl = checkRateLimit({ key: clientKey(req, "send-push"), max: 60, windowMs: 60_000, blockMs: 60_000 });
+  if (!rl.ok) {
+    return new Response(
+      JSON.stringify({ error: "Shumë njoftime. Provo më vonë.", retryAfterSec: rl.retryAfterSec }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 
   try {
