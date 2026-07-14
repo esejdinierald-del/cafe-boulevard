@@ -750,7 +750,7 @@ const RegjistrimiDitor = () => {
                                     {dif > 0 ? "+" : ""}{dif.toFixed(2)}
                                   </td>
                                 )}
-                                <td className="py-1 px-0.5">
+                                <td className="py-1 px-0.5 w-[70px]">
                                   <RowField
                                     value={data.gjendje}
                                     readOnly={!canEditGjendje}
