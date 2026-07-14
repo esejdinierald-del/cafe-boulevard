@@ -717,27 +717,27 @@ const Dashboard = () => {
                 const btnMap: Record<string, JSX.Element> = {
                   voice: (
                     <Button variant={notificationType === 'voice' ? 'default' : 'outline'} size="sm"
-                      onClick={() => handleNotificationTypeChange('voice')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
+                      onClick={() => handleNotificationTypeChange('voice')} style={btnStyle} className="gap-1.5 touch-manipulation">
                       <Volume2 className="h-4 w-4" /><span className="font-semibold">Zë</span>
                     </Button>
                   ),
                   sound: (
                     <Button variant={notificationType === 'sound' ? 'default' : 'outline'} size="sm"
-                      onClick={() => handleNotificationTypeChange('sound')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
+                      onClick={() => handleNotificationTypeChange('sound')} style={btnStyle} className="gap-1.5 touch-manipulation">
                       <Bell className="h-4 w-4" /><span className="font-semibold">Tingull</span>
                     </Button>
                   ),
                   test: (
                     <Button variant="outline" size="sm"
                       onClick={() => { enableAudio(); playBellSound(); }}
-                      className="gap-1.5 h-10 px-3.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30 text-sm">
+                      style={btnStyle} className="gap-1.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30">
                       <Volume2 className="h-4 w-4 text-success" /><span className="font-bold text-success">TEST</span>
                     </Button>
                   ),
                   qr: (
                     <Button variant="outline" size="sm"
                       onClick={() => setCurtainActive(true)}
-                      className="gap-1.5 h-10 px-3.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30 text-sm">
+                      style={btnStyle} className="gap-1.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30">
                       <QrCode className="h-4 w-4 text-primary" /><span className="font-bold text-primary">QR</span>
                     </Button>
                   ),
@@ -759,7 +759,7 @@ const Dashboard = () => {
                         if (error) toast.error('Gabim në dërgim');
                         else toast.success('🔔 Thirrja u dërgua te kamarieri!');
                       }}
-                      className="gap-1.5 h-10 px-3.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none text-sm">
+                      style={btnStyle} className="gap-1.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
                       <UtensilsCrossed className="h-4 w-4 text-accent-foreground" /><span className="font-bold text-accent-foreground">Porosia Gati 🔔</span>
                     </Button>
                   ),
