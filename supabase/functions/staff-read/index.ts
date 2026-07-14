@@ -191,13 +191,24 @@ serve(async (req) => {
       case "raw_materials.ensure": {
         const names = Array.isArray(body.names) ? body.names.map((s: unknown) => String(s)) : [];
         if (names.length === 0) return json({ data: [] });
-        const rows = names.map((name) => ({ name, quantity: 0, unit: "cope", min_threshold: 0 }));
-        const { data, error } = await supabase
+        const { data: existing } = await supabase
           .from("raw_materials")
-          .upsert(rows, { onConflict: "name", ignoreDuplicates: true })
-          .select("id, name, quantity, unit, min_threshold, location_id");
-        if (error) return json({ error: error.message }, 500);
-        return json({ data });
+          .select("id, name, quantity, unit, min_threshold, location_id")
+          .in("name", names);
+        const norm = (s: string) => s.trim().toLowerCase();
+        const have = new Set((existing ?? []).map((r: any) => norm(r.name)));
+        const missing = names.filter((n) => !have.has(norm(n)));
+        let inserted: any[] = [];
+        if (missing.length > 0) {
+          const rows = missing.map((name) => ({ name, quantity: 0, unit: "cope", min_threshold: 0 }));
+          const { data: ins, error } = await supabase
+            .from("raw_materials")
+            .insert(rows)
+            .select("id, name, quantity, unit, min_threshold, location_id");
+          if (error) return json({ error: error.message }, 500);
+          inserted = ins ?? [];
+        }
+        return json({ data: [...(existing ?? []), ...inserted] });
       }
       default:
         return json({ error: `Veprim i panjohur: ${action}` }, 400);
