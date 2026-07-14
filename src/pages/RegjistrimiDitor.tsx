@@ -635,7 +635,7 @@ const RegjistrimiDitor = () => {
       ) : !selectedTurn ? (
         <div className="p-6 text-center text-slate-400">S'ka turne për këtë datë.</div>
       ) : (
-        <div className="p-2 sm:p-4 max-w-5xl mx-auto space-y-3 sm:space-y-6">
+        <div className="p-2 max-w-5xl mx-auto space-y-2">
           <Tabs value={selectedTurnId ?? ""} onValueChange={(v) => setSelectedTurnId(v)}>
             <TabsList className="bg-slate-900 border border-slate-800 flex-wrap h-auto">
               {turns.map((t) => (
