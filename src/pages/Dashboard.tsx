@@ -678,6 +678,39 @@ const Dashboard = () => {
                 {reorderMode ? <Lock className="h-3 w-3" /> : <GripVertical className="h-3 w-3" />}
                 {reorderMode ? "Mbaro" : "Rendit"}
               </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 gap-1 text-xs" title="Dimensionet">
+                    <Settings2 className="h-3 w-3" /> Dimensionet
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 space-y-4" align="start">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">Dimensionet e dashboard</h4>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 gap-1 text-xs"
+                      onClick={() => setLayout(DEFAULT_LAYOUT)} title="Rikthe">
+                      <RotateCcw className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  {[
+                    { k: "zoom" as const, label: "Zoom global", min: 60, max: 160, step: 5, suffix: "%" },
+                    { k: "maxWidth" as const, label: "Gjerësia max", min: 900, max: 2400, step: 20, suffix: "px" },
+                    { k: "btnHeight" as const, label: "Lartësia e butonave", min: 28, max: 72, step: 2, suffix: "px" },
+                    { k: "btnFont" as const, label: "Teksti i butonave", min: 10, max: 22, step: 1, suffix: "px" },
+                    { k: "bannerPadY" as const, label: "Baner — hapësira", min: 4, max: 40, step: 2, suffix: "px" },
+                    { k: "bannerFont" as const, label: "Baner — teksti", min: 12, max: 32, step: 1, suffix: "px" },
+                  ].map(({ k, label, min, max, step, suffix }) => (
+                    <div key={k} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="font-mono font-semibold">{layout[k]}{suffix}</span>
+                      </div>
+                      <Slider min={min} max={max} step={step} value={[layout[k]]}
+                        onValueChange={([v]) => setL(k, v)} />
+                    </div>
+                  ))}
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
               {(() => {
