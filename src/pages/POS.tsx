@@ -213,8 +213,8 @@ const POS = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      <header className="flex items-start justify-between px-2 md:px-3 py-1.5 md:py-2 border-b border-slate-800 bg-slate-900/95 z-20 mt-[1cm]">
-        <div className="flex flex-col items-start gap-1 min-w-0">
+      <header className="flex items-start justify-between px-2 md:px-3 py-1.5 md:py-2 border-b border-slate-800 bg-slate-900/95 z-20 mt-[1.5cm]">
+        <div className="flex flex-col items-start gap-1 min-w-0 -mt-1">
           <div className="flex items-center gap-1.5 md:gap-2">
             <h1 className="text-sm md:text-lg font-bold whitespace-nowrap">POS Kamarier</h1>
             <RomeClock />
