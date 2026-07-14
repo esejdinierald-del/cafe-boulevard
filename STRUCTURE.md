@@ -1,5 +1,12 @@
 # Boulevard Café — Project Structure
 
+## Architectural Rules (mandatory)
+
+1. **Asnjë query direkt `anon`** mbi tabela staff-only (`transactions`, `pos_orders`, `orders`, `print_jobs`, `raw_materials`, `recipes`, `supplies`, `shift_turns`, `app_logs`, etj.). Stafi (pa `supabase.auth`) shkon **gjithmonë** përmes edge functions `staff-read` / `admin-read` me `x-shift-token` ose admin PIN.
+2. **`src/lib/`** = pure utilities dhe klientë I/O (staff-read wrapper, print-queue, rome-time, error-logger). **Nuk** përmban business logic domain-specific.
+3. **`src/services/`** = business logic (kalkulime inventari, propagim stoku, agregime shitjesh). Vetëm një burim i vërtete për çdo formulë (p.sh. `inventoryCalculations` jeton **vetëm** te `src/services/`).
+4. **Toast** = vetëm `sonner` (`import { toast } from "sonner"`). Shadcn `useToast`/`<Toaster/>` u hoq.
+
 ## Entry Points
 - `index.html` — root HTML, loads Vite/React
 - `src/main.tsx` — React root mount
