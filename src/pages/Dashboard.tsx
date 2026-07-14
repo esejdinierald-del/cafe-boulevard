@@ -64,6 +64,41 @@ const Dashboard = () => {
   useEffect(() => {
     localStorage.setItem("dashboard-btn-order", JSON.stringify(btnOrder));
   }, [btnOrder]);
+  // Detached (floating) buttons — pulled OUT of the top control bar
+  const [detached, setDetached] = useState<Record<string, { x: number; y: number }>>(() => {
+    try {
+      const s = localStorage.getItem("dashboard-btn-detached");
+      if (s) return JSON.parse(s);
+    } catch {}
+    return {};
+  });
+  useEffect(() => {
+    localStorage.setItem("dashboard-btn-detached", JSON.stringify(detached));
+  }, [detached]);
+  const detachBtn = (key: string) => {
+    setDetached((p) => ({ ...p, [key]: p[key] ?? { x: 24, y: 120 } }));
+  };
+  const dockBtn = (key: string) => {
+    setDetached((p) => {
+      const n = { ...p };
+      delete n[key];
+      return n;
+    });
+  };
+  const floatDragRef = useRef<{ key: string; dx: number; dy: number } | null>(null);
+  const onFloatPointerDown = (key: string) => (e: React.PointerEvent) => {
+    const pos = detached[key] ?? { x: 24, y: 120 };
+    floatDragRef.current = { key, dx: e.clientX - pos.x, dy: e.clientY - pos.y };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onFloatPointerMove = (e: React.PointerEvent) => {
+    const d = floatDragRef.current;
+    if (!d) return;
+    const x = Math.max(0, Math.min(window.innerWidth - 60, e.clientX - d.dx));
+    const y = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - d.dy));
+    setDetached((p) => ({ ...p, [d.key]: { x, y } }));
+  };
+  const onFloatPointerUp = () => { floatDragRef.current = null; };
   // Layout / dimension settings — persisted to localStorage
   const DEFAULT_LAYOUT = { zoom: 100, maxWidth: 1280, btnHeight: 40, btnFont: 14, bannerPadY: 12, bannerFont: 18 };
   const [layout, setLayout] = useState(() => {
