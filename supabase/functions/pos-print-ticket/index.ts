@@ -23,7 +23,7 @@ function row(left: string, right: string) {
 }
 function buildReceiptText(order: any) {
   const rows: string[] = [];
-  rows.push(center("BOULEVARD CAFE"));
+  rows.push(center("Boulevard Cafe"));
   rows.push(center(order.table_number ? `Tavolina ${order.table_number}` : String(order.mode).toUpperCase()));
   rows.push(line());
   rows.push(new Date(order.created_at).toLocaleString("sq-AL"));

@@ -81,7 +81,7 @@ const PrintStation = () => {
 
       // Actually print — përdor iframe të izoluar (pa temën e app-it)
       beep();
-      await printReceiptViaIframe(job.receipt_text, job.title || "Bileta");
+      await printReceiptViaIframe(job.receipt_text, job.title || "Boulevard Cafe");
 
       await supabase.functions.invoke("print-station", {
         body: { action: "mark_printed", id: job.id, adminPassword: passcode },
@@ -237,7 +237,7 @@ const PrintStation = () => {
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold">{j.title || "Bileta"}</span>
+                  <span className="font-semibold">{j.title || "Boulevard Cafe"}</span>
                   {j.table_code && <Badge variant="outline">Tav. {j.table_code}</Badge>}
                   {j.amount != null && <Badge variant="outline">{j.amount} L</Badge>}
                   <Badge
