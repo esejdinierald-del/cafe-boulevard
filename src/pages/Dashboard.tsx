@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import YouTube from "react-youtube";
@@ -609,31 +609,36 @@ const Dashboard = () => {
           <p className="text-xs text-muted-foreground">Boulevard Café Elbasan</p>
         </div>
 
-        {/* Notification Settings */}
+        {/* Top Control Bar — notification + Arka grouped above KDS/Arka space */}
         <Card className="p-3 bg-card/50 backdrop-blur">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4 text-secondary" />
-              <span className="font-semibold text-xs">Njoftim</span>
+              <span className="font-semibold text-sm">Njoftim</span>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap items-center">
               <Button variant={notificationType === 'voice' ? 'default' : 'outline'} size="sm"
-                onClick={() => handleNotificationTypeChange('voice')} className="gap-1.5 h-9 px-3 touch-manipulation">
-                <Volume2 className="h-3.5 w-3.5" /><span className="text-xs">Zë</span>
+                onClick={() => handleNotificationTypeChange('voice')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
+                <Volume2 className="h-4 w-4" /><span className="font-semibold">Zë</span>
               </Button>
               <Button variant={notificationType === 'sound' ? 'default' : 'outline'} size="sm"
-                onClick={() => handleNotificationTypeChange('sound')} className="gap-1.5 h-9 px-3 touch-manipulation">
-                <Bell className="h-3.5 w-3.5" /><span className="text-xs">Tingull</span>
+                onClick={() => handleNotificationTypeChange('sound')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
+                <Bell className="h-4 w-4" /><span className="font-semibold">Tingull</span>
               </Button>
               <Button variant="outline" size="sm"
                 onClick={() => { enableAudio(); playBellSound(); }}
-                className="gap-1.5 h-9 px-3 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30">
-                <Volume2 className="h-3.5 w-3.5 text-success" /><span className="text-xs font-bold text-success">TEST</span>
+                className="gap-1.5 h-10 px-3.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30 text-sm">
+                <Volume2 className="h-4 w-4 text-success" /><span className="font-bold text-success">TEST</span>
               </Button>
               <Button variant="outline" size="sm"
                 onClick={() => setCurtainActive(true)}
-                className="gap-1.5 h-9 px-3 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30">
-                <QrCode className="h-3.5 w-3.5 text-primary" /><span className="text-xs font-bold text-primary">QR</span>
+                className="gap-1.5 h-10 px-3.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30 text-sm">
+                <QrCode className="h-4 w-4 text-primary" /><span className="font-bold text-primary">QR</span>
+              </Button>
+              <Button variant="outline" size="sm"
+                onClick={() => setActiveTab('cashier')}
+                className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
+                <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
               </Button>
               <Button variant="outline" size="sm"
                 onClick={async () => {
@@ -645,17 +650,17 @@ const Dashboard = () => {
                   if (error) toast.error('Gabim në dërgim');
                   else toast.success('🔔 Thirrja u dërgua te kamarieri!');
                 }}
-                className="gap-1.5 h-9 px-3 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
-                <UtensilsCrossed className="h-3.5 w-3.5 text-accent-foreground" /><span className="text-xs font-bold text-accent-foreground">Porosia Gati 🔔</span>
+                className="gap-1.5 h-10 px-3.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none text-sm">
+                <UtensilsCrossed className="h-4 w-4 text-accent-foreground" /><span className="font-bold text-accent-foreground">Porosia Gati 🔔</span>
               </Button>
               <Button variant="outline" size="sm"
                 onClick={() => {
                   setMuteNotifications((m) => !m);
                   toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
                 }}
-                className={`gap-1.5 h-9 px-3 touch-manipulation ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
-                {muteNotifications ? <VolumeX className="h-3.5 w-3.5 text-destructive" /> : <Volume2 className="h-3.5 w-3.5" />}
-                <span className="text-xs font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
+                className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
+                {muteNotifications ? <VolumeX className="h-4 w-4 text-destructive" /> : <Volume2 className="h-4 w-4" />}
+                <span className="font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
               </Button>
             </div>
           </div>
@@ -723,16 +728,16 @@ const Dashboard = () => {
             const total = barPending + kitchenPending + reqCount + songCount;
             if (total === 0 || muteNotifications) return null;
             const parts: string[] = [];
+            if (reqCount > 0) parts.push(`Thirrje (${reqCount})`);
             if (barPending > 0) parts.push(`Bar (${barPending})`);
             if (kitchenPending > 0) parts.push(`Kuzhina (${kitchenPending})`);
-            if (reqCount > 0) parts.push(`Thirrje (${reqCount})`);
             if (songCount > 0) parts.push(`Këngë (${songCount})`);
             return (
               <button
                 type="button"
                 onClick={() =>
                   setActiveTab(
-                    barPending > 0 ? "bar" : kitchenPending > 0 ? "kitchen" : reqCount > 0 ? "requests" : "songs"
+                    reqCount > 0 ? "requests" : barPending > 0 ? "bar" : kitchenPending > 0 ? "kitchen" : "songs"
                   )
                 }
                 className="w-full mb-3 rounded-lg py-3 px-4 bg-gradient-to-r from-[hsl(38,62%,68%)] via-[hsl(38,80%,52%)] to-[hsl(38,62%,68%)] text-[hsl(25,40%,12%)] font-black text-lg animate-pulse shadow-[0_0_25px_rgba(244,196,48,0.6)] ring-2 ring-[hsl(38,62%,68%)] flex items-center justify-center gap-3 hover:brightness-110 transition-all"
@@ -742,7 +747,7 @@ const Dashboard = () => {
               </button>
             );
           })()}
-          <TabsList className="grid w-full grid-cols-5 mb-3">
+          <TabsList className="grid w-full grid-cols-4 mb-4 gap-2 h-16 p-1.5">
             {(() => {
               const goldPulse = "bg-gradient-to-r !from-[hsl(38,62%,68%)] !via-[hsl(38,80%,52%)] !to-[hsl(38,62%,68%)] !text-[hsl(25,40%,12%)] font-black animate-pulse shadow-[0_0_25px_rgba(244,196,48,0.6)] ring-2 ring-[hsl(38,62%,68%)] hover:brightness-110 transition-all";
               const reqCount = pendingRequests.length + pendingOrders.length;
@@ -751,32 +756,31 @@ const Dashboard = () => {
                 <>
                   <TabsTrigger
                     value="requests"
-                    className={activeTab !== "requests" && reqCount > 0 ? goldPulse : ""}
+                    className={`h-full text-base font-semibold px-2 gap-2 ${activeTab !== "requests" && reqCount > 0 ? goldPulse : ""}`}
                   >
-                    📋 Thirrje & Porosi
+                    📋 Thirrje
                     {activeTab !== "requests" && reqCount > 0 && (
                       <span className="ml-1">({reqCount})</span>
                     )}
                   </TabsTrigger>
                   <TabsTrigger
-                    value="songs"
-                    className={activeTab !== "songs" && songCount > 0 ? goldPulse : ""}
-                  >
-                    🎵 Këngët {activeTab !== "songs" && songCount > 0 ? `(${songCount})` : `(${songCount})`}
-                  </TabsTrigger>
-                  <TabsTrigger
                     value="bar"
-                    className={activeTab !== "bar" && barPending > 0 ? goldPulse : ""}
+                    className={`h-full text-base font-semibold px-2 gap-2 ${activeTab !== "bar" && barPending > 0 ? goldPulse : ""}`}
                   >
-                    🍹 Bar KDS{activeTab !== "bar" && barPending > 0 ? ` (${barPending})` : ""}
+                    🍹 Bar{activeTab !== "bar" && barPending > 0 ? ` (${barPending})` : ""}
                   </TabsTrigger>
                   <TabsTrigger
                     value="kitchen"
-                    className={activeTab !== "kitchen" && kitchenPending > 0 ? goldPulse : ""}
+                    className={`h-full text-base font-semibold px-2 gap-2 ${activeTab !== "kitchen" && kitchenPending > 0 ? goldPulse : ""}`}
                   >
-                    🍽️ Kuzhina KDS{activeTab !== "kitchen" && kitchenPending > 0 ? ` (${kitchenPending})` : ""}
+                    🍽️ Kuzhina{activeTab !== "kitchen" && kitchenPending > 0 ? ` (${kitchenPending})` : ""}
                   </TabsTrigger>
-                  <TabsTrigger value="cashier">💳 Arka</TabsTrigger>
+                  <TabsTrigger
+                    value="songs"
+                    className={`h-full text-base font-semibold px-2 gap-2 ${activeTab !== "songs" && songCount > 0 ? goldPulse : ""}`}
+                  >
+                    🎵 Këngët {activeTab !== "songs" && songCount > 0 ? `(${songCount})` : `(${songCount})`}
+                  </TabsTrigger>
                 </>
               );
             })()}
