@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export type POSMode = "table" | "bar" | "delivery" | "takeaway";
 
@@ -23,11 +24,20 @@ interface POSState {
   updateItems: (items: POSCartItem[]) => void;
 }
 
-export const usePOSStore = create<POSState>((set) => ({
-  currentOrder: null,
-  setCurrentOrder: (o) => set({ currentOrder: o }),
-  startOrder: (mode, tableNumber = null) =>
-    set({ currentOrder: { mode, tableNumber, items: [] } }),
-  updateItems: (items) =>
-    set((s) => (s.currentOrder ? { currentOrder: { ...s.currentOrder, items } } : s)),
-}));
+export const usePOSStore = create<POSState>()(
+  persist(
+    (set) => ({
+      currentOrder: null,
+      setCurrentOrder: (o) => set({ currentOrder: o }),
+      startOrder: (mode, tableNumber = null) =>
+        set({ currentOrder: { mode, tableNumber, items: [] } }),
+      updateItems: (items) =>
+        set((s) => (s.currentOrder ? { currentOrder: { ...s.currentOrder, items } } : s)),
+    }),
+    {
+      name: "boulevard.pos-store.v1",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (s) => ({ currentOrder: s.currentOrder }),
+    }
+  )
+);
