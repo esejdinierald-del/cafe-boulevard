@@ -30,7 +30,7 @@ const BodySchema = z.object({
   notes: z.string().max(1000).nullable().optional(),
   locationId: z.string().max(64).nullable().optional(),
   operatorName: z.string().max(120).nullable().optional(),
-  source: z.enum(["pos", "glovo", "bolt", "delivery", "takeaway"]).default("pos"),
+  source: z.enum(["pos", "delivery", "takeaway"]).default("pos"),
   externalRef: z.string().max(200).nullable().optional(),
 }).passthrough();
 
@@ -121,7 +121,7 @@ serve(async (req) => {
       total_amount: totalAmount,
       operator_name: operatorName,
       notes: externalRef ? `${notes ? notes + " | " : ""}Ref: ${externalRef}` : notes,
-      source: ["pos", "glovo", "bolt", "delivery", "takeaway"].includes(source) ? source : "pos",
+      source: ["pos", "delivery", "takeaway"].includes(source) ? source : "pos",
     };
     // location_id is a UUID column — only include if a valid UUID was passed
     if (typeof locationId === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(locationId)) {

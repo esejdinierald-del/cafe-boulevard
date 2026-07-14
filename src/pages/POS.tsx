@@ -4,13 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
-import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, Truck, ArrowLeft } from "lucide-react";
+import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/receipt-print";
 import { queuePrintJob, countPendingForMe } from "@/lib/print-queue";
 import { RomeClock } from "@/components/RomeClock";
 import { isPastShiftDay } from "@/lib/rome-time";
-import { ExternalOrderDialog } from "@/components/pos/ExternalOrderDialog";
+
 import { staffRead } from "@/lib/staff-read";
 
 interface TableRow {
@@ -45,7 +45,7 @@ const POS = () => {
   const [checking, setChecking] = useState(true);
   const [viewTable, setViewTable] = useState<{ number: number | string; orders: TableOrderDetail[] } | null>(null);
   const [pendingPrints, setPendingPrints] = useState(0);
-  const [externalOpen, setExternalOpen] = useState(false);
+  
   const [mobileView, setMobileView] = useState<"tables" | "menu">("tables");
 
   // Track our pending print jobs (waiting for the arka PC)
@@ -227,16 +227,11 @@ const POS = () => {
         </div>
         <div className="flex items-center gap-1 md:gap-2">
           <button type="button"
+            title="Banak"
             onClick={() => { startOrder("bar", null); setMobileView("menu"); }}
-            className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
+            className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded bg-slate-700 hover:bg-slate-600"
           >
-            <Coffee size={14} /> <span className="hidden sm:inline">Modalitet</span> Banak
-          </button>
-          <button type="button"
-            onClick={() => setExternalOpen(true)}
-            className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-xs md:text-sm font-semibold"
-          >
-            <Truck size={14} /> Glovo/Bolt
+            <Coffee size={18} />
           </button>
           {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
             <button type="button"
@@ -260,8 +255,6 @@ const POS = () => {
           </button>
         </div>
       </header>
-
-      <ExternalOrderDialog open={externalOpen} onClose={() => setExternalOpen(false)} />
 
       {/* Mobile: step-by-step table → menu */}
       <div className="lg:hidden p-2 pb-20">
