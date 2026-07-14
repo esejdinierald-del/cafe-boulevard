@@ -732,7 +732,7 @@ const RegjistrimiDitor = () => {
                               <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-950/40">
                                 <td className="py-1 pr-1 font-medium text-xs sm:text-sm">{p.name}</td>
                                 {showOtherCols && (
-                                  <td className="py-1 px-0.5">
+                                  <td className="py-1 px-0.5 w-[70px]">
                                     <RowField
                                       value={data.stokFillim}
                                       readOnly={!canAdminEditStok}
@@ -741,7 +741,7 @@ const RegjistrimiDitor = () => {
                                   </td>
                                 )}
                                 {showOtherCols && (
-                                  <td className="py-1 px-0.5">
+                                  <td className="py-1 px-0.5 w-[70px]">
                                     <RowField value={data.shiriti} readOnly />
                                   </td>
                                 )}
