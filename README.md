@@ -39,7 +39,7 @@ Aplikacion i plotë menaxhimi për kafenenë Boulevard (Elbasan): menu për klie
 - **Push**: VAPID + `send-push` edge function për njoftime në background.
 - **Siguri & Audit**: RLS e shtrënguar, `DELETE` vetëm admin, `audit_log` trigger për 8 tabela kritike, `app_logs` për errors dhe events (kapur automatikisht nga `error-logger.ts`).
 - **Regjistër fiskal i brendshëm**: `fiscal_receipts` me numërim sekuencial vjetor (p.sh. `2026-000001`) i gjeneruar nga trigger te `transactions`; eksportohet CSV nga `/admin-tools`.
-- **Porosi të jashtme**: Glovo / Bolt shënohen manualisht me `source` te `pos_orders` përmes `ExternalOrderDialog`.
+- **Porosi të jashtme**: çdo porosi jashtë lokacionit regjistrohet me `source` te `pos_orders` (delivery / takeaway).
 - **Backup**: eksport JSON i konfigurimit (menu, kategori, staf, receta, produkte, ai_knowledge, app_settings) nga `/admin-tools`.
 
 ## Zhvillimi lokal
