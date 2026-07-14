@@ -67,7 +67,7 @@ const printDocument = (title: string, body: string, withAutofit = false) => `<!d
   <body>${body}${withAutofit ? `<script>${AUTOFIT_SCRIPT}<\/script>` : ""}</body>
 </html>`;
 
-export const openReceiptPrintWindow = (title = "Bileta") => {
+export const openReceiptPrintWindow = (title = "Boulevard Cafe") => {
   const printWindow = window.open("", "_blank", "width=380,height=650");
   if (!printWindow) return null;
   printWindow.document.open();
@@ -76,7 +76,7 @@ export const openReceiptPrintWindow = (title = "Bileta") => {
   return printWindow;
 };
 
-export const writeReceiptAndPrint = (printWindow: Window | null, receiptText: string, title = "Bileta") => {
+export const writeReceiptAndPrint = (printWindow: Window | null, receiptText: string, title = "Boulevard Cafe") => {
   if (!printWindow || printWindow.closed) {
     // Fallback for mobile / popup-blocked: print inline in the current document.
     printReceiptInline(receiptText, title);
@@ -99,7 +99,7 @@ export const closePrintWindow = (printWindow: Window | null) => {
  * Mounts a hidden print area, calls window.print(), then cleans up.
  * Requires the global `@media print` rules in src/index.css.
  */
-export const printReceiptInline = (receiptText: string, _title = "Bileta") => {
+export const printReceiptInline = (receiptText: string, _title = "Boulevard Cafe") => {
   const existing = document.getElementById("boulevard-print-area");
   if (existing) existing.remove();
 
@@ -141,7 +141,7 @@ export const printReceiptInline = (receiptText: string, _title = "Bileta") => {
  * Preferred entry point — tries popup first (best on desktop, keeps the
  * app UI usable), falls back to inline printing on mobile / blocked popups.
  */
-export const printReceipt = (receiptText: string, title = "Bileta") => {
+export const printReceipt = (receiptText: string, title = "Boulevard Cafe") => {
   const w = openReceiptPrintWindow(title);
   if (w) {
     writeReceiptAndPrint(w, receiptText, title);
@@ -156,7 +156,7 @@ export const printReceipt = (receiptText: string, title = "Bileta") => {
  * dhe thërret print() brenda iframe-it. Kjo shmang "Print preview failed"
  * në Chrome kiosk-printing me printer termik.
  */
-export const printReceiptViaIframe = (receiptText: string, title = "Bileta"): Promise<void> => {
+export const printReceiptViaIframe = (receiptText: string, title = "Boulevard Cafe"): Promise<void> => {
   return new Promise((resolve) => {
     // Fshi iframe-in e mëparshëm nëse ka mbetur
     const old = document.getElementById("boulevard-print-iframe");

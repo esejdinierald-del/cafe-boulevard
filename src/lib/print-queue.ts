@@ -23,7 +23,7 @@ export const queuePrintJob = async (input: QueueJobInput): Promise<string | null
   const { data, error } = await staffRead<{ id: string }>("print_jobs.enqueue", {
     station: input.station || "arka",
     kind: input.kind,
-    title: input.title || "Bileta",
+    title: input.title || "Boulevard Cafe",
     receiptText: input.receiptText,
     createdBy: creator,
     tableCode: input.tableCode ?? null,

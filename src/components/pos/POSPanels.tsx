@@ -60,7 +60,7 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
       ? `Tavolina #${s.pos_orders.table_number}`
       : (s.pos_orders?.mode ?? "").toUpperCase();
     const rows: string[] = [];
-    rows.push(center(kind === "bar" ? "*** BANAKU ***" : "*** KUZHINA ***"));
+    rows.push(center("Boulevard Cafe"));
     rows.push(center(header));
     rows.push(line);
     rows.push(new Date().toLocaleString("sq-AL"));
