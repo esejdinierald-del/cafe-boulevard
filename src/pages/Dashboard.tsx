@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -761,63 +761,62 @@ const Dashboard = () => {
           <p className="text-xs text-muted-foreground">Boulevard Café Elbasan</p>
         </div>
 
-        {/* Top Control Bar — notification + Arka grouped above KDS/Arka space */}
-        <Card className="p-3 bg-card/50 backdrop-blur">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-secondary" />
-              <span className="font-semibold text-sm">Njoftim</span>
-              <Button
-                variant={reorderMode ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setReorderMode((v) => !v)}
-                className="h-7 px-2 gap-1 text-xs ml-1"
-                title="Zhvendos butonat"
-              >
-                {reorderMode ? <Lock className="h-3 w-3" /> : <GripVertical className="h-3 w-3" />}
-                {reorderMode ? "Mbaro" : "Rendit"}
-              </Button>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-7 px-2 gap-1 text-xs" title="Dimensionet">
-                    <Settings2 className="h-3 w-3" /> Dimensionet
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 space-y-4" align="start">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-sm">Dimensionet e dashboard</h4>
-                    <Button variant="ghost" size="sm" className="h-6 px-2 gap-1 text-xs"
-                      onClick={() => setLayout(DEFAULT_LAYOUT)} title="Rikthe">
-                      <RotateCcw className="h-3 w-3" />
+        {/* Top Control Bar — plain inline toolbar */}
+        <div className="flex gap-2 flex-wrap items-center justify-end px-1">
+          {(() => {
+            const toolControls = (
+              <React.Fragment key="__tools__">
+                <Button
+                  variant={reorderMode ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setReorderMode((v) => !v)}
+                  className="h-7 px-2 gap-1 text-xs"
+                  title="Zhvendos butonat"
+                >
+                  {reorderMode ? <Lock className="h-3 w-3" /> : <GripVertical className="h-3 w-3" />}
+                  {reorderMode ? "Mbaro" : "Rendit"}
+                </Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-7 px-2 gap-1 text-xs" title="Dimensionet">
+                      <Settings2 className="h-3 w-3" /> Dimensionet
                     </Button>
-                  </div>
-                  {[
-                    { k: "zoom" as const, label: "Zoom global", min: 60, max: 160, step: 5, suffix: "%" },
-                    { k: "maxWidth" as const, label: "Gjerësia max", min: 900, max: 2400, step: 20, suffix: "px" },
-                    { k: "btnHeight" as const, label: "Lartësia e butonave", min: 28, max: 72, step: 2, suffix: "px" },
-                    { k: "btnFont" as const, label: "Teksti i butonave", min: 10, max: 22, step: 1, suffix: "px" },
-                    { k: "bannerPadY" as const, label: "Baner — hapësira", min: 4, max: 40, step: 2, suffix: "px" },
-                    { k: "bannerFont" as const, label: "Baner — teksti", min: 12, max: 32, step: 1, suffix: "px" },
-                  ].map(({ k, label, min, max, step, suffix }) => (
-                    <div key={k} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">{label}</span>
-                        <span className="font-mono font-semibold">{layout[k]}{suffix}</span>
-                      </div>
-                      <Slider min={min} max={max} step={step} value={[layout[k]]}
-                        onValueChange={([v]) => setL(k, v)} />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 space-y-4" align="start">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-sm">Dimensionet e dashboard</h4>
+                      <Button variant="ghost" size="sm" className="h-6 px-2 gap-1 text-xs"
+                        onClick={() => setLayout(DEFAULT_LAYOUT)} title="Rikthe">
+                        <RotateCcw className="h-3 w-3" />
+                      </Button>
                     </div>
-                  ))}
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="flex gap-2 flex-wrap items-center">
-              {(() => {
-                return btnOrder.filter((k) => !detached[k]).map((key) => {
-                  const el = btnMap[key];
-                  if (!el) return null;
-                  return (
-                    <div
+                    {[
+                      { k: "zoom" as const, label: "Zoom global", min: 60, max: 160, step: 5, suffix: "%" },
+                      { k: "maxWidth" as const, label: "Gjerësia max", min: 900, max: 2400, step: 20, suffix: "px" },
+                      { k: "btnHeight" as const, label: "Lartësia e butonave", min: 28, max: 72, step: 2, suffix: "px" },
+                      { k: "btnFont" as const, label: "Teksti i butonave", min: 10, max: 22, step: 1, suffix: "px" },
+                      { k: "bannerPadY" as const, label: "Baner — hapësira", min: 4, max: 40, step: 2, suffix: "px" },
+                      { k: "bannerFont" as const, label: "Baner — teksti", min: 12, max: 32, step: 1, suffix: "px" },
+                    ].map(({ k, label, min, max, step, suffix }) => (
+                      <div key={k} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">{label}</span>
+                          <span className="font-mono font-semibold">{layout[k]}{suffix}</span>
+                        </div>
+                        <Slider min={min} max={max} step={step} value={[layout[k]]}
+                          onValueChange={([v]) => setL(k, v)} />
+                      </div>
+                    ))}
+                  </PopoverContent>
+                </Popover>
+              </React.Fragment>
+            );
+            const items: JSX.Element[] = [];
+            btnOrder.filter((k) => !detached[k]).forEach((key) => {
+              const el = btnMap[key];
+              if (!el) return;
+              items.push(
+                <div
                       key={key}
                       draggable={reorderMode}
                       onDragStart={(e) => {
@@ -856,12 +855,12 @@ const Dashboard = () => {
                       )}
                       <div className={reorderMode ? "pointer-events-none" : ""}>{el}</div>
                     </div>
-                  );
-                });
-              })()}
-            </div>
-          </div>
-        </Card>
+              );
+              if (key === "test") items.push(toolControls);
+            });
+            return items;
+          })()}
+        </div>
 
         {/* ===== YOUTUBE PLAYER (always mounted to persist playback; visible only in "Këngët" tab) ===== */}
         {(currentSong || (radioMode && lastVideoIdRef.current)) && (
