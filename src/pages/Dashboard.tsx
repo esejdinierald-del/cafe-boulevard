@@ -665,6 +665,70 @@ const Dashboard = () => {
     );
   }
 
+  const btnMap: Record<string, JSX.Element> = {
+    voice: (
+      <Button variant={notificationType === 'voice' ? 'default' : 'outline'} size="sm"
+        onClick={() => handleNotificationTypeChange('voice')} style={btnStyle} className="gap-1.5 touch-manipulation">
+        <Volume2 className="h-4 w-4" /><span className="font-semibold">Zë</span>
+      </Button>
+    ),
+    sound: (
+      <Button variant={notificationType === 'sound' ? 'default' : 'outline'} size="sm"
+        onClick={() => handleNotificationTypeChange('sound')} style={btnStyle} className="gap-1.5 touch-manipulation">
+        <Bell className="h-4 w-4" /><span className="font-semibold">Tingull</span>
+      </Button>
+    ),
+    test: (
+      <Button variant="outline" size="sm"
+        onClick={() => { enableAudio(); playBellSound(); }}
+        style={btnStyle} className="gap-1.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30">
+        <Volume2 className="h-4 w-4 text-success" /><span className="font-bold text-success">TEST</span>
+      </Button>
+    ),
+    qr: (
+      <Button variant="outline" size="sm"
+        onClick={() => setCurtainActive(true)}
+        style={btnStyle} className="gap-1.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30">
+        <QrCode className="h-4 w-4 text-primary" /><span className="font-bold text-primary">QR</span>
+      </Button>
+    ),
+    arka: (
+      <Button variant="outline" size="sm"
+        onClick={() => setActiveTab('cashier')}
+        style={btnStyle}
+        className={`gap-1.5 touch-manipulation font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
+        <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
+      </Button>
+    ),
+    ready: (
+      <Button variant="outline" size="sm"
+        onClick={async () => {
+          const { error } = await supabase.from('service_requests').insert({
+            table_number: 'Banaku',
+            request_type: 'kitchen_ready',
+            status: 'pending',
+          });
+          if (error) toast.error('Gabim në dërgim');
+          else toast.success('🔔 Thirrja u dërgua te kamarieri!');
+        }}
+        style={btnStyle} className="gap-1.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
+        <UtensilsCrossed className="h-4 w-4 text-accent-foreground" /><span className="font-bold text-accent-foreground">Porosia Gati 🔔</span>
+      </Button>
+    ),
+    mute: (
+      <Button variant="outline" size="sm"
+        onClick={() => {
+          setMuteNotifications((m) => !m);
+          toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
+        }}
+        style={btnStyle}
+        className={`gap-1.5 touch-manipulation ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
+        {muteNotifications ? <VolumeX className="h-4 w-4 text-destructive" /> : <Volume2 className="h-4 w-4" />}
+        <span className="font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
+      </Button>
+    ),
+  };
+
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-3 flex flex-col relative"
