@@ -6,6 +6,7 @@ import { OrderPanel } from "@/components/pos/OrderPanel";
 import { MobileOrderSheet } from "@/components/pos/MobileOrderSheet";
 import { usePOSStore } from "@/stores/pos-store";
 import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, ArrowLeft } from "lucide-react";
+import { DraggableHeaderItem } from "@/components/pos/DraggableHeaderItem";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/receipt-print";
 import { queuePrintJob, countPendingForMe } from "@/lib/print-queue";
@@ -216,8 +217,12 @@ const POS = () => {
       <header className="flex items-start justify-between px-2 md:px-3 py-1.5 md:py-2 border-b border-slate-800 bg-slate-900/95 z-20 mt-[1.5cm]">
         <div className="flex flex-col items-start gap-1 min-w-0 -mt-1">
           <div className="flex items-center gap-1.5 md:gap-2">
-            <h1 className="text-sm md:text-lg font-bold whitespace-nowrap">POS Kamarier</h1>
-            <RomeClock />
+            <DraggableHeaderItem id="title">
+              <h1 className="text-sm md:text-lg font-bold whitespace-nowrap">POS Kamarier</h1>
+            </DraggableHeaderItem>
+            <DraggableHeaderItem id="clock">
+              <RomeClock />
+            </DraggableHeaderItem>
             {pendingPrints > 0 && (
               <span
                 className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-semibold animate-pulse"
@@ -228,34 +233,42 @@ const POS = () => {
             )}
           </div>
           {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
-            <button type="button"
-              onClick={() => navigate("/inventory")}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs"
-            >
-              <Package size={12} /> Inventari
-            </button>
+            <DraggableHeaderItem id="inventory">
+              <button type="button"
+                onClick={() => navigate("/inventory")}
+                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs"
+              >
+                <Package size={12} /> Inventari
+              </button>
+            </DraggableHeaderItem>
           )}
         </div>
         <div className="flex items-center gap-1 md:gap-2">
-          <button type="button"
-            title="Banak"
-            onClick={() => { startOrder("bar", null); setMobileView("menu"); }}
-            className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded bg-slate-700 hover:bg-slate-600"
-          >
-            <Coffee size={18} />
-          </button>
-          <button type="button"
-            onClick={() => navigate("/staff")}
-            className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
-          >
-            <LogOut size={14} /> <span className="hidden sm:inline">Turni</span>
-          </button>
-          <button type="button"
-            onClick={handleEndShift}
-            className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-red-700 hover:bg-red-600 text-xs md:text-sm"
-          >
-            <PowerOff size={14} /> <span className="hidden sm:inline">Mbyll</span>
-          </button>
+          <DraggableHeaderItem id="banak">
+            <button type="button"
+              title="Banak"
+              onClick={() => { startOrder("bar", null); setMobileView("menu"); }}
+              className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded bg-slate-700 hover:bg-slate-600"
+            >
+              <Coffee size={18} />
+            </button>
+          </DraggableHeaderItem>
+          <DraggableHeaderItem id="turni">
+            <button type="button"
+              onClick={() => navigate("/staff")}
+              className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
+            >
+              <LogOut size={14} /> <span className="hidden sm:inline">Turni</span>
+            </button>
+          </DraggableHeaderItem>
+          <DraggableHeaderItem id="mbyll">
+            <button type="button"
+              onClick={handleEndShift}
+              className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-red-700 hover:bg-red-600 text-xs md:text-sm"
+            >
+              <PowerOff size={14} /> <span className="hidden sm:inline">Mbyll</span>
+            </button>
+          </DraggableHeaderItem>
         </div>
       </header>
 
