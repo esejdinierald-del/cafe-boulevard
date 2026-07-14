@@ -213,17 +213,27 @@ const POS = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      <header className="flex items-center justify-between px-2 md:px-3 py-1.5 md:py-2 border-b border-slate-800 bg-slate-900/95 z-20 mt-[1.5cm]">
-        <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
-          <h1 className="text-sm md:text-lg font-bold whitespace-nowrap">POS Kamarier</h1>
-          <RomeClock />
-          {pendingPrints > 0 && (
-            <span
-              className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-semibold animate-pulse"
-              title="Bileta të tuat në pritje të printimit tek arka"
+      <header className="flex items-start justify-between px-2 md:px-3 py-1.5 md:py-2 border-b border-slate-800 bg-slate-900/95 z-20 mt-[1.5cm]">
+        <div className="flex flex-col items-start gap-1 min-w-0">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <h1 className="text-sm md:text-lg font-bold whitespace-nowrap">POS Kamarier</h1>
+            <RomeClock />
+            {pendingPrints > 0 && (
+              <span
+                className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-semibold animate-pulse"
+                title="Bileta të tuat në pritje të printimit tek arka"
+              >
+                <Printer size={12} /> Në pritje: {pendingPrints}
+              </span>
+            )}
+          </div>
+          {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
+            <button type="button"
+              onClick={() => navigate("/inventory")}
+              className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs"
             >
-              <Printer size={12} /> Në pritje: {pendingPrints}
-            </span>
+              <Package size={12} /> Inventari
+            </button>
           )}
         </div>
         <div className="flex items-center gap-1 md:gap-2">
@@ -234,14 +244,6 @@ const POS = () => {
           >
             <Coffee size={18} />
           </button>
-          {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
-            <button type="button"
-              onClick={() => navigate("/inventory")}
-              className="hidden sm:flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
-            >
-              <Package size={14} /> <span className="hidden md:inline">Inventari</span>
-            </button>
-          )}
           <button type="button"
             onClick={() => navigate("/staff")}
             className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
