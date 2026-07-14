@@ -44,6 +44,9 @@ function buildReceiptText(order: any) {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  maybeCleanup();
+  const rl = checkRateLimit({ key: clientKey(req, "pos-print-ticket"), max: 120, windowMs: 60_000, blockMs: 60_000 });
+  if (!rl.ok) return jsonResponse({ error: "Shumë kërkesa. Provo më vonë.", retryAfterSec: rl.retryAfterSec }, 429);
   try {
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
     const body = await req.json().catch(() => ({}));
