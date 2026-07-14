@@ -218,7 +218,7 @@ const POS = () => {
         <div className="flex flex-col items-start gap-1 min-w-0 -mt-1">
           <div className="flex items-center gap-1.5 md:gap-2">
             <DraggableHeaderItem id="title">
-              <h1 className="text-sm md:text-lg font-bold whitespace-nowrap">POS Kamarier</h1>
+              <h1 className="text-sm md:text-lg font-bold whitespace-nowrap">POS Kamarier{"\u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0"}</h1>
             </DraggableHeaderItem>
             <DraggableHeaderItem id="clock">
               <RomeClock />
