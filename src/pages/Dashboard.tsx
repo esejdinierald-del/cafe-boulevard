@@ -51,7 +51,7 @@ const Dashboard = () => {
   const DEFAULT_BTN_ORDER = ["voice", "sound", "test", "mute", "qr", "arka", "ready"];
   const [btnOrder, setBtnOrder] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem("dashboard-btn-order-v2");
+      const saved = localStorage.getItem("dashboard-btn-order-v3");
       if (saved) {
         const parsed = JSON.parse(saved) as string[];
         const merged = [...parsed.filter((x) => DEFAULT_BTN_ORDER.includes(x))];
@@ -64,7 +64,7 @@ const Dashboard = () => {
   const [reorderMode, setReorderMode] = useState(false);
   const dragKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    localStorage.setItem("dashboard-btn-order-v2", JSON.stringify(btnOrder));
+    localStorage.setItem("dashboard-btn-order-v3", JSON.stringify(btnOrder));
   }, [btnOrder]);
   // Detached (floating) buttons — pulled OUT of the top control bar
   const [detached, setDetached] = useState<Record<string, { x: number; y: number }>>(() => {
