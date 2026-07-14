@@ -2,12 +2,16 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireShiftToken, shiftAuthCorsHeaders } from "../_shared/verify-shift-token.ts";
 import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
+import { z } from "npm:zod@3.23.8";
 
 const corsHeaders = shiftAuthCorsHeaders();
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-const ALLOWED = new Set(["accepted", "rejected"]);
+const BodySchema = z.object({
+  id: z.string().uuid("id duhet të jetë UUID"),
+  status: z.enum(["accepted", "rejected"]),
+}).passthrough(); // allow x-shift-token siblings
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -19,10 +23,11 @@ serve(async (req) => {
     const auth = await requireShiftToken(req, body);
     if (!auth.ok) return auth.response;
 
-    const id = body && typeof body.id === "string" ? body.id : "";
-    const status = body && typeof body.status === "string" ? body.status : "";
-    if (!id) return json({ error: "Mungon id" }, 400);
-    if (!ALLOWED.has(status)) return json({ error: "Status i pavlefshëm" }, 400);
+    const parsed = BodySchema.safeParse(body);
+    if (!parsed.success) {
+      return json({ error: "Të dhëna të pavlefshme", details: parsed.error.flatten().fieldErrors }, 400);
+    }
+    const { id, status } = parsed.data;
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
