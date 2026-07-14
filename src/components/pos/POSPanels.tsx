@@ -264,11 +264,38 @@ export const CashierPanel = () => {
     if (!pw) return;
     const item = order.items[index];
     if (!item) return;
+    if ((item as any).cancelled) return;
+    // Net available qty for this line
+    const netAvailable = order.items.reduce((s, it) => {
+      if (it.name === item.name && Number(it.price) === Number(item.price)) {
+        return s + Number(it.quantity || 0);
+      }
+      return s;
+    }, 0);
+    if (netAvailable <= 0) {
+      toast.error("Ky artikull është anulluar tashmë");
+      return;
+    }
+    const raw = window.prompt(
+      `Sa copë të anullohen nga "${item.name}"? (maks. ${netAvailable})`,
+      "1",
+    );
+    if (raw == null) return;
+    const qty = Math.max(1, Math.floor(Number(raw)));
+    if (!Number.isFinite(qty) || qty <= 0) {
+      toast.error("Sasi e pavlefshme");
+      return;
+    }
+    if (qty > netAvailable) {
+      toast.error(`Maksimumi ${netAvailable} copë`);
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("pos-cancel-item", {
       body: {
         orderId: order.id,
         itemIndex: index,
+        qty,
         adminPassword: pw,
         shiftToken: typeof window !== "undefined" ? localStorage.getItem("staff_shift_token") : undefined,
       },
@@ -280,11 +307,7 @@ export const CashierPanel = () => {
       toast.error("Gabim: " + errMsg);
       return;
     }
-    if ((data as any)?.cancelledOrder) {
-      toast.success(`U hoq "${item.name}". Porosia u mbyll (bosh).`);
-    } else {
-      toast.success(`U hoq 1x "${item.name}" (-${Number(item.price).toFixed(0)} L)`);
-    }
+    toast.success(`U anulluan ${qty}x "${item.name}" (-${(Number(item.price) * qty).toFixed(0)} L)`);
   };
 
   return (
