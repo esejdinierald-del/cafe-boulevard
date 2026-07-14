@@ -44,6 +44,21 @@ const Inventory = () => {
   const [hasToken, setHasToken] = useState<boolean>(
     typeof window !== "undefined" && !!localStorage.getItem("staff_shift_token"),
   );
+  const [isAdmin, setIsAdmin] = useState<boolean>(
+    typeof window !== "undefined" && sessionStorage.getItem("inv_admin_unlocked") === "1",
+  );
+
+  useEffect(() => {
+    const sync = () =>
+      setIsAdmin(sessionStorage.getItem("inv_admin_unlocked") === "1");
+    sync();
+    window.addEventListener("storage", sync);
+    const t = setInterval(sync, 1500);
+    return () => {
+      window.removeEventListener("storage", sync);
+      clearInterval(t);
+    };
+  }, []);
 
   const staffRole = (typeof window !== "undefined"
     ? localStorage.getItem("staff_role")
@@ -260,11 +275,21 @@ const Inventory = () => {
                     >
                       <TableCell className="font-medium">{m.name}</TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {Math.round(m.quantity)}
+                        <span
+                          className={isAdmin ? "" : "blur-sm select-none"}
+                          aria-hidden={!isAdmin}
+                        >
+                          {Math.round(m.quantity)}
+                        </span>
                       </TableCell>
                       <TableCell>{m.unit}</TableCell>
                       <TableCell className="text-right tabular-nums text-slate-400">
-                        {Math.round(m.min_threshold)}
+                        <span
+                          className={isAdmin ? "" : "blur-sm select-none"}
+                          aria-hidden={!isAdmin}
+                        >
+                          {Math.round(m.min_threshold)}
+                        </span>
                       </TableCell>
                       <TableCell>
                         {isLow ? (
@@ -313,9 +338,11 @@ const Inventory = () => {
                 >
                   <div className="min-w-0">
                     <div className="text-sm font-medium truncate">{m.name}</div>
-                    <div className="text-[11px] text-slate-500">
-                      stok: {Math.round(m.quantity)} {m.unit}
-                    </div>
+                    {isAdmin && (
+                      <div className="text-[11px] text-slate-500">
+                        stok: {Math.round(m.quantity)} {m.unit}
+                      </div>
+                    )}
                   </div>
                   <Input
                     type="number"
