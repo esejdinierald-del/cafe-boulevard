@@ -263,11 +263,90 @@ const POS = () => {
 
       <ExternalOrderDialog open={externalOpen} onClose={() => setExternalOpen(false)} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_360px] gap-3 p-3">
+      {/* Mobile: step-by-step table → menu */}
+      <div className="lg:hidden p-2 pb-20">
+        {mobileView === "tables" ? (
+          <div className="bg-slate-800 rounded-lg p-2">
+            <div className="text-slate-400 text-xs uppercase font-semibold mb-2">Tavolinat</div>
+            <div className="grid grid-cols-4 xs:grid-cols-5 gap-1.5">
+              {[...tables]
+                .sort((a, b) => Number(a.number) - Number(b.number))
+                .map((t) => {
+                const occupied = t.status === "occupied";
+                const isActive = String(activeTableNumber) === String(t.number);
+                const total = tableTotals[String(t.number)] || 0;
+                const hasOrders = total > 0;
+                return (
+                  <div
+                    key={t.id}
+                    className={`relative aspect-[4/3] rounded-lg border-2 transition ${
+                      isActive
+                        ? "border-amber-400 bg-amber-500/20"
+                        : occupied || hasOrders
+                        ? "border-red-500/50 bg-red-500/20 text-red-200"
+                        : "border-green-500/50 bg-green-500/10 text-green-200"
+                    }`}
+                  >
+                    <button type="button"
+                      onClick={() => { startOrder("table", t.number as number); setMobileView("menu"); }}
+                      className="absolute inset-0 flex flex-col items-center justify-center text-xs font-semibold hover:bg-white/5 rounded-lg"
+                    >
+                      <span>#{t.number}</span>
+                      {hasOrders && (
+                        <span className="text-[10px] font-bold text-amber-300 mt-0.5">
+                          {total.toFixed(0)} L
+                        </span>
+                      )}
+                    </button>
+                    {hasOrders && (
+                      <>
+                        <button type="button"
+                          onClick={(e) => { e.stopPropagation(); viewTableOrders(t.number); }}
+                          title="Shiko porositë"
+                          className="absolute top-0.5 right-0.5 p-1 rounded-md bg-slate-700/90 hover:bg-slate-600 text-white z-10 shadow"
+                        >
+                          <Eye size={14} />
+                        </button>
+                        <button type="button"
+                          onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
+                          disabled={closing}
+                          title="Mbyll & printo tavolinën"
+                          className="absolute bottom-0.5 right-0.5 p-0.5 rounded bg-amber-600 hover:bg-amber-500 text-white z-10 disabled:opacity-50"
+                        >
+                          <Printer size={10} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+              {tables.length === 0 && (
+                <div className="col-span-full text-slate-500 text-xs text-center py-4">
+                  Nuk ka tavolina
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <button type="button"
+              onClick={() => setMobileView("tables")}
+              className="flex items-center gap-2 px-3 py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm text-white"
+            >
+              <ArrowLeft size={16} /> Kthehu te tavolinat
+            </button>
+            <MenuGrid />
+            <OrderPanel />
+          </div>
+        )}
+      </div>
+
+      {/* Desktop: 3-column layout */}
+      <div className="hidden lg:grid grid-cols-[220px_1fr_360px] gap-3 p-3">
         {/* Left: tables */}
         <aside className="bg-slate-800 rounded-lg p-3 max-h-[85vh] overflow-y-auto">
           <div className="text-slate-400 text-xs uppercase font-semibold mb-2">Tavolinat</div>
-          <div className="grid grid-cols-3 lg:grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {[...tables]
               .sort((a, b) => Number(a.number) - Number(b.number))
               .map((t) => {
@@ -287,7 +366,7 @@ const POS = () => {
                   }`}
                 >
                   <button type="button"
-                    onClick={() => { startOrder("table", t.number as number); setMobileView("menu"); }}
+                    onClick={() => startOrder("table", t.number as number)}
                     className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold hover:bg-white/5 rounded-lg"
                   >
                     <span>#{t.number}</span>
