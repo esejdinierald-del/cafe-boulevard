@@ -94,6 +94,18 @@ serve(async (req) => {
         results.negative_stock = negStock?.length ?? 0;
         return json({ data: results });
       }
+      case "backup.snapshot": {
+        const READ_TABLES = [
+          "categories", "menu_items", "tables", "staff_members",
+          "raw_materials", "recipes", "inv_products", "app_settings", "ai_knowledge",
+        ];
+        const snapshot: Record<string, unknown> = {};
+        for (const t of READ_TABLES) {
+          const { data, error } = await supabase.from(t as any).select("*");
+          snapshot[t] = error ? { error: error.message } : data;
+        }
+        return json({ data: snapshot });
+      }
       default:
         return json({ error: `Veprim i panjohur: ${action}` }, 400);
     }
