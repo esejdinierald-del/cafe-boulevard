@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw, Move, X, ExternalLink } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
