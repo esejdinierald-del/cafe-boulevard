@@ -212,51 +212,51 @@ const POS = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      <header className="flex items-center justify-between px-3 py-2 border-b border-slate-800">
-        <div className="flex items-center gap-2">
-          <h1 className="text-lg font-bold">POS Kamarier</h1>
+      <header className="flex items-center justify-between px-2 md:px-3 py-1.5 md:py-2 border-b border-slate-800 bg-slate-900/95 z-20">
+        <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
+          <h1 className="text-sm md:text-lg font-bold whitespace-nowrap">POS Kamarier</h1>
           <RomeClock />
           {pendingPrints > 0 && (
             <span
-              className="flex items-center gap-1 px-2 py-1 rounded bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-semibold animate-pulse"
+              className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-semibold animate-pulse"
               title="Bileta të tuat në pritje të printimit tek arka"
             >
-              <Printer size={12} /> Në pritje printimi: {pendingPrints}
+              <Printer size={12} /> Në pritje: {pendingPrints}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           <button type="button"
             onClick={() => { startOrder("bar", null); setMobileView("menu"); }}
-            className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
+            className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
           >
             <Coffee size={14} /> <span className="hidden sm:inline">Modalitet</span> Banak
           </button>
           <button type="button"
             onClick={() => setExternalOpen(true)}
-            className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-xs md:text-sm font-semibold"
+            className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-xs md:text-sm font-semibold"
           >
             <Truck size={14} /> Glovo/Bolt
           </button>
           {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
             <button type="button"
               onClick={() => navigate("/inventory")}
-              className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
+              className="hidden sm:flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
             >
-              <Package size={14} /> Inventari
+              <Package size={14} /> <span className="hidden md:inline">Inventari</span>
             </button>
           )}
           <button type="button"
             onClick={() => navigate("/staff")}
-            className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
+            className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
           >
-            <LogOut size={14} /> Kthehu te Turni
+            <LogOut size={14} /> <span className="hidden sm:inline">Turni</span>
           </button>
           <button type="button"
             onClick={handleEndShift}
-            className="flex items-center gap-2 px-3 py-2 rounded bg-red-700 hover:bg-red-600 text-sm"
+            className="flex items-center gap-1 md:gap-2 px-1.5 md:px-3 py-1.5 md:py-2 rounded bg-red-700 hover:bg-red-600 text-xs md:text-sm"
           >
-            <PowerOff size={14} /> Mbyll Turnin
+            <PowerOff size={14} /> <span className="hidden sm:inline">Mbyll</span>
           </button>
         </div>
       </header>
