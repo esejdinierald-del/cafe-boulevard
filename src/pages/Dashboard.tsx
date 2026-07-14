@@ -1026,6 +1026,44 @@ const Dashboard = () => {
           <p className="text-xs text-muted-foreground">Boulevard Café Elbasan • WhatsApp: +355 67 401 0030</p>
         </div>
       </div>
+
+      {/* ===== FLOATING (DETACHED) BUTTONS ===== */}
+      {Object.entries(detached).map(([key, pos]) => {
+        const el = btnMap[key];
+        if (!el) return null;
+        return (
+          <div
+            key={`float-${key}`}
+            style={{ position: "fixed", left: pos.x, top: pos.y, zIndex: 50 }}
+            className={`select-none ${reorderMode ? "ring-2 ring-primary/60 rounded-lg shadow-lg" : "shadow-md rounded-lg"}`}
+          >
+            {reorderMode && (
+              <>
+                <button
+                  type="button"
+                  onPointerDown={onFloatPointerDown(key)}
+                  onPointerMove={onFloatPointerMove}
+                  onPointerUp={onFloatPointerUp}
+                  onPointerCancel={onFloatPointerUp}
+                  title="Tërhiq për ta zhvendosur"
+                  className="absolute -top-3 -left-3 z-30 bg-primary text-primary-foreground rounded-full p-1 shadow cursor-move touch-none"
+                >
+                  <Move className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => dockBtn(key)}
+                  title="Rikthe në baner"
+                  className="absolute -top-3 -right-3 z-30 bg-destructive text-destructive-foreground rounded-full p-1 shadow hover:scale-110 transition"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </>
+            )}
+            <div className={reorderMode ? "pointer-events-none" : ""}>{el}</div>
+          </div>
+        );
+      })}
     </div>
   );
 };
