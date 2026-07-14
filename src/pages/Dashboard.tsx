@@ -744,7 +744,8 @@ const Dashboard = () => {
                   arka: (
                     <Button variant="outline" size="sm"
                       onClick={() => setActiveTab('cashier')}
-                      className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
+                      style={btnStyle}
+                      className={`gap-1.5 touch-manipulation font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
                       <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
                     </Button>
                   ),
@@ -769,7 +770,8 @@ const Dashboard = () => {
                         setMuteNotifications((m) => !m);
                         toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
                       }}
-                      className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
+                      style={btnStyle}
+                      className={`gap-1.5 touch-manipulation ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
                       {muteNotifications ? <VolumeX className="h-4 w-4 text-destructive" /> : <Volume2 className="h-4 w-4" />}
                       <span className="font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
                     </Button>
