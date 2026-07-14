@@ -11,6 +11,7 @@ import { queuePrintJob, countPendingForMe } from "@/lib/print-queue";
 import { RomeClock } from "@/components/RomeClock";
 import { isPastShiftDay } from "@/lib/rome-time";
 import { ExternalOrderDialog } from "@/components/pos/ExternalOrderDialog";
+import { staffRead } from "@/lib/staff-read";
 
 interface TableRow {
   id: string;
@@ -84,16 +85,15 @@ const POS = () => {
   useEffect(() => {
     if (checking) return;
     const load = async () => {
-      const [{ data: tRows }, { data: oRows }] = await Promise.all([
+      const [tblRes, ordersRes] = await Promise.all([
         supabase.from("tables").select("id, number, name, status").order("number"),
-        supabase
-          .from("pos_orders")
-          .select("table_number, total_amount, status")
-          .in("status", ["open", "ready"]),
+        staffRead<OpenOrderRow[]>("pos_orders.open_all"),
       ]);
-      setTables((tRows as TableRow[]) || []);
+      if (tblRes.error) toast.error("Gabim tavolina: " + tblRes.error.message);
+      if (ordersRes.error) toast.error("Gabim porosi: " + ordersRes.error);
+      setTables((tblRes.data as TableRow[]) || []);
       const totals: Record<string, number> = {};
-      for (const o of (oRows as OpenOrderRow[]) || []) {
+      for (const o of (ordersRes.data as OpenOrderRow[]) || []) {
         if (o.table_number == null) continue;
         const key = String(o.table_number);
         totals[key] = (totals[key] || 0) + Number(o.total_amount || 0);
@@ -104,7 +104,6 @@ const POS = () => {
     const channel = supabase
       .channel("pos-tables")
       .on("postgres_changes", { event: "*", schema: "public", table: "tables" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "pos_orders" }, load)
       .subscribe();
     const poll = setInterval(load, 5000);
     return () => {
@@ -124,14 +123,11 @@ const POS = () => {
   const activeTableNumber = currentOrder?.tableNumber ?? null;
 
   const viewTableOrders = async (tableNumber: number | string) => {
-    const { data, error } = await supabase
-      .from("pos_orders")
-      .select("id, status, total_amount, created_at, operator_name, items")
-      .eq("table_number", Number(tableNumber))
-      .in("status", ["open", "ready"])
-      .order("created_at", { ascending: true });
+    const { data, error } = await staffRead<TableOrderDetail[]>("pos_orders.by_table", {
+      tableNumber: Number(tableNumber),
+    });
     if (error) {
-      toast.error("Gabim: " + error.message);
+      toast.error("Gabim: " + error);
       return;
     }
     setViewTable({ number: tableNumber, orders: (data as TableOrderDetail[]) || [] });
@@ -143,12 +139,12 @@ const POS = () => {
     }
     setClosing(true);
     try {
-      const { data: openOrders } = await supabase
-        .from("pos_orders")
-        .select("id")
-        .eq("table_number", Number(tableNumber))
-        .in("status", ["open", "ready"]);
-      const ids = ((openOrders as { id: string }[]) || []).map((o) => o.id);
+      const { data: openOrders, error: fetchErr } = await staffRead<{ id: string }[]>(
+        "pos_orders.by_table_ids",
+        { tableNumber: Number(tableNumber) },
+      );
+      if (fetchErr) throw new Error(fetchErr);
+      const ids = (openOrders || []).map((o) => o.id);
       if (ids.length === 0) {
         toast.error("Asnjë porosi e hapur për këtë tavolinë");
         return;
