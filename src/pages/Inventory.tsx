@@ -147,13 +147,20 @@ const Inventory = () => {
   const submitSupplies = async () => {
     const rows = materials
       .map((m) => ({ material: m, qty: Number(supplyQtys[m.id] || 0) }))
-      .filter((r) => r.qty > 0);
+      .filter((r) => r.qty !== 0 && !Number.isNaN(r.qty));
     if (rows.length === 0) {
       // Kalo pa furnizim — asnjë artikull nuk ka sasi.
       setDialogOpen(false);
       resetForm();
       navigate("/regjistrimi-ditor");
       return;
+    }
+    const hasNegative = rows.some((r) => r.qty < 0);
+    let adminPasscode: string | undefined;
+    if (hasNegative) {
+      const pc = window.prompt("Rregullim negativ i magazinës — fut fjalëkalimin e adminit:");
+      if (!pc) return;
+      adminPasscode = pc;
     }
     setSubmitting(true);
     let ok = 0;
@@ -170,6 +177,7 @@ const Inventory = () => {
             operatorName: staffName,
             locationId: null,
             shiftToken,
+            adminPasscode: r.qty < 0 ? adminPasscode : undefined,
           },
           headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
         });
