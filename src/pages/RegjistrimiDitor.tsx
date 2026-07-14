@@ -713,7 +713,7 @@ const RegjistrimiDitor = () => {
                     <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto nga "Menaxho".</p>
                   ) : (
                     <div className="overflow-x-auto -mx-2 sm:-mx-4 px-2 sm:px-4">
-                      <table className="w-full text-xs sm:text-sm border-collapse min-w-[480px]">
+                      <table className={`text-xs sm:text-sm border-collapse table-fixed ${tableMinWidth}`}>
                         <thead>
                           <tr className="text-[10px] sm:text-xs text-slate-400 border-b border-slate-800">
                             <th className="text-left py-1.5 pr-1 font-medium">Produkti</th>
