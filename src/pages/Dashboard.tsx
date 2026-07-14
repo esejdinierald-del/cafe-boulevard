@@ -570,17 +570,6 @@ const Dashboard = () => {
     };
   }, [curtainActive]);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending': return <Badge className="bg-warning text-warning-foreground">Në pritje</Badge>;
-      case 'completed': return <Badge className="bg-success text-success-foreground">Përfunduar</Badge>;
-      case 'cancelled': return <Badge variant="destructive">Anuluar</Badge>;
-      default: return null;
-    }
-  };
-
-  const getRequestIcon = (type: string) => type === 'waiter' ? <Bell className="h-5 w-5" /> : <Receipt className="h-5 w-5" />;
-
   if (!authorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
@@ -594,34 +583,7 @@ const Dashboard = () => {
       <audio ref={audioRef} />
 
       {/* ===== QR CURTAIN OVERLAY ===== */}
-      {curtainActive && (
-        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="max-w-md w-full text-center space-y-6">
-            <img src={boulevardLogo} alt="Boulevard Café" className="w-20 h-20 mx-auto rounded-2xl shadow-lg object-contain" />
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Boulevard Café</h1>
-              <p className="text-muted-foreground text-sm mt-1">Dashboard i Stafit</p>
-            </div>
-
-            {staffUrl ? (
-              <div className="space-y-4">
-                <div className="bg-white p-5 rounded-2xl inline-block shadow-lg">
-                  <QRCodeSVG value={staffUrl} size={220} />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Skano me telefon nga <strong>/staff</strong> për të hapur dashboard-in
-                </p>
-                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <QrCode className="h-4 w-4" />
-                  <span>Njoftimet zanore janë aktive edhe tani</span>
-                </div>
-              </div>
-            ) : (
-              <p className="text-muted-foreground animate-pulse">Duke gjeneruar QR kodin...</p>
-            )}
-          </div>
-        </div>
-      )}
+      {curtainActive && <QRCurtain staffUrl={staffUrl} />}
 
       {/* ===== DASHBOARD CONTENT (always rendered) ===== */}
       <div className="max-w-7xl mx-auto space-y-3 flex-1 w-full">
