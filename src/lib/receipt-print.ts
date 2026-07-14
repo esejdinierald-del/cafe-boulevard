@@ -1,3 +1,39 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { createElement } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import boulevardLogo from "@/assets/boulevard-logo.png";
+
+export interface PrintOptions {
+  /** Show Boulevard Cafe logo header + QR footer (used for close_table receipts). */
+  branded?: boolean;
+  /** Value encoded in the QR at the bottom. Defaults to the published venue URL. */
+  qrValue?: string;
+}
+
+const DEFAULT_QR_VALUE = "https://cafe-boulevard.lovable.app";
+
+const brandedHeaderHtml = () => `
+<div class="brand-header">
+  <img src="${boulevardLogo}" alt="Boulevard Cafe" class="brand-logo" />
+  <div class="brand-name">BOULEVARD CAFE</div>
+</div>`;
+
+const brandedFooterHtml = (qrValue: string) => {
+  const qrSvg = renderToStaticMarkup(
+    createElement(QRCodeSVG, { value: qrValue, size: 200, level: "M", includeMargin: false }),
+  );
+  return `
+<div class="brand-footer">
+  <div class="qr-box">${qrSvg}</div>
+</div>`;
+};
+
+const buildBody = (receiptText: string, opts?: PrintOptions) => {
+  const pre = `<pre>${escapeHtml(receiptText)}</pre>`;
+  if (!opts?.branded) return pre;
+  return `${brandedHeaderHtml()}${pre}${brandedFooterHtml(opts.qrValue || DEFAULT_QR_VALUE)}`;
+};
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, "&amp;")
