@@ -93,8 +93,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Actions that require manager authentication
-    const MANAGER_ACTIONS = ['create', 'extend', 'close', 'get_or_create'];
+    // Actions that require manager authentication.
+    // `get_or_create` is intentionally public: the counter dashboard opens
+    // without login and must display the QR curtain for staff to unlock.
+    const MANAGER_ACTIONS = ['create', 'extend', 'close'];
 
     if (MANAGER_ACTIONS.includes(action)) {
       const authHeader = req.headers.get('Authorization');
