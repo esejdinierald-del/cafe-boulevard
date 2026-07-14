@@ -812,7 +812,7 @@ const Dashboard = () => {
                     </Button>
                   ),
                 };
-                return btnOrder.map((key) => {
+                return btnOrder.filter((k) => !detached[k]).map((key) => {
                   const el = btnMap[key];
                   if (!el) return null;
                   return (
@@ -839,9 +839,19 @@ const Dashboard = () => {
                       className={reorderMode ? "relative cursor-move ring-2 ring-primary/40 rounded-lg animate-pulse-slow" : ""}
                     >
                       {reorderMode && (
-                        <div className="absolute -top-2 -left-2 z-10 bg-primary text-primary-foreground rounded-full p-0.5 shadow">
-                          <GripVertical className="h-3 w-3" />
-                        </div>
+                        <>
+                          <div className="absolute -top-2 -left-2 z-10 bg-primary text-primary-foreground rounded-full p-0.5 shadow">
+                            <GripVertical className="h-3 w-3" />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); detachBtn(key); }}
+                            title="Nxirr jashtë banerit"
+                            className="absolute -top-2 -right-2 z-20 bg-secondary text-secondary-foreground rounded-full p-1 shadow hover:scale-110 transition"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </button>
+                        </>
                       )}
                       <div className={reorderMode ? "pointer-events-none" : ""}>{el}</div>
                     </div>
