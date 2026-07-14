@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { runHealthChecks, type HealthResult } from "@/lib/health-check";
+import { adminRead } from "@/lib/staff-read";
 import { buildBackupJson, downloadBackup } from "@/lib/admin-backup";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Download, FileText, AlertTriangle } from "lucide-react";
@@ -38,11 +38,16 @@ function monthRange(ymd: string) {
 const AdminTools = () => {
   const navigate = useNavigate();
   const [authed, setAuthed] = useState(false);
+  const [passcode, setPasscode] = useState<string>(
+    () => sessionStorage.getItem("admin_tools_passcode") || "",
+  );
   const [tab, setTab] = useState<Tab>("health");
 
   // Passcode gate
   useEffect(() => {
-    if (sessionStorage.getItem("admin_tools_authed") === "1") {
+    const cached = sessionStorage.getItem("admin_tools_passcode");
+    if (sessionStorage.getItem("admin_tools_authed") === "1" && cached) {
+      setPasscode(cached);
       setAuthed(true);
       return;
     }
@@ -54,6 +59,8 @@ const AdminTools = () => {
     supabase.functions.invoke("verify-admin-passcode", { body: { passcode: pw } }).then(({ data, error }) => {
       if ((data as any)?.valid) {
         sessionStorage.setItem("admin_tools_authed", "1");
+        sessionStorage.setItem("admin_tools_passcode", pw);
+        setPasscode(pw);
         setAuthed(true);
       } else {
         toast.error((data as any)?.error || error?.message || "Fjalëkalim i pasaktë");
@@ -62,7 +69,7 @@ const AdminTools = () => {
     });
   }, [navigate]);
 
-  if (!authed) {
+  if (!authed || !passcode) {
     return (
       <div className="min-h-screen bg-slate-900 text-slate-300 flex items-center justify-center">
         Duke verifikuar...
@@ -103,23 +110,39 @@ const AdminTools = () => {
       </nav>
 
       <main className="p-4 max-w-4xl mx-auto">
-        {tab === "health" && <HealthTab />}
-        {tab === "errors" && <ErrorsTab />}
-        {tab === "fiscal" && <FiscalTab />}
-        {tab === "backup" && <BackupTab />}
+        {tab === "health" && <HealthTab passcode={passcode} />}
+        {tab === "errors" && <ErrorsTab passcode={passcode} />}
+        {tab === "fiscal" && <FiscalTab passcode={passcode} />}
+        {tab === "backup" && <BackupTab passcode={passcode} />}
       </main>
     </div>
   );
 };
 
-function HealthTab() {
-  const [results, setResults] = useState<HealthResult[]>([]);
+function HealthTab({ passcode }: { passcode: string }) {
+  const [results, setResults] = useState<{ name: string; ok: boolean; detail?: string }[]>([]);
   const [loading, setLoading] = useState(false);
 
   const run = async () => {
     setLoading(true);
     try {
-      setResults(await runHealthChecks());
+      const { data, error } = await adminRead<any>("health_check", passcode);
+      if (error) {
+        toast.error(error);
+        setResults([]);
+        return;
+      }
+      const r: { name: string; ok: boolean; detail?: string }[] = [];
+      const tables = data?.tables || {};
+      for (const [t, status] of Object.entries(tables)) {
+        const ok = status === "ok";
+        r.push({ name: `DB: ${t}`, ok, detail: ok ? undefined : String(status) });
+      }
+      const diff = Math.abs(Number(data?.fiscal_sum || 0) - Number(data?.tx_sum || 0));
+      r.push({ name: "Fiskal ≈ Transaksione (7 ditë)", ok: diff < 1, detail: `Δ = ${diff.toFixed(2)} Lekë` });
+      r.push({ name: "Asnjë çmim negativ", ok: (data?.negative_prices ?? 0) === 0, detail: data?.negative_prices ? `${data.negative_prices} artikuj` : undefined });
+      r.push({ name: "Stok jo-negativ", ok: (data?.negative_stock ?? 0) === 0, detail: data?.negative_stock ? `${data.negative_stock} artikuj` : undefined });
+      setResults(r);
     } finally {
       setLoading(false);
     }
@@ -127,7 +150,7 @@ function HealthTab() {
 
   useEffect(() => {
     run();
-  }, []);
+  }, [passcode]);
 
   const okCount = results.filter((r) => r.ok).length;
   const failCount = results.length - okCount;
@@ -176,24 +199,24 @@ function HealthTab() {
   );
 }
 
-function ErrorsTab() {
+function ErrorsTab({ passcode }: { passcode: string }) {
   const [logs, setLogs] = useState<AppLog[]>([]);
   const [severity, setSeverity] = useState<string>("all");
   const [loading, setLoading] = useState(false);
 
   const load = async () => {
     setLoading(true);
-    let q = supabase.from("app_logs").select("*").order("created_at", { ascending: false }).limit(200);
-    if (severity !== "all") q = q.eq("severity", severity);
-    const { data, error } = await q;
-    if (error) toast.error(error.message);
+    const { data, error } = await adminRead<AppLog[]>("app_logs.list", passcode, {
+      severity, limit: 200,
+    });
+    if (error) toast.error(error);
     setLogs((data as AppLog[]) || []);
     setLoading(false);
   };
 
   useEffect(() => {
     load();
-  }, [severity]);
+  }, [severity, passcode]);
 
   return (
     <div className="space-y-4">
@@ -249,7 +272,7 @@ function ErrorsTab() {
   );
 }
 
-function FiscalTab() {
+function FiscalTab({ passcode }: { passcode: string }) {
   const now = new Date();
   const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const [month, setMonth] = useState(defaultMonth);
@@ -259,21 +282,15 @@ function FiscalTab() {
   const load = async () => {
     setLoading(true);
     const { start, end } = monthRange(month);
-    const { data, error } = await supabase
-      .from("fiscal_receipts")
-      .select("id, fiscal_number, issued_at, total_amount, net_amount, vat_amount, source, operator_name, table_number")
-      .gte("issued_at", start)
-      .lt("issued_at", end)
-      .order("issued_at", { ascending: true })
-      .limit(1000);
-    if (error) toast.error(error.message);
+    const { data, error } = await adminRead<FiscalRow[]>("fiscal_receipts.range", passcode, { start, end });
+    if (error) toast.error(error);
     setRows((data as FiscalRow[]) || []);
     setLoading(false);
   };
 
   useEffect(() => {
     load();
-  }, [month]);
+  }, [month, passcode]);
 
   const totals = rows.reduce(
     (acc, r) => {
@@ -396,13 +413,13 @@ function FiscalTab() {
   );
 }
 
-function BackupTab() {
+function BackupTab({ passcode }: { passcode: string }) {
   const [busy, setBusy] = useState(false);
 
   const doBackup = async () => {
     setBusy(true);
     try {
-      const json = await buildBackupJson();
+      const json = await buildBackupJson(passcode);
       downloadBackup(json);
       toast.success("Backup u shkarkua ✓");
     } catch (e) {
