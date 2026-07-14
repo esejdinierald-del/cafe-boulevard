@@ -731,7 +731,7 @@ const RegjistrimiDitor = () => {
                             const difStart = difStartMap[p.name] || null;
                             return (
                               <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-950/40">
-                                <td className="py-1 pr-1 font-medium text-xs sm:text-sm">{p.name}</td>
+                                <td className="py-1 pr-0.5 font-medium text-xs sm:text-sm">{p.name}</td>
                                 {showOtherCols && (
                                   <td className="py-1 px-0.5 w-[70px]">
                                     <RowField
@@ -747,7 +747,7 @@ const RegjistrimiDitor = () => {
                                   </td>
                                 )}
                                 {showOtherCols && (
-                                  <td className={`py-1 px-1 text-right font-bold tabular-nums text-xs sm:text-sm ${difColor(dif)}`}>
+                                  <td className={`py-1 px-0.5 text-right font-bold tabular-nums text-xs sm:text-sm ${difColor(dif)}`}>
                                     {dif > 0 ? "+" : ""}{dif.toFixed(2)}
                                   </td>
                                 )}
@@ -761,7 +761,7 @@ const RegjistrimiDitor = () => {
                                     }))}
                                   />
                                 </td>
-                                <td className="py-1 pl-1 text-right text-[10px] sm:text-xs text-slate-400 tabular-nums">
+                                <td className="py-1 pl-0.5 text-right text-[10px] sm:text-xs text-slate-400 tabular-nums">
                                   {difStart || "—"}
                                 </td>
                               </tr>
