@@ -719,18 +719,20 @@ const Dashboard = () => {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
           {(() => {
             const reqCount = pendingRequests.length + pendingOrders.length;
-            const total = barPending + kitchenPending + reqCount;
+            const songCount = songRequests.filter((s) => s.status === "pending").length;
+            const total = barPending + kitchenPending + reqCount + songCount;
             if (total === 0 || muteNotifications) return null;
             const parts: string[] = [];
             if (barPending > 0) parts.push(`Bar (${barPending})`);
             if (kitchenPending > 0) parts.push(`Kuzhina (${kitchenPending})`);
             if (reqCount > 0) parts.push(`Thirrje (${reqCount})`);
+            if (songCount > 0) parts.push(`Këngë (${songCount})`);
             return (
               <button
                 type="button"
                 onClick={() =>
                   setActiveTab(
-                    barPending > 0 ? "bar" : kitchenPending > 0 ? "kitchen" : "requests"
+                    barPending > 0 ? "bar" : kitchenPending > 0 ? "kitchen" : reqCount > 0 ? "requests" : "songs"
                   )
                 }
                 className="w-full mb-3 rounded-lg py-3 px-4 bg-gradient-to-r from-[hsl(38,62%,68%)] via-[hsl(38,80%,52%)] to-[hsl(38,62%,68%)] text-[hsl(25,40%,12%)] font-black text-lg animate-pulse shadow-[0_0_25px_rgba(244,196,48,0.6)] ring-2 ring-[hsl(38,62%,68%)] flex items-center justify-center gap-3 hover:brightness-110 transition-all"
@@ -741,31 +743,43 @@ const Dashboard = () => {
             );
           })()}
           <TabsList className="grid w-full grid-cols-5 mb-3">
-            <TabsTrigger
-              value="requests"
-              className={activeTab !== "requests" && (pendingRequests.length + pendingOrders.length) > 0 ? "animate-pulse !bg-primary !text-primary-foreground font-bold ring-2 ring-primary shadow-lg shadow-primary/50" : ""}
-            >
-              📋 Thirrje & Porosi
-              {activeTab !== "requests" && (pendingRequests.length + pendingOrders.length) > 0 && (
-                <span className="ml-1">({pendingRequests.length + pendingOrders.length})</span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="songs">
-              🎵 Këngët ({songRequests.filter((s) => s.status === "pending").length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="bar"
-              className={activeTab !== "bar" && barPending > 0 ? "animate-pulse !bg-primary !text-primary-foreground font-bold ring-2 ring-primary shadow-lg shadow-primary/50" : ""}
-            >
-              🍹 Bar KDS{activeTab !== "bar" && barPending > 0 ? ` (${barPending})` : ""}
-            </TabsTrigger>
-            <TabsTrigger
-              value="kitchen"
-              className={activeTab !== "kitchen" && kitchenPending > 0 ? "animate-pulse !bg-primary !text-primary-foreground font-bold ring-2 ring-primary shadow-lg shadow-primary/50" : ""}
-            >
-              🍽️ Kuzhina KDS{activeTab !== "kitchen" && kitchenPending > 0 ? ` (${kitchenPending})` : ""}
-            </TabsTrigger>
-            <TabsTrigger value="cashier">💳 Arka</TabsTrigger>
+            {(() => {
+              const goldPulse = "bg-gradient-to-r !from-[hsl(38,62%,68%)] !via-[hsl(38,80%,52%)] !to-[hsl(38,62%,68%)] !text-[hsl(25,40%,12%)] font-black animate-pulse shadow-[0_0_25px_rgba(244,196,48,0.6)] ring-2 ring-[hsl(38,62%,68%)] hover:brightness-110 transition-all";
+              const reqCount = pendingRequests.length + pendingOrders.length;
+              const songCount = songRequests.filter((s) => s.status === "pending").length;
+              return (
+                <>
+                  <TabsTrigger
+                    value="requests"
+                    className={activeTab !== "requests" && reqCount > 0 ? goldPulse : ""}
+                  >
+                    📋 Thirrje & Porosi
+                    {activeTab !== "requests" && reqCount > 0 && (
+                      <span className="ml-1">({reqCount})</span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="songs"
+                    className={activeTab !== "songs" && songCount > 0 ? goldPulse : ""}
+                  >
+                    🎵 Këngët {activeTab !== "songs" && songCount > 0 ? `(${songCount})` : `(${songCount})`}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="bar"
+                    className={activeTab !== "bar" && barPending > 0 ? goldPulse : ""}
+                  >
+                    🍹 Bar KDS{activeTab !== "bar" && barPending > 0 ? ` (${barPending})` : ""}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="kitchen"
+                    className={activeTab !== "kitchen" && kitchenPending > 0 ? goldPulse : ""}
+                  >
+                    🍽️ Kuzhina KDS{activeTab !== "kitchen" && kitchenPending > 0 ? ` (${kitchenPending})` : ""}
+                  </TabsTrigger>
+                  <TabsTrigger value="cashier">💳 Arka</TabsTrigger>
+                </>
+              );
+            })()}
           </TabsList>
 
           <TabsContent value="requests">
