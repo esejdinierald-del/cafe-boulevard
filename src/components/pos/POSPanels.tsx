@@ -414,26 +414,35 @@ export const CashierPanel = () => {
                   {isOpen && (
                     <div className="p-3 pt-0 space-y-3 border-t border-border/40">
                       <ul className="text-sm space-y-1 pt-2">
-                        {o.items.map((it, i) => (
-                          <li key={i} className="flex justify-between items-center gap-2">
-                            <span className="flex-1">
-                              {it.name} <span className="text-muted-foreground">x{it.quantity}</span>
-                              {it.notes && <span className="text-xs italic text-amber-500 ml-2">({it.notes})</span>}
-                            </span>
-                            <span className="text-amber-500 font-semibold">{(it.price * it.quantity).toFixed(0)} L</span>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-6 w-6 text-destructive hover:bg-destructive/10"
-                              onClick={() => cancelItem(o, i)}
-                              disabled={loading}
-                              title="Hiq 1 nga ky artikull (admin)"
-                              aria-label="Hiq 1 nga ky artikull"
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                          </li>
-                        ))}
+                        {o.items.map((it, i) => {
+                          const isCancel = (it as any).cancelled || Number(it.quantity) < 0;
+                          return (
+                            <li key={i} className={`flex justify-between items-center gap-2 ${isCancel ? "text-destructive" : ""}`}>
+                              <span className="flex-1">
+                                {it.name} <span className="opacity-70">x{it.quantity}</span>
+                                {it.notes && <span className="text-xs italic ml-2 opacity-80">({it.notes})</span>}
+                              </span>
+                              <span className={`font-semibold ${isCancel ? "text-destructive" : "text-amber-500"}`}>
+                                {(it.price * it.quantity).toFixed(0)} L
+                              </span>
+                              {!isCancel ? (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                                  onClick={() => cancelItem(o, i)}
+                                  disabled={loading}
+                                  title="Anullo copë nga ky artikull (admin)"
+                                  aria-label="Anullo copë nga ky artikull"
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                              ) : (
+                                <span className="h-6 w-6" />
+                              )}
+                            </li>
+                          );
+                        })}
                       </ul>
                       <div className="flex gap-2">
                         <Button
