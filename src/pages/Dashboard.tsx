@@ -733,9 +733,9 @@ const Dashboard = () => {
                     barPending > 0 ? "bar" : kitchenPending > 0 ? "kitchen" : "requests"
                   )
                 }
-                className="w-full mb-3 rounded-lg py-3 px-4 bg-primary text-primary-foreground font-bold text-lg animate-pulse shadow-lg shadow-primary/50 ring-2 ring-primary flex items-center justify-center gap-3"
+                className="w-full mb-3 rounded-lg py-3 px-4 bg-gradient-to-r from-[hsl(38,62%,68%)] via-[hsl(38,80%,52%)] to-[hsl(38,62%,68%)] text-[hsl(25,40%,12%)] font-black text-lg animate-pulse shadow-[0_0_25px_rgba(244,196,48,0.6)] ring-2 ring-[hsl(38,62%,68%)] flex items-center justify-center gap-3 hover:brightness-110 transition-all"
               >
-                <Bell className="h-6 w-6" />
+                <Bell className="h-6 w-6 fill-current" />
                 <span>🔔 POROSI E RE — {parts.join(" • ")}</span>
               </button>
             );
