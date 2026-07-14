@@ -88,7 +88,7 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
     }
     toast.success("U konfirmua — duke printuar biletën");
     // Send to the central arka printer queue.
-    const title = kind === "bar" ? "Bileta Banak" : "Bileta Kuzhinë";
+    const title = kind === "bar" ? "Boulevard Cafe · Banak" : "Boulevard Cafe · Kuzhinë";
     const jobId = await queuePrintJob({
       receiptText: buildStationTicket(split),
       title,
