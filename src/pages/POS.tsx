@@ -211,9 +211,9 @@ const POS = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold">POS Kamarier</h1>
+      <header className="flex items-center justify-between px-3 py-2 border-b border-slate-800">
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-bold">POS Kamarier</h1>
           <RomeClock />
           {pendingPrints > 0 && (
             <span
