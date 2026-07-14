@@ -320,7 +320,6 @@ const Inventory = () => {
                   <Input
                     type="number"
                     inputMode="decimal"
-                    min="0"
                     step="0.001"
                     value={supplyQtys[m.id] || ""}
                     onChange={(e) =>
