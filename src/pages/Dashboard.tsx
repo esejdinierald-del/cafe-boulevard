@@ -870,8 +870,10 @@ const Dashboard = () => {
                       <div className={reorderMode ? "pointer-events-none" : ""}>{el}</div>
                     </div>
               );
-              if (key === "test") items.push(toolControls);
+              if (key === "mute") items.push(toolControls);
             });
+            // Fallback: if the user detached the mute button, still show tool controls.
+            if (detached["mute"] || !btnOrder.includes("mute")) items.push(toolControls);
             return items;
           })()}
         </div>
