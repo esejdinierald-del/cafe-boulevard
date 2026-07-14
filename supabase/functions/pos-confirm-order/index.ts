@@ -29,7 +29,16 @@ serve(async (req) => {
     const { data, error } = await supabase.rpc("confirm_pos_split", { p_split_id: splitId });
     if (error) {
       const msg = error.message || "Gabim gjatë konfirmimit";
-      const status = msg.includes("nuk u gjet") ? 404 : msg.includes("konfirmuar tashmë") ? 400 : 500;
+      if (msg.includes("konfirmuar tashmë")) {
+        // Idempotent: treat duplicate confirmation as success
+        const { data: split } = await supabase
+          .from("order_items_split")
+          .select("order_id")
+          .eq("id", splitId)
+          .maybeSingle();
+        return jsonResponse({ success: true, alreadyConfirmed: true, orderId: split?.order_id ?? null });
+      }
+      const status = msg.includes("nuk u gjet") ? 404 : 500;
       return jsonResponse({ error: msg }, status);
     }
     return jsonResponse(data ?? { success: true });
