@@ -81,7 +81,9 @@ const PrintStation = () => {
 
       // Actually print — përdor iframe të izoluar (pa temën e app-it)
       beep();
-      await printReceiptViaIframe(job.receipt_text, job.title || "Boulevard Cafe");
+      await printReceiptViaIframe(job.receipt_text, job.title || "Boulevard Cafe", {
+        branded: job.kind === "close_table",
+      });
 
       await supabase.functions.invoke("print-station", {
         body: { action: "mark_printed", id: job.id, adminPassword: passcode },

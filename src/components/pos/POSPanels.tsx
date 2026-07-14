@@ -230,7 +230,7 @@ export const CashierPanel = () => {
         kind: "close_table",
         station: "arka",
       });
-      if (!jobId) printReceipt(receiptText, "Bileta Tavoline");
+      if (!jobId) printReceipt(receiptText, "Bileta Tavoline", { branded: true });
       toast.success("Porosia u mbyll");
     }
   };
@@ -496,13 +496,13 @@ export const CashierPanel = () => {
                 const jobId = await queuePrintJob({
                   receiptText: receipt,
                   title: "Bileta Tavoline",
-                  kind: "manual",
+                  kind: "close_table",
                   station: "arka",
                 });
                 if (jobId) {
                   toast.success("U dërgua tek printeri i arkës");
                 } else {
-                  printReceipt(receipt, "Bileta Tavoline");
+                  printReceipt(receipt, "Bileta Tavoline", { branded: true });
                 }
               }}
             >
