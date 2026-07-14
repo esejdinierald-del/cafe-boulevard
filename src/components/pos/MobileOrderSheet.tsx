@@ -66,9 +66,9 @@ export const MobileOrderSheet = () => {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="w-full flex items-center justify-between px-4 py-2.5 active:bg-slate-700/50"
+          className="w-full flex items-center px-4 py-2.5 active:bg-slate-700/50"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <div className="relative">
               <ShoppingCart size={20} className="text-amber-400" />
               {itemCount > 0 && (
@@ -86,7 +86,16 @@ export const MobileOrderSheet = () => {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex-1 flex justify-center">
+            {expanded ? (
+              <ChevronDown size={20} className="text-slate-400" />
+            ) : (
+              <ChevronUp size={20} className="text-slate-400" />
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
             {itemCount > 0 && !expanded && (
               <span
                 onClick={(e) => { e.stopPropagation(); handleSubmit(); }}
@@ -94,11 +103,6 @@ export const MobileOrderSheet = () => {
               >
                 <Send size={12} /> Dërgo
               </span>
-            )}
-            {expanded ? (
-              <ChevronDown size={20} className="text-slate-400" />
-            ) : (
-              <ChevronUp size={20} className="text-slate-400" />
             )}
           </div>
         </button>
