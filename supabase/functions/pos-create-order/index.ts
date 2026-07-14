@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
+import { z } from "npm:zod@3.23.8";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +17,23 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+const CartItemSchema = z.object({
+  productId: z.string().uuid(),
+  quantity: z.number().int().positive().max(999),
+  notes: z.string().max(500).optional(),
+});
+
+const BodySchema = z.object({
+  tableNumber: z.union([z.number().int().positive(), z.string().max(10)]).nullable().optional(),
+  mode: z.enum(["table", "bar", "delivery", "takeaway"]).default("table"),
+  items: z.array(CartItemSchema).min(1).max(100),
+  notes: z.string().max(1000).nullable().optional(),
+  locationId: z.string().max(64).nullable().optional(),
+  operatorName: z.string().max(120).nullable().optional(),
+  source: z.enum(["pos", "glovo", "bolt", "delivery", "takeaway"]).default("pos"),
+  externalRef: z.string().max(200).nullable().optional(),
+}).passthrough();
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   maybeCleanup();
@@ -27,20 +45,26 @@ serve(async (req) => {
     const auth = await requireShiftToken(req, body);
     if (!auth.ok) return auth.response;
 
+    const parsed = BodySchema.safeParse(body);
+    if (!parsed.success) {
+      return jsonResponse({ error: "Të dhëna të pavlefshme", details: parsed.error.flatten().fieldErrors }, 400);
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    const { tableNumber, mode = "table", items: cartItems, notes = null, locationId = null, operatorName = null, source = "pos", externalRef = null } = body ?? {};
-
-    if (!Array.isArray(cartItems) || cartItems.length === 0) return jsonResponse({ error: "Shporta është bosh" }, 400);
-    if (!["table", "bar", "delivery", "takeaway"].includes(mode)) return jsonResponse({ error: "Mode i panjohur" }, 400);
-    for (const ci of cartItems) {
-      if (!ci.productId || typeof ci.quantity !== "number" || ci.quantity <= 0) {
-        return jsonResponse({ error: "Artikull i pavlefshëm në shportë" }, 400);
-      }
-    }
+    const {
+      tableNumber = null,
+      mode,
+      items: cartItems,
+      notes = null,
+      locationId = null,
+      operatorName = null,
+      source,
+      externalRef = null,
+    } = parsed.data;
 
     let tableId: string | null = null;
     if (mode === "table") {
