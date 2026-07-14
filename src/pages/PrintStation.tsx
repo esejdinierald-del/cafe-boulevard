@@ -80,21 +80,26 @@ const PrintStation = () => {
     if (job.status !== "pending") return;
     if (!enabled) return;
     processing.current.add(job.id);
+
     try {
       const { data: claimRes } = await supabase.functions.invoke("print-station", {
         body: { action: "claim", id: job.id, attempts: job.attempts },
       });
       if (!(claimRes as any)?.claimed) return;
-
-      // Actually print — përdor iframe të izoluar (pa temën e app-it)
       beep();
-      const okLocal = await printViaLocalServer(job.receipt_text, job.title || "Boulevard Cafe");
-      if (!okLocal) {
+
+      // PROVO SERVERIN LOKAL PARA
+      const serverSuccess = await printViaLocalServer(
+        job.receipt_text,
+        job.title || "Boulevard Cafe"
+      );
+
+      if (!serverSuccess) {
+        // Fallback: përdor iframe (nëse serveri nuk po punon)
         await printReceiptViaIframe(job.receipt_text, job.title || "Boulevard Cafe", {
           branded: job.kind === "close_table",
         });
       }
-
       await supabase.functions.invoke("print-station", {
         body: { action: "mark_printed", id: job.id },
       });
