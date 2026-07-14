@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
 import { usePOSStore } from "@/stores/pos-store";
-import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, Truck } from "lucide-react";
+import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, Truck, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/receipt-print";
 import { queuePrintJob, countPendingForMe } from "@/lib/print-queue";
