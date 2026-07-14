@@ -287,7 +287,7 @@ const POS = () => {
                   }`}
                 >
                   <button type="button"
-                    onClick={() => startOrder("table", t.number as number)}
+                    onClick={() => { startOrder("table", t.number as number); setMobileView("menu"); }}
                     className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold hover:bg-white/5 rounded-lg"
                   >
                     <span>#{t.number}</span>
