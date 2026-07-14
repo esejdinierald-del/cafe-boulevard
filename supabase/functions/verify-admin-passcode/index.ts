@@ -1,16 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sha256 } from "../_shared/hash.ts";
+import { sha256, timingSafeEqualHex } from "../_shared/hash.ts";
 import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-const json = (b: unknown, s = 200) =>
-  new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+import { adminCorsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  const corsHeaders = adminCorsHeaders(req);
+  const json = (b: unknown, s = 200) =>
+    new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   maybeCleanup();
   const rl = checkRateLimit({
@@ -32,7 +29,9 @@ serve(async (req) => {
     const expectedHash = setting?.value;
     if (!expectedHash) return json({ valid: false, error: "Admin passcode nuk është konfiguruar" }, 500);
     const providedHash = await sha256(String(passcode));
-    if (providedHash !== expectedHash) return json({ valid: false, error: "Fjalëkalim i pasaktë" }, 403);
+    if (!timingSafeEqualHex(providedHash, String(expectedHash))) {
+      return json({ valid: false, error: "Fjalëkalim i pasaktë" }, 403);
+    }
     return json({ valid: true });
   } catch (e) {
     return json({ valid: false, error: (e as Error).message }, 500);
