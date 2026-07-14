@@ -716,12 +716,12 @@ const RegjistrimiDitor = () => {
                       <table className={`text-xs sm:text-sm border-collapse table-fixed ${tableMinWidth}`}>
                         <thead>
                           <tr className="text-[10px] sm:text-xs text-slate-400 border-b border-slate-800">
-                            <th className="text-left py-1.5 pr-1 font-medium">Produkti</th>
-                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Stok</th>}
-                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Shirit</th>}
-                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Dif</th>}
-                            <th className="text-right py-1.5 px-1 font-medium">Gjendje</th>
-                            <th className="text-right py-1.5 pl-1 font-medium">Fillon</th>
+                            <th className="text-left py-1.5 pr-0.5 font-medium w-[100px]">Produkti</th>
+                            {showOtherCols && <th className="text-right py-1.5 px-0.5 font-medium w-[70px]">Stok</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-0.5 font-medium w-[70px]">Shirit</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-0.5 font-medium w-[50px]">Dif</th>}
+                            <th className="text-right py-1.5 px-0.5 font-medium w-[70px]">Gjendje</th>
+                            <th className="text-right py-1.5 pl-0.5 font-medium w-[50px]">Fillon</th>
                           </tr>
                         </thead>
                         <tbody>
