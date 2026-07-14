@@ -46,10 +46,12 @@ const Dashboard = () => {
   // Music tab state
   const [activeTab, setActiveTab] = useState<"requests" | "songs" | "bar" | "kitchen" | "cashier">("requests");
   // Drag & drop button ordering for top control bar
-  const DEFAULT_BTN_ORDER = ["voice", "sound", "test", "qr", "arka", "ready", "mute"];
+  // NOTE: bump the storage key suffix when changing this list to force clients
+  // onto the new default order (users can still re-arrange via "Rendit").
+  const DEFAULT_BTN_ORDER = ["voice", "sound", "test", "mute", "qr", "arka", "ready"];
   const [btnOrder, setBtnOrder] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem("dashboard-btn-order");
+      const saved = localStorage.getItem("dashboard-btn-order-v2");
       if (saved) {
         const parsed = JSON.parse(saved) as string[];
         const merged = [...parsed.filter((x) => DEFAULT_BTN_ORDER.includes(x))];
@@ -62,7 +64,7 @@ const Dashboard = () => {
   const [reorderMode, setReorderMode] = useState(false);
   const dragKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    localStorage.setItem("dashboard-btn-order", JSON.stringify(btnOrder));
+    localStorage.setItem("dashboard-btn-order-v2", JSON.stringify(btnOrder));
   }, [btnOrder]);
   // Detached (floating) buttons — pulled OUT of the top control bar
   const [detached, setDetached] = useState<Record<string, { x: number; y: number }>>(() => {
@@ -115,9 +117,14 @@ const Dashboard = () => {
   const btnStyle: React.CSSProperties = {
     height: `${layout.btnHeight}px`,
     fontSize: `${layout.btnFont}px`,
-    paddingLeft: `${Math.max(10, layout.btnHeight * 0.35)}px`,
-    paddingRight: `${Math.max(10, layout.btnHeight * 0.35)}px`,
+    paddingLeft: `${Math.max(12, layout.btnHeight * 0.4)}px`,
+    paddingRight: `${Math.max(12, layout.btnHeight * 0.4)}px`,
+    letterSpacing: "0.01em",
   };
+  // Shared class so every top-toolbar button feels part of the same family.
+  const chip =
+    "gap-2 touch-manipulation rounded-xl border shadow-sm font-semibold transition-all " +
+    "hover:-translate-y-[1px] hover:shadow-md active:translate-y-0";
   const moveBtn = (from: string, to: string) => {
     if (from === to) return;
     setBtnOrder((prev) => {
@@ -668,36 +675,40 @@ const Dashboard = () => {
   const btnMap: Record<string, JSX.Element> = {
     voice: (
       <Button variant={notificationType === 'voice' ? 'default' : 'outline'} size="sm"
-        onClick={() => handleNotificationTypeChange('voice')} style={btnStyle} className="gap-1.5 touch-manipulation">
-        <Volume2 className="h-4 w-4" /><span className="font-semibold">Zë</span>
+        onClick={() => handleNotificationTypeChange('voice')} style={btnStyle} className={chip}>
+        <Volume2 className="h-4 w-4" /><span>Zë</span>
       </Button>
     ),
     sound: (
       <Button variant={notificationType === 'sound' ? 'default' : 'outline'} size="sm"
-        onClick={() => handleNotificationTypeChange('sound')} style={btnStyle} className="gap-1.5 touch-manipulation">
-        <Bell className="h-4 w-4" /><span className="font-semibold">Tingull</span>
+        onClick={() => handleNotificationTypeChange('sound')} style={btnStyle} className={chip}>
+        <Bell className="h-4 w-4" /><span>Tingull</span>
       </Button>
     ),
     test: (
       <Button variant="outline" size="sm"
         onClick={() => { enableAudio(); playBellSound(); }}
-        style={btnStyle} className="gap-1.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30">
-        <Volume2 className="h-4 w-4 text-success" /><span className="font-bold text-success">TEST</span>
+        style={btnStyle}
+        className={`${chip} bg-success/15 border-success/50 text-success hover:bg-success/25`}>
+        <Volume2 className="h-4 w-4" /><span className="tracking-wide">TEST</span>
       </Button>
     ),
     qr: (
       <Button variant="outline" size="sm"
         onClick={() => setCurtainActive(true)}
-        style={btnStyle} className="gap-1.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30">
-        <QrCode className="h-4 w-4 text-primary" /><span className="font-bold text-primary">QR</span>
+        style={btnStyle}
+        className={`${chip} bg-primary/15 border-primary/50 text-primary hover:bg-primary/25`}>
+        <QrCode className="h-4 w-4" /><span>QR</span>
       </Button>
     ),
     arka: (
       <Button variant="outline" size="sm"
         onClick={() => setActiveTab('cashier')}
         style={btnStyle}
-        className={`gap-1.5 touch-manipulation font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
-        <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
+        className={`${chip} ${activeTab === 'cashier'
+          ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90'
+          : 'bg-secondary/15 border-secondary/50 text-secondary hover:bg-secondary/25'}`}>
+        <Receipt className="h-4 w-4" /><span>Arka</span>
       </Button>
     ),
     ready: (
@@ -711,8 +722,9 @@ const Dashboard = () => {
           if (error) toast.error('Gabim në dërgim');
           else toast.success('🔔 Thirrja u dërgua te kamarieri!');
         }}
-        style={btnStyle} className="gap-1.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
-        <UtensilsCrossed className="h-4 w-4 text-accent-foreground" /><span className="font-bold text-accent-foreground">Porosia Gati 🔔</span>
+        style={btnStyle}
+        className={`${chip} bg-accent text-accent-foreground border-accent hover:bg-accent/85`}>
+        <UtensilsCrossed className="h-4 w-4" /><span>Porosia Gati 🔔</span>
       </Button>
     ),
     mute: (
@@ -722,9 +734,11 @@ const Dashboard = () => {
           toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
         }}
         style={btnStyle}
-        className={`gap-1.5 touch-manipulation ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
-        {muteNotifications ? <VolumeX className="h-4 w-4 text-destructive" /> : <Volume2 className="h-4 w-4" />}
-        <span className="font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
+        className={`${chip} ${muteNotifications
+          ? 'bg-destructive/15 border-destructive/50 text-destructive hover:bg-destructive/25'
+          : 'bg-muted/40 border-border hover:bg-muted/60'}`}>
+        {muteNotifications ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+        <span>{muteNotifications ? 'MUTE' : 'Mute'}</span>
       </Button>
     ),
   };
@@ -856,8 +870,10 @@ const Dashboard = () => {
                       <div className={reorderMode ? "pointer-events-none" : ""}>{el}</div>
                     </div>
               );
-              if (key === "test") items.push(toolControls);
+              if (key === "mute") items.push(toolControls);
             });
+            // Fallback: if the user detached the mute button, still show tool controls.
+            if (detached["mute"] || !btnOrder.includes("mute")) items.push(toolControls);
             return items;
           })()}
         </div>
