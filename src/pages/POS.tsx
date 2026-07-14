@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
+import { MobileOrderSheet } from "@/components/pos/MobileOrderSheet";
 import { usePOSStore } from "@/stores/pos-store";
 import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -257,7 +258,7 @@ const POS = () => {
       </header>
 
       {/* Mobile: step-by-step table → menu */}
-      <div className="lg:hidden p-2 pb-20">
+      <div className="lg:hidden p-2" style={{ paddingBottom: mobileView === "menu" ? "80px" : "20px" }}>
         {mobileView === "tables" ? (
           <div className="bg-slate-800 rounded-lg p-2">
             <div className="text-slate-400 text-xs uppercase font-semibold mb-2">Tavolinat</div>
@@ -329,10 +330,12 @@ const POS = () => {
               <ArrowLeft size={16} /> Kthehu te tavolinat
             </button>
             <MenuGrid />
-            <OrderPanel />
           </div>
         )}
       </div>
+
+      {/* Mobile: sticky bottom sheet for current order (shows only when order active) */}
+      {mobileView === "menu" && <MobileOrderSheet />}
 
       {/* Desktop: 3-column layout */}
       <div className="hidden lg:grid grid-cols-[220px_1fr_360px] gap-3 p-3">
