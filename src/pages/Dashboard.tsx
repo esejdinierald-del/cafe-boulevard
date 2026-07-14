@@ -631,14 +631,18 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-3 flex flex-col relative" onClick={enableAudio}>
+    <div
+      className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-3 flex flex-col relative"
+      style={{ zoom: layout.zoom / 100 } as React.CSSProperties}
+      onClick={enableAudio}
+    >
       <audio ref={audioRef} />
 
       {/* ===== QR CURTAIN OVERLAY ===== */}
       {curtainActive && <QRCurtain staffUrl={staffUrl} />}
 
       {/* ===== DASHBOARD CONTENT (always rendered) ===== */}
-      <div className="max-w-7xl mx-auto space-y-3 flex-1 w-full">
+      <div className="mx-auto space-y-3 flex-1 w-full" style={{ maxWidth: `${layout.maxWidth}px` }}>
         <div className="text-center space-y-1 relative">
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
