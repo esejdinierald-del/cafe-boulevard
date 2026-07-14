@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { staffRead } from "@/lib/staff-read";
 
 export type PrintJobKind = "close_table" | "order" | "kitchen" | "bar" | "manual";
 export type PrintStation = "arka" | "kuzhina" | "bar";
@@ -20,25 +21,20 @@ export interface QueueJobInput {
  */
 export const queuePrintJob = async (input: QueueJobInput): Promise<string | null> => {
   const creator = input.createdBy || localStorage.getItem("staff_name") || "Kamarier";
-  const { data, error } = await supabase
-    .from("print_jobs")
-    .insert({
-      station: input.station || "arka",
-      kind: input.kind,
-      title: input.title || "Bileta",
-      receipt_text: input.receiptText,
-      created_by: creator,
-      table_code: input.tableCode == null ? null : String(input.tableCode),
-      amount: input.amount ?? null,
-      status: "pending",
-    })
-    .select("id")
-    .single();
-  if (error) {
+  const { data, error } = await staffRead<{ id: string }>("print_jobs.enqueue", {
+    station: input.station || "arka",
+    kind: input.kind,
+    title: input.title || "Bileta",
+    receiptText: input.receiptText,
+    createdBy: creator,
+    tableCode: input.tableCode ?? null,
+    amount: input.amount ?? null,
+  });
+  if (error || !data?.id) {
     console.error("[print-queue] enqueue failed", error);
     return null;
   }
-  return (data as { id: string }).id;
+  return data.id;
 };
 
 export const countPendingForMe = async (): Promise<number> => {

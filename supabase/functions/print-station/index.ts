@@ -24,9 +24,9 @@ serve(async (req) => {
   maybeCleanup();
   const rl = checkRateLimit({
     key: clientKey(req, "print-station"),
-    max: 120,
-    windowMs: 60_000,
-    blockMs: 60_000,
+    max: 10,
+    windowMs: 5 * 60_000,
+    blockMs: 10 * 60_000,
   });
   if (!rl.ok) return json({ error: "Shumë tentativa. Provo më vonë." }, 429);
 

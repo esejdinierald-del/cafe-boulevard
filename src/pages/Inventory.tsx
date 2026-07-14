@@ -78,11 +78,15 @@ const Inventory = () => {
       // Auto-create any missing raw_materials so the list matches inv_products 1:1.
       const missing = invList.filter((p: any) => !rawByName.has(norm(p.name)));
       if (missing.length > 0) {
-        const { data: inserted } = await supabase
-          .from("raw_materials")
-          .insert(missing.map((p: any) => ({ name: p.name, quantity: 0, unit: "cope", min_threshold: 0 })))
-          .select("id, name, quantity, unit, min_threshold, location_id");
-        (inserted ?? []).forEach((r: any) => rawByName.set(norm(r.name), r));
+        const { data: ensured, error: ensureErr } = await staffRead<any[]>(
+          "raw_materials.ensure",
+          { names: missing.map((p: any) => p.name) },
+        );
+        if (ensureErr) {
+          toast.error(`Nuk u krijuan materialet: ${ensureErr}`);
+        } else {
+          (ensured ?? []).forEach((r: any) => rawByName.set(norm(r.name), r));
+        }
       }
 
       const list = invList

@@ -287,11 +287,8 @@ const RegjistrimiDitor = () => {
   }, [selectedTurn?.turn_data, selectedTurn?.id, isMine, loading]);
 
   const reloadProducts = async () => {
-    const { data } = await (supabase as any)
-      .from("inv_products")
-      .select("id, name, sort_order, menu_item_ids, units_per_sale")
-      .order("sort_order").order("name");
-    setProducts((data || []) as InvProduct[]);
+    const { data } = await (await import("@/lib/staff-read")).staffRead<any[]>("inv_products.list");
+    setProducts(((data as any[]) || []) as InvProduct[]);
   };
 
   const handleProductsChanged = async (opts?: {
