@@ -3,7 +3,7 @@
 // (production, custom domain, Lovable preview sandboxes, or localhost dev).
 
 const EXACT_ALLOW = new Set<string>([
-  "https://cafe-boulevard.lovable.app",
+  "https://boulevard-caffe.lovable.app",
   "http://localhost:8080",
   "http://localhost:5173",
 ]);
