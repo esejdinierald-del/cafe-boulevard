@@ -808,16 +808,16 @@ const RegjistrimiDitor = () => {
                     <table className="w-full text-sm border-collapse">
                       <thead>
                         <tr className="text-xs text-slate-400 border-b border-slate-800">
-                          <th className="text-left py-2 pr-2 font-medium">Lloji</th>
-                          <th className="text-right py-2 pl-2 font-medium">Sasia</th>
+                          <th className="text-left py-2 pr-1 font-medium">Lloji</th>
+                          <th className="text-right py-2 pl-1 font-medium">Sasia</th>
                           {editable && <th className="w-8" />}
                         </tr>
                       </thead>
                       <tbody>
                         {Object.entries(t.turn_data.coffee).map(([name, qty]) => (
                           <tr key={name} className="border-b border-slate-800/60">
-                            <td className="py-1.5 pr-2 truncate">{name}</td>
-                            <td className="py-1.5 pl-2">
+                            <td className="py-1.5 pr-1 truncate">{name}</td>
+                            <td className="py-1.5 pl-1">
                               <RowField
                                 value={qty}
                                 readOnly={!editable}
@@ -834,8 +834,8 @@ const RegjistrimiDitor = () => {
                           </tr>
                         ))}
                         <tr className="border-t-2 border-slate-700 bg-slate-950/40">
-                          <td className="py-2 pr-2 font-bold">TOTALI</td>
-                          <td className="py-2 pl-2 text-right font-bold tabular-nums">{totalCoffee}</td>
+                          <td className="py-2 pr-1 font-bold">TOTALI</td>
+                          <td className="py-2 pl-1 text-right font-bold tabular-nums">{totalCoffee}</td>
                           {editable && <td />}
                         </tr>
                       </tbody>
