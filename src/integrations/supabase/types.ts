@@ -897,7 +897,7 @@ export type Database = {
           is_active: boolean | null
           location_id: string | null
           name: string
-          pin_code: string | null
+          pin_hash: string | null
           role: string
         }
         Insert: {
@@ -907,7 +907,7 @@ export type Database = {
           is_active?: boolean | null
           location_id?: string | null
           name: string
-          pin_code?: string | null
+          pin_hash?: string | null
           role: string
         }
         Update: {
@@ -917,7 +917,7 @@ export type Database = {
           is_active?: boolean | null
           location_id?: string | null
           name?: string
-          pin_code?: string | null
+          pin_hash?: string | null
           role?: string
         }
         Relationships: []
@@ -1170,11 +1170,23 @@ export type Database = {
         Args: { amount: number; material_id: string }
         Returns: undefined
       }
+      set_staff_pin: {
+        Args: { p_id: string; p_pin: string }
+        Returns: undefined
+      }
       verify_staff_pin: {
         Args: { p_pin: string }
         Returns: {
           id: string
           location_id: string
+          name: string
+          role: string
+        }[]
+      }
+      verify_staff_pin_by_name: {
+        Args: { p_name: string; p_pin: string }
+        Returns: {
+          id: string
           name: string
           role: string
         }[]

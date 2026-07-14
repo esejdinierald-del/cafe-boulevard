@@ -33,14 +33,15 @@ Deno.serve(async (req) => {
       .eq("token", shiftToken).gte("shift_end", now).lte("shift_start", now).maybeSingle();
     if (!shift) return json({ error: "Turn i pavlefshëm ose i skaduar" }, 403);
 
-    const { data: staff } = await supabase
-      .from("staff_members").select("id, name, role, is_active, pin_code")
-      .eq("name", String(name).trim()).maybeSingle();
-    if (!staff || !staff.is_active) return json({ error: "Kamarier i pavlefshëm" }, 403);
+    const { data: staff, error: rpcErr } = await supabase.rpc("verify_staff_pin_by_name", {
+      p_name: String(name).trim(),
+      p_pin: String(pin),
+    });
+    if (rpcErr) return json({ error: rpcErr.message }, 500);
+    const row = Array.isArray(staff) ? staff[0] : staff;
+    if (!row) return json({ error: "PIN i pasaktë ose kamarier i pavlefshëm" }, 403);
 
-    if (String(pin) !== staff.pin_code) return json({ error: "PIN i pasaktë" }, 403);
-
-    return json({ ok: true, name: staff.name, role: staff.role });
+    return json({ ok: true, name: row.name, role: row.role });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }

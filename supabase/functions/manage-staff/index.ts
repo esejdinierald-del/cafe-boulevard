@@ -57,12 +57,18 @@ Deno.serve(async (req) => {
       if (!["waiter", "kitchen", "manager", "admin"].includes(role)) return json({ error: "Rol i pavlefshëm" }, 400);
       const { data, error } = await supabase
         .from("staff_members")
-        .insert({ name: String(name).trim(), pin_code: String(pin), role, is_active: true })
+        .insert({ name: String(name).trim(), role, is_active: true })
         .select("id, name, role, is_active")
         .single();
       if (error) {
         if (error.code === "23505") return json({ error: "Ky emër ekziston tashmë" }, 409);
         return json({ error: error.message }, 500);
+      }
+      // Hash PIN via server-side RPC (bcrypt).
+      const { error: pinErr } = await supabase.rpc("set_staff_pin", { p_id: (data as any).id, p_pin: String(pin) });
+      if (pinErr) {
+        await supabase.from("staff_members").delete().eq("id", (data as any).id);
+        return json({ error: pinErr.message }, 500);
       }
       return json({ staff: { ...data, active: (data as any).is_active } });
     }
@@ -77,12 +83,15 @@ Deno.serve(async (req) => {
         patch.role = role;
       }
       if (typeof active === "boolean") patch.is_active = active;
+      if (Object.keys(patch).length > 0) {
+        const { error } = await supabase.from("staff_members").update(patch).eq("id", id);
+        if (error) return json({ error: error.message }, 500);
+      }
       if (pin != null) {
         if (!/^\d{4}$/.test(String(pin))) return json({ error: "PIN duhet të jetë 4 shifra" }, 400);
-        patch.pin_code = String(pin);
+        const { error: pinErr } = await supabase.rpc("set_staff_pin", { p_id: id, p_pin: String(pin) });
+        if (pinErr) return json({ error: pinErr.message }, 500);
       }
-      const { error } = await supabase.from("staff_members").update(patch).eq("id", id);
-      if (error) return json({ error: error.message }, 500);
       return json({ success: true });
     }
 
