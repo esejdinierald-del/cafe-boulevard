@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { staffRead } from "@/lib/staff-read";
 
 export type PrintJobKind = "close_table" | "order" | "kitchen" | "bar" | "manual";
@@ -39,10 +38,9 @@ export const queuePrintJob = async (input: QueueJobInput): Promise<string | null
 
 export const countPendingForMe = async (): Promise<number> => {
   const me = localStorage.getItem("staff_name") || "Kamarier";
-  const { count } = await supabase
-    .from("print_jobs")
-    .select("id", { count: "exact", head: true })
-    .eq("created_by", me)
-    .eq("status", "pending");
-  return count || 0;
+  const { data, error } = await staffRead<{ count: number }>("print_jobs.count_pending", {
+    createdBy: me,
+  });
+  if (error || !data) return 0;
+  return data.count || 0;
 };

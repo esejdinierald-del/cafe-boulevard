@@ -146,16 +146,30 @@ serve(async (req) => {
         const fromISO = String(body.fromISO || "");
         const toISO = String(body.toISO || "");
         const type = body.type ? String(body.type) : null;
+        const operator = body.operator ? String(body.operator) : null;
         if (!fromISO || !toISO) return json({ error: "fromISO/toISO i mungon" }, 400);
         let q = supabase
           .from("transactions")
-          .select("items, created_at, type, amount")
+          .select("id, items, created_at, type, amount, operator_name, table_number")
           .gte("created_at", fromISO)
-          .lt("created_at", toISO);
+          .lt("created_at", toISO)
+          .order("created_at", { ascending: false });
         if (type) q = q.eq("type", type);
+        if (operator) q = q.ilike("operator_name", `%${operator}%`);
         const { data, error } = await q;
         if (error) return json({ error: error.message }, 500);
         return json({ data });
+      }
+      case "print_jobs.count_pending": {
+        const createdBy = String(body.createdBy || "");
+        if (!createdBy) return json({ data: { count: 0 } });
+        const { count, error } = await supabase
+          .from("print_jobs")
+          .select("id", { count: "exact", head: true })
+          .eq("created_by", createdBy)
+          .eq("status", "pending");
+        if (error) return json({ error: error.message }, 500);
+        return json({ data: { count: count || 0 } });
       }
       case "recipes.by_material_pattern": {
         const pattern = String(body.pattern || "");

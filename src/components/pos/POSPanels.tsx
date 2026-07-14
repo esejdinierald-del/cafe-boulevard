@@ -515,21 +515,18 @@ const CashierHistoryPanel = () => {
     setLoading(true);
     const start = new Date(`${fromDate}T${fromTime}:00`).toISOString();
     const end = new Date(`${toDate}T${toTime}:59`).toISOString();
-    let q = supabase
-      .from("transactions")
-      .select("id, amount, operator_name, table_number, created_at, items")
-      .eq("type", "sale")
-      .gte("created_at", start)
-      .lte("created_at", end)
-      .order("created_at", { ascending: false });
-    if (operator.trim()) q = q.ilike("operator_name", `%${operator.trim()}%`);
-    const { data, error } = await q;
+    const { data, error } = await staffRead<Txn[]>("transactions.range", {
+      fromISO: start,
+      toISO: end,
+      type: "sale",
+      operator: operator.trim() || undefined,
+    });
     setLoading(false);
     if (error) {
-      toast.error("Gabim: " + error.message);
+      toast.error("Gabim: " + error);
       return;
     }
-    setTxns((data as unknown as Txn[]) || []);
+    setTxns((data as Txn[]) || []);
   };
 
   useEffect(() => {
