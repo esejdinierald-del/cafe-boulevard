@@ -314,7 +314,7 @@ const Inventory = () => {
                   <div className="min-w-0">
                     <div className="text-sm font-medium truncate">{m.name}</div>
                     <div className="text-[11px] text-slate-500">
-                      stok: {m.quantity.toFixed(2)} {m.unit}
+                      stok: {Math.round(m.quantity)} {m.unit}
                     </div>
                   </div>
                   <Input
