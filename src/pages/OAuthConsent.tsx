@@ -31,12 +31,13 @@ export default function OAuthConsent() {
       const { data, error } = await authOauth().getAuthorizationDetails(authorizationId);
       if (!active) return;
       if (error) return setError(error.message);
-      const immediate = data?.redirect_url ?? data?.redirect_to;
-      if (immediate && !data?.client) {
+      const d = data as any;
+      const immediate = d?.redirect_url ?? d?.redirect_to;
+      if (immediate && !d?.client) {
         window.location.href = immediate;
         return;
       }
-      setDetails(data);
+      setDetails(d);
     })();
     return () => {
       active = false;
@@ -52,7 +53,7 @@ export default function OAuthConsent() {
       setBusy(false);
       return setError(error.message);
     }
-    const target = data?.redirect_url ?? data?.redirect_to;
+    const target = (data as any)?.redirect_url ?? (data as any)?.redirect_to;
     if (!target) {
       setBusy(false);
       return setError("Serveri OAuth nuk ktheu redirect.");
