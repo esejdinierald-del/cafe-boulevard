@@ -98,6 +98,36 @@ const printDocument = (title: string, body: string, withAutofit = false) => `<!d
         page-break-inside: avoid;
       }
       .status { padding: 16px; font-size: 13px; }
+      .brand-header {
+        text-align: center;
+        padding: 4mm 3mm 2mm 3mm;
+      }
+      .brand-logo {
+        width: 18mm;
+        height: 18mm;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto 1mm auto;
+      }
+      .brand-name {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 2px;
+      }
+      .brand-footer {
+        text-align: center;
+        padding: 2mm 3mm 4mm 3mm;
+      }
+      .qr-box {
+        display: inline-block;
+        width: 20mm;
+        height: 20mm;
+      }
+      .qr-box svg {
+        width: 20mm !important;
+        height: 20mm !important;
+        display: block;
+      }
     </style>
   </head>
   <body>${body}${withAutofit ? `<script>${AUTOFIT_SCRIPT}<\/script>` : ""}</body>
@@ -112,7 +142,12 @@ export const openReceiptPrintWindow = (title = "Boulevard Cafe") => {
   return printWindow;
 };
 
-export const writeReceiptAndPrint = (printWindow: Window | null, receiptText: string, title = "Boulevard Cafe") => {
+export const writeReceiptAndPrint = (
+  printWindow: Window | null,
+  receiptText: string,
+  title = "Boulevard Cafe",
+  opts?: PrintOptions,
+) => {
   if (!printWindow || printWindow.closed) {
     // Fallback for mobile / popup-blocked: print inline in the current document.
     printReceiptInline(receiptText, title);
@@ -120,7 +155,7 @@ export const writeReceiptAndPrint = (printWindow: Window | null, receiptText: st
   }
   printWindow.document.open();
   printWindow.document.write(
-    printDocument(title, `<pre>${escapeHtml(receiptText)}</pre>`, true),
+    printDocument(title, buildBody(receiptText, opts), true),
   );
   printWindow.document.close();
   return true;
@@ -177,10 +212,10 @@ export const printReceiptInline = (receiptText: string, _title = "Boulevard Cafe
  * Preferred entry point — tries popup first (best on desktop, keeps the
  * app UI usable), falls back to inline printing on mobile / blocked popups.
  */
-export const printReceipt = (receiptText: string, title = "Boulevard Cafe") => {
+export const printReceipt = (receiptText: string, title = "Boulevard Cafe", opts?: PrintOptions) => {
   const w = openReceiptPrintWindow(title);
   if (w) {
-    writeReceiptAndPrint(w, receiptText, title);
+    writeReceiptAndPrint(w, receiptText, title, opts);
   } else {
     printReceiptInline(receiptText, title);
   }
@@ -192,7 +227,11 @@ export const printReceipt = (receiptText: string, title = "Boulevard Cafe") => {
  * dhe thërret print() brenda iframe-it. Kjo shmang "Print preview failed"
  * në Chrome kiosk-printing me printer termik.
  */
-export const printReceiptViaIframe = (receiptText: string, title = "Boulevard Cafe"): Promise<void> => {
+export const printReceiptViaIframe = (
+  receiptText: string,
+  title = "Boulevard Cafe",
+  opts?: PrintOptions,
+): Promise<void> => {
   return new Promise((resolve) => {
     // Fshi iframe-in e mëparshëm nëse ka mbetur
     const old = document.getElementById("boulevard-print-iframe");
@@ -240,7 +279,7 @@ export const printReceiptViaIframe = (receiptText: string, title = "Boulevard Ca
     const doc = iframe.contentDocument;
     if (!doc) { cleanup(); return; }
     doc.open();
-    doc.write(printDocument(title, `<pre>${escapeHtml(receiptText)}</pre>`, true));
+    doc.write(printDocument(title, buildBody(receiptText, opts), true));
     doc.close();
   });
 };
