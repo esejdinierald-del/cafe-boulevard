@@ -728,9 +728,9 @@ const Dashboard = () => {
             const total = barPending + kitchenPending + reqCount + songCount;
             if (total === 0 || muteNotifications) return null;
             const parts: string[] = [];
+            if (reqCount > 0) parts.push(`Thirrje (${reqCount})`);
             if (barPending > 0) parts.push(`Bar (${barPending})`);
             if (kitchenPending > 0) parts.push(`Kuzhina (${kitchenPending})`);
-            if (reqCount > 0) parts.push(`Thirrje (${reqCount})`);
             if (songCount > 0) parts.push(`Këngë (${songCount})`);
             return (
               <button
