@@ -1,33 +1,16 @@
-import { supabase } from "@/integrations/supabase/client";
+import { adminRead } from "@/lib/staff-read";
 
-const READ_TABLES = [
-  "categories",
-  "menu_items",
-  "tables",
-  "staff_members",
-  "raw_materials",
-  "recipes",
-  "inv_products",
-  "app_settings",
-  "ai_knowledge",
-] as const;
-
-export async function buildBackupJson(): Promise<string> {
+export async function buildBackupJson(passcode: string): Promise<string> {
+  const { data, error } = await adminRead<Record<string, unknown>>("backup.snapshot", passcode);
+  if (error) throw new Error(error);
   const snapshot: Record<string, unknown> = {
     _meta: {
       exportedAt: new Date().toISOString(),
       version: 1,
       note: "Backup i konfigurimit — vetëm lexim. Për restaurim, kërko admin manual.",
     },
+    ...(data || {}),
   };
-  for (const t of READ_TABLES) {
-    try {
-      const { data, error } = await supabase.from(t as any).select("*");
-      snapshot[t] = error ? { error: error.message } : data;
-    } catch (e) {
-      snapshot[t] = { error: (e as Error).message };
-    }
-  }
   return JSON.stringify(snapshot, null, 2);
 }
 
