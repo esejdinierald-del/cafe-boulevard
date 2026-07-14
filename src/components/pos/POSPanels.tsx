@@ -264,11 +264,38 @@ export const CashierPanel = () => {
     if (!pw) return;
     const item = order.items[index];
     if (!item) return;
+    if ((item as any).cancelled) return;
+    // Net available qty for this line
+    const netAvailable = order.items.reduce((s, it) => {
+      if (it.name === item.name && Number(it.price) === Number(item.price)) {
+        return s + Number(it.quantity || 0);
+      }
+      return s;
+    }, 0);
+    if (netAvailable <= 0) {
+      toast.error("Ky artikull është anulluar tashmë");
+      return;
+    }
+    const raw = window.prompt(
+      `Sa copë të anullohen nga "${item.name}"? (maks. ${netAvailable})`,
+      "1",
+    );
+    if (raw == null) return;
+    const qty = Math.max(1, Math.floor(Number(raw)));
+    if (!Number.isFinite(qty) || qty <= 0) {
+      toast.error("Sasi e pavlefshme");
+      return;
+    }
+    if (qty > netAvailable) {
+      toast.error(`Maksimumi ${netAvailable} copë`);
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("pos-cancel-item", {
       body: {
         orderId: order.id,
         itemIndex: index,
+        qty,
         adminPassword: pw,
         shiftToken: typeof window !== "undefined" ? localStorage.getItem("staff_shift_token") : undefined,
       },
@@ -280,11 +307,7 @@ export const CashierPanel = () => {
       toast.error("Gabim: " + errMsg);
       return;
     }
-    if ((data as any)?.cancelledOrder) {
-      toast.success(`U hoq "${item.name}". Porosia u mbyll (bosh).`);
-    } else {
-      toast.success(`U hoq 1x "${item.name}" (-${Number(item.price).toFixed(0)} L)`);
-    }
+    toast.success(`U anulluan ${qty}x "${item.name}" (-${(Number(item.price) * qty).toFixed(0)} L)`);
   };
 
   return (
@@ -391,26 +414,35 @@ export const CashierPanel = () => {
                   {isOpen && (
                     <div className="p-3 pt-0 space-y-3 border-t border-border/40">
                       <ul className="text-sm space-y-1 pt-2">
-                        {o.items.map((it, i) => (
-                          <li key={i} className="flex justify-between items-center gap-2">
-                            <span className="flex-1">
-                              {it.name} <span className="text-muted-foreground">x{it.quantity}</span>
-                              {it.notes && <span className="text-xs italic text-amber-500 ml-2">({it.notes})</span>}
-                            </span>
-                            <span className="text-amber-500 font-semibold">{(it.price * it.quantity).toFixed(0)} L</span>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-6 w-6 text-destructive hover:bg-destructive/10"
-                              onClick={() => cancelItem(o, i)}
-                              disabled={loading}
-                              title="Hiq 1 nga ky artikull (admin)"
-                              aria-label="Hiq 1 nga ky artikull"
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                          </li>
-                        ))}
+                        {o.items.map((it, i) => {
+                          const isCancel = (it as any).cancelled || Number(it.quantity) < 0;
+                          return (
+                            <li key={i} className={`flex justify-between items-center gap-2 ${isCancel ? "text-destructive" : ""}`}>
+                              <span className="flex-1">
+                                {it.name} <span className="opacity-70">x{it.quantity}</span>
+                                {it.notes && <span className="text-xs italic ml-2 opacity-80">({it.notes})</span>}
+                              </span>
+                              <span className={`font-semibold ${isCancel ? "text-destructive" : "text-amber-500"}`}>
+                                {(it.price * it.quantity).toFixed(0)} L
+                              </span>
+                              {!isCancel ? (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                                  onClick={() => cancelItem(o, i)}
+                                  disabled={loading}
+                                  title="Anullo copë nga ky artikull (admin)"
+                                  aria-label="Anullo copë nga ky artikull"
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                              ) : (
+                                <span className="h-6 w-6" />
+                              )}
+                            </li>
+                          );
+                        })}
                       </ul>
                       <div className="flex gap-2">
                         <Button

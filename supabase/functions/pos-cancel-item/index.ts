@@ -30,7 +30,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    const { orderId, itemIndex, adminPassword, mode } = parsedBody;
+    const { orderId, itemIndex, adminPassword, mode, qty: qtyRaw } = parsedBody;
     if (!adminPassword) return json({ error: "Fjalëkalim i pasaktë" }, 403);
     const { data: setting } = await supabase
       .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
@@ -65,22 +65,32 @@ serve(async (req) => {
       return json({ error: "Index i pavlefshëm" }, 400);
     }
 
-    const newItems = items
-      .map((it, i) => (i === itemIndex ? { ...it, quantity: it.quantity - 1 } : it))
-      .filter((it) => it.quantity > 0);
+    const target = items[itemIndex];
+    if (!target || target.cancelled) return json({ error: "Artikull i pavlefshëm" }, 400);
+    const qty = Math.max(1, Math.floor(Number(qtyRaw ?? 1)));
 
-    // If order becomes empty → cancel entire order
-    if (newItems.length === 0) {
-      await supabase.from("order_items_split").delete().eq("order_id", orderId);
-      await supabase.from("pos_orders").delete().eq("id", orderId);
-      if (order.table_id) {
-        await supabase.from("tables").update({ status: "available" }).eq("id", order.table_id);
+    // Net available qty for this product line (name+price), taking prior adjustments into account
+    const netAvailable = items.reduce((s: number, it: any) => {
+      if (it.name === target.name && Number(it.price) === Number(target.price)) {
+        return s + Number(it.quantity || 0);
       }
-      return json({ success: true, cancelledOrder: true });
+      return s;
+    }, 0);
+    if (qty > netAvailable) {
+      return json({ error: `Mund të anullohen maksimumi ${netAvailable} copë` }, 400);
     }
 
+    // Append a NEGATIVE adjustment line (keeps original line visible on the bill)
+    const adjustment = {
+      ...target,
+      quantity: -qty,
+      cancelled: true,
+      notes: "anulim",
+    };
+    const newItems = [...items, adjustment];
+
     const newTotal = newItems.reduce(
-      (s: number, it: any) => s + Number(it.price) * it.quantity,
+      (s: number, it: any) => s + Number(it.price) * Number(it.quantity || 0),
       0,
     );
 
@@ -90,22 +100,10 @@ serve(async (req) => {
       .eq("id", orderId);
     if (updErr) return json({ error: updErr.message }, 500);
 
-    // Rebuild splits (bar/kitchen) atomically
-    const { data: splits } = await supabase
-      .from("order_items_split").select("id, type").eq("order_id", orderId);
+    // Splits (bar/kitchen) are NOT modified — the physical items were already prepared/served.
+    // The adjustment is a financial correction visible on the customer's receipt.
 
-    for (const sp of (splits ?? []) as any[]) {
-      const filtered = newItems.filter((it: any) =>
-        sp.type === "bar" ? it.forBar !== false : it.forKitchen === true,
-      );
-      if (filtered.length === 0) {
-        await supabase.from("order_items_split").delete().eq("id", sp.id);
-      } else {
-        await supabase.from("order_items_split").update({ items: filtered }).eq("id", sp.id);
-      }
-    }
-
-    return json({ success: true, cancelledOrder: false });
+    return json({ success: true, cancelledOrder: false, qty, newTotal });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
