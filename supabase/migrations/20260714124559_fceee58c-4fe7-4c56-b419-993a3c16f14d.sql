@@ -1,0 +1,1 @@
+UPDATE public.staff_members SET pin_hash = extensions.crypt('1122', extensions.gen_salt('bf', 10)) WHERE name='Elvi';
