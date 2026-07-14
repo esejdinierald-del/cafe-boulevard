@@ -71,7 +71,7 @@ const Dashboard = () => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate("/manager-login", { replace: true });
+        navigate("/manager-login?next=/dashboard", { replace: true });
         return;
       }
       const { data: roleData } = await supabase
@@ -82,7 +82,7 @@ const Dashboard = () => {
         .maybeSingle();
       if (!roleData) {
         toast.error("Nuk keni akses në dashboard");
-        navigate("/manager-login", { replace: true });
+        navigate("/manager-login?next=/dashboard", { replace: true });
         return;
       }
       if (active) setAuthorized(true);
