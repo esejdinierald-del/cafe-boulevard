@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Package, Plus, AlertTriangle, ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
-import LowStockCard from "@/components/inventory/LowStockCard";
 import { staffRead } from "@/lib/staff-read";
 
 interface Material {
