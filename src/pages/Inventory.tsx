@@ -260,11 +260,11 @@ const Inventory = () => {
                     >
                       <TableCell className="font-medium">{m.name}</TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {m.quantity.toFixed(3)}
+                        {Math.round(m.quantity)}
                       </TableCell>
                       <TableCell>{m.unit}</TableCell>
                       <TableCell className="text-right tabular-nums text-slate-400">
-                        {m.min_threshold.toFixed(3)}
+                        {Math.round(m.min_threshold)}
                       </TableCell>
                       <TableCell>
                         {isLow ? (
