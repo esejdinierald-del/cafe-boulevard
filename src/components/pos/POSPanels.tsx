@@ -9,6 +9,7 @@ import { printReceipt } from "@/lib/receipt-print";
 import { queuePrintJob } from "@/lib/print-queue";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { staffRead } from "@/lib/staff-read";
 
 interface Split {
   id: string;
@@ -38,24 +39,14 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
   const [loading, setLoading] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase
-      .from("order_items_split")
-      .select("*, pos_orders(table_number, mode)")
-      .eq("type", kind)
-      .eq("status", "pending")
-      .order("created_at", { ascending: true });
-    setSplits(((data as unknown) as Split[]) || []);
+    const { data } = await staffRead<Split[]>("order_items_split.pending", { kind });
+    setSplits((data as Split[]) || []);
   };
 
   useEffect(() => {
     load();
-    const ch = supabase
-      .channel(`kds-${kind}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "order_items_split" }, load)
-      .subscribe();
     const poll = setInterval(load, 4000);
     return () => {
-      supabase.removeChannel(ch);
       clearInterval(poll);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -200,12 +191,8 @@ export const CashierPanel = () => {
   const toggleExpand = (id: string) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
 
   const load = async () => {
-    const { data } = await supabase
-      .from("pos_orders")
-      .select("*")
-      .in("status", ["ready", "open"])
-      .order("created_at", { ascending: true });
-    setOrders(((data as unknown) as POSOrder[]) || []);
+    const { data } = await staffRead<POSOrder[]>("pos_orders.cashier");
+    setOrders((data as POSOrder[]) || []);
   };
 
   useEffect(() => {
