@@ -227,14 +227,14 @@ const POS = () => {
         </div>
         <div className="flex items-center gap-2">
           <button type="button"
-            onClick={() => startOrder("bar", null)}
-            className="flex items-center gap-2 px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
+            onClick={() => { startOrder("bar", null); setMobileView("menu"); }}
+            className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs md:text-sm"
           >
-            <Coffee size={14} /> Modalitet Banak
+            <Coffee size={14} /> <span className="hidden sm:inline">Modalitet</span> Banak
           </button>
           <button type="button"
             onClick={() => setExternalOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 rounded bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-sm font-semibold"
+            className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-xs md:text-sm font-semibold"
           >
             <Truck size={14} /> Glovo/Bolt
           </button>
