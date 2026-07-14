@@ -230,7 +230,7 @@ export const CashierPanel = () => {
         kind: "close_table",
         station: "arka",
       });
-      if (!jobId) printReceipt(receiptText, "Bileta Tavoline");
+      if (!jobId) printReceipt(receiptText, "Bileta Tavoline", { branded: true });
       toast.success("Porosia u mbyll");
     }
   };
