@@ -405,6 +405,7 @@ export const CashierPanel = () => {
                               onClick={() => cancelItem(o, i)}
                               disabled={loading}
                               title="Hiq 1 nga ky artikull (admin)"
+                              aria-label="Hiq 1 nga ky artikull"
                             >
                               <Minus className="h-3 w-3" />
                             </Button>
@@ -453,7 +454,7 @@ export const CashierPanel = () => {
       {receipt && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setReceipt(null)}>
           <Card className="bg-white text-black max-w-sm w-full p-6 relative" onClick={(e) => e.stopPropagation()}>
-            <Button variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => setReceipt(null)}>
+            <Button variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => setReceipt(null)} aria-label="Mbyll faturën">
               <X className="h-4 w-4" />
             </Button>
             <pre className="font-mono text-xs whitespace-pre leading-tight">{receipt}</pre>

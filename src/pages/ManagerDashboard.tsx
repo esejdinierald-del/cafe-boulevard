@@ -477,6 +477,7 @@ const ManagerDashboard = () => {
                               const input = document.getElementById(`cat-${category.id}`) as HTMLInputElement;
                               handleUpdateCategory(category.id, input.value);
                             }}
+                            aria-label="Ruaj kategorinë"
                           >
                             <Save className="h-5 w-5" />
                           </Button>
@@ -485,6 +486,7 @@ const ManagerDashboard = () => {
                             variant="outline"
                             className="h-12 w-12 rounded-2xl"
                             onClick={() => setEditingCategory(null)}
+                            aria-label="Anulo ndryshimin"
                           >
                             <X className="h-5 w-5" />
                           </Button>
@@ -499,6 +501,7 @@ const ManagerDashboard = () => {
                             variant="premium"
                             className="h-11 w-11 rounded-2xl"
                             onClick={() => setEditingCategory(category.id)}
+                            aria-label="Ndrysho kategorinë"
                           >
                             <Edit className="h-5 w-5" />
                           </Button>
@@ -506,6 +509,7 @@ const ManagerDashboard = () => {
                             size="icon"
                             variant="destructive"
                             onClick={() => handleDeleteCategory(category.id)}
+                            aria-label="Fshi kategorinë"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -566,6 +570,7 @@ const ManagerDashboard = () => {
                           setImagePreview(null);
                           setNewItem({ ...newItem, image_url: "" });
                         }}
+                        aria-label="Hiq foton"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -804,10 +809,10 @@ const ManagerDashboard = () => {
                         <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">{entry.content}</p>
                       </div>
                       <div className="flex gap-2 shrink-0">
-                        <Button size="icon" variant="premium" className="h-10 w-10 rounded-xl" onClick={() => setEditingKnowledge(entry.id)}>
+                        <Button size="icon" variant="premium" className="h-10 w-10 rounded-xl" onClick={() => setEditingKnowledge(entry.id)} aria-label="Ndrysho njohurinë">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="destructive" className="h-10 w-10 rounded-xl" onClick={() => handleDeleteKnowledge(entry.id)}>
+                        <Button size="icon" variant="destructive" className="h-10 w-10 rounded-xl" onClick={() => handleDeleteKnowledge(entry.id)} aria-label="Fshi njohurinë">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -870,7 +875,7 @@ const ManagerDashboard = () => {
                         {new Date(fb.created_at).toLocaleDateString('sq-AL', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
-                    <Button size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={async () => {
+                    <Button size="icon" variant="destructive" className="h-8 w-8 rounded-full" aria-label="Fshi feedback-un" onClick={async () => {
                       await supabase.from('feedback').delete().eq('id', fb.id);
                       fetchData();
                     }}>
