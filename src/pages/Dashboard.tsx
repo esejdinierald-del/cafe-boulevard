@@ -643,53 +643,116 @@ const Dashboard = () => {
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4 text-secondary" />
               <span className="font-semibold text-sm">Njoftim</span>
+              <Button
+                variant={reorderMode ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setReorderMode((v) => !v)}
+                className="h-7 px-2 gap-1 text-xs ml-1"
+                title="Zhvendos butonat"
+              >
+                {reorderMode ? <Lock className="h-3 w-3" /> : <GripVertical className="h-3 w-3" />}
+                {reorderMode ? "Mbaro" : "Rendit"}
+              </Button>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
-              <Button variant={notificationType === 'voice' ? 'default' : 'outline'} size="sm"
-                onClick={() => handleNotificationTypeChange('voice')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
-                <Volume2 className="h-4 w-4" /><span className="font-semibold">Zë</span>
-              </Button>
-              <Button variant={notificationType === 'sound' ? 'default' : 'outline'} size="sm"
-                onClick={() => handleNotificationTypeChange('sound')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
-                <Bell className="h-4 w-4" /><span className="font-semibold">Tingull</span>
-              </Button>
-              <Button variant="outline" size="sm"
-                onClick={() => { enableAudio(); playBellSound(); }}
-                className="gap-1.5 h-10 px-3.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30 text-sm">
-                <Volume2 className="h-4 w-4 text-success" /><span className="font-bold text-success">TEST</span>
-              </Button>
-              <Button variant="outline" size="sm"
-                onClick={() => setCurtainActive(true)}
-                className="gap-1.5 h-10 px-3.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30 text-sm">
-                <QrCode className="h-4 w-4 text-primary" /><span className="font-bold text-primary">QR</span>
-              </Button>
-              <Button variant="outline" size="sm"
-                onClick={() => setActiveTab('cashier')}
-                className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
-                <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
-              </Button>
-              <Button variant="outline" size="sm"
-                onClick={async () => {
-                  const { error } = await supabase.from('service_requests').insert({
-                    table_number: 'Banaku',
-                    request_type: 'kitchen_ready',
-                    status: 'pending',
-                  });
-                  if (error) toast.error('Gabim në dërgim');
-                  else toast.success('🔔 Thirrja u dërgua te kamarieri!');
-                }}
-                className="gap-1.5 h-10 px-3.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none text-sm">
-                <UtensilsCrossed className="h-4 w-4 text-accent-foreground" /><span className="font-bold text-accent-foreground">Porosia Gati 🔔</span>
-              </Button>
-              <Button variant="outline" size="sm"
-                onClick={() => {
-                  setMuteNotifications((m) => !m);
-                  toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
-                }}
-                className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
-                {muteNotifications ? <VolumeX className="h-4 w-4 text-destructive" /> : <Volume2 className="h-4 w-4" />}
-                <span className="font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
-              </Button>
+              {(() => {
+                const btnMap: Record<string, JSX.Element> = {
+                  voice: (
+                    <Button variant={notificationType === 'voice' ? 'default' : 'outline'} size="sm"
+                      onClick={() => handleNotificationTypeChange('voice')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
+                      <Volume2 className="h-4 w-4" /><span className="font-semibold">Zë</span>
+                    </Button>
+                  ),
+                  sound: (
+                    <Button variant={notificationType === 'sound' ? 'default' : 'outline'} size="sm"
+                      onClick={() => handleNotificationTypeChange('sound')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
+                      <Bell className="h-4 w-4" /><span className="font-semibold">Tingull</span>
+                    </Button>
+                  ),
+                  test: (
+                    <Button variant="outline" size="sm"
+                      onClick={() => { enableAudio(); playBellSound(); }}
+                      className="gap-1.5 h-10 px-3.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30 text-sm">
+                      <Volume2 className="h-4 w-4 text-success" /><span className="font-bold text-success">TEST</span>
+                    </Button>
+                  ),
+                  qr: (
+                    <Button variant="outline" size="sm"
+                      onClick={() => setCurtainActive(true)}
+                      className="gap-1.5 h-10 px-3.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30 text-sm">
+                      <QrCode className="h-4 w-4 text-primary" /><span className="font-bold text-primary">QR</span>
+                    </Button>
+                  ),
+                  arka: (
+                    <Button variant="outline" size="sm"
+                      onClick={() => setActiveTab('cashier')}
+                      className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
+                      <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
+                    </Button>
+                  ),
+                  ready: (
+                    <Button variant="outline" size="sm"
+                      onClick={async () => {
+                        const { error } = await supabase.from('service_requests').insert({
+                          table_number: 'Banaku',
+                          request_type: 'kitchen_ready',
+                          status: 'pending',
+                        });
+                        if (error) toast.error('Gabim në dërgim');
+                        else toast.success('🔔 Thirrja u dërgua te kamarieri!');
+                      }}
+                      className="gap-1.5 h-10 px-3.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none text-sm">
+                      <UtensilsCrossed className="h-4 w-4 text-accent-foreground" /><span className="font-bold text-accent-foreground">Porosia Gati 🔔</span>
+                    </Button>
+                  ),
+                  mute: (
+                    <Button variant="outline" size="sm"
+                      onClick={() => {
+                        setMuteNotifications((m) => !m);
+                        toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
+                      }}
+                      className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
+                      {muteNotifications ? <VolumeX className="h-4 w-4 text-destructive" /> : <Volume2 className="h-4 w-4" />}
+                      <span className="font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
+                    </Button>
+                  ),
+                };
+                return btnOrder.map((key) => {
+                  const el = btnMap[key];
+                  if (!el) return null;
+                  return (
+                    <div
+                      key={key}
+                      draggable={reorderMode}
+                      onDragStart={(e) => {
+                        if (!reorderMode) return;
+                        dragKeyRef.current = key;
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      onDragOver={(e) => {
+                        if (!reorderMode) return;
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                      }}
+                      onDrop={(e) => {
+                        if (!reorderMode) return;
+                        e.preventDefault();
+                        const from = dragKeyRef.current;
+                        if (from) moveBtn(from, key);
+                        dragKeyRef.current = null;
+                      }}
+                      className={reorderMode ? "relative cursor-move ring-2 ring-primary/40 rounded-lg animate-pulse-slow" : ""}
+                    >
+                      {reorderMode && (
+                        <div className="absolute -top-2 -left-2 z-10 bg-primary text-primary-foreground rounded-full p-0.5 shadow">
+                          <GripVertical className="h-3 w-3" />
+                        </div>
+                      )}
+                      <div className={reorderMode ? "pointer-events-none" : ""}>{el}</div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
         </Card>
