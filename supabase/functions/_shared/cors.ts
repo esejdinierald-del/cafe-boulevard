@@ -11,6 +11,7 @@ const EXACT_ALLOW = new Set<string>([
 const REGEX_ALLOW: RegExp[] = [
   /^https:\/\/id-preview--[a-z0-9-]+\.lovable\.app$/i,
   /^https:\/\/[a-z0-9-]+\.lovable\.app$/i,
+  /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/i,
 ];
 
 export function isAllowedOrigin(origin: string | null): boolean {
