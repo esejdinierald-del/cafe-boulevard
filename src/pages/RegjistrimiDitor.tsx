@@ -961,24 +961,26 @@ const RegjistrimiDitor = () => {
             onOpenChange={(v) => { if (!v || adminUnlocked) setProductMgrOpen(v); }}
           />
 
-          <div className="flex flex-wrap justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2 pt-1">
             {isMine && (
               <Button
                 onClick={closeMyTurn}
                 disabled={closingTurn}
+                size="sm"
                 variant="secondary"
-                className="bg-sky-700 hover:bg-sky-600 text-white"
+                className="bg-sky-700 hover:bg-sky-600 text-white h-8"
               >
-                {closingTurn ? <Loader2 className="animate-spin mr-2" size={16}/> : <Clock size={16} className="mr-2"/>}
+                {closingTurn ? <Loader2 className="animate-spin mr-2" size={14}/> : <Clock size={14} className="mr-2"/>}
                 Mbyll turnin tim
               </Button>
             )}
             <Button
               onClick={closeDay}
               disabled={closing}
-              className="bg-amber-600 hover:bg-amber-500 text-white"
+              size="sm"
+              className="bg-amber-600 hover:bg-amber-500 text-white h-8"
             >
-              {closing ? <Loader2 className="animate-spin mr-2" size={16}/> : <Lock size={16} className="mr-2"/>}
+              {closing ? <Loader2 className="animate-spin mr-2" size={14}/> : <Lock size={14} className="mr-2"/>}
               Mbyll ditën
             </Button>
           </div>
