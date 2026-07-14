@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import YouTube from "react-youtube";
@@ -62,6 +64,25 @@ const Dashboard = () => {
   useEffect(() => {
     localStorage.setItem("dashboard-btn-order", JSON.stringify(btnOrder));
   }, [btnOrder]);
+  // Layout / dimension settings — persisted to localStorage
+  const DEFAULT_LAYOUT = { zoom: 100, maxWidth: 1280, btnHeight: 40, btnFont: 14, bannerPadY: 12, bannerFont: 18 };
+  const [layout, setLayout] = useState(() => {
+    try {
+      const s = localStorage.getItem("dashboard-layout");
+      if (s) return { ...DEFAULT_LAYOUT, ...JSON.parse(s) };
+    } catch {}
+    return DEFAULT_LAYOUT;
+  });
+  useEffect(() => {
+    localStorage.setItem("dashboard-layout", JSON.stringify(layout));
+  }, [layout]);
+  const setL = (k: keyof typeof DEFAULT_LAYOUT, v: number) => setLayout((p: typeof DEFAULT_LAYOUT) => ({ ...p, [k]: v }));
+  const btnStyle: React.CSSProperties = {
+    height: `${layout.btnHeight}px`,
+    fontSize: `${layout.btnFont}px`,
+    paddingLeft: `${Math.max(10, layout.btnHeight * 0.35)}px`,
+    paddingRight: `${Math.max(10, layout.btnHeight * 0.35)}px`,
+  };
   const moveBtn = (from: string, to: string) => {
     if (from === to) return;
     setBtnOrder((prev) => {
