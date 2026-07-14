@@ -37,10 +37,8 @@ const Dashboard = () => {
   const seenOrderIdsRef = useRef<Set<string>>(new Set());
   const ordersPrimedRef = useRef(false);
 
-  // Curtain state - QR overlay
-  const [curtainActive, setCurtainActive] = useState(true);
-  const [shiftToken, setShiftToken] = useState<string | null>(null);
-  const [staffUrl, setStaffUrl] = useState<string>('');
+  // Curtain / shift token — handled by dedicated hook.
+  const { curtainActive, setCurtainActive, shiftToken, staffUrl } = useShiftCurtain();
 
   // Music tab state
   const [activeTab, setActiveTab] = useState<"requests" | "songs" | "bar" | "kitchen" | "cashier">("requests");
@@ -91,73 +89,6 @@ const Dashboard = () => {
     })();
     return () => { active = false; };
   }, [navigate]);
-
-  // Generate or fetch active shift token via edge function (bypasses RLS)
-  const ensureShiftToken = async () => {
-    const now = new Date();
-    const hour = now.getHours();
-    let shiftStart: Date, shiftEnd: Date;
-
-    if (hour >= 3 && hour < 15) {
-      shiftStart = new Date(now); shiftStart.setHours(3, 0, 0, 0);
-      shiftEnd = new Date(now); shiftEnd.setHours(15, 0, 0, 0);
-    } else {
-      shiftStart = new Date(now);
-      if (hour >= 15) {
-        shiftStart.setHours(15, 0, 0, 0);
-        shiftEnd = new Date(now); shiftEnd.setDate(shiftEnd.getDate() + 1); shiftEnd.setHours(3, 0, 0, 0);
-      } else {
-        shiftStart.setDate(shiftStart.getDate() - 1); shiftStart.setHours(15, 0, 0, 0);
-        shiftEnd = new Date(now); shiftEnd.setHours(3, 0, 0, 0);
-      }
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke("manage-shift", {
-        body: {
-          action: "get_or_create",
-          shift_start: shiftStart.toISOString(),
-          shift_end: shiftEnd.toISOString(),
-        },
-      });
-      if (error || !data?.token) {
-        console.error("Failed to get shift token:", error);
-        return null;
-      }
-      setShiftToken(data.token);
-      setStaffUrl(`${window.location.origin}/staff?token=${data.token}`);
-      if (data.unlocked) setCurtainActive(false);
-      return data.token;
-    } catch (e) {
-      console.error("Failed to get shift token:", e);
-      return null;
-    }
-  };
-
-  // On mount: generate token and listen for unlock via realtime
-  useEffect(() => {
-    ensureShiftToken();
-  }, []);
-
-  // Poll for unlock via edge function (realtime won't work without auth on shift_tokens)
-  // The backup poll below handles this
-
-  // Backup poll only while curtain is active — use edge function
-  useEffect(() => {
-    if (!curtainActive || !shiftToken) return;
-    const poll = setInterval(async () => {
-      try {
-        const { data } = await supabase.functions.invoke("manage-shift", {
-          body: { action: "check_unlock", token: shiftToken },
-        });
-        if (data?.unlocked) {
-          setCurtainActive(false);
-          toast.success("🔓 Turni u aktivizua!");
-        }
-      } catch {}
-    }, 10000);
-    return () => clearInterval(poll);
-  }, [curtainActive, shiftToken]);
 
   // Visual notification - flashing tab title
   useEffect(() => {
