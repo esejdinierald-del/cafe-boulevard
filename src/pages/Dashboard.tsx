@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import YouTube from "react-youtube";
@@ -62,6 +64,25 @@ const Dashboard = () => {
   useEffect(() => {
     localStorage.setItem("dashboard-btn-order", JSON.stringify(btnOrder));
   }, [btnOrder]);
+  // Layout / dimension settings — persisted to localStorage
+  const DEFAULT_LAYOUT = { zoom: 100, maxWidth: 1280, btnHeight: 40, btnFont: 14, bannerPadY: 12, bannerFont: 18 };
+  const [layout, setLayout] = useState(() => {
+    try {
+      const s = localStorage.getItem("dashboard-layout");
+      if (s) return { ...DEFAULT_LAYOUT, ...JSON.parse(s) };
+    } catch {}
+    return DEFAULT_LAYOUT;
+  });
+  useEffect(() => {
+    localStorage.setItem("dashboard-layout", JSON.stringify(layout));
+  }, [layout]);
+  const setL = (k: keyof typeof DEFAULT_LAYOUT, v: number) => setLayout((p: typeof DEFAULT_LAYOUT) => ({ ...p, [k]: v }));
+  const btnStyle: React.CSSProperties = {
+    height: `${layout.btnHeight}px`,
+    fontSize: `${layout.btnFont}px`,
+    paddingLeft: `${Math.max(10, layout.btnHeight * 0.35)}px`,
+    paddingRight: `${Math.max(10, layout.btnHeight * 0.35)}px`,
+  };
   const moveBtn = (from: string, to: string) => {
     if (from === to) return;
     setBtnOrder((prev) => {
@@ -610,14 +631,18 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-3 flex flex-col relative" onClick={enableAudio}>
+    <div
+      className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-3 flex flex-col relative"
+      style={{ zoom: layout.zoom / 100 } as React.CSSProperties}
+      onClick={enableAudio}
+    >
       <audio ref={audioRef} />
 
       {/* ===== QR CURTAIN OVERLAY ===== */}
       {curtainActive && <QRCurtain staffUrl={staffUrl} />}
 
       {/* ===== DASHBOARD CONTENT (always rendered) ===== */}
-      <div className="max-w-7xl mx-auto space-y-3 flex-1 w-full">
+      <div className="mx-auto space-y-3 flex-1 w-full" style={{ maxWidth: `${layout.maxWidth}px` }}>
         <div className="text-center space-y-1 relative">
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
@@ -653,40 +678,74 @@ const Dashboard = () => {
                 {reorderMode ? <Lock className="h-3 w-3" /> : <GripVertical className="h-3 w-3" />}
                 {reorderMode ? "Mbaro" : "Rendit"}
               </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 gap-1 text-xs" title="Dimensionet">
+                    <Settings2 className="h-3 w-3" /> Dimensionet
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 space-y-4" align="start">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">Dimensionet e dashboard</h4>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 gap-1 text-xs"
+                      onClick={() => setLayout(DEFAULT_LAYOUT)} title="Rikthe">
+                      <RotateCcw className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  {[
+                    { k: "zoom" as const, label: "Zoom global", min: 60, max: 160, step: 5, suffix: "%" },
+                    { k: "maxWidth" as const, label: "Gjerësia max", min: 900, max: 2400, step: 20, suffix: "px" },
+                    { k: "btnHeight" as const, label: "Lartësia e butonave", min: 28, max: 72, step: 2, suffix: "px" },
+                    { k: "btnFont" as const, label: "Teksti i butonave", min: 10, max: 22, step: 1, suffix: "px" },
+                    { k: "bannerPadY" as const, label: "Baner — hapësira", min: 4, max: 40, step: 2, suffix: "px" },
+                    { k: "bannerFont" as const, label: "Baner — teksti", min: 12, max: 32, step: 1, suffix: "px" },
+                  ].map(({ k, label, min, max, step, suffix }) => (
+                    <div key={k} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="font-mono font-semibold">{layout[k]}{suffix}</span>
+                      </div>
+                      <Slider min={min} max={max} step={step} value={[layout[k]]}
+                        onValueChange={([v]) => setL(k, v)} />
+                    </div>
+                  ))}
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
               {(() => {
                 const btnMap: Record<string, JSX.Element> = {
                   voice: (
                     <Button variant={notificationType === 'voice' ? 'default' : 'outline'} size="sm"
-                      onClick={() => handleNotificationTypeChange('voice')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
+                      onClick={() => handleNotificationTypeChange('voice')} style={btnStyle} className="gap-1.5 touch-manipulation">
                       <Volume2 className="h-4 w-4" /><span className="font-semibold">Zë</span>
                     </Button>
                   ),
                   sound: (
                     <Button variant={notificationType === 'sound' ? 'default' : 'outline'} size="sm"
-                      onClick={() => handleNotificationTypeChange('sound')} className="gap-1.5 h-10 px-3.5 touch-manipulation text-sm">
+                      onClick={() => handleNotificationTypeChange('sound')} style={btnStyle} className="gap-1.5 touch-manipulation">
                       <Bell className="h-4 w-4" /><span className="font-semibold">Tingull</span>
                     </Button>
                   ),
                   test: (
                     <Button variant="outline" size="sm"
                       onClick={() => { enableAudio(); playBellSound(); }}
-                      className="gap-1.5 h-10 px-3.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30 text-sm">
+                      style={btnStyle} className="gap-1.5 touch-manipulation bg-success/20 border-success/40 hover:bg-success/30">
                       <Volume2 className="h-4 w-4 text-success" /><span className="font-bold text-success">TEST</span>
                     </Button>
                   ),
                   qr: (
                     <Button variant="outline" size="sm"
                       onClick={() => setCurtainActive(true)}
-                      className="gap-1.5 h-10 px-3.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30 text-sm">
+                      style={btnStyle} className="gap-1.5 touch-manipulation bg-primary/20 border-primary/40 hover:bg-primary/30">
                       <QrCode className="h-4 w-4 text-primary" /><span className="font-bold text-primary">QR</span>
                     </Button>
                   ),
                   arka: (
                     <Button variant="outline" size="sm"
                       onClick={() => setActiveTab('cashier')}
-                      className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
+                      style={btnStyle}
+                      className={`gap-1.5 touch-manipulation font-bold ${activeTab === 'cashier' ? 'bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90' : 'text-secondary border-secondary/40 hover:bg-secondary/20'}`}>
                       <Receipt className={`h-4 w-4 ${activeTab === 'cashier' ? 'text-secondary-foreground' : 'text-secondary'}`} /><span>Arka</span>
                     </Button>
                   ),
@@ -701,7 +760,7 @@ const Dashboard = () => {
                         if (error) toast.error('Gabim në dërgim');
                         else toast.success('🔔 Thirrja u dërgua te kamarieri!');
                       }}
-                      className="gap-1.5 h-10 px-3.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none text-sm">
+                      style={btnStyle} className="gap-1.5 touch-manipulation bg-accent border-accent/40 hover:bg-accent/80 animate-none">
                       <UtensilsCrossed className="h-4 w-4 text-accent-foreground" /><span className="font-bold text-accent-foreground">Porosia Gati 🔔</span>
                     </Button>
                   ),
@@ -711,7 +770,8 @@ const Dashboard = () => {
                         setMuteNotifications((m) => !m);
                         toast.info(muteNotifications ? "🔊 Njoftimet u aktivizuan" : "🔇 Njoftimet u çaktivizuan");
                       }}
-                      className={`gap-1.5 h-10 px-3.5 touch-manipulation text-sm ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
+                      style={btnStyle}
+                      className={`gap-1.5 touch-manipulation ${muteNotifications ? 'bg-destructive/20 border-destructive/40 hover:bg-destructive/30' : ''}`}>
                       {muteNotifications ? <VolumeX className="h-4 w-4 text-destructive" /> : <Volume2 className="h-4 w-4" />}
                       <span className="font-bold">{muteNotifications ? 'MUTE' : 'Mute'}</span>
                     </Button>
@@ -831,7 +891,8 @@ const Dashboard = () => {
                     reqCount > 0 ? "requests" : barPending > 0 ? "bar" : kitchenPending > 0 ? "kitchen" : "songs"
                   )
                 }
-                className="w-full mb-3 rounded-lg py-3 px-4 bg-gradient-to-r from-[hsl(38,62%,68%)] via-[hsl(38,80%,52%)] to-[hsl(38,62%,68%)] text-[hsl(25,40%,12%)] font-black text-lg animate-pulse shadow-[0_0_25px_rgba(244,196,48,0.6)] ring-2 ring-[hsl(38,62%,68%)] flex items-center justify-center gap-3 hover:brightness-110 transition-all"
+                style={{ paddingTop: `${layout.bannerPadY}px`, paddingBottom: `${layout.bannerPadY}px`, fontSize: `${layout.bannerFont}px` }}
+                className="w-full mb-3 rounded-lg px-4 bg-gradient-to-r from-[hsl(38,62%,68%)] via-[hsl(38,80%,52%)] to-[hsl(38,62%,68%)] text-[hsl(25,40%,12%)] font-black animate-pulse shadow-[0_0_25px_rgba(244,196,48,0.6)] ring-2 ring-[hsl(38,62%,68%)] flex items-center justify-center gap-3 hover:brightness-110 transition-all"
               >
                 <Bell className="h-6 w-6 fill-current" />
                 <span>🔔 POROSI E RE — {parts.join(" • ")}</span>
