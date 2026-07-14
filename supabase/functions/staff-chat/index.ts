@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
+import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -304,8 +305,46 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  maybeCleanup();
+  const rl = checkRateLimit({
+    key: clientKey(req, "staff-chat"),
+    max: 20,
+    windowMs: 5 * 60_000,
+    blockMs: 10 * 60_000,
+  });
+  if (!rl.ok) {
+    return new Response(
+      JSON.stringify({ error: "Shumë tentativa. Provo më vonë.", retryAfterSec: rl.retryAfterSec }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   try {
-    const { messages, language } = await req.json();
+    const { messages: rawMessages, language } = await req.json();
+
+    // Validate messages: only role=user/assistant allowed from client,
+    // cap count and content length to prevent prompt injection / abuse.
+    if (!Array.isArray(rawMessages) || rawMessages.length === 0 || rawMessages.length > 30) {
+      return new Response(
+        JSON.stringify({ error: "Invalid messages" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const messages: Array<{ role: string; content: string }> = [];
+    for (const m of rawMessages) {
+      if (!m || typeof m !== "object") continue;
+      const role = m.role === "assistant" ? "assistant" : "user"; // force to safe roles
+      const content = typeof m.content === "string" ? m.content.slice(0, 4000) : "";
+      if (!content) continue;
+      messages.push({ role, content });
+    }
+    if (messages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Empty messages" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {

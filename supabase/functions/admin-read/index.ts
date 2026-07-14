@@ -95,14 +95,22 @@ serve(async (req) => {
         return json({ data: results });
       }
       case "backup.snapshot": {
-        const READ_TABLES = [
-          "categories", "menu_items", "tables", "staff_members",
-          "raw_materials", "recipes", "inv_products", "app_settings", "ai_knowledge",
+        // Per-table safe column selection — never dump secrets like PINs or hashes.
+        const READ_TABLES: Array<{ table: string; columns: string }> = [
+          { table: "categories", columns: "*" },
+          { table: "menu_items", columns: "*" },
+          { table: "tables", columns: "*" },
+          { table: "staff_members", columns: "id, name, role, location_id, is_active, created_at, updated_at" },
+          { table: "raw_materials", columns: "*" },
+          { table: "recipes", columns: "*" },
+          { table: "inv_products", columns: "*" },
+          // app_settings holds admin_passcode hash — exclude entirely.
+          { table: "ai_knowledge", columns: "*" },
         ];
         const snapshot: Record<string, unknown> = {};
-        for (const t of READ_TABLES) {
-          const { data, error } = await supabase.from(t as any).select("*");
-          snapshot[t] = error ? { error: error.message } : data;
+        for (const { table, columns } of READ_TABLES) {
+          const { data, error } = await supabase.from(table as any).select(columns);
+          snapshot[table] = error ? { error: error.message } : data;
         }
         return json({ data: snapshot });
       }

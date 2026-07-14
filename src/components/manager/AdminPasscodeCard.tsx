@@ -57,7 +57,7 @@ export const AdminPasscodeCard = () => {
         ) : isSet ? (
           <Badge className="bg-green-500/20 text-green-500 border-green-500/40">I caktuar</Badge>
         ) : (
-          <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/40">Duke përdorur default (2025)</Badge>
+          <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/40">Nuk është caktuar</Badge>
         )}
       </div>
       <div className="space-y-3">

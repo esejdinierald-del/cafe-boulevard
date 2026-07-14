@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sha256 } from "../_shared/hash.ts";
+import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,9 +30,27 @@ Deno.serve(async (req) => {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
+      maybeCleanup();
+      const rl = checkRateLimit({
+        key: clientKey(req, "manage-shift:admin_bypass"),
+        max: 5,
+        windowMs: 5 * 60_000,
+        blockMs: 15 * 60_000,
+      });
+      if (!rl.ok) {
+        return new Response(
+          JSON.stringify({ error: "Shumë tentativa. Provo më vonë.", retryAfterSec: rl.retryAfterSec }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(rl.retryAfterSec) } }
+        );
+      }
       const { data: setting } = await supabase
         .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
-      const expectedHash = setting?.value ?? (await sha256("2025"));
+      const expectedHash = setting?.value;
+      if (!expectedHash) {
+        return new Response(JSON.stringify({ error: "Admin passcode nuk është konfiguruar" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
       const providedHash = await sha256(String(adminPassword));
       if (providedHash !== expectedHash) {
         return new Response(JSON.stringify({ error: "Fjalëkalim i pasaktë" }), {
