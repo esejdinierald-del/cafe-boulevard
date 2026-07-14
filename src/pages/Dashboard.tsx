@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import YouTube from "react-youtube";
@@ -43,6 +43,34 @@ const Dashboard = () => {
 
   // Music tab state
   const [activeTab, setActiveTab] = useState<"requests" | "songs" | "bar" | "kitchen" | "cashier">("requests");
+  // Drag & drop button ordering for top control bar
+  const DEFAULT_BTN_ORDER = ["voice", "sound", "test", "qr", "arka", "ready", "mute"];
+  const [btnOrder, setBtnOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("dashboard-btn-order");
+      if (saved) {
+        const parsed = JSON.parse(saved) as string[];
+        const merged = [...parsed.filter((x) => DEFAULT_BTN_ORDER.includes(x))];
+        DEFAULT_BTN_ORDER.forEach((k) => { if (!merged.includes(k)) merged.push(k); });
+        return merged;
+      }
+    } catch {}
+    return DEFAULT_BTN_ORDER;
+  });
+  const [reorderMode, setReorderMode] = useState(false);
+  const dragKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    localStorage.setItem("dashboard-btn-order", JSON.stringify(btnOrder));
+  }, [btnOrder]);
+  const moveBtn = (from: string, to: string) => {
+    if (from === to) return;
+    setBtnOrder((prev) => {
+      const next = prev.filter((k) => k !== from);
+      const idx = next.indexOf(to);
+      next.splice(idx < 0 ? next.length : idx, 0, from);
+      return next;
+    });
+  };
   const [barPending, setBarPending] = useState(0);
   const [kitchenPending, setKitchenPending] = useState(0);
   const [songRequests, setSongRequests] = useState<SongRequest[]>([]);
