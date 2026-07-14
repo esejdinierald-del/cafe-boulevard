@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sha256 } from "../_shared/hash.ts";
+import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
+import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,12 +13,18 @@ const json = (b: unknown, s = 200) =>
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  maybeCleanup();
+  const rl = checkRateLimit({ key: clientKey(req, "purge-transactions"), max: 5, windowMs: 10 * 60_000, blockMs: 30 * 60_000 });
+  if (!rl.ok) return json({ error: "Shumë tentativa. Provo më vonë.", retryAfterSec: rl.retryAfterSec }, 429);
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
-    const { adminPassword, startISO, endISO } = await req.json().catch(() => ({}));
+    const parsed = await req.json().catch(() => ({}));
+    const auth = await requireShiftToken(req, parsed);
+    if (!auth.ok) return auth.response;
+    const { adminPassword, startISO, endISO } = parsed;
     if (!adminPassword) return json({ error: "Mungon fjalëkalimi" }, 403);
     if (!startISO || !endISO) return json({ error: "Mungon intervali" }, 400);
 
