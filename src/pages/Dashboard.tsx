@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import YouTube from "react-youtube";
