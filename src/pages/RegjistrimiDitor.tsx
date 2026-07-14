@@ -635,11 +635,11 @@ const RegjistrimiDitor = () => {
       ) : !selectedTurn ? (
         <div className="p-6 text-center text-slate-400">S'ka turne për këtë datë.</div>
       ) : (
-        <div className="p-2 max-w-5xl mx-auto space-y-2">
+        <div className="p-2 sm:p-4 max-w-5xl mx-auto space-y-3 sm:space-y-6">
           <Tabs value={selectedTurnId ?? ""} onValueChange={(v) => setSelectedTurnId(v)}>
-            <TabsList className="bg-slate-900 border border-slate-800 flex-wrap h-auto p-1">
+            <TabsList className="bg-slate-900 border border-slate-800 flex-wrap h-auto">
               {turns.map((t) => (
-                <TabsTrigger key={t.id} value={t.id} className="gap-1 text-xs px-2 py-1 h-auto data-[state=active]:bg-slate-700">
+                <TabsTrigger key={t.id} value={t.id} className="gap-1">
                   #{t.sequence_number} {t.staff_name}
                   {t.is_locked && <Lock size={10} className="opacity-60"/>}
                 </TabsTrigger>
@@ -656,116 +656,129 @@ const RegjistrimiDitor = () => {
               const showOtherCols = isConfirmed || !editable || adminUnlocked;
               const canAdminEditStok = adminUnlocked;
               return (
-              <TabsContent key={t.id} value={t.id} className="space-y-2 mt-2">
+              <TabsContent key={t.id} value={t.id} className="space-y-6 mt-4">
                 {!editable && (
                   <div className="text-xs text-amber-400 flex items-center gap-2">
                     <Lock size={12}/> Vetëm-lexim{t.is_locked && t.locked_at ? ` · kyçur ${new Date(t.locked_at).toLocaleString("sq-AL", { timeZone: "Europe/Rome" })}` : ""}
                   </div>
                 )}
                 {/* Products */}
-                <Card className="bg-slate-900 border-slate-800 p-2">
-                  <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                    <h2 className="font-semibold flex items-center gap-1.5 text-sm"><Package2 size={14}/> Produktet</h2>
-                    <div className="flex items-center gap-1 flex-wrap justify-end">
+                <Card className="bg-slate-900 border-slate-800 p-2 sm:p-4">
+                  <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+                    <h2 className="font-semibold flex items-center gap-2 text-sm sm:text-base"><Package2 size={14}/> Produktet</h2>
+                    <div className="flex items-center gap-2 flex-wrap">
                       {editable && (
                         <>
-                          <Button size="sm" onClick={copyToNextTurn} className="bg-slate-800 hover:bg-slate-700 h-7 text-[11px] px-2">
-                            Kopjo →
+                          <Button size="sm" onClick={copyToNextTurn} className="bg-slate-800 hover:bg-slate-700 h-8">
+                            Kopjo në turnin pasardhës →
                           </Button>
-                          <Button size="sm" onClick={rebaseFromGjendje} className="bg-amber-700 hover:bg-amber-600 h-7 text-[11px] px-2">
-                            Rivendos
+                          <Button size="sm" onClick={rebaseFromGjendje} className="bg-amber-700 hover:bg-amber-600 h-8">
+                            Rivendos nga Gjendja
                           </Button>
                         </>
                       )}
                       <Button
                         size="sm"
-                        className="bg-slate-800 hover:bg-slate-700 h-7 text-[11px] px-2"
+                        className="bg-slate-800 hover:bg-slate-700 h-8"
                         onClick={requestAdminAccess}
                       >
-                        <ShieldCheck size={12} className="mr-1"/> Menaxho
+                        <ShieldCheck size={14} className="mr-1"/> Menaxho (Admin)
                       </Button>
                       <Button
                         size="sm"
                         onClick={toggleAdminMode}
-                        className={adminUnlocked ? "bg-emerald-700 hover:bg-emerald-600 h-7 text-[11px] px-2" : "bg-slate-800 hover:bg-slate-700 h-7 text-[11px] px-2"}
+                        className={adminUnlocked ? "bg-emerald-700 hover:bg-emerald-600 h-8" : "bg-slate-800 hover:bg-slate-700 h-8"}
                         title="Aktivizo modalitetin admin për të edituar Stok Fillim manualisht"
                       >
-                        <ShieldCheck size={12} className="mr-1"/> {adminUnlocked ? "ON" : "Admin"}
+                        <ShieldCheck size={14} className="mr-1"/> {adminUnlocked ? "Admin ON" : "Admin"}
                       </Button>
                     </div>
                   </div>
 
                   {editable && (
                     isConfirmed ? (
-                      <div className="mb-2 flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-2 py-1.5">
+                      <div className="mb-3 flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-3 py-2">
                         <ShieldCheck size={14}/>
-                        Gjendja u konfirmua. Stok Fillim, Shiriti dhe Dif janë të dukshme.
+                        Gjendja u konfirmua në {new Date(t.turn_data.gjendjeConfirmedAt!).toLocaleString("sq-AL", { timeZone: "Europe/Rome" })}. Stok Fillim, Shiriti dhe Dif janë të dukshme. Rregullo diferencat përmes POS-it nëse duhet.
                       </div>
                     ) : (
-                      <div className="mb-2 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded px-2 py-1.5">
-                        Fut <b>Gjendjen</b> për çdo produkt, pastaj shtyp <b>Përfundova</b>.
+                      <div className="mb-3 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded px-3 py-2">
+                        Fut <b>Gjendjen reale</b> për çdo produkt. Kur të mbarosh, shtyp <b>Përfundova</b> për të parë Stok Fillim, Shiritin dhe Dif.
                       </div>
                     )
                   )}
 
-                  {products.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-4">Asnjë produkt. Shto nga "Menaxho".</p>
+                   {products.length === 0 ? (
+                    <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto nga "Menaxho".</p>
                   ) : (
-                    <div className="space-y-1">
-                      {products.map((p) => {
-                        const data = t.turn_data.products[p.name] || emptyProduct();
-                        const dif = Calc.calculateDif(data);
-                        const difStart = difStartMap[p.name] || null;
-                        return (
-                          <div key={p.id} className="rounded border border-slate-800 bg-slate-950/40 p-2">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-medium text-xs sm:text-sm truncate">{p.name}</span>
-                              <div className="w-20 sm:w-24 shrink-0">
-                                <RowField
-                                  value={data.gjendje}
-                                  readOnly={!canEditGjendje}
-                                  onChange={(v) => setCurrentTurn((prev) => ({
-                                    ...prev,
-                                    products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), gjendje: v } },
-                                  }))}
-                                />
-                              </div>
-                            </div>
-                            {showOtherCols && (
-                              <div className="mt-1.5 flex items-center gap-3 flex-wrap text-[10px] sm:text-xs">
-                                {canAdminEditStok ? (
-                                  <div className="flex items-center gap-1 text-slate-400">
-                                    Stok:
-                                    <div className="w-14">
-                                      <RowField
-                                        value={data.stokFillim}
-                                        onChange={(v) => adminSetStokFillim(t.id, p.name, v)}
-                                      />
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <span className="text-slate-400">Stok: <span className="text-slate-200">{data.stokFillim.toFixed(2)}</span></span>
+                    <div className="overflow-x-auto -mx-2 sm:-mx-4 px-2 sm:px-4">
+                      <table className="w-full text-xs sm:text-sm border-collapse min-w-[480px]">
+                        <thead>
+                          <tr className="text-[10px] sm:text-xs text-slate-400 border-b border-slate-800">
+                            <th className="text-left py-1.5 pr-1 font-medium">Produkti</th>
+                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Stok</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Shirit</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Dif</th>}
+                            <th className="text-right py-1.5 px-1 font-medium">Gjendje</th>
+                            <th className="text-right py-1.5 pl-1 font-medium">Fillon</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {products.map((p) => {
+                            const data = t.turn_data.products[p.name] || emptyProduct();
+                            const dif = Calc.calculateDif(data);
+                            const difStart = difStartMap[p.name] || null;
+                            return (
+                              <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-950/40">
+                                <td className="py-1 pr-1 font-medium text-xs sm:text-sm">{p.name}</td>
+                                {showOtherCols && (
+                                  <td className="py-1 px-0.5">
+                                    <RowField
+                                      value={data.stokFillim}
+                                      readOnly={!canAdminEditStok}
+                                      onChange={canAdminEditStok ? (v) => adminSetStokFillim(t.id, p.name, v) : undefined}
+                                    />
+                                  </td>
                                 )}
-                                <span className="text-slate-400">Shir: <span className="text-slate-200">{data.shiriti.toFixed(2)}</span></span>
-                                <span className={`font-bold ${difColor(dif)}`}>Dif: {dif > 0 ? "+" : ""}{dif.toFixed(2)}</span>
-                                {difStart && <span className="text-slate-500 ml-auto">Fill: {difStart}</span>}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                                {showOtherCols && (
+                                  <td className="py-1 px-0.5">
+                                    <RowField value={data.shiriti} readOnly />
+                                  </td>
+                                )}
+                                {showOtherCols && (
+                                  <td className={`py-1 px-1 text-right font-bold tabular-nums text-xs sm:text-sm ${difColor(dif)}`}>
+                                    {dif > 0 ? "+" : ""}{dif.toFixed(2)}
+                                  </td>
+                                )}
+                                <td className="py-1 px-0.5">
+                                  <RowField
+                                    value={data.gjendje}
+                                    readOnly={!canEditGjendje}
+                                    onChange={(v) => setCurrentTurn((prev) => ({
+                                      ...prev,
+                                      products: { ...prev.products, [p.name]: { ...(prev.products[p.name] || emptyProduct()), gjendje: v } },
+                                    }))}
+                                  />
+                                </td>
+                                <td className="py-1 pl-1 text-right text-[10px] sm:text-xs text-slate-400 tabular-nums">
+                                  {difStart || "—"}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   )}
 
                   {editable && !isConfirmed && (
-                    <div className="mt-2 flex justify-end">
+                    <div className="mt-4 flex justify-end">
                       <Button
                         onClick={confirmGjendje}
                         disabled={confirmingGjendje}
-                        size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold h-8"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
                       >
-                        {confirmingGjendje ? <Loader2 className="animate-spin mr-2" size={14}/> : <CheckCircle2 size={14} className="mr-2"/>}
+                        {confirmingGjendje ? <Loader2 className="animate-spin mr-2" size={16}/> : <CheckCircle2 size={16} className="mr-2"/>}
                         Përfundova
                       </Button>
                     </div>
@@ -773,56 +786,66 @@ const RegjistrimiDitor = () => {
                 </Card>
 
                 {/* Coffee */}
-                <Card className="bg-slate-900 border-slate-800 p-2">
-                  <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                    <h2 className="font-semibold flex items-center gap-1.5 text-sm"><Coffee size={14}/> Kafet</h2>
-                    {editable && <div className="flex items-center gap-1.5">
+                <Card className="bg-slate-900 border-slate-800 p-2 sm:p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-semibold flex items-center gap-2 text-sm sm:text-base"><Coffee size={14}/> Kafet</h2>
+                    {editable && <div className="flex items-center gap-2">
                       <Input
                         value={newCoffeeName}
                         onChange={(e) => setNewCoffeeName(e.target.value)}
                         placeholder="Lloji"
-                        className="bg-slate-950 border-slate-700 text-white h-8 w-28 text-xs"
+                        className="bg-slate-950 border-slate-700 text-white h-8 w-40"
                       />
-                      <Button size="sm" onClick={addCoffee} className="bg-emerald-600 hover:bg-emerald-500 h-8 px-2">
-                        <Plus size={14}/>
+                      <Button size="sm" onClick={addCoffee} className="bg-emerald-600 hover:bg-emerald-500 h-8">
+                        <Plus size={14} className="mr-1"/> Shto
                       </Button>
                     </div>}
                   </div>
                   {Object.keys(t.turn_data.coffee).length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-3">Asnjë lloj kafeje.</p>
+                    <p className="text-sm text-slate-500 text-center py-4">Asnjë lloj kafeje.</p>
                   ) : (
-                    <div className="space-y-1">
-                      {Object.entries(t.turn_data.coffee).map(([name, qty]) => (
-                        <div key={name} className="flex items-center justify-between gap-2 rounded border border-slate-800 bg-slate-950/40 p-1.5">
-                          <span className="text-xs sm:text-sm truncate">{name}</span>
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-20">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="text-xs text-slate-400 border-b border-slate-800">
+                          <th className="text-left py-2 pr-2 font-medium">Lloji</th>
+                          <th className="text-right py-2 pl-2 font-medium">Sasia</th>
+                          {editable && <th className="w-8" />}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(t.turn_data.coffee).map(([name, qty]) => (
+                          <tr key={name} className="border-b border-slate-800/60">
+                            <td className="py-1.5 pr-2 truncate">{name}</td>
+                            <td className="py-1.5 pl-2">
                               <RowField
                                 value={qty}
                                 readOnly={!editable}
                                 onChange={(v) => setCoffee(name, v)}
                               />
-                            </div>
+                            </td>
                             {editable && (
-                              <button type="button" onClick={() => removeCoffee(name)} className="text-slate-500 hover:text-rose-400 p-1">
-                                <Trash2 size={14}/>
-                              </button>
+                              <td className="py-1.5 pl-1">
+                                <button type="button" onClick={() => removeCoffee(name)} className="text-slate-500 hover:text-rose-400">
+                                  <Trash2 size={14}/>
+                                </button>
+                              </td>
                             )}
-                          </div>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between text-xs font-bold pt-1 border-t border-slate-700 px-1">
-                        <span>TOTALI</span>
-                        <span className="tabular-nums">{totalCoffee}</span>
-                      </div>
-                    </div>
+                          </tr>
+                        ))}
+                        <tr className="border-t-2 border-slate-700 bg-slate-950/40">
+                          <td className="py-2 pr-2 font-bold">TOTALI</td>
+                          <td className="py-2 pl-2 text-right font-bold tabular-nums">{totalCoffee}</td>
+                          {editable && <td />}
+                        </tr>
+                      </tbody>
+                    </table>
                   )}
                 </Card>
 
                 {/* Mulliri */}
-                <Card className="bg-slate-900 border-slate-800 p-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="font-semibold text-sm">Mulliri</h2>
+                <Card className="bg-slate-900 border-slate-800 p-2 sm:p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-semibold text-sm sm:text-base">Mulliri</h2>
                     {editable && (
                       <>
                         <input
@@ -837,15 +860,15 @@ const RegjistrimiDitor = () => {
                           size="sm"
                           onClick={() => fileInputRef.current?.click()}
                           disabled={scanning}
-                          className="bg-amber-600 hover:bg-amber-500 h-7 text-[11px] px-2"
+                          className="bg-amber-600 hover:bg-amber-500 h-8"
                         >
-                          {scanning ? <Loader2 className="animate-spin mr-1" size={12}/> : <Camera size={12} className="mr-1"/>}
-                          Skano
+                          {scanning ? <Loader2 className="animate-spin mr-1" size={14}/> : <Camera size={14} className="mr-1"/>}
+                          Skano Përfund
                         </Button>
                       </>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     <Field
                       label="Fillim"
                       value={t.turn_data.mulliriFillim}
@@ -859,51 +882,54 @@ const RegjistrimiDitor = () => {
                       onChange={(v) => setCurrentTurn((prev) => ({ ...prev, mulliriPerfund: v }))}
                     />
                     <div>
-                      <div className="text-[10px] sm:text-xs text-slate-400 mb-1">Dif</div>
-                      <div className={`h-8 sm:h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 font-bold tabular-nums text-xs sm:text-sm ${difColor(mulliriDif)}`}>
+                      <div className="text-xs text-slate-400 mb-1">Dif</div>
+                      <div className={`h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 font-bold tabular-nums ${difColor(mulliriDif)}`}>
                         {mulliriDif > 0 ? "+" : ""}{mulliriDif.toFixed(2)}
                       </div>
                     </div>
                   </div>
-                  <p className="text-[10px] sm:text-xs text-slate-500 mt-1">Dif = TotalKafe − (Përfund − Fillim)</p>
+                  <p className="text-xs text-slate-500 mt-2">Dif = TotalKafe − (Përfund − Fillim)</p>
 
                   {/* Kafe Kryesor — auto nga POS */}
-                  <div className="mt-3 pt-2 border-t border-slate-800">
-                    <h3 className="font-semibold text-xs mb-1.5 flex items-center gap-1.5">
-                      <Coffee size={12}/> Kafe Kryesor (auto POS)
+                  <div className="mt-4 pt-4 border-t border-slate-800">
+                    <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <Coffee size={14}/> Kafe Kryesor (auto nga POS)
                     </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div>
-                        <div className="text-[10px] text-slate-400 mb-0.5">Shitje</div>
-                        <div className="h-8 flex items-center px-2 rounded border border-slate-800 bg-slate-950 tabular-nums font-semibold">
+                        <div className="text-xs text-slate-400 mb-1">Shitje kafe</div>
+                        <div className="h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 tabular-nums font-semibold">
                           {coffeeSalesAuto}
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-slate-400 mb-0.5">+ Fillim</div>
-                        <div className="h-8 flex items-center px-2 rounded border border-slate-800 bg-slate-950 tabular-nums">
+                        <div className="text-xs text-slate-400 mb-1">+ Fillim</div>
+                        <div className="h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 tabular-nums">
                           {t.turn_data.mulliriFillim || 0}
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-slate-400 mb-0.5">− Përfund</div>
-                        <div className="h-8 flex items-center px-2 rounded border border-slate-800 bg-slate-950 tabular-nums">
+                        <div className="text-xs text-slate-400 mb-1">− Përfund</div>
+                        <div className="h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 tabular-nums">
                           {t.turn_data.mulliriPerfund || 0}
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-slate-400 mb-0.5">Dif Kafe</div>
-                        <div className={`h-8 flex items-center px-2 rounded border border-slate-800 bg-slate-950 font-bold tabular-nums ${difColor(kafeKryesorDif)}`}>
+                        <div className="text-xs text-slate-400 mb-1">Dif Kafe</div>
+                        <div className={`h-9 flex items-center px-3 rounded border border-slate-800 bg-slate-950 font-bold tabular-nums ${difColor(kafeKryesorDif)}`}>
                           {kafeKryesorDif > 0 ? "+" : ""}{kafeKryesorDif.toFixed(0)}
                         </div>
                       </div>
                     </div>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Formula: Shitje kafe (POS: makiato, lece, etj.) + Mulliri Fillim − Mulliri Përfund
+                    </p>
                   </div>
                 </Card>
 
                 {/* Xhiro + Shpenzime */}
-                <Card className="bg-slate-900 border-slate-800 p-2">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <Card className="bg-slate-900 border-slate-800 p-2 sm:p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <div className="text-xs text-slate-400 mb-1">Xhiro (Lekë)</div>
                       <Input
@@ -912,25 +938,25 @@ const RegjistrimiDitor = () => {
                         value={t.turn_data.xhiro}
                         readOnly={!editable}
                         onChange={(e) => setCurrentTurn((prev) => ({ ...prev, xhiro: Number(e.target.value) || 0 }))}
-                        className="bg-slate-950 border-slate-700 text-white h-8 text-sm"
+                        className="bg-slate-950 border-slate-700 text-white h-9 text-sm"
                       />
                     </div>
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <div className="text-xs text-slate-400">Shpenzime · {totalShpenzime.toFixed(0)}</div>
-                        {editable && <Button size="sm" onClick={addShpenzim} className="bg-slate-800 hover:bg-slate-700 h-7 px-2">
-                          <Plus size={12}/>
+                        <div className="text-xs text-slate-400">Shpenzime · Total {totalShpenzime.toFixed(0)}</div>
+                        {editable && <Button size="sm" onClick={addShpenzim} className="bg-slate-800 hover:bg-slate-700 h-7">
+                          <Plus size={12} className="mr-1"/> Shto
                         </Button>}
                       </div>
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         {t.turn_data.shpenzime.map((s, i) => (
-                          <div key={i} className="flex items-center gap-1.5">
+                          <div key={i} className="flex items-center gap-2">
                             <Input
                               value={s.emertimi}
                               readOnly={!editable}
                               onChange={(e) => updateShpenzim(i, "emertimi", e.target.value)}
                               placeholder="Emërtimi"
-                              className="bg-slate-950 border-slate-700 text-white h-8 flex-1 text-xs px-2"
+                              className="bg-slate-950 border-slate-700 text-white h-8 flex-1 text-sm px-2"
                             />
                             <Input
                               type="number"
@@ -938,9 +964,9 @@ const RegjistrimiDitor = () => {
                               value={s.vlera}
                               readOnly={!editable}
                               onChange={(e) => updateShpenzim(i, "vlera", Number(e.target.value) || 0)}
-                              className="bg-slate-950 border-slate-700 text-white h-8 w-20 sm:w-24 text-right text-xs px-2"
+                              className="bg-slate-950 border-slate-700 text-white h-8 w-20 sm:w-28 text-right text-sm px-2"
                             />
-                            {editable && <button type="button" onClick={() => removeShpenzim(i)} className="text-slate-500 hover:text-rose-400 p-1">
+                            {editable && <button type="button" onClick={() => removeShpenzim(i)} className="text-slate-500 hover:text-rose-400">
                               <Trash2 size={14}/>
                             </button>}
                           </div>
@@ -961,26 +987,24 @@ const RegjistrimiDitor = () => {
             onOpenChange={(v) => { if (!v || adminUnlocked) setProductMgrOpen(v); }}
           />
 
-          <div className="flex flex-wrap justify-end gap-2 pt-1">
+          <div className="flex flex-wrap justify-end gap-2">
             {isMine && (
               <Button
                 onClick={closeMyTurn}
                 disabled={closingTurn}
-                size="sm"
                 variant="secondary"
-                className="bg-sky-700 hover:bg-sky-600 text-white h-8"
+                className="bg-sky-700 hover:bg-sky-600 text-white"
               >
-                {closingTurn ? <Loader2 className="animate-spin mr-2" size={14}/> : <Clock size={14} className="mr-2"/>}
+                {closingTurn ? <Loader2 className="animate-spin mr-2" size={16}/> : <Clock size={16} className="mr-2"/>}
                 Mbyll turnin tim
               </Button>
             )}
             <Button
               onClick={closeDay}
               disabled={closing}
-              size="sm"
-              className="bg-amber-600 hover:bg-amber-500 text-white h-8"
+              className="bg-amber-600 hover:bg-amber-500 text-white"
             >
-              {closing ? <Loader2 className="animate-spin mr-2" size={14}/> : <Lock size={14} className="mr-2"/>}
+              {closing ? <Loader2 className="animate-spin mr-2" size={16}/> : <Lock size={16} className="mr-2"/>}
               Mbyll ditën
             </Button>
           </div>
