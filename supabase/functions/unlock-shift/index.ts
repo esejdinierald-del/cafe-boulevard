@@ -53,7 +53,13 @@ Deno.serve(async (req) => {
     // Mandatory admin PIN — validated server-side against app_settings.
     const { data: setting } = await supabase
       .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
-    const expectedHash = setting?.value ?? (await sha256("2025"));
+    const expectedHash = setting?.value;
+    if (!expectedHash) {
+      return new Response(
+        JSON.stringify({ error: "Admin passcode nuk është konfiguruar" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     const providedHash = await sha256(String(adminPassword));
     if (providedHash !== expectedHash) {
       return new Response(

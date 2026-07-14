@@ -1,5 +1,7 @@
 // Reads the "Totale:" number from a Fiorenzato grinder display photo.
 // Uses Lovable AI Gateway (Gemini 2.5 Flash) vision.
+import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -9,10 +11,22 @@ const json = (b: unknown, s = 200) =>
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  maybeCleanup();
+  const rl = checkRateLimit({
+    key: clientKey(req, "scan-mulliri"),
+    max: 10,
+    windowMs: 5 * 60_000,
+    blockMs: 10 * 60_000,
+  });
+  if (!rl.ok) return json({ error: "Shumë tentativa. Provo më vonë.", retryAfterSec: rl.retryAfterSec }, 429);
   try {
     const { imageBase64, mimeType } = await req.json().catch(() => ({}));
     if (!imageBase64 || typeof imageBase64 !== "string") {
       return json({ error: "imageBase64 mungon" }, 400);
+    }
+    // Cap payload at ~8 MB base64 (~6 MB binary) to prevent abuse.
+    if (imageBase64.length > 8 * 1024 * 1024) {
+      return json({ error: "Imazhi është shumë i madh" }, 413);
     }
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) return json({ error: "LOVABLE_API_KEY mungon" }, 500);

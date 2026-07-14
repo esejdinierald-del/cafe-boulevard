@@ -181,7 +181,7 @@ export const CashierPanel = () => {
   const requireAdmin = (): string | null => {
     if (adminPw) return adminPw;
     const pw = window.prompt(
-      "Fjalëkalimi i adminit për anulim\n(Passcode standard: 2025 — nëse është ndryshuar, përdor atë të ri)",
+      "Fjalëkalimi i adminit për anulim",
     );
     if (!pw) return null;
     setAdminPw(pw);
