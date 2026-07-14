@@ -720,7 +720,7 @@ const Dashboard = () => {
           <TabsList className="grid w-full grid-cols-5 mb-3">
             <TabsTrigger
               value="requests"
-              className={activeTab !== "requests" && (pendingRequests.length + pendingOrders.length) > 0 ? "animate-pulse text-primary font-semibold" : ""}
+              className={activeTab !== "requests" && (pendingRequests.length + pendingOrders.length) > 0 ? "animate-pulse !bg-primary !text-primary-foreground font-bold ring-2 ring-primary shadow-lg shadow-primary/50" : ""}
             >
               📋 Thirrje & Porosi
               {activeTab !== "requests" && (pendingRequests.length + pendingOrders.length) > 0 && (
@@ -732,13 +732,13 @@ const Dashboard = () => {
             </TabsTrigger>
             <TabsTrigger
               value="bar"
-              className={activeTab !== "bar" && barPending > 0 ? "animate-pulse text-primary font-semibold" : ""}
+              className={activeTab !== "bar" && barPending > 0 ? "animate-pulse !bg-primary !text-primary-foreground font-bold ring-2 ring-primary shadow-lg shadow-primary/50" : ""}
             >
               🍹 Bar KDS{activeTab !== "bar" && barPending > 0 ? ` (${barPending})` : ""}
             </TabsTrigger>
             <TabsTrigger
               value="kitchen"
-              className={activeTab !== "kitchen" && kitchenPending > 0 ? "animate-pulse text-primary font-semibold" : ""}
+              className={activeTab !== "kitchen" && kitchenPending > 0 ? "animate-pulse !bg-primary !text-primary-foreground font-bold ring-2 ring-primary shadow-lg shadow-primary/50" : ""}
             >
               🍽️ Kuzhina KDS{activeTab !== "kitchen" && kitchenPending > 0 ? ` (${kitchenPending})` : ""}
             </TabsTrigger>
