@@ -1,16 +1,14 @@
-// Admin-passcode-guarded print station queue. Every request re-verifies
-// the admin passcode (hashed against app_settings.admin_passcode).
-// This replaces direct anon reads/writes on public.print_jobs from
-// PrintStation.tsx, which now has no legitimate anon SELECT policy.
+// Public print-station queue consumer. No admin passcode required.
+// The PC running /print-station must be physically controlled and launched
+// in Chrome kiosk-printing mode by the venue staff.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sha256 } from "../_shared/hash.ts";
 import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-admin-passcode",
+    "authorization, x-client-info, apikey, content-type",
 };
 
 const json = (body: unknown, status = 200) =>
@@ -32,21 +30,13 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const passcode = req.headers.get("x-admin-passcode") || String(body.adminPassword || "");
-    if (!passcode) return json({ error: "Mungon fjalëkalimi" }, 401);
+    const action = String(body.action || "");
+    const station = String(body.station || "arka");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
-    const { data: setting } = await supabase
-      .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
-    const expectedHash = setting?.value;
-    if (!expectedHash) return json({ error: "Admin passcode nuk është konfiguruar" }, 500);
-    if ((await sha256(passcode)) !== expectedHash) return json({ error: "Fjalëkalim i pasaktë" }, 403);
-
-    const action = String(body.action || "");
-    const station = String(body.station || "arka");
 
     switch (action) {
       case "list_recent": {
