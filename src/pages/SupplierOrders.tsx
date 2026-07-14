@@ -87,7 +87,7 @@ export default function SupplierOrders() {
   };
 
   const setStatus = async (id: string, status: SupplierOrder["status"]) => {
-    const patch: Record<string, unknown> = { status };
+    const patch: { status: SupplierOrder["status"]; sent_at?: string; received_at?: string } = { status };
     if (status === "sent") patch.sent_at = new Date().toISOString();
     if (status === "received") patch.received_at = new Date().toISOString();
     const { error } = await supabase.from("supplier_orders").update(patch).eq("id", id);
