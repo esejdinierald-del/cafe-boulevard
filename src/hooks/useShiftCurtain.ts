@@ -44,6 +44,7 @@ export function useShiftCurtain() {
         return null;
       }
       setShiftToken(data.token);
+      try { localStorage.setItem("staff_shift_token", data.token); } catch {}
       setStaffUrl(`${window.location.origin}/staff?token=${data.token}`);
       if (data.unlocked) setCurtainActive(false);
       return data.token as string;
