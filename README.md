@@ -2,7 +2,7 @@
 
 Aplikacion i plotë menaxhimi për kafenenë Boulevard (Elbasan): menu për klientët me QR, POS për kamarierët, KDS për kuzhinën, Arka, Dashboard menaxheri, Inventar & Regjistrim Ditor, turne stafi me QR/PIN, printim në cloud, AI assistant, feedback dhe push notifications.
 
-**Live**: https://cafe-boulevard.lovable.app
+**Live**: https://boulevard-caffe.lovable.app
 
 ## Stack
 

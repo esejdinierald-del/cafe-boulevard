@@ -10,7 +10,7 @@ export interface PrintOptions {
   qrValue?: string;
 }
 
-const DEFAULT_QR_VALUE = "https://cafe-boulevard.lovable.app";
+const DEFAULT_QR_VALUE = "https://boulevard-caffe.lovable.app";
 
 const brandedHeaderHtml = () => `
 <div class="brand-header">
