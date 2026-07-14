@@ -655,6 +655,7 @@ const RegjistrimiDitor = () => {
               // Admin (unlocked) always sees full columns to fix Dif on any turn.
               const showOtherCols = isConfirmed || !editable || adminUnlocked;
               const canAdminEditStok = adminUnlocked;
+              const tableMinWidth = showOtherCols ? "min-w-[440px]" : "min-w-[240px]";
               return (
               <TabsContent key={t.id} value={t.id} className="space-y-6 mt-4">
                 {!editable && (
@@ -712,15 +713,15 @@ const RegjistrimiDitor = () => {
                     <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto nga "Menaxho".</p>
                   ) : (
                     <div className="overflow-x-auto -mx-2 sm:-mx-4 px-2 sm:px-4">
-                      <table className="w-full text-xs sm:text-sm border-collapse min-w-[480px]">
+                      <table className={`text-xs sm:text-sm border-collapse table-fixed ${tableMinWidth}`}>
                         <thead>
                           <tr className="text-[10px] sm:text-xs text-slate-400 border-b border-slate-800">
-                            <th className="text-left py-1.5 pr-1 font-medium">Produkti</th>
-                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Stok</th>}
-                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Shirit</th>}
-                            {showOtherCols && <th className="text-right py-1.5 px-1 font-medium">Dif</th>}
-                            <th className="text-right py-1.5 px-1 font-medium">Gjendje</th>
-                            <th className="text-right py-1.5 pl-1 font-medium">Fillon</th>
+                            <th className="text-left py-1.5 pr-0.5 font-medium w-[100px]">Produkti</th>
+                            {showOtherCols && <th className="text-right py-1.5 px-0.5 font-medium w-[70px]">Stok</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-0.5 font-medium w-[70px]">Shirit</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-0.5 font-medium w-[50px]">Dif</th>}
+                            <th className="text-right py-1.5 px-0.5 font-medium w-[70px]">Gjendje</th>
+                            <th className="text-right py-1.5 pl-0.5 font-medium w-[50px]">Fillon</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -730,7 +731,7 @@ const RegjistrimiDitor = () => {
                             const difStart = difStartMap[p.name] || null;
                             return (
                               <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-950/40">
-                                <td className="py-1 pr-1 font-medium text-xs sm:text-sm">{p.name}</td>
+                                <td className="py-1 pr-0.5 font-medium text-xs sm:text-sm">{p.name}</td>
                                 {showOtherCols && (
                                   <td className="py-1 px-0.5 w-[70px]">
                                     <RowField
@@ -746,7 +747,7 @@ const RegjistrimiDitor = () => {
                                   </td>
                                 )}
                                 {showOtherCols && (
-                                  <td className={`py-1 px-1 text-right font-bold tabular-nums text-xs sm:text-sm ${difColor(dif)}`}>
+                                  <td className={`py-1 px-0.5 text-right font-bold tabular-nums text-xs sm:text-sm ${difColor(dif)}`}>
                                     {dif > 0 ? "+" : ""}{dif.toFixed(2)}
                                   </td>
                                 )}
@@ -760,7 +761,7 @@ const RegjistrimiDitor = () => {
                                     }))}
                                   />
                                 </td>
-                                <td className="py-1 pl-1 text-right text-[10px] sm:text-xs text-slate-400 tabular-nums">
+                                <td className="py-1 pl-0.5 text-right text-[10px] sm:text-xs text-slate-400 tabular-nums">
                                   {difStart || "—"}
                                 </td>
                               </tr>
@@ -807,16 +808,16 @@ const RegjistrimiDitor = () => {
                     <table className="w-full text-sm border-collapse">
                       <thead>
                         <tr className="text-xs text-slate-400 border-b border-slate-800">
-                          <th className="text-left py-2 pr-2 font-medium">Lloji</th>
-                          <th className="text-right py-2 pl-2 font-medium">Sasia</th>
+                          <th className="text-left py-2 pr-1 font-medium">Lloji</th>
+                          <th className="text-right py-2 pl-1 font-medium">Sasia</th>
                           {editable && <th className="w-8" />}
                         </tr>
                       </thead>
                       <tbody>
                         {Object.entries(t.turn_data.coffee).map(([name, qty]) => (
                           <tr key={name} className="border-b border-slate-800/60">
-                            <td className="py-1.5 pr-2 truncate">{name}</td>
-                            <td className="py-1.5 pl-2">
+                            <td className="py-1.5 pr-1 truncate">{name}</td>
+                            <td className="py-1.5 pl-1">
                               <RowField
                                 value={qty}
                                 readOnly={!editable}
@@ -833,8 +834,8 @@ const RegjistrimiDitor = () => {
                           </tr>
                         ))}
                         <tr className="border-t-2 border-slate-700 bg-slate-950/40">
-                          <td className="py-2 pr-2 font-bold">TOTALI</td>
-                          <td className="py-2 pl-2 text-right font-bold tabular-nums">{totalCoffee}</td>
+                          <td className="py-2 pr-1 font-bold">TOTALI</td>
+                          <td className="py-2 pl-1 text-right font-bold tabular-nums">{totalCoffee}</td>
                           {editable && <td />}
                         </tr>
                       </tbody>
