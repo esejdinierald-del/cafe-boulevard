@@ -54,7 +54,7 @@ export const MobileOrderSheet = () => {
 
       {/* Sheet */}
       <div
-        className={`fixed left-0 right-0 bottom-0 z-50 lg:hidden bg-slate-800 border-t border-slate-700 rounded-t-2xl shadow-2xl transition-transform duration-300 ${
+        className={`fixed left-0 right-0 bottom-[1cm] z-50 lg:hidden bg-slate-800 border-t border-slate-700 rounded-t-2xl shadow-2xl transition-transform duration-300 ${
           expanded ? "translate-y-0" : ""
         }`}
         style={{
