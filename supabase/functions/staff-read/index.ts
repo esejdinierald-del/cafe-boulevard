@@ -172,6 +172,33 @@ serve(async (req) => {
           .in("material_id", matIds);
         return json({ data: { materials: mats, recipes: recs ?? [] } });
       }
+      case "print_jobs.enqueue": {
+        const row = {
+          station: String(body.station || "arka"),
+          kind: String(body.kind || "manual"),
+          title: String(body.title || "Bileta"),
+          receipt_text: String(body.receiptText || ""),
+          created_by: String(body.createdBy || "Kamarier"),
+          table_code: body.tableCode == null ? null : String(body.tableCode),
+          amount: body.amount == null ? null : Number(body.amount),
+          status: "pending",
+        };
+        const { data, error } = await supabase
+          .from("print_jobs").insert(row).select("id").single();
+        if (error) return json({ error: error.message }, 500);
+        return json({ data });
+      }
+      case "raw_materials.ensure": {
+        const names = Array.isArray(body.names) ? body.names.map((s: unknown) => String(s)) : [];
+        if (names.length === 0) return json({ data: [] });
+        const rows = names.map((name) => ({ name, quantity: 0, unit: "cope", min_threshold: 0 }));
+        const { data, error } = await supabase
+          .from("raw_materials")
+          .upsert(rows, { onConflict: "name", ignoreDuplicates: true })
+          .select("id, name, quantity, unit, min_threshold, location_id");
+        if (error) return json({ error: error.message }, 500);
+        return json({ data });
+      }
       default:
         return json({ error: `Veprim i panjohur: ${action}` }, 400);
     }
