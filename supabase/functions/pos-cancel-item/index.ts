@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sha256 } from "../_shared/hash.ts";
 import { requireShiftToken } from "../_shared/verify-shift-token.ts";
+import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +17,9 @@ const json = (body: unknown, status = 200) =>
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  maybeCleanup();
+  const rl = checkRateLimit({ key: clientKey(req, "pos-cancel-item"), max: 10, windowMs: 5 * 60_000, blockMs: 15 * 60_000 });
+  if (!rl.ok) return json({ error: "Shumë tentativa. Provo më vonë.", retryAfterSec: rl.retryAfterSec }, 429);
   try {
     const parsedBody = await req.json();
     const auth = await requireShiftToken(req, parsedBody);
