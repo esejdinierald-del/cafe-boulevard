@@ -7,21 +7,6 @@ import { Printer, RefreshCcw, CheckCircle2, AlertTriangle } from "lucide-react";
 import { printReceiptViaIframe } from "@/lib/receipt-print";
 import { toast } from "sonner";
 
-async function printViaLocalServer(receiptText: string, title = "Boulevard Cafe"): Promise<boolean> {
-  try {
-    const response = await fetch("http://localhost:8080/print", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: receiptText, title }),
-    });
-    const data = await response.json();
-    return data.success;
-  } catch (e) {
-    console.error("Local print server error:", e);
-    return false;
-  }
-}
-
 interface Job {
   id: string;
   station: string;
@@ -88,18 +73,9 @@ const PrintStation = () => {
       if (!(claimRes as any)?.claimed) return;
       beep();
 
-      // PROVO SERVERIN LOKAL PARA
-      const serverSuccess = await printViaLocalServer(
-        job.receipt_text,
-        job.title || "Boulevard Cafe"
-      );
-
-      if (!serverSuccess) {
-        // Fallback: përdor iframe (nëse serveri nuk po punon)
-        await printReceiptViaIframe(job.receipt_text, job.title || "Boulevard Cafe", {
-          branded: job.kind === "close_table",
-        });
-      }
+      await printReceiptViaIframe(job.receipt_text, job.title || "Boulevard Cafe", {
+        branded: job.kind === "close_table",
+      });
       await supabase.functions.invoke("print-station", {
         body: { action: "mark_printed", id: job.id },
       });
