@@ -268,7 +268,7 @@ const POS = () => {
         {mobileView === "tables" ? (
           <div className="bg-slate-800 rounded-lg p-2">
             <div className="text-slate-400 text-xs uppercase font-semibold mb-2">Tavolinat</div>
-            <div className="grid grid-cols-4 xs:grid-cols-5 gap-1.5">
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
               {[...tables]
                 .sort((a, b) => Number(a.number) - Number(b.number))
                 .map((t) => {
