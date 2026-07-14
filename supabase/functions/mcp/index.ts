@@ -50,7 +50,7 @@ var list_tables_default = defineTool({
 });
 
 // src/lib/mcp/tools/select-rows.ts
-import { createClient } from "npm:@supabase/supabase-js@^2.75.0";
+import { createClient } from "npm:@supabase/supabase-js@^2.110.3";
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.21.0";
 import { z } from "npm:zod@^4.4.3";
 function supabaseForUser(ctx) {
