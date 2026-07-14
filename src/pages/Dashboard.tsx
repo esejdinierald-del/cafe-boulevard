@@ -717,6 +717,29 @@ const Dashboard = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
+          {(() => {
+            const reqCount = pendingRequests.length + pendingOrders.length;
+            const total = barPending + kitchenPending + reqCount;
+            if (total === 0 || muteNotifications) return null;
+            const parts: string[] = [];
+            if (barPending > 0) parts.push(`Bar (${barPending})`);
+            if (kitchenPending > 0) parts.push(`Kuzhina (${kitchenPending})`);
+            if (reqCount > 0) parts.push(`Thirrje (${reqCount})`);
+            return (
+              <button
+                type="button"
+                onClick={() =>
+                  setActiveTab(
+                    barPending > 0 ? "bar" : kitchenPending > 0 ? "kitchen" : "requests"
+                  )
+                }
+                className="w-full mb-3 rounded-lg py-3 px-4 bg-primary text-primary-foreground font-bold text-lg animate-pulse shadow-lg shadow-primary/50 ring-2 ring-primary flex items-center justify-center gap-3"
+              >
+                <Bell className="h-6 w-6" />
+                <span>🔔 POROSI E RE — {parts.join(" • ")}</span>
+              </button>
+            );
+          })()}
           <TabsList className="grid w-full grid-cols-5 mb-3">
             <TabsTrigger
               value="requests"
