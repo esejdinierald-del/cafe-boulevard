@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     const { action, table_number, url, id } = body;
 
     // Staff-only actions require a valid shift token; customer 'request' stays public
-    if (action === "approve" || action === "reject" || action === "played") {
+    if (action === "approve" || action === "reject" || action === "played" || action === "clear_queue") {
       const auth = await requireShiftToken(req, body);
       if (!auth.ok) return auth.response;
     }
