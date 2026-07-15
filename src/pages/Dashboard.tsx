@@ -568,6 +568,18 @@ const Dashboard = () => {
     }
   };
 
+  const handleClearQueue = async () => {
+    if (!confirm("Të pastrohet e gjithë rradha e këngëve?")) return;
+    try {
+      await supabase.functions.invoke("manage-songs", { body: { action: "clear_queue", shiftToken } });
+      setPlaylist([]);
+      setCurrentSong(null);
+      toast.success("Rradha u pastrua");
+    } catch {
+      toast.error("Gabim në pastrim");
+    }
+  };
+
   // ===== YOUTUBE PLAYER EVENTS (client-side queue + Radio fallback) =====
   const onPlayerEnd = () => {
     const ended = currentSongRef.current;
