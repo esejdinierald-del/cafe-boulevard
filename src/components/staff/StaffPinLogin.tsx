@@ -43,9 +43,11 @@ export const StaffPinLogin = ({ shiftToken, onSuccess }: Props) => {
     setSubmitting(false);
     const errMsg = (data as any)?.error || error?.message;
     if (errMsg) { toast.error(errMsg); return; }
-    const d = data as { name: string; role: string };
+    const d = data as { id?: string; name: string; role: string; is_admin?: boolean };
+    if (d.id) localStorage.setItem("staff_id", d.id);
     localStorage.setItem("staff_name", d.name);
     localStorage.setItem("staff_role", d.role);
+    localStorage.setItem("staff_is_admin", d.is_admin ? "1" : "0");
     toast.success(`Mirë se erdhe, ${d.name}!`);
     onSuccess(d.name, d.role);
   };
