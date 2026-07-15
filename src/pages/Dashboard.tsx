@@ -990,6 +990,7 @@ const Dashboard = () => {
               radioMode={radioMode}
               handleApproveSong={handleApproveSong}
               handleRejectSong={handleRejectSong}
+              handleClearQueue={handleClearQueue}
             />
           </TabsContent>
 
