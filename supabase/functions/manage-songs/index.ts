@@ -169,6 +169,18 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "clear_queue") {
+      const { error } = await supabase
+        .from("song_requests")
+        .update({ status: "played" })
+        .in("status", ["pending", "approved"]);
+      if (error) throw error;
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
