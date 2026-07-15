@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     const { action, table_number, url, id } = body;
 
     // Staff-only actions require a valid shift token; customer 'request' stays public
-    if (action === "approve" || action === "reject" || action === "played") {
+    if (action === "approve" || action === "reject" || action === "played" || action === "clear_queue") {
       const auth = await requireShiftToken(req, body);
       if (!auth.ok) return auth.response;
     }
@@ -162,6 +162,18 @@ Deno.serve(async (req) => {
         .from("song_requests")
         .update({ status: "played" })
         .eq("id", id);
+      if (error) throw error;
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "clear_queue") {
+      const { error } = await supabase
+        .from("song_requests")
+        .update({ status: "played" })
+        .in("status", ["pending", "approved"]);
       if (error) throw error;
       return new Response(JSON.stringify({ success: true }), {
         status: 200,

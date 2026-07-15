@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, X } from "lucide-react";
+import { CheckCircle, X, Trash2 } from "lucide-react";
 
 export interface SongRequest {
   id: string;
@@ -21,10 +21,11 @@ interface Props {
   radioMode: boolean;
   handleApproveSong: (id: string) => void;
   handleRejectSong: (id: string) => void;
+  handleClearQueue?: () => void;
 }
 
 export function SongsPanel({
-  songRequests, playlist, hasCurrentSong, radioMode, handleApproveSong, handleRejectSong,
+  songRequests, playlist, hasCurrentSong, radioMode, handleApproveSong, handleRejectSong, handleClearQueue,
 }: Props) {
   const pending = songRequests.filter((s) => s.status === "pending");
   return (
@@ -77,6 +78,17 @@ export function SongsPanel({
           <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
             <span>📋 Radha e Miratuar</span>
             <Badge variant="outline">{playlist.length}</Badge>
+            {handleClearQueue && playlist.length > 0 && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleClearQueue}
+                className="ml-auto h-8 gap-1"
+              >
+                <Trash2 className="h-4 w-4" />
+                Pastro
+              </Button>
+            )}
           </h2>
           <div className="space-y-2 max-h-[60vh] overflow-y-auto">
             {playlist.length === 0 ? (
