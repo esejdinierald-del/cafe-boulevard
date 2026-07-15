@@ -891,30 +891,36 @@ export type Database = {
       }
       staff_members: {
         Row: {
+          admin_password_hash: string | null
           created_at: string | null
           email: string | null
           id: string
           is_active: boolean | null
+          is_admin: boolean
           location_id: string | null
           name: string
           pin_hash: string | null
           role: string
         }
         Insert: {
+          admin_password_hash?: string | null
           created_at?: string | null
           email?: string | null
           id?: string
           is_active?: boolean | null
+          is_admin?: boolean
           location_id?: string | null
           name: string
           pin_hash?: string | null
           role: string
         }
         Update: {
+          admin_password_hash?: string | null
           created_at?: string | null
           email?: string | null
           id?: string
           is_active?: boolean | null
+          is_admin?: boolean
           location_id?: string | null
           name?: string
           pin_hash?: string | null
@@ -1171,9 +1177,21 @@ export type Database = {
         Args: { amount: number; material_id: string }
         Returns: undefined
       }
+      set_staff_admin_password: {
+        Args: { p_id: string; p_password: string }
+        Returns: undefined
+      }
       set_staff_pin: {
         Args: { p_id: string; p_pin: string }
         Returns: undefined
+      }
+      verify_staff_admin_password: {
+        Args: { p_password: string; p_staff_id: string }
+        Returns: {
+          id: string
+          name: string
+          role: string
+        }[]
       }
       verify_staff_pin: {
         Args: { p_pin: string }
