@@ -1206,6 +1206,7 @@ export type Database = {
         Args: { p_name: string; p_pin: string }
         Returns: {
           id: string
+          is_admin: boolean
           name: string
           role: string
         }[]
