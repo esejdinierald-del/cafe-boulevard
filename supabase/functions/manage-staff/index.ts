@@ -41,11 +41,17 @@ Deno.serve(async (req) => {
     if (action === "list") {
       const { data, error } = await supabase
         .from("staff_members")
-        .select("id, name, role, is_active, created_at")
+        .select("id, name, role, is_active, is_admin, admin_password_hash, created_at")
         .order("name");
       if (error) return json({ error: error.message }, 500);
       const staff = (data ?? []).map((s: any) => ({
-        id: s.id, name: s.name, role: s.role, active: s.is_active, created_at: s.created_at,
+        id: s.id,
+        name: s.name,
+        role: s.role,
+        active: s.is_active,
+        is_admin: !!s.is_admin,
+        has_admin_password: !!s.admin_password_hash,
+        created_at: s.created_at,
       }));
       return json({ staff });
     }
@@ -74,7 +80,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "update") {
-      const { id, name, role, active, pin } = body;
+      const { id, name, role, active, pin, is_admin, admin_password } = body;
       if (!id) return json({ error: "Mungon id" }, 400);
       const patch: Record<string, unknown> = {};
       if (typeof name === "string") patch.name = name.trim();
@@ -83,6 +89,7 @@ Deno.serve(async (req) => {
         patch.role = role;
       }
       if (typeof active === "boolean") patch.is_active = active;
+      if (typeof is_admin === "boolean") patch.is_admin = is_admin;
       if (Object.keys(patch).length > 0) {
         const { error } = await supabase.from("staff_members").update(patch).eq("id", id);
         if (error) return json({ error: error.message }, 500);
@@ -91,6 +98,16 @@ Deno.serve(async (req) => {
         if (!/^\d{4}$/.test(String(pin))) return json({ error: "PIN duhet të jetë 4 shifra" }, 400);
         const { error: pinErr } = await supabase.rpc("set_staff_pin", { p_id: id, p_pin: String(pin) });
         if (pinErr) return json({ error: pinErr.message }, 500);
+      }
+      if (admin_password != null) {
+        if (typeof admin_password !== "string" || admin_password.length < 4) {
+          return json({ error: "Fjalëkalimi admin duhet të ketë të paktën 4 karaktere" }, 400);
+        }
+        const { error: pwErr } = await supabase.rpc("set_staff_admin_password", {
+          p_staff_id: id,
+          p_password: admin_password,
+        });
+        if (pwErr) return json({ error: pwErr.message }, 500);
       }
       return json({ success: true });
     }

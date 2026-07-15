@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sha256 } from "../_shared/hash.ts";
 import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
 import { requireShiftToken } from "../_shared/verify-shift-token.ts";
+import { verifyStaffAdmin } from "../_shared/verify-admin.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,17 +24,10 @@ serve(async (req) => {
     const parsed = await req.json().catch(() => ({}));
     const auth = await requireShiftToken(req, parsed);
     if (!auth.ok) return auth.response;
-    const { adminPassword, startISO, endISO } = parsed;
-    if (!adminPassword) return json({ error: "Mungon fjalëkalimi" }, 403);
+    const { adminStaffId, adminPassword, startISO, endISO } = parsed;
     if (!startISO || !endISO) return json({ error: "Mungon intervali" }, 400);
-
-    // Verify passcode (same source as pos-cancel-item / verify-admin-passcode)
-    const { data: setting } = await supabase
-      .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
-    const expectedHash = setting?.value;
-    if (!expectedHash) return json({ error: "Admin passcode nuk është konfiguruar" }, 500);
-    const providedHash = await sha256(String(adminPassword));
-    if (providedHash !== expectedHash) return json({ error: "Fjalëkalim i pasaktë" }, 403);
+    const va = await verifyStaffAdmin(supabase, { staffId: adminStaffId, password: adminPassword });
+    if (!va.ok) return json({ error: va.error }, va.status);
 
     // Delete transactions in range. RLS is bypassed via service role.
     const { data, error } = await supabase

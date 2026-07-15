@@ -41,7 +41,13 @@ Deno.serve(async (req) => {
     const row = Array.isArray(staff) ? staff[0] : staff;
     if (!row) return json({ error: "PIN i pasaktë ose kamarier i pavlefshëm" }, 403);
 
-    return json({ ok: true, name: row.name, role: row.role });
+    return json({
+      ok: true,
+      id: row.id,
+      name: row.name,
+      role: row.role,
+      is_admin: !!row.is_admin,
+    });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }

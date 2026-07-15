@@ -8,13 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, KeyRound, Trash2, Power } from "lucide-react";
+import { Plus, KeyRound, Trash2, Power, ShieldCheck, ShieldOff, Lock } from "lucide-react";
 
 interface Staff {
   id: string;
   name: string;
   role: "waiter" | "kitchen" | "manager";
   active: boolean;
+  is_admin?: boolean;
+  has_admin_password?: boolean;
 }
 
 const ROLES: Array<{ value: Staff["role"]; label: string }> = [
@@ -29,6 +31,8 @@ export const StaffManagerCard = () => {
   const [creating, setCreating] = useState(false);
   const [pinDialog, setPinDialog] = useState<Staff | null>(null);
   const [newPin, setNewPin] = useState("");
+  const [pwDialog, setPwDialog] = useState<Staff | null>(null);
+  const [newAdminPw, setNewAdminPw] = useState("");
   const [form, setForm] = useState({ name: "", pin: "", role: "waiter" as Staff["role"] });
 
   const call = async (body: Record<string, unknown>) => {
@@ -85,6 +89,17 @@ export const StaffManagerCard = () => {
     if (data) { toast.success("PIN-i u përditësua"); setPinDialog(null); setNewPin(""); }
   };
 
+  const toggleAdmin = async (s: Staff) => {
+    const data = await call({ action: "update", id: s.id, is_admin: !s.is_admin });
+    if (data) { toast.success(`${s.name} — admin: ${!s.is_admin ? "aktiv" : "jo"}`); load(); }
+  };
+
+  const setAdminPassword = async () => {
+    if (!pwDialog || newAdminPw.length < 4) { toast.error("Të paktën 4 karaktere"); return; }
+    const data = await call({ action: "update", id: pwDialog.id, admin_password: newAdminPw });
+    if (data) { toast.success("Fjalëkalimi admin u ruajt"); setPwDialog(null); setNewAdminPw(""); load(); }
+  };
+
   return (
     <Card className="glass-premium p-6 rounded-3xl shadow-[var(--shadow-elegant)]">
       <div className="flex items-center justify-between mb-5">
@@ -120,6 +135,18 @@ export const StaffManagerCard = () => {
             </div>
             <Button size="icon" variant="ghost" onClick={() => setPinDialog(s)} title="Reset PIN">
               <KeyRound className="h-4 w-4" />
+            </Button>
+            <Button size="icon" variant="ghost" onClick={() => toggleAdmin(s)} title={s.is_admin ? "Hiq admin" : "Bëj admin"}>
+              {s.is_admin ? <ShieldCheck className="h-4 w-4 text-amber-400" /> : <ShieldOff className="h-4 w-4 text-muted-foreground" />}
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => setPwDialog(s)}
+              disabled={!s.is_admin}
+              title="Cakto fjalëkalim admin"
+            >
+              <Lock className={`h-4 w-4 ${s.has_admin_password ? "text-green-500" : "text-muted-foreground"}`} />
             </Button>
             <Button size="icon" variant="ghost" onClick={() => toggleActive(s)} title="Aktivizo/Çaktivizo">
               <Power className={`h-4 w-4 ${s.active ? "text-green-500" : "text-muted-foreground"}`} />
@@ -177,6 +204,26 @@ export const StaffManagerCard = () => {
           <DialogFooter>
             <Button variant="ghost" onClick={() => { setPinDialog(null); setNewPin(""); }}>Anulo</Button>
             <Button onClick={resetPin}>Ruaj</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Admin password dialog */}
+      <Dialog open={!!pwDialog} onOpenChange={(o) => { if (!o) { setPwDialog(null); setNewAdminPw(""); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Fjalëkalim admin — {pwDialog?.name}</DialogTitle></DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            Ky fjalëkalim është individual dhe përdoret vetëm nga ky staf për veprime admin (anulime, Arka, sasi inventari).
+          </p>
+          <Input
+            type="password"
+            placeholder="Fjalëkalim i ri (min 4 karaktere)"
+            value={newAdminPw}
+            onChange={(e) => setNewAdminPw(e.target.value)}
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setPwDialog(null); setNewAdminPw(""); }}>Anulo</Button>
+            <Button onClick={setAdminPassword}>Ruaj</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

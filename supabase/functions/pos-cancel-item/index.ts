@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sha256 } from "../_shared/hash.ts";
 import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
+import { verifyStaffAdmin } from "../_shared/verify-admin.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,16 +30,9 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    const { orderId, itemIndex, adminPassword, mode, qty: qtyRaw } = parsedBody;
-    if (!adminPassword) return json({ error: "Fjalëkalim i pasaktë" }, 403);
-    const { data: setting } = await supabase
-      .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
-    const expectedHash = setting?.value;
-    if (!expectedHash) return json({ error: "Admin passcode nuk është konfiguruar" }, 500);
-    const providedHash = await sha256(String(adminPassword));
-    if (providedHash !== expectedHash) {
-      return json({ error: "Fjalëkalim i pasaktë" }, 403);
-    }
+    const { orderId, itemIndex, adminStaffId, adminPassword, mode, qty: qtyRaw } = parsedBody;
+    const va = await verifyStaffAdmin(supabase, { staffId: adminStaffId, password: adminPassword });
+    if (!va.ok) return json({ error: va.error }, va.status);
     if (!orderId) return json({ error: "Mungon orderId" }, 400);
 
     const { data: order, error: orderErr } = await supabase
