@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sha256 } from "../_shared/hash.ts";
 import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
+import { verifyStaffAdmin } from "../_shared/verify-admin.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,19 +28,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { token, adminPassword } = await req.json();
+    const { token, adminStaffId, adminPassword } = await req.json();
 
     if (!token || typeof token !== "string" || token.length < 6 || token.length > 50) {
       return new Response(
         JSON.stringify({ error: "Invalid token" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!adminPassword || typeof adminPassword !== "string") {
-      return new Response(
-        JSON.stringify({ error: "Fjalëkalimi i adminit është i detyrueshëm" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -50,21 +43,11 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
 
-    // Mandatory admin PIN — validated server-side against app_settings.
-    const { data: setting } = await supabase
-      .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
-    const expectedHash = setting?.value;
-    if (!expectedHash) {
+    const va = await verifyStaffAdmin(supabase, { staffId: adminStaffId, password: adminPassword });
+    if (!va.ok) {
       return new Response(
-        JSON.stringify({ error: "Admin passcode nuk është konfiguruar" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    const providedHash = await sha256(String(adminPassword));
-    if (providedHash !== expectedHash) {
-      return new Response(
-        JSON.stringify({ error: "Fjalëkalim i pasaktë" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: va.error }),
+        { status: va.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
