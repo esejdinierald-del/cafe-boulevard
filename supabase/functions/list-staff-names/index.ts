@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     );
     const { data, error } = await supabase
       .from("staff_members")
-      .select("name, role")
+      .select("id, name, role, is_admin")
       .eq("is_active", true)
       .order("name");
     if (error) return json({ error: error.message }, 500);
