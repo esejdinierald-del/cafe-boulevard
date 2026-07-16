@@ -5,7 +5,7 @@ import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
 import { MobileOrderSheet } from "@/components/pos/MobileOrderSheet";
 import { usePOSStore } from "@/stores/pos-store";
-import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, ArrowLeft } from "lucide-react";
+import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, ArrowLeft, ConciergeBell } from "lucide-react";
 import { DraggableHeaderItem } from "@/components/pos/DraggableHeaderItem";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/receipt-print";
@@ -124,6 +124,7 @@ const POS = () => {
   }
 
   const activeTableNumber = currentOrder?.tableNumber ?? null;
+  const hasServiceAlert = false; // TODO: connect to real service requests
 
   const viewTableOrders = async (tableNumber: number | string) => {
     const { data, error } = await staffRead<TableOrderDetail[]>("pos_orders.by_table", {

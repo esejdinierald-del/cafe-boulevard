@@ -214,7 +214,10 @@ const Inventory = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+      <header
+        className="flex items-center justify-between px-4 py-3 border-b border-slate-800"
+        style={{ paddingTop: 'calc(1cm + env(safe-area-inset-top))' }}
+      >
         <div className="flex items-center gap-3">
         <button type="button"
             onClick={() => navigate("/pos")}
