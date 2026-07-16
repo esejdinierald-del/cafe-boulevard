@@ -146,6 +146,9 @@ export const CashierPanel = () => {
   const [receipt, setReceipt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [adminPw, setAdminPw] = useState<string | null>(null);
+  const [adminName, setAdminName] = useState<string | null>(
+    () => sessionStorage.getItem("cashier_admin_name") || null,
+  );
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState<"active" | "history">("active");
   // Admin-lock the whole Cashier panel.
@@ -153,13 +156,17 @@ export const CashierPanel = () => {
     () => sessionStorage.getItem("cashier_unlocked") === "1",
   );
   const [pwInput, setPwInput] = useState("");
+  const [nameInput, setNameInput] = useState("");
   const [unlocking, setUnlocking] = useState(false);
 
   const tryUnlock = async () => {
-    if (!pwInput.trim()) return;
+    if (!pwInput.trim() || !nameInput.trim()) {
+      toast.error("Fut emrin dhe fjalëkalimin tënd");
+      return;
+    }
     setUnlocking(true);
-    const { data, error } = await supabase.functions.invoke("verify-admin-passcode", {
-      body: { passcode: pwInput.trim() },
+    const { data, error } = await supabase.functions.invoke("verify-staff-admin", {
+      body: { staffName: nameInput.trim(), password: pwInput.trim() },
     });
     setUnlocking(false);
     if (!(data as any)?.valid) {
@@ -167,21 +174,26 @@ export const CashierPanel = () => {
       return;
     }
     setAdminPw(pwInput.trim());
+    setAdminName(nameInput.trim());
+    sessionStorage.setItem("cashier_admin_name", nameInput.trim());
     setUnlocked(true);
     sessionStorage.setItem("cashier_unlocked", "1");
     setPwInput("");
+    setNameInput("");
   };
 
   const lockNow = () => {
     setUnlocked(false);
     setAdminPw(null);
+    setAdminName(null);
     sessionStorage.removeItem("cashier_unlocked");
+    sessionStorage.removeItem("cashier_admin_name");
   };
 
   const requireAdmin = (): string | null => {
     if (adminPw) return adminPw;
     const pw = window.prompt(
-      "Fjalëkalimi i adminit për anulim",
+      `Fjalëkalimi yt personal (${adminName || "admin"}) për anulim:`,
     );
     if (!pw) return null;
     setAdminPw(pw);
