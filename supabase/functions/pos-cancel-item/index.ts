@@ -30,8 +30,8 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    const { orderId, itemIndex, adminStaffId, adminPassword, mode, qty: qtyRaw } = parsedBody;
-    const va = await verifyStaffAdmin(supabase, { staffId: adminStaffId, password: adminPassword });
+    const { orderId, itemIndex, adminStaffId, adminName, adminPassword, mode, qty: qtyRaw } = parsedBody;
+    const va = await verifyStaffAdmin(supabase, { staffId: adminStaffId, staffName: adminName, password: adminPassword });
     if (!va.ok) return json({ error: va.error }, va.status);
     if (!orderId) return json({ error: "Mungon orderId" }, 400);
 
