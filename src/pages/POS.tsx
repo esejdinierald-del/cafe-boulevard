@@ -234,14 +234,25 @@ const POS = () => {
             )}
           </div>
           {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
-            <DraggableHeaderItem id="inventory">
-              <button type="button"
-                onClick={() => navigate("/inventory")}
-                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs"
-              >
-                <Package size={12} /> Inventari
-              </button>
-            </DraggableHeaderItem>
+            <div className="flex items-center gap-1">
+              <DraggableHeaderItem id="inventory">
+                <button type="button"
+                  onClick={() => navigate("/inventory")}
+                  className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs"
+                >
+                  <Package size={12} /> Inventari
+                </button>
+              </DraggableHeaderItem>
+              <DraggableHeaderItem id="service">
+                <button type="button"
+                  title="Shërbim"
+                  onClick={() => {/* TODO: connect to service requests */}}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${hasServiceAlert ? "bg-orange-600 text-white animate-pulse hover:bg-orange-500" : "bg-slate-700 hover:bg-slate-600"}`}
+                >
+                  <ConciergeBell size={12} /> Shërbim
+                </button>
+              </DraggableHeaderItem>
+            </div>
           )}
         </div>
         <div className="flex items-center gap-1 md:gap-2">
