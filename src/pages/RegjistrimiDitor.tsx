@@ -22,11 +22,15 @@ import { useDifStartDates } from "@/hooks/useDifStartDates";
 import { useCoffeeSalesTotal } from "@/hooks/useCoffeeSalesTotal";
 import { ShiftTurnApi } from "@/lib/inventory-api";
 
-// Verify admin passcode server-side via edge function (no hardcoded value on client).
-async function verifyAdminPasscode(passcode: string): Promise<boolean> {
+// Verify a specific staff member's individual admin password (no shared passcode).
+async function verifyAdminPasscode(_ignored?: string): Promise<boolean> {
+  const name = window.prompt("Emri i stafit admin (p.sh. Erald):");
+  if (!name) return false;
+  const pass = window.prompt(`Fjalëkalimi personal i ${name}:`);
+  if (!pass) return false;
   try {
-    const { data } = await mainSupabase.functions.invoke("verify-admin-passcode", {
-      body: { passcode },
+    const { data } = await mainSupabase.functions.invoke("verify-staff-admin", {
+      body: { staffName: name.trim(), password: pass },
     });
     return !!(data as any)?.valid;
   } catch {
