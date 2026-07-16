@@ -460,4 +460,132 @@ function BackupTab({ passcode }: { passcode: string }) {
   );
 }
 
+interface LockedTurn {
+  id: string;
+  entry_date: string;
+  staff_name: string;
+  sequence_number: number;
+  is_locked: boolean;
+  locked_at: string | null;
+  created_at: string;
+}
+
+function ReopenTurnTab() {
+  const [turns, setTurns] = useState<LockedTurn[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [adminName, setAdminName] = useState<string>(
+    () => sessionStorage.getItem("admin_tools_admin_name") || "",
+  );
+  const [adminPassword, setAdminPassword] = useState<string>("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const fetchList = async () => {
+    if (!adminName.trim() || !adminPassword.trim()) {
+      toast.error("Fut emrin dhe fjalëkalimin tënd personal");
+      return;
+    }
+    setLoading(true);
+    const { data, error } = await supabase.functions.invoke("admin-reopen-turn", {
+      body: { action: "list_locked", adminName: adminName.trim(), adminPassword: adminPassword.trim() },
+    });
+    setLoading(false);
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim");
+      return;
+    }
+    sessionStorage.setItem("admin_tools_admin_name", adminName.trim());
+    setTurns(((data as any).turns as LockedTurn[]) || []);
+    toast.success(`U gjetën ${(((data as any).turns as LockedTurn[]) || []).length} turne të mbyllur`);
+  };
+
+  const reopen = async (id: string, label: string) => {
+    if (!adminName.trim() || !adminPassword.trim()) {
+      toast.error("Fut emrin dhe fjalëkalimin tënd personal");
+      return;
+    }
+    if (!confirm(`Rihap turnin: ${label}?`)) return;
+    setBusyId(id);
+    const { data, error } = await supabase.functions.invoke("admin-reopen-turn", {
+      body: { turnId: id, adminName: adminName.trim(), adminPassword: adminPassword.trim() },
+    });
+    setBusyId(null);
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim");
+      return;
+    }
+    toast.success("Turni u rihap");
+    setTurns((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="p-4 rounded bg-slate-800 border border-slate-700 space-y-3">
+        <h2 className="font-semibold text-amber-300">Rihap Turnin nga Distanca</h2>
+        <p className="text-xs text-slate-400">
+          Identifikohu me fjalëkalimin TËND personal (jo një kod i përbashkët). Vetëm anëtarët e stafit me statusin
+          admin mund të rihapin një turn të mbyllur pa dashje — nga kudo, pa qenë në lokal.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input
+            type="text"
+            placeholder="Emri yt (p.sh. Erald)"
+            value={adminName}
+            onChange={(e) => setAdminName(e.target.value)}
+            className="px-3 py-2 rounded bg-slate-900 border border-slate-700 text-white"
+          />
+          <input
+            type="password"
+            placeholder="Fjalëkalimi yt personal"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            className="px-3 py-2 rounded bg-slate-900 border border-slate-700 text-white"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={fetchList}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 rounded bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold disabled:opacity-50"
+        >
+          <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+          {loading ? "Duke ngarkuar..." : "Lista e turneve të mbyllur"}
+        </button>
+      </div>
+
+      {turns.length === 0 ? (
+        <div className="p-6 rounded bg-slate-800 border border-slate-700 text-sm text-slate-400 text-center">
+          Asnjë turn i mbyllur i renditur. Hyr me kredencialet e tua për të parë listën.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {turns.map((t) => {
+            const label = `${t.entry_date} — ${t.staff_name} (turni ${t.sequence_number})`;
+            return (
+              <div
+                key={t.id}
+                className="flex items-center justify-between p-3 rounded bg-slate-800 border border-slate-700"
+              >
+                <div>
+                  <div className="font-medium">{label}</div>
+                  <div className="text-xs text-slate-400">
+                    Mbyllur: {t.locked_at ? new Date(t.locked_at).toLocaleString() : "—"}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => reopen(t.id, label)}
+                  disabled={busyId === t.id}
+                  className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-sm disabled:opacity-50"
+                >
+                  {busyId === t.id ? "Duke rihapur..." : "Rihap"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default AdminTools;
