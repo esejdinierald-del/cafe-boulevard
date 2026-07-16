@@ -25,8 +25,8 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
-    const { staffId, password } = await req.json().catch(() => ({}));
-    const r = await verifyStaffAdmin(supabase, { staffId, password });
+    const { staffId, staffName, password } = await req.json().catch(() => ({}));
+    const r = await verifyStaffAdmin(supabase, { staffId, staffName, password });
     if (!r.ok) return json({ valid: false, error: r.error }, r.status);
     return json({ valid: true, admin: r.admin });
   } catch (e) {
