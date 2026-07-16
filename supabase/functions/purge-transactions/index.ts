@@ -24,9 +24,9 @@ serve(async (req) => {
     const parsed = await req.json().catch(() => ({}));
     const auth = await requireShiftToken(req, parsed);
     if (!auth.ok) return auth.response;
-    const { adminStaffId, adminPassword, startISO, endISO } = parsed;
+    const { adminStaffId, adminName, adminPassword, startISO, endISO } = parsed;
     if (!startISO || !endISO) return json({ error: "Mungon intervali" }, 400);
-    const va = await verifyStaffAdmin(supabase, { staffId: adminStaffId, password: adminPassword });
+    const va = await verifyStaffAdmin(supabase, { staffId: adminStaffId, staffName: adminName, password: adminPassword });
     if (!va.ok) return json({ error: va.error }, va.status);
 
     // Delete transactions in range. RLS is bypassed via service role.
