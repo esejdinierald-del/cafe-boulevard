@@ -22,11 +22,15 @@ import { useDifStartDates } from "@/hooks/useDifStartDates";
 import { useCoffeeSalesTotal } from "@/hooks/useCoffeeSalesTotal";
 import { ShiftTurnApi } from "@/lib/inventory-api";
 
-// Verify admin passcode server-side via edge function (no hardcoded value on client).
-async function verifyAdminPasscode(passcode: string): Promise<boolean> {
+// Verify a specific staff member's individual admin password (no shared passcode).
+async function verifyAdminPasscode(_ignored?: string): Promise<boolean> {
+  const name = window.prompt("Emri i stafit admin (p.sh. Erald):");
+  if (!name) return false;
+  const pass = window.prompt(`Fjalëkalimi personal i ${name}:`);
+  if (!pass) return false;
   try {
-    const { data } = await mainSupabase.functions.invoke("verify-admin-passcode", {
-      body: { passcode },
+    const { data } = await mainSupabase.functions.invoke("verify-staff-admin", {
+      body: { staffName: name.trim(), password: pass },
     });
     return !!(data as any)?.valid;
   } catch {
@@ -85,9 +89,7 @@ const RegjistrimiDitor = () => {
 
   const requestAdminAccess = async () => {
     if (adminUnlocked) { setProductMgrOpen(true); return; }
-    const pass = window.prompt("Fjalëkalimi i administratorit për menaxhimin e produkteve:");
-    if (pass === null) return;
-    const ok = await verifyAdminPasscode(pass);
+    const ok = await verifyAdminPasscode();
     if (!ok) { toast.error("Fjalëkalim i pasaktë"); return; }
     sessionStorage.setItem("inv_admin_unlocked", "1");
     setAdminUnlocked(true);
@@ -101,9 +103,7 @@ const RegjistrimiDitor = () => {
       toast.success("Modaliteti admin u çaktivizua");
       return;
     }
-    const pass = window.prompt("Fjalëkalimi i administratorit për editim manual të Stok Fillim:");
-    if (pass === null) return;
-    const ok = await verifyAdminPasscode(pass);
+    const ok = await verifyAdminPasscode();
     if (!ok) { toast.error("Fjalëkalim i pasaktë"); return; }
     sessionStorage.setItem("inv_admin_unlocked", "1");
     setAdminUnlocked(true);
@@ -568,9 +568,7 @@ const RegjistrimiDitor = () => {
 
   // Rivendos stokun nga Gjendja (admin-only)
   const rebaseFromGjendje = async () => {
-    const pass = prompt("Fjalëkalimi i adminit:");
-    if (!pass) return;
-    const ok = await verifyAdminPasscode(pass);
+    const ok = await verifyAdminPasscode();
     if (!ok) return toast.error("Fjalëkalim i pasaktë.");
     if (!confirm("Rivendos stokun e ditës pasardhëse duke përdorur 'Gjendja' aktuale?")) return;
     try {

@@ -1140,6 +1140,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_reopen_shift_turn: {
+        Args: { p_turn_id: string }
+        Returns: {
+          created_at: string
+          entry_date: string
+          id: string
+          is_locked: boolean
+          locked_at: string | null
+          sequence_number: number
+          staff_name: string
+          started_at: string
+          turn_data: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "shift_turns"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       close_pos_order: {
         Args: { p_operator_name: string; p_order_id: string }
         Returns: {
@@ -1187,6 +1208,14 @@ export type Database = {
       }
       verify_staff_admin_password: {
         Args: { p_password: string; p_staff_id: string }
+        Returns: {
+          id: string
+          name: string
+          role: string
+        }[]
+      }
+      verify_staff_admin_password_by_name: {
+        Args: { p_name: string; p_password: string }
         Returns: {
           id: string
           name: string
