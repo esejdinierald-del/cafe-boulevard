@@ -89,9 +89,7 @@ const RegjistrimiDitor = () => {
 
   const requestAdminAccess = async () => {
     if (adminUnlocked) { setProductMgrOpen(true); return; }
-    const pass = window.prompt("Fjalëkalimi i administratorit për menaxhimin e produkteve:");
-    if (pass === null) return;
-    const ok = await verifyAdminPasscode(pass);
+    const ok = await verifyAdminPasscode();
     if (!ok) { toast.error("Fjalëkalim i pasaktë"); return; }
     sessionStorage.setItem("inv_admin_unlocked", "1");
     setAdminUnlocked(true);
@@ -105,9 +103,7 @@ const RegjistrimiDitor = () => {
       toast.success("Modaliteti admin u çaktivizua");
       return;
     }
-    const pass = window.prompt("Fjalëkalimi i administratorit për editim manual të Stok Fillim:");
-    if (pass === null) return;
-    const ok = await verifyAdminPasscode(pass);
+    const ok = await verifyAdminPasscode();
     if (!ok) { toast.error("Fjalëkalim i pasaktë"); return; }
     sessionStorage.setItem("inv_admin_unlocked", "1");
     setAdminUnlocked(true);
