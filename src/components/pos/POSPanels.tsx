@@ -334,16 +334,22 @@ export const CashierPanel = () => {
             </div>
             <h2 className="text-lg font-bold">Arka është e mbyllur</h2>
             <p className="text-sm text-muted-foreground">
-              Fut fjalëkalimin e adminit për të parë porositë dhe historikun.
+              Fut emrin tënd dhe fjalëkalimin personal të adminit për të hapur Arkën.
             </p>
           </div>
           <Input
+            placeholder="Emri i stafit (p.sh. Erald)"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }}
+            autoFocus
+          />
+          <Input
             type="password"
-            placeholder="Fjalëkalimi i adminit"
+            placeholder="Fjalëkalimi personal"
             value={pwInput}
             onChange={(e) => setPwInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }}
-            autoFocus
           />
           <Button className="w-full" onClick={tryUnlock} disabled={unlocking}>
             {unlocking ? "Duke verifikuar..." : "Hap Arkën"}
