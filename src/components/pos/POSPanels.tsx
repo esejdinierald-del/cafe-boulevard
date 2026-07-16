@@ -257,6 +257,7 @@ export const CashierPanel = () => {
         orderId,
         mode: "order",
         adminPassword: pw,
+        adminName,
         shiftToken: typeof window !== "undefined" ? localStorage.getItem("staff_shift_token") : undefined,
       },
     });
@@ -309,6 +310,7 @@ export const CashierPanel = () => {
         itemIndex: index,
         qty,
         adminPassword: pw,
+        adminName,
         shiftToken: typeof window !== "undefined" ? localStorage.getItem("staff_shift_token") : undefined,
       },
     });
