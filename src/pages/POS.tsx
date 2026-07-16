@@ -5,7 +5,7 @@ import { MenuGrid } from "@/components/pos/MenuGrid";
 import { OrderPanel } from "@/components/pos/OrderPanel";
 import { MobileOrderSheet } from "@/components/pos/MobileOrderSheet";
 import { usePOSStore } from "@/stores/pos-store";
-import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, ArrowLeft } from "lucide-react";
+import { LogOut, Coffee, PowerOff, Package, Printer, Eye, X, ArrowLeft, ConciergeBell } from "lucide-react";
 import { DraggableHeaderItem } from "@/components/pos/DraggableHeaderItem";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/receipt-print";
@@ -124,6 +124,7 @@ const POS = () => {
   }
 
   const activeTableNumber = currentOrder?.tableNumber ?? null;
+  const hasServiceAlert = false; // TODO: connect to real service requests
 
   const viewTableOrders = async (tableNumber: number | string) => {
     const { data, error } = await staffRead<TableOrderDetail[]>("pos_orders.by_table", {
@@ -233,14 +234,25 @@ const POS = () => {
             )}
           </div>
           {(localStorage.getItem("staff_role") || "waiter") !== "kitchen" && (
-            <DraggableHeaderItem id="inventory">
-              <button type="button"
-                onClick={() => navigate("/inventory")}
-                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs"
-              >
-                <Package size={12} /> Inventari
-              </button>
-            </DraggableHeaderItem>
+            <div className="flex items-center gap-1">
+              <DraggableHeaderItem id="inventory">
+                <button type="button"
+                  onClick={() => navigate("/inventory")}
+                  className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs"
+                >
+                  <Package size={12} /> Inventari
+                </button>
+              </DraggableHeaderItem>
+              <DraggableHeaderItem id="service">
+                <button type="button"
+                  title="Shërbim"
+                  onClick={() => {/* TODO: connect to service requests */}}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${hasServiceAlert ? "bg-orange-600 text-white animate-pulse hover:bg-orange-500" : "bg-slate-700 hover:bg-slate-600"}`}
+                >
+                  <ConciergeBell size={12} /> Shërbim
+                </button>
+              </DraggableHeaderItem>
+            </div>
           )}
         </div>
         <div className="flex items-center gap-1 md:gap-2">
