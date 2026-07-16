@@ -568,9 +568,7 @@ const RegjistrimiDitor = () => {
 
   // Rivendos stokun nga Gjendja (admin-only)
   const rebaseFromGjendje = async () => {
-    const pass = prompt("Fjalëkalimi i adminit:");
-    if (!pass) return;
-    const ok = await verifyAdminPasscode(pass);
+    const ok = await verifyAdminPasscode();
     if (!ok) return toast.error("Fjalëkalim i pasaktë.");
     if (!confirm("Rivendos stokun e ditës pasardhëse duke përdorur 'Gjendja' aktuale?")) return;
     try {
