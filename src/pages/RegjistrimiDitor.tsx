@@ -730,31 +730,31 @@ const RegjistrimiDitor = () => {
                     )
                   )}
 
-                   {products.length === 0 ? (
+                   {displayProducts.length === 0 ? (
                     <p className="text-sm text-slate-500 text-center py-6">Asnjë produkt. Shto nga "Menaxho".</p>
                   ) : (
                     <div className="overflow-x-auto -mx-2 sm:-mx-4 px-2 sm:px-4">
                       <table className={`text-xs sm:text-sm border-collapse table-fixed ${tableMinWidth}`}>
                         <thead>
                           <tr className="text-[10px] sm:text-xs text-slate-400 border-b border-slate-800">
-                            <th className="text-left py-1.5 pr-0.5 font-medium w-[100px]">Produkti</th>
-                            {showOtherCols && <th className="text-right py-1.5 px-0.5 font-medium w-[70px]">Stok</th>}
-                            {showOtherCols && <th className="text-right py-1.5 px-0.5 font-medium w-[70px]">Shirit</th>}
-                            {showOtherCols && <th className="text-right py-1.5 px-0.5 font-medium w-[50px]">Dif</th>}
-                            <th className="text-right py-1.5 px-0.5 font-medium w-[70px]">Gjendje</th>
-                            <th className="text-right py-1.5 pl-0.5 font-medium w-[50px]">Fillon</th>
+                            <th className="text-left py-1.5 pr-0 font-medium w-[78px]">Produkti</th>
+                            {showOtherCols && <th className="text-right py-1.5 px-0 font-medium w-[58px]">Stok</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-0 font-medium w-[58px]">Shirit</th>}
+                            {showOtherCols && <th className="text-right py-1.5 px-0 font-medium w-[44px]">Dif</th>}
+                            <th className="text-right py-1.5 px-0 font-medium w-[62px]">Gjendje</th>
+                            <th className="text-right py-1.5 pl-0 font-medium w-[46px]">Fillon</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {products.map((p) => {
+                          {displayProducts.map((p) => {
                             const data = t.turn_data.products[p.name] || emptyProduct();
                             const dif = Calc.calculateDif(data);
                             const difStart = difStartMap[p.name] || null;
                             return (
                               <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-950/40">
-                                <td className="py-1 pr-0.5 font-medium text-xs sm:text-sm">{p.name}</td>
+                                <td className="py-1 pr-0 font-medium text-xs sm:text-sm truncate max-w-[78px]">{p.name}</td>
                                 {showOtherCols && (
-                                  <td className="py-1 px-0.5 w-[70px]">
+                                  <td className="py-1 px-0 w-[58px]">
                                     <RowField
                                       value={data.stokFillim}
                                       readOnly={!canAdminEditStok}
@@ -763,16 +763,16 @@ const RegjistrimiDitor = () => {
                                   </td>
                                 )}
                                 {showOtherCols && (
-                                  <td className="py-1 px-0.5 w-[70px]">
+                                  <td className="py-1 px-0 w-[58px]">
                                     <RowField value={data.shiriti} readOnly />
                                   </td>
                                 )}
                                 {showOtherCols && (
-                                  <td className={`py-1 px-0.5 text-right font-bold tabular-nums text-xs sm:text-sm ${difColor(dif)}`}>
+                                  <td className={`py-1 px-0 text-right font-bold tabular-nums text-xs sm:text-sm ${difColor(dif)}`}>
                                     {dif > 0 ? "+" : ""}{dif.toFixed(2)}
                                   </td>
                                 )}
-                                <td className="py-1 px-0.5 w-[70px]">
+                                <td className="py-1 px-0 w-[62px]">
                                   <RowField
                                     value={data.gjendje}
                                     readOnly={!canEditGjendje}
@@ -782,7 +782,7 @@ const RegjistrimiDitor = () => {
                                     }))}
                                   />
                                 </td>
-                                <td className="py-1 pl-0.5 text-right text-[10px] sm:text-xs text-slate-400 tabular-nums">
+                                <td className="py-1 pl-0 text-right text-[10px] sm:text-xs text-slate-400 tabular-nums">
                                   {difStart || "—"}
                                 </td>
                               </tr>
