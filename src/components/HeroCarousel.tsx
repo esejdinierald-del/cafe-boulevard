@@ -1,13 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import hero1 from "@/assets/hero-1.jpg";
-import hero2 from "@/assets/hero-2.jpg";
-import hero3 from "@/assets/hero-3.jpg";
+// Responsive multi-format variants generated at build time by vite-imagetools.
+// `as=picture` returns { sources: { avif?: string, webp?: string, jpg: string }, img: { src, w, h } }
+import hero1 from "@/assets/hero-1.jpg?w=480;768;1280&format=avif;webp;jpg&as=picture";
+import hero2 from "@/assets/hero-2.jpg?w=480;768;1280&format=avif;webp;jpg&as=picture";
+import hero3 from "@/assets/hero-3.jpg?w=480;768;1280&format=avif;webp;jpg&as=picture";
+
+type PictureSource = {
+  sources: Record<string, string>;
+  img: { src: string; w: number; h: number };
+};
 
 const SLIDES = [
-  { src: hero1, alt: "Boulevard Café interior at golden hour" },
-  { src: hero2, alt: "Latte art in dark ceramic cup" },
-  { src: hero3, alt: "Signature cocktail on dark bar" },
+  { pic: hero1 as PictureSource, alt: "Boulevard Café interior at golden hour" },
+  { pic: hero2 as PictureSource, alt: "Latte art in dark ceramic cup" },
+  { pic: hero3 as PictureSource, alt: "Signature cocktail on dark bar" },
 ];
+
+const SIZES = "(max-width: 480px) 480px, (max-width: 768px) 768px, 1280px";
 
 const INTERVAL = 5500;
 
@@ -38,7 +47,11 @@ export const HeroCarousel = () => {
     const next = (index + 1) % SLIDES.length;
     if (loaded[next]) return;
     const img = new Image();
-    img.src = SLIDES[next].src;
+    // Warm the browser cache for the WebP variant of the upcoming slide.
+    const s = SLIDES[next].pic.sources;
+    img.srcset = s.webp || s.avif || s.jpg;
+    img.sizes = SIZES;
+    img.src = SLIDES[next].pic.img.src;
     img.onload = () =>
       setLoaded((prev) => {
         if (prev[next]) return prev;
@@ -50,26 +63,37 @@ export const HeroCarousel = () => {
 
   return (
     <div className="blvd-hero-carousel" role="region" aria-label="Boulevard Café gallery">
-      {SLIDES.map((slide, i) => (
-        <div
-          key={slide.src}
-          className={`blvd-hero-slide ${i === index ? "is-active" : ""}`}
-          aria-hidden={i !== index}
-        >
-          {loaded[i] && (
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              loading={i === 0 ? "eager" : "lazy"}
-              decoding="async"
-              width={1280}
-              height={1600}
-              className="blvd-hero-img"
-              draggable={false}
-            />
-          )}
-        </div>
-      ))}
+      {SLIDES.map((slide, i) => {
+        const { sources, img } = slide.pic;
+        const isEager = i === 0;
+        return (
+          <div
+            key={img.src}
+            className={`blvd-hero-slide ${i === index ? "is-active" : ""}`}
+            aria-hidden={i !== index}
+          >
+            {loaded[i] && (
+              <picture>
+                {sources.avif && <source type="image/avif" srcSet={sources.avif} sizes={SIZES} />}
+                {sources.webp && <source type="image/webp" srcSet={sources.webp} sizes={SIZES} />}
+                <img
+                  src={img.src}
+                  srcSet={sources.jpg}
+                  sizes={SIZES}
+                  alt={slide.alt}
+                  loading={isEager ? "eager" : "lazy"}
+                  fetchPriority={isEager ? "high" : "low"}
+                  decoding="async"
+                  width={img.w}
+                  height={img.h}
+                  className="blvd-hero-img"
+                  draggable={false}
+                />
+              </picture>
+            )}
+          </div>
+        );
+      })}
       <div className="blvd-hero-overlay" aria-hidden="true" />
       <div className="blvd-hero-dots" role="tablist" aria-label="Slide selector">
         {SLIDES.map((_, i) => (
