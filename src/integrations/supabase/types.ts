@@ -1011,6 +1011,8 @@ export type Database = {
           created_at: string
           id: string
           location_id: string | null
+          locked_by_color: string | null
+          locked_by_name: string | null
           name: string
           number: number
           qr_code: string | null
@@ -1022,6 +1024,8 @@ export type Database = {
           created_at?: string
           id?: string
           location_id?: string | null
+          locked_by_color?: string | null
+          locked_by_name?: string | null
           name: string
           number: number
           qr_code?: string | null
@@ -1033,6 +1037,8 @@ export type Database = {
           created_at?: string
           id?: string
           location_id?: string | null
+          locked_by_color?: string | null
+          locked_by_name?: string | null
           name?: string
           number?: number
           qr_code?: string | null
