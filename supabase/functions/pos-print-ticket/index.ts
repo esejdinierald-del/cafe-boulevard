@@ -68,6 +68,16 @@ serve(async (req) => {
       });
       if (closeErr) return jsonResponse({ error: closeErr.message }, 500);
       await supabase.from("pos_orders").update({ printed_at: new Date().toISOString() }).eq("id", orderId);
+      // Clear any stale print jobs (bar/kitchen tickets left as pending/printing)
+      // for this table so they don't linger in the Print Station forever.
+      if (order.table_number != null) {
+        await supabase
+          .from("print_jobs")
+          .update({ status: "printed", printed_at: new Date().toISOString() })
+          .eq("station", "arka")
+          .eq("table_code", String(order.table_number))
+          .in("status", ["pending", "printing"]);
+      }
       return jsonResponse({ receiptText: buildReceiptText(order), transaction: txn, closed: true });
     }
 
