@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { Package, Plus, AlertTriangle, ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
 import { staffRead } from "@/lib/staff-read";
+import { Switch } from "@/components/ui/switch";
 
 interface Material {
   id: string;
@@ -47,6 +48,42 @@ const Inventory = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(
     typeof window !== "undefined" && sessionStorage.getItem("inv_admin_unlocked") === "1",
   );
+  // Global blur flag (server-controlled). Default true = current behaviour.
+  const [blurEnabled, setBlurEnabled] = useState<boolean>(true);
+  const [togglingBlur, setTogglingBlur] = useState(false);
+
+  const loadBlurFlag = async () => {
+    const { data } = await staffRead<{ enabled: boolean }>("app_settings.inventory_blur");
+    if (data && typeof (data as any).enabled === "boolean") {
+      setBlurEnabled((data as any).enabled);
+    }
+  };
+
+  const toggleBlur = async (next: boolean) => {
+    const adminPassword = window.prompt(
+      next
+        ? "Aktivizo sfumimin — fut fjalëkalimin tënd admin:"
+        : "Çaktivizo sfumimin (të gjithë do të shohin sasitë) — fut fjalëkalimin tënd admin:",
+    );
+    if (!adminPassword) return;
+    setTogglingBlur(true);
+    const { data, error } = await supabase.functions.invoke("set-inventory-blur", {
+      body: {
+        adminName: staffName,
+        adminPassword,
+        enabled: next,
+      },
+    });
+    setTogglingBlur(false);
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim gjatë ruajtjes");
+      return;
+    }
+    setBlurEnabled(next);
+    toast.success(next ? "Sfumimi u aktivizua" : "Sfumimi u çaktivizua");
+  };
+
+  const showBlur = blurEnabled && !isAdmin;
 
   useEffect(() => {
     const sync = () =>
@@ -125,8 +162,13 @@ const Inventory = () => {
       return;
     }
     load();
+    loadBlurFlag();
     const poll = setInterval(load, 8000);
-    return () => clearInterval(poll);
+    const pollFlag = setInterval(loadBlurFlag, 15000);
+    return () => {
+      clearInterval(poll);
+      clearInterval(pollFlag);
+    };
   }, [hasToken]);
 
   if (!hasToken) {
