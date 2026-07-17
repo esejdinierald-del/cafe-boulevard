@@ -525,15 +525,15 @@
 
 .blvd-subtitle {
   font-family: var(--font-sans);
-  font-size: 9.5px;
-  letter-spacing: 2.5px;
+  font-size: clamp(9px, 2.4vw, 10.5px);
+  letter-spacing: clamp(1.6px, 0.6vw, 2.5px);
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .blvd-section-title {
   font-family: var(--font-serif);
-  font-size: 17px;
+  font-size: clamp(15px, 4.2vw, 18px);
   font-weight: 600;
   letter-spacing: 2px;
   color: var(--gold-3);
@@ -545,7 +545,7 @@
 
 .blvd-welcome {
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: clamp(12.5px, 3.4vw, 14px);
   font-style: italic;
   font-weight: 300;
   color: var(--text-muted);
@@ -981,10 +981,17 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+/* Allow header items to shrink without overflowing on 320px screens. */
+.blvd-header-row > * {
+  min-width: 0;
 }
 
 .blvd-header-logo {
-  height: 44px;
+  height: clamp(36px, 11vw, 44px);
   width: auto;
   max-width: 60%;
   object-fit: contain;
