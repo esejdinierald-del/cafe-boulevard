@@ -298,7 +298,6 @@ const Index = () => {
 
             {/* ═══ STICKY GLASS HEADER ═══ */}
             <FadeUp as="header" className="blvd-header-sticky">
-            <div role="banner" className="contents">
               <div className="blvd-header-glass" aria-hidden="true" />
               <div className="blvd-header-sweep" aria-hidden="true" />
               <div className="blvd-header-line-top" aria-hidden="true" />
@@ -341,7 +340,6 @@ const Index = () => {
               </div>
 
               <p className="blvd-subtitle">{t.subtitle}</p>
-            </div>
             </FadeUp>
 
             {/* ═══ BUTTONS ═══ */}
