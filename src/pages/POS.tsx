@@ -298,18 +298,18 @@ const POS = () => {
               <DraggableHeaderItem id="inventory">
                 <button type="button"
                   onClick={() => navigate("/inventory")}
-                  className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-sm"
                 >
-                  <Package size={12} /> Inventari
+                  <Package size={16} /> Inventari
                 </button>
               </DraggableHeaderItem>
               <DraggableHeaderItem id="service">
                 <button type="button"
                   title="Shërbim"
-                  onClick={() => {/* TODO: connect to service requests */}}
-                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${hasServiceAlert ? "bg-orange-600 text-white animate-pulse hover:bg-orange-500" : "bg-slate-700 hover:bg-slate-600"}`}
+                  onClick={() => navigate("/staff")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm ${hasServiceAlert ? "bg-orange-600 text-white animate-pulse hover:bg-orange-500" : "bg-slate-700 hover:bg-slate-600"}`}
                 >
-                  <ConciergeBell size={12} /> Shërbim
+                  <ConciergeBell size={16} /> Shërbim
                 </button>
               </DraggableHeaderItem>
             </div>
