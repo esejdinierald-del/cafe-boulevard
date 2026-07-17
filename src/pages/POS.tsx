@@ -131,6 +131,21 @@ const POS = () => {
   const activeTableNumber = currentOrder?.tableNumber ?? null;
   const hasServiceAlert = false; // TODO: connect to real service requests
 
+  const currentStaffName =
+    (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
+
+  const openTableOrder = (t: TableRow) => {
+    if (
+      t.status === "occupied" &&
+      t.locked_by_name &&
+      currentStaffName &&
+      t.locked_by_name.trim() !== currentStaffName.trim()
+    ) {
+      toast.warning(`Kjo tavolinë po shërbehet nga ${t.locked_by_name}`);
+    }
+    startOrder("table", t.number as number);
+  };
+
   const viewTableOrders = async (tableNumber: number | string) => {
     const { data, error } = await staffRead<TableOrderDetail[]>("pos_orders.by_table", {
       tableNumber: Number(tableNumber),
