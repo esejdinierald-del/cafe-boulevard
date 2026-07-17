@@ -513,7 +513,19 @@ const ManagerDashboard = () => {
                       </>
                     ) : (
                       <>
-                        <span className="font-display font-bold text-lg">{category.name}</span>
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <span className="font-display font-bold text-lg truncate">{category.name}</span>
+                          <label className="flex items-center gap-2 text-sm text-muted-foreground shrink-0 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 accent-[hsl(var(--gold))] cursor-pointer"
+                              checked={category.track_daily !== false}
+                              onChange={(e) => handleToggleCategoryDaily(category.id, e.target.checked)}
+                              aria-label="Përfshi në regjistrimin ditor"
+                            />
+                            Përfshi në regjistrimin ditor
+                          </label>
+                        </div>
                         <div className="flex gap-2">
                           <Button
                             size="icon"
