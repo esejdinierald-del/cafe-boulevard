@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, Minus, ShoppingCart, Languages, Clock, Flame } from "lucide-react";
 import logo from "@/assets/boulevard-logo.png";
