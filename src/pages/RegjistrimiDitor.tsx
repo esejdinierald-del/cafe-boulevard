@@ -550,7 +550,9 @@ const RegjistrimiDitor = () => {
 
   // Products that should appear in the daily-registration table (respects track_daily flag).
   const displayProducts = useMemo(
-    () => products.filter((p: any) => p.track_daily !== false),
+    () => products.filter(
+      (p: any) => p.track_daily !== false && p.category_track_daily !== false,
+    ),
     [products],
   );
 
