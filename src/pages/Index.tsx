@@ -11,6 +11,7 @@ import { useGeolocation } from "@/hooks/use-geolocation";
 import { Languages, Wifi } from "lucide-react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
 import HeroCarousel from "@/components/HeroCarousel";
+import PremiumBackground from "@/components/PremiumBackground";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -276,11 +277,8 @@ const Index = () => {
         <meta name="twitter:title" content="Boulevard Café Elbasan — Order, Call Waiter & Connect" />
         <meta name="twitter:description" content="Premium café service in Elbasan: order, call the waiter and connect from your table." />
       </Helmet>
-      {/* Background layers */}
-      <div className="blvd-ambient" />
-      <div className="blvd-bokeh-blur" />
-      <div className="blvd-sparkles" />
-      <div className="blvd-vignette" />
+      {/* Background layers (reusable ambient scene) */}
+      <PremiumBackground />
 
       {/* ═══ PHONE MOCKUP ═══ */}
       <div className="blvd-phone">
