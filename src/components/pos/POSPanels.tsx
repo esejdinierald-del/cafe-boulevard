@@ -36,7 +36,7 @@ interface POSOrder {
 // ---------- KDS (bar / kitchen) ----------
 export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
   const [splits, setSplits] = useState<Split[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [confirmingIds, setConfirmingIds] = useState<Set<string>>(new Set());
 
   const load = async () => {
     const { data } = await staffRead<Split[]>("order_items_split.pending", { kind });
@@ -75,17 +75,30 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
   };
 
   const confirm = async (split: Split) => {
-    setLoading(true);
+    // Per-split guard against double-invoke (fast double clicks / race)
+    if (confirmingIds.has(split.id)) return;
+    setConfirmingIds((prev) => {
+      const n = new Set(prev);
+      n.add(split.id);
+      return n;
+    });
     const shiftToken = localStorage.getItem("staff_shift_token") || undefined;
     const { error } = await supabase.functions.invoke("pos-confirm-order", {
       body: { splitId: split.id, shiftToken },
       headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
     });
-    setLoading(false);
     if (error) {
+      setConfirmingIds((prev) => {
+        const n = new Set(prev);
+        n.delete(split.id);
+        return n;
+      });
       toast.error("Gabim: " + error.message);
       return;
     }
+    // Optimistically remove the confirmed split from the local list so the
+    // card disappears immediately and cannot be re-clicked before the next poll.
+    setSplits((prev) => prev.filter((s) => s.id !== split.id));
     toast.success("U konfirmua — duke printuar biletën");
     // Send to the central arka printer queue.
     const title = kind === "bar" ? "Boulevard Cafe · Banak" : "Boulevard Cafe · Kuzhinë";
@@ -100,6 +113,11 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
       // Fallback: print locally if queueing failed
       printReceipt(buildStationTicket(split), title);
     }
+    setConfirmingIds((prev) => {
+      const n = new Set(prev);
+      n.delete(split.id);
+      return n;
+    });
   };
 
   if (splits.length === 0) {
@@ -131,8 +149,8 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
               </li>
             ))}
           </ul>
-          <Button onClick={() => confirm(s)} disabled={loading} className="w-full h-12 text-base font-bold">
-            <CheckCircle2 className="h-5 w-5 mr-2" /> Gati & Printo
+          <Button onClick={() => confirm(s)} disabled={confirmingIds.has(s.id)} className="w-full h-12 text-base font-bold">
+            <CheckCircle2 className="h-5 w-5 mr-2" /> {confirmingIds.has(s.id) ? "Duke konfirmuar..." : "Gati & Printo"}
           </Button>
         </Card>
       ))}
