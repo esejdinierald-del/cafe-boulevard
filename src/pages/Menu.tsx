@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, Minus, ShoppingCart, Languages, Clock, Flame } from "lucide-react";
 import logo from "@/assets/boulevard-logo.png";
@@ -243,6 +244,17 @@ const Menu = () => {
       />
 
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-4xl">
+        <Helmet>
+          <title>Menu — Boulevard Café Elbasan</title>
+          <meta name="description" content="Browse the Boulevard Café Elbasan digital menu: coffee, breakfast, drinks and food. Order directly from your table with prices in Lekë." />
+          <link rel="canonical" href="https://boulevard-caffe.lovable.app/menu" />
+          <meta property="og:title" content="Menu — Boulevard Café Elbasan" />
+          <meta property="og:description" content="Browse the digital menu and order directly from your table at Boulevard Café Elbasan." />
+          <meta property="og:url" content="https://boulevard-caffe.lovable.app/menu" />
+          <meta name="twitter:title" content="Menu — Boulevard Café Elbasan" />
+          <meta name="twitter:description" content="Browse the digital menu and order directly from your table at Boulevard Café Elbasan." />
+        </Helmet>
+        <h1 className="sr-only">Boulevard Café Elbasan — Digital Menu</h1>
         {/* Header */}
         <div
           className="flex items-center justify-between mb-6 rounded-2xl p-4 animate-in-stagger-1"
@@ -255,6 +267,7 @@ const Menu = () => {
         >
           <button type="button"
             onClick={() => navigate(`/?tabela=${tableNumber}`)}
+            aria-label="Back to home"
             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
             style={{
               background: 'hsl(0 0% 100% / 0.06)',
@@ -273,6 +286,7 @@ const Menu = () => {
           </div>
           <button type="button"
             onClick={toggleLanguage}
+            aria-label="Toggle language"
             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
             style={{
               background: 'hsl(0 0% 100% / 0.06)',
@@ -404,6 +418,7 @@ const Menu = () => {
                               <>
                                 <button type="button"
                                   onClick={() => removeFromCart(item.id)}
+                                  aria-label="Decrease quantity"
                                   className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                                   style={{
                                     background: 'hsl(0 0% 100% / 0.08)',
@@ -416,6 +431,7 @@ const Menu = () => {
                                 <span className="font-bold text-sm w-6 text-center" style={{ color: 'hsl(0 0% 90%)' }}>{cart[item.id]}</span>
                                 <button type="button"
                                   onClick={() => addToCart(item.id)}
+                                  aria-label="Increase quantity"
                                   className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                                   style={{
                                     background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
@@ -429,6 +445,7 @@ const Menu = () => {
                             ) : (
                               <button type="button"
                                 onClick={() => addToCart(item.id)}
+                                aria-label="Add to cart"
                                 className="h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110"
                                 style={{
                                   background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
@@ -483,6 +500,7 @@ const Menu = () => {
                           <span className="font-bold whitespace-nowrap gradient-text-gold">{price * qty} {t.currency}</span>
                           <button type="button"
                             onClick={() => removeFromCart(itemId)}
+                            aria-label="Remove from cart"
                             className="h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                             style={{
                               background: 'hsl(0 70% 50% / 0.15)',

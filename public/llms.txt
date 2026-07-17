@@ -1,0 +1,9 @@
+# Boulevard Café Elbasan
+
+> Premium café in Elbasan, Albania offering coffee, food, and table-side digital service (call waiter, request bill, QR menu ordering).
+
+## Pages
+
+- [Home](/): Welcome page — call waiter, request bill, order from menu, request songs, and rate the café.
+- [Menu](/menu): Full digital menu with categories, prices in Lekë, and QR-based table ordering.
+- [Install](/install): Instructions to install the Boulevard Café web app on your device.

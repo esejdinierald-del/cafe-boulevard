@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
 import { FeedbackDialog } from "@/components/FeedbackDialog";
 import { WelcomeGreeting } from "@/components/WelcomeGreeting";
@@ -257,6 +258,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      <Helmet>
+        <title>Boulevard Café Elbasan — Order, Call Waiter & Connect</title>
+        <meta name="description" content="Boulevard Café Elbasan: call the waiter, request your bill, order from the digital menu and request songs — premium café service in Elbasan, Albania." />
+        <link rel="canonical" href="https://boulevard-caffe.lovable.app/" />
+        <meta property="og:title" content="Boulevard Café Elbasan — Order, Call Waiter & Connect" />
+        <meta property="og:description" content="Premium café service in Elbasan: order, call the waiter and connect from your table." />
+        <meta property="og:url" content="https://boulevard-caffe.lovable.app/" />
+        <meta name="twitter:title" content="Boulevard Café Elbasan — Order, Call Waiter & Connect" />
+        <meta name="twitter:description" content="Premium café service in Elbasan: order, call the waiter and connect from your table." />
+      </Helmet>
       {/* Background layers */}
       <div className="blvd-ambient" />
       <div className="blvd-bokeh-blur" />
@@ -265,7 +276,7 @@ const Index = () => {
 
       {/* Language toggle */}
       <div className="absolute top-4 right-4 z-20">
-        <button type="button" onClick={toggleLanguage} className="blvd-lang-btn">
+        <button type="button" onClick={toggleLanguage} className="blvd-lang-btn" aria-label="Toggle language">
           <Languages className="h-5 w-5" />
         </button>
       </div>
@@ -303,7 +314,10 @@ const Index = () => {
                     filter: 'drop-shadow(0 0 16px rgba(232, 199, 109, 0.35)) drop-shadow(0 0 35px rgba(255, 180, 50, 0.15))',
                   }}
                 />
-                <h1 className="blvd-title">BOULEVARD</h1>
+                <h1 className="blvd-title">
+                  BOULEVARD
+                  <span className="sr-only"> Café Elbasan — Order & Connect</span>
+                </h1>
                 <div className="blvd-title-underline" />
                 <p className="blvd-subtitle">{t.subtitle}</p>
               </div>
@@ -338,7 +352,7 @@ const Index = () => {
                     className="blvd-table-input"
                   />
                   <div className="pr-3 flex-shrink-0 relative z-10">
-                    <button type="button" onClick={confirmTableAndRun} className="blvd-check-btn">
+                    <button type="button" onClick={confirmTableAndRun} className="blvd-check-btn" aria-label="Confirm table number">
                       <CheckIcon />
                     </button>
                   </div>
@@ -385,7 +399,7 @@ const Index = () => {
             </div>
 
             {/* Hidden manager link */}
-            <button type="button" onClick={() => navigate("/manager-login")} className="blvd-manager-dot">•</button>
+            <button type="button" onClick={() => navigate("/manager-login")} className="blvd-manager-dot" aria-label="Manager login">•</button>
           </div>
         </div>
       </div>
