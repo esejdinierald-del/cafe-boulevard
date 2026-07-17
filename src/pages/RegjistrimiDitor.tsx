@@ -676,7 +676,7 @@ const RegjistrimiDitor = () => {
               // Admin (unlocked) always sees full columns to fix Dif on any turn.
               const showOtherCols = isConfirmed || !editable || adminUnlocked;
               const canAdminEditStok = adminUnlocked;
-              const tableMinWidth = showOtherCols ? "min-w-[440px]" : "min-w-[240px]";
+              const tableMinWidth = showOtherCols ? "min-w-[360px]" : "min-w-[200px]";
               return (
               <TabsContent key={t.id} value={t.id} className="space-y-6 mt-4">
                 {!editable && (
