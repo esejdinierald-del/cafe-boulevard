@@ -78,6 +78,21 @@ serve(async (req) => {
           .eq("table_code", String(order.table_number))
           .in("status", ["pending", "printing"]);
       }
+      // If no more open orders remain for this table, clear the staff lock.
+      if (order.table_id) {
+        const { data: remaining } = await supabase
+          .from("pos_orders")
+          .select("id")
+          .eq("table_id", order.table_id)
+          .neq("status", "closed")
+          .limit(1);
+        if (!remaining || remaining.length === 0) {
+          await supabase
+            .from("tables")
+            .update({ status: "available", locked_by_name: null, locked_by_color: null })
+            .eq("id", order.table_id);
+        }
+      }
       return jsonResponse({ receiptText: buildReceiptText(order), transaction: txn, closed: true });
     }
 
