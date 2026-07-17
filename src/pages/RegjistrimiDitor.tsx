@@ -517,6 +517,44 @@ const RegjistrimiDitor = () => {
   const kafeKryesorDif =
     coffeeSalesAuto + (currentTurn.mulliriFillim || 0) - (currentTurn.mulliriPerfund || 0);
 
+  // ---------- Xhiro auto: sum of POS sale transactions in the shift window ----------
+  const [xhiroAuto, setXhiroAuto] = useState<number>(0);
+  useEffect(() => {
+    if (!selectedTurn) { setXhiroAuto(0); return; }
+    let cancelled = false;
+    const compute = async () => {
+      try {
+        const fromISO = selectedTurn.started_at;
+        const toISO = selectedTurn.locked_at ?? new Date().toISOString();
+        const { staffRead } = await import("@/lib/staff-read");
+        const { data } = await staffRead<any[]>("transactions.range", {
+          fromISO, toISO, type: "sale",
+        });
+        if (cancelled) return;
+        const total = (data || []).reduce((s: number, r: any) => s + (Number(r.amount) || 0), 0);
+        setXhiroAuto(Math.round(total));
+      } catch { /* silent */ }
+    };
+    compute();
+    if (selectedTurn.is_locked) return () => { cancelled = true; };
+    const ch = mainSupabase
+      .channel(`xhiro-auto-${selectedTurn.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, compute)
+      .subscribe();
+    const iv = window.setInterval(compute, 20000);
+    return () => { cancelled = true; window.clearInterval(iv); mainSupabase.removeChannel(ch); };
+  }, [selectedTurn?.id, selectedTurn?.is_locked, selectedTurn?.started_at, selectedTurn?.locked_at]);
+
+  // Sync auto value into turn_data.xhiro (autosave picks it up) when it changes.
+  useEffect(() => {
+    if (!selectedTurn || !isMine) return;
+    if ((currentTurn.xhiro || 0) === xhiroAuto) return;
+    setCurrentTurn((prev) => ({ ...prev, xhiro: xhiroAuto }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [xhiroAuto, selectedTurn?.id, isMine]);
+
+  const vleraDorezuar = xhiroAuto - (totalShpenzime || 0);
+
   // ---------- OCR mulliri perfund from photo ----------
   const [scanning, setScanning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -896,13 +934,13 @@ const RegjistrimiDitor = () => {
                     <Field
                       label="Fillim"
                       value={t.turn_data.mulliriFillim}
-                      readOnly={!editable}
+                      readOnly={!(editable && adminUnlocked)}
                       onChange={(v) => setCurrentTurn((prev) => ({ ...prev, mulliriFillim: v }))}
                     />
                     <Field
                       label="Përfund"
                       value={t.turn_data.mulliriPerfund}
-                      readOnly={!editable}
+                      readOnly={!(editable && adminUnlocked)}
                       onChange={(v) => setCurrentTurn((prev) => ({ ...prev, mulliriPerfund: v }))}
                     />
                     <div>
@@ -959,11 +997,12 @@ const RegjistrimiDitor = () => {
                       <Input
                         type="number"
                         inputMode="decimal"
-                        value={t.turn_data.xhiro}
-                        readOnly={!editable}
-                        onChange={(e) => setCurrentTurn((prev) => ({ ...prev, xhiro: Number(e.target.value) || 0 }))}
-                        className="bg-slate-950 border-slate-700 text-white h-9 text-sm"
+                        value={xhiroAuto}
+                        readOnly
+                        onChange={() => {}}
+                        className="bg-slate-950 border-slate-700 text-white h-9 text-sm font-semibold tabular-nums"
                       />
+                      <p className="text-[10px] text-slate-500 mt-1">Auto nga POS (shitjet e turnit)</p>
                     </div>
                     <div>
                       <div className="flex items-center justify-between mb-1">
@@ -995,6 +1034,31 @@ const RegjistrimiDitor = () => {
                             </button>}
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Vlera e Dorezuar (read-only summary) */}
+                <Card className="bg-slate-900 border-amber-700/40 p-2 sm:p-4">
+                  <h2 className="font-semibold text-sm sm:text-base mb-3 text-amber-300">Vlera e Dorëzuar</h2>
+                  <div className="grid grid-cols-3 gap-3 items-end">
+                    <div>
+                      <div className="text-xs text-slate-400 mb-1">Xhiro</div>
+                      <div className="h-10 flex items-center px-3 rounded border border-slate-800 bg-slate-950 tabular-nums font-semibold">
+                        {xhiroAuto.toFixed(0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400 mb-1">− Shpenzime</div>
+                      <div className="h-10 flex items-center px-3 rounded border border-slate-800 bg-slate-950 tabular-nums font-semibold text-rose-300">
+                        {totalShpenzime.toFixed(0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-amber-400 mb-1">= Vlera e Dorëzuar</div>
+                      <div className="h-10 flex items-center px-3 rounded border border-amber-600/60 bg-amber-950/40 tabular-nums font-extrabold text-lg text-amber-300">
+                        {vleraDorezuar.toFixed(0)} L
                       </div>
                     </div>
                   </div>
