@@ -19,6 +19,7 @@ interface Category {
   name: string;
   name_en: string | null;
   display_order: number;
+  track_daily?: boolean;
 }
 
 interface MenuItem {
@@ -206,6 +207,24 @@ const ManagerDashboard = () => {
     } catch (error) {
       console.error('Error updating category:', error);
       toast.error("Gabim në përditësimin e kategorisë");
+    }
+  };
+
+  const handleToggleCategoryDaily = async (id: string, next: boolean) => {
+    // Optimistic update so the checkbox flips immediately.
+    setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, track_daily: next } : c)));
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({ track_daily: next })
+        .eq('id', id);
+      if (error) throw error;
+      toast.success(next ? "Kategoria u përfshi në regjistrimin ditor" : "Kategoria u përjashtua nga regjistrimi ditor");
+    } catch (error) {
+      console.error('Error toggling category track_daily:', error);
+      toast.error("Gabim në ndryshimin e cilësimit");
+      // Roll back on failure.
+      setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, track_daily: !next } : c)));
     }
   };
 
