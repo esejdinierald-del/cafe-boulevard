@@ -1111,3 +1111,173 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(201,163,92,0.35);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 4 — PREMIUM POLISH
+   Consistent spacing, typography rhythm, refined microinteractions,
+   accessibility (focus rings), safe-area, reduced-motion.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --blvd-radius-lg: 20px;
+  --blvd-radius-pill: 50px;
+  --blvd-space-1: 6px;
+  --blvd-space-2: 10px;
+  --blvd-space-3: 14px;
+  --blvd-space-4: 20px;
+  --blvd-space-5: 28px;
+  --blvd-gold-glow: 0 0 0 1px rgba(232,199,109,0.55),
+                    0 0 22px rgba(232,199,109,0.35);
+  --blvd-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Global focus ring (keyboard only) ─────────────────────────── */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid rgba(232, 199, 109, 0.85);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+.blvd-btn-dark:focus-visible,
+.blvd-btn-gold:focus-visible,
+.blvd-wifi-chip:focus-visible,
+.blvd-lang-pill:focus-visible,
+.blvd-check-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(6, 8, 12, 0.95),
+    0 0 0 4px rgba(232, 199, 109, 0.85),
+    var(--blvd-gold-glow);
+}
+
+/* ── Refined typography rhythm ─────────────────────────────────── */
+.blvd-header-sticky .blvd-subtitle {
+  margin-top: 8px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+.blvd-welcome {
+  font-size: 13.5px;
+  line-height: 1.55;
+  margin: 10px 0 4px;
+  letter-spacing: 0.4px;
+}
+
+/* ── Consistent spacing on the button stack ────────────────────── */
+.blvd-screen-content > .w-full.flex.flex-col {
+  gap: var(--blvd-space-3) !important;
+}
+
+/* ── Button microinteractions (smooth hover, press, icon lift) ── */
+.blvd-btn-dark,
+.blvd-btn-gold {
+  min-height: 52px;
+  transition:
+    transform 0.35s var(--blvd-ease-out),
+    box-shadow 0.35s var(--blvd-ease-out),
+    border-color 0.35s var(--blvd-ease-out),
+    filter 0.35s var(--blvd-ease-out);
+  will-change: transform;
+}
+.blvd-btn-dark:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 22px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 0 18px rgba(232,199,109,0.10);
+}
+.blvd-btn-gold:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.55),
+    inset 0 2px 0 rgba(255,255,255,0.42),
+    inset 0 -2px 4px rgba(100,50,0,0.3),
+    0 0 32px rgba(244,196,48,0.32);
+}
+.blvd-btn-dark:active,
+.blvd-btn-gold:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.12s;
+}
+
+/* Icon lift on hover */
+.blvd-btn-dark .blvd-icon-gold,
+.blvd-btn-gold .blvd-icon-dark,
+.blvd-btn-dark > span:first-child,
+.blvd-btn-gold > span:nth-child(2) {
+  transition: transform 0.35s var(--blvd-ease-out);
+}
+.blvd-btn-dark:hover .blvd-icon-gold,
+.blvd-btn-dark:hover > span:first-child {
+  transform: translateX(-2px) scale(1.06);
+}
+.blvd-btn-gold:hover .blvd-icon-dark {
+  transform: translateX(-2px) scale(1.06);
+}
+
+/* ── Consistent glass card system ──────────────────────────────── */
+.blvd-card {
+  position: relative;
+  border-radius: var(--blvd-radius-lg);
+  padding: 16px;
+  background: linear-gradient(180deg,
+    rgba(14, 16, 22, 0.72) 0%,
+    rgba(10, 12, 16, 0.62) 100%);
+  border: 1px solid rgba(232, 199, 109, 0.22);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 215, 120, 0.10);
+}
+
+/* ── Hero carousel: fix CLS + smoother section transition ─────── */
+.blvd-hero-carousel {
+  margin: 16px 0 12px;
+  content-visibility: auto;
+  contain-intrinsic-size: 100% 220px;
+}
+
+/* ── Mobile: safe area + touch targets + landscape ─────────────── */
+@supports (padding: max(0px)) {
+  @media (max-width: 420px) {
+    .blvd-screen-content {
+      padding-top: max(28px, env(safe-area-inset-top));
+      padding-bottom: max(28px, env(safe-area-inset-bottom));
+      padding-left: max(20px, env(safe-area-inset-left));
+      padding-right: max(20px, env(safe-area-inset-right));
+    }
+  }
+}
+@media (max-width: 420px) {
+  .blvd-btn-dark,
+  .blvd-btn-gold { min-height: 54px; }
+  .blvd-check-btn { width: 40px; height: 40px; }
+  .blvd-wifi-chip,
+  .blvd-lang-pill { min-height: 32px; }
+}
+/* Landscape phone: compress vertical rhythm, keep tap targets */
+@media (max-height: 480px) and (orientation: landscape) {
+  .blvd-screen-content { padding: 18px 22px; max-height: none; }
+  .blvd-hero-carousel { display: none; }
+  .blvd-header-sticky { padding: 8px 12px; margin-bottom: 12px; }
+  .blvd-screen-content > .w-full.flex.flex-col { gap: 10px !important; }
+  .blvd-btn-dark, .blvd-btn-gold { padding: 12px 18px; min-height: 44px; }
+}
+
+/* ── Global reduced-motion guard ───────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .blvd-btn-dark:hover,
+  .blvd-btn-gold:hover { transform: none; }
+}
