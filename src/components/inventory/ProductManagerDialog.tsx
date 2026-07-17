@@ -170,20 +170,26 @@ const ProductRow = ({
   menuItems,
   onRemove,
   onSaved,
+  onMoveUp,
+  onMoveDown,
 }: {
   product: InvProductRow;
   menuItems: MenuItemLite[];
   onRemove: () => void;
   onSaved: (renamedFrom?: string, renamedTo?: string) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }) => {
   const [name, setName] = useState(product.name);
   const [ids, setIds] = useState<string[]>(product.menu_item_ids || []);
   const [units, setUnits] = useState<number>(Number(product.units_per_sale) || 1);
+  const [trackDaily, setTrackDaily] = useState<boolean>(product.track_daily ?? true);
   const [saving, setSaving] = useState(false);
 
   const dirty =
     name.trim() !== product.name ||
     units !== product.units_per_sale ||
+    trackDaily !== (product.track_daily ?? true) ||
     ids.join(",") !== (product.menu_item_ids || []).join(",");
 
   const save = async () => {
@@ -191,7 +197,7 @@ const ProductRow = ({
     if (!newName) return toast.error("Emri s'mund të jetë bosh");
     setSaving(true);
     try {
-      await InvProductApi.update({ id: product.id, name: newName, menu_item_ids: ids, units_per_sale: units });
+      await InvProductApi.update({ id: product.id, name: newName, menu_item_ids: ids, units_per_sale: units, track_daily: trackDaily });
     } catch (e: any) { setSaving(false); return toast.error(e.message); }
     setSaving(false);
     const renamed = newName !== product.name;
@@ -201,7 +207,15 @@ const ProductRow = ({
 
   return (
     <div className="border border-slate-800 rounded-lg p-3 bg-slate-900/60 space-y-2">
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_auto_auto] gap-2 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-[auto_2fr_1fr_auto_auto] gap-2 items-center">
+        <div className="flex flex-col gap-1">
+          <Button size="sm" variant="ghost" onClick={onMoveUp} disabled={!onMoveUp} className="h-6 w-8 p-0 text-slate-400 hover:text-white">
+            <ArrowUp size={12} />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={onMoveDown} disabled={!onMoveDown} className="h-6 w-8 p-0 text-slate-400 hover:text-white">
+            <ArrowDown size={12} />
+          </Button>
+        </div>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -233,6 +247,10 @@ const ProductRow = ({
           <Trash2 size={14} />
         </Button>
       </div>
+      <label className="flex items-center gap-2 text-xs text-slate-300">
+        <Checkbox checked={trackDaily} onCheckedChange={(v) => setTrackDaily(!!v)} />
+        Përfshi në regjistrimin ditor
+      </label>
       <MenuMultiSelect menuItems={menuItems} selected={ids} onChange={setIds} />
     </div>
   );
