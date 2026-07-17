@@ -399,7 +399,7 @@ const Index = () => {
             </div>
 
             {/* Hidden manager link */}
-            <button type="button" onClick={() => navigate("/manager-login")} className="blvd-manager-dot">•</button>
+            <button type="button" onClick={() => navigate("/manager-login")} className="blvd-manager-dot" aria-label="Manager login">•</button>
           </div>
         </div>
       </div>
