@@ -1267,6 +1267,43 @@
   .blvd-wifi-chip,
   .blvd-lang-pill { min-height: 32px; }
 }
+
+/* ── Very small phones (iPhone SE 320, small Androids) ────────── */
+@media (max-width: 360px) {
+  .blvd-screen-content {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  .blvd-header-sticky { padding: 12px 12px 10px; }
+  .blvd-header-logo   { height: 34px; max-width: 55%; }
+  .blvd-wifi-chip,
+  .blvd-lang-pill    { padding: 6px 8px; font-size: 10px; }
+  .blvd-btn-dark,
+  .blvd-btn-gold     { padding: 14px 16px; font-size: 14.5px; gap: 10px; }
+  .blvd-welcome      { margin: 6px 0 2px; }
+}
+
+/* ── Safe-area for sticky header when app is installed as PWA ──── */
+@supports (padding: max(0px)) {
+  @media (max-width: 420px) {
+    .blvd-header-sticky {
+      top: max(8px, env(safe-area-inset-top));
+    }
+  }
+}
+
+/* ── Tablet (≥ 768px): keep the phone mockup elegant, no clipping ── */
+@media (min-width: 768px) {
+  .blvd-phone { max-width: 400px; }
+  .blvd-screen-content { max-height: min(820px, 90vh); }
+}
+
+/* ── Reduce ambient GPU work on small screens ─────────────────── */
+@media (max-width: 420px) {
+  .blvd-particles { opacity: 0.55; }
+  .blvd-bokeh-blur { filter: blur(18px); opacity: 0.7; }
+  .blvd-gold-beams { filter: blur(22px); opacity: 0.75; }
+}
 /* Landscape phone: compress vertical rhythm, keep tap targets */
 @media (max-height: 480px) and (orientation: landscape) {
   .blvd-screen-content { padding: 18px 22px; max-height: none; }
