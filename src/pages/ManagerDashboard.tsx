@@ -20,6 +20,7 @@ interface Category {
   name_en: string | null;
   display_order: number;
   track_daily?: boolean;
+  enabled?: boolean;
 }
 
 interface MenuItem {
@@ -225,6 +226,23 @@ const ManagerDashboard = () => {
       toast.error("Gabim në ndryshimin e cilësimit");
       // Roll back on failure.
       setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, track_daily: !next } : c)));
+    }
+  };
+
+  const handleToggleCategoryEnabled = async (id: string, next: boolean) => {
+    // Optimistic — hides/shows the category in menu, POS, and daily reg.
+    setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, enabled: next } : c)));
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({ enabled: next })
+        .eq('id', id);
+      if (error) throw error;
+      toast.success(next ? "Kategoria u aktivizua" : "Kategoria u çaktivizua — produktet e saj fshihen kudo");
+    } catch (error) {
+      console.error('Error toggling category enabled:', error);
+      toast.error("Gabim në ndryshimin e statusit");
+      setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, enabled: !next } : c)));
     }
   };
 
