@@ -289,6 +289,25 @@ const Inventory = () => {
           </div>
         )}
 
+        {isAdmin && (
+          <div className="flex items-center justify-between border border-slate-700 bg-slate-800/60 rounded-lg p-3">
+            <div className="text-sm">
+              <div className="font-medium">Sfumo sasitë për stafin</div>
+              <div className="text-xs text-slate-400">
+                Kur është aktiv, kolonat “Sasia” dhe “Min” shfaqen të sfumuara për të gjithë përveç adminëve.
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400">{blurEnabled ? "Aktiv" : "Joaktiv"}</span>
+              <Switch
+                checked={blurEnabled}
+                disabled={togglingBlur}
+                onCheckedChange={(v) => toggleBlur(!!v)}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Table */}
         <div className="border border-slate-700 rounded-lg overflow-hidden bg-slate-800">
           {loading ? (
@@ -321,8 +340,8 @@ const Inventory = () => {
                       <TableCell className="font-medium">{m.name}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         <span
-                          className={isAdmin ? "" : "blur-sm select-none"}
-                          aria-hidden={!isAdmin}
+                          className={showBlur ? "blur-sm select-none" : ""}
+                          aria-hidden={showBlur}
                         >
                           {Math.round(m.quantity)}
                         </span>
@@ -330,8 +349,8 @@ const Inventory = () => {
                       <TableCell>{m.unit}</TableCell>
                       <TableCell className="text-right tabular-nums text-slate-400">
                         <span
-                          className={isAdmin ? "" : "blur-sm select-none"}
-                          aria-hidden={!isAdmin}
+                          className={showBlur ? "blur-sm select-none" : ""}
+                          aria-hidden={showBlur}
                         >
                           {Math.round(m.min_threshold)}
                         </span>
