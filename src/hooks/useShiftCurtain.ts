@@ -12,6 +12,10 @@ export function useShiftCurtain() {
   const [staffUrl, setStaffUrl] = useState<string>("");
 
   const ensureShiftToken = async () => {
+    // Clear any stale token from a previous shift so components using
+    // staffRead() don't fire requests with an expired token and 401.
+    try { localStorage.removeItem("staff_shift_token"); } catch {}
+    setShiftToken(null);
     const now = new Date();
     const hour = now.getHours();
     let shiftStart: Date;
