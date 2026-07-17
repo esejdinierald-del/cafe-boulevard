@@ -352,7 +352,7 @@ const Index = () => {
                     className="blvd-table-input"
                   />
                   <div className="pr-3 flex-shrink-0 relative z-10">
-                    <button type="button" onClick={confirmTableAndRun} className="blvd-check-btn">
+                    <button type="button" onClick={confirmTableAndRun} className="blvd-check-btn" aria-label="Confirm table number">
                       <CheckIcon />
                     </button>
                   </div>
