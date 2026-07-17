@@ -537,6 +537,16 @@ const ManagerDashboard = () => {
                             <input
                               type="checkbox"
                               className="h-4 w-4 accent-[hsl(var(--gold))] cursor-pointer"
+                              checked={category.enabled !== false}
+                              onChange={(e) => handleToggleCategoryEnabled(category.id, e.target.checked)}
+                              aria-label="Aktive"
+                            />
+                            Aktive
+                          </label>
+                          <label className="flex items-center gap-2 text-sm text-muted-foreground shrink-0 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 accent-[hsl(var(--gold))] cursor-pointer"
                               checked={category.track_daily !== false}
                               onChange={(e) => handleToggleCategoryDaily(category.id, e.target.checked)}
                               aria-label="Përfshi në regjistrimin ditor"
