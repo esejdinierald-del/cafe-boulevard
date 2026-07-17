@@ -10,6 +10,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { Languages, Wifi } from "lucide-react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
+import HeroCarousel from "@/components/HeroCarousel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -344,6 +345,9 @@ const Index = () => {
 
             {/* ═══ BUTTONS ═══ */}
             <div className="w-full flex flex-col gap-3 relative z-10">
+              {/* Hero Carousel */}
+              <HeroCarousel />
+
               {/* Welcome text */}
               <p className="blvd-welcome">{t.chooseService}</p>
 
