@@ -224,6 +224,16 @@ serve(async (req) => {
         }
         return json({ data: [...(existing ?? []), ...inserted] });
       }
+      case "app_settings.inventory_blur": {
+        const { data, error } = await supabase
+          .from("app_settings")
+          .select("value")
+          .eq("key", "inventory_blur_enabled")
+          .maybeSingle();
+        if (error) return json({ error: error.message }, 500);
+        const enabled = data?.value == null ? true : String(data.value) !== "false";
+        return json({ data: { enabled } });
+      }
       default:
         return json({ error: `Veprim i panjohur: ${action}` }, 400);
     }
