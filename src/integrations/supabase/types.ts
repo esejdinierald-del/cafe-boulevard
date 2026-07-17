@@ -123,6 +123,7 @@ export type Database = {
         Row: {
           created_at: string | null
           display_order: number | null
+          enabled: boolean
           for_bar: boolean | null
           for_kitchen: boolean | null
           group_name: string
@@ -136,6 +137,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           display_order?: number | null
+          enabled?: boolean
           for_bar?: boolean | null
           for_kitchen?: boolean | null
           group_name?: string
@@ -149,6 +151,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           display_order?: number | null
+          enabled?: boolean
           for_bar?: boolean | null
           for_kitchen?: boolean | null
           group_name?: string
