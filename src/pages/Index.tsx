@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
-import { Languages } from "lucide-react";
+import { Languages, Wifi } from "lucide-react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,8 @@ const translations = {
     errorWaiter: "Gabim në dërgimin e thirrjes",
     tableRequired: "Shkruani numrin e tavolinës",
     subtitle: "Café Elbasan · Eat · Drink · Connect",
+    wifiCopied: "Fjalëkalimi i Wi-Fi u kopjua",
+    wifiLabel: "Wi-Fi",
   },
   en: {
     table: "Table",
@@ -88,8 +90,13 @@ const translations = {
     errorWaiter: "Error sending call",
     tableRequired: "Enter the table number",
     subtitle: "Café Elbasan · Eat · Drink · Connect",
+    wifiCopied: "Wi-Fi password copied",
+    wifiLabel: "Wi-Fi",
   },
 };
+
+const WIFI_SSID = "Boulevard-Guest";
+const WIFI_PASSWORD = "boulevard2025";
 
 const Index = () => {
   const [searchParams] = useSearchParams();
@@ -274,13 +281,6 @@ const Index = () => {
       <div className="blvd-sparkles" />
       <div className="blvd-vignette" />
 
-      {/* Language toggle */}
-      <div className="absolute top-4 right-4 z-20">
-        <button type="button" onClick={toggleLanguage} className="blvd-lang-btn" aria-label="Toggle language">
-          <Languages className="h-5 w-5" />
-        </button>
-      </div>
-
       {/* ═══ PHONE MOCKUP ═══ */}
       <div className="blvd-phone">
         <div className="blvd-phone-highlight" />
@@ -296,41 +296,51 @@ const Index = () => {
             <div className="blvd-light-ray" />
             <div className="blvd-inner-vignette" />
 
-            {/* ═══ HEADER ═══ */}
-            <div className="blvd-header">
-              <div className="blvd-header-vignette" />
-              <div className="blvd-header-line-top" />
-              <div className="blvd-header-line-bottom" />
+            {/* ═══ STICKY GLASS HEADER ═══ */}
+            <header className="blvd-header-sticky" role="banner">
+              <div className="blvd-header-glass" aria-hidden="true" />
+              <div className="blvd-header-sweep" aria-hidden="true" />
+              <div className="blvd-header-line-top" aria-hidden="true" />
+              <div className="blvd-header-line-bottom" aria-hidden="true" />
 
-              <div className="relative z-10">
+              <div className="blvd-header-row">
+                <button
+                  type="button"
+                  className="blvd-wifi-chip"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(WIFI_PASSWORD);
+                      toast.success(t.wifiCopied, { duration: 2500 });
+                    } catch {
+                      toast.success(`${t.wifiLabel}: ${WIFI_SSID} — ${WIFI_PASSWORD}`);
+                    }
+                  }}
+                  aria-label={`${t.wifiLabel} ${WIFI_SSID}`}
+                >
+                  <Wifi className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  <span className="blvd-wifi-chip-text">{WIFI_SSID}</span>
+                </button>
+
                 <img
                   src={boulevardLogo}
-                  alt="Boulevard Café"
-                  className="w-48 h-auto mx-auto mb-4 rounded-xl object-contain"
-                  style={{
-                    border: '1.5px solid rgba(232, 199, 109, 0.35)',
-                    padding: '6px',
-                    background: 'linear-gradient(135deg, rgba(10,12,16,0.9), rgba(5,5,8,0.95))',
-                    filter: 'drop-shadow(0 0 16px rgba(232, 199, 109, 0.35)) drop-shadow(0 0 35px rgba(255, 180, 50, 0.15))',
-                  }}
+                  alt="Boulevard Café Elbasan"
+                  className="blvd-header-logo"
                 />
-                <h1 className="blvd-title">
-                  BOULEVARD
-                  <span className="sr-only"> Café Elbasan — Order & Connect</span>
-                </h1>
-                <div className="blvd-title-underline" />
-                <p className="blvd-subtitle">{t.subtitle}</p>
+                <h1 className="sr-only">Boulevard Café Elbasan — Order & Connect</h1>
+
+                <button
+                  type="button"
+                  onClick={toggleLanguage}
+                  className="blvd-lang-pill"
+                  aria-label={`Language: ${language.toUpperCase()}`}
+                >
+                  <Languages className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  <span className="blvd-lang-pill-text">{language.toUpperCase()}</span>
+                </button>
               </div>
-            </div>
 
-            {/* Golden flare separator */}
-            <div className="w-full h-[2px] my-2" style={{
-              background: 'linear-gradient(90deg, transparent, rgba(255,200,80,0.8) 30%, rgba(255,240,180,1) 50%, rgba(255,200,80,0.8) 70%, transparent)',
-              boxShadow: '0 0 15px rgba(255,180,50,0.6), 0 0 40px rgba(255,150,30,0.3), 0 0 80px rgba(255,130,20,0.15)',
-            }} />
-
-            {/* Section title */}
-            <h2 className="blvd-section-title">BOULEVARD CAFÉ ELBASAN</h2>
+              <p className="blvd-subtitle">{t.subtitle}</p>
+            </header>
 
             {/* ═══ BUTTONS ═══ */}
             <div className="w-full flex flex-col gap-3 relative z-10">
