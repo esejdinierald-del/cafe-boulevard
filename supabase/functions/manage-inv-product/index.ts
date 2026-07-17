@@ -31,7 +31,10 @@ serve(async (req) => {
         units_per_sale: Number(units_per_sale) || 1,
         track_daily: track_daily === undefined ? true : !!track_daily,
       }).select("id, name, sort_order, menu_item_ids, units_per_sale, track_daily").single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) {
+        if ((error as any).code === "23505") return json({ error: "Ekziston një produkt me këtë emër" }, 409);
+        return json({ error: error.message }, 500);
+      }
       return json({ product: data });
     }
     if (action === "update") {
@@ -44,7 +47,10 @@ serve(async (req) => {
       if (sort_order !== undefined) patch.sort_order = Number(sort_order) || 0;
       if (track_daily !== undefined) patch.track_daily = !!track_daily;
       const { error } = await sb.from("inv_products").update(patch).eq("id", id);
-      if (error) return json({ error: error.message }, 500);
+      if (error) {
+        if ((error as any).code === "23505") return json({ error: "Ekziston një produkt me këtë emër" }, 409);
+        return json({ error: error.message }, 500);
+      }
       return json({ ok: true });
     }
     if (action === "swap_order") {
