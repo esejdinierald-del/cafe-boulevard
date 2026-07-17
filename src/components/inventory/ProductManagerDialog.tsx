@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Plus, Trash2, Search, Loader2, Save } from "lucide-react";
+import { Plus, Trash2, Search, Loader2, Save, ArrowUp, ArrowDown } from "lucide-react";
 
 export interface InvProductRow {
   id: string;
@@ -20,6 +20,7 @@ export interface InvProductRow {
   sort_order: number;
   menu_item_ids: string[];
   units_per_sale: number;
+  track_daily?: boolean;
 }
 
 interface MenuItemLite {
@@ -30,7 +31,7 @@ interface MenuItemLite {
 interface Props {
   trigger?: React.ReactNode;
   products: InvProductRow[];
-  onChanged: (opts?: { renamedFrom?: string; renamedTo?: string; deletedName?: string; added?: InvProductRow }) => void;
+  onChanged: (opts?: { renamedFrom?: string; renamedTo?: string; deletedName?: string; added?: InvProductRow; reordered?: boolean }) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -47,6 +48,7 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
   const [newName, setNewName] = useState("");
   const [newIds, setNewIds] = useState<string[]>([]);
   const [newUnits, setNewUnits] = useState(1);
+  const [newTrackDaily, setNewTrackDaily] = useState(true);
 
   useEffect(() => {
     if (!open) return;
@@ -68,10 +70,10 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
     const nextOrder = (products[products.length - 1]?.sort_order ?? 0) + 10;
     let data: InvProductRow;
     try {
-      const res = await InvProductApi.insert({ name, sort_order: nextOrder, menu_item_ids: newIds, units_per_sale: newUnits });
+      const res = await InvProductApi.insert({ name, sort_order: nextOrder, menu_item_ids: newIds, units_per_sale: newUnits, track_daily: newTrackDaily });
       data = res.product as InvProductRow;
     } catch (e: any) { return toast.error(e.message); }
-    setNewName(""); setNewIds([]); setNewUnits(1);
+    setNewName(""); setNewIds([]); setNewUnits(1); setNewTrackDaily(true);
     onChanged({ added: data });
     toast.success("Produkti u shtua");
   };
@@ -81,6 +83,14 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
     try { await InvProductApi.delete(p.id); } catch (e: any) { return toast.error(e.message); }
     onChanged({ deletedName: p.name });
     toast.success("U fshi");
+  };
+
+  const moveProduct = async (idx: number, dir: -1 | 1) => {
+    const other = idx + dir;
+    if (other < 0 || other >= products.length) return;
+    const a = products[idx], b = products[other];
+    try { await InvProductApi.swapOrder(a.id, b.id); } catch (e: any) { return toast.error(e.message); }
+    onChanged({ reordered: true });
   };
 
   return (
@@ -99,13 +109,15 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
           <div className="space-y-6">
             {/* Existing products */}
             <div className="space-y-3">
-              {products.map((p) => (
+              {products.map((p, i) => (
                 <ProductRow
                   key={p.id}
                   product={p}
                   menuItems={menuItems}
                   onRemove={() => removeProduct(p)}
                   onSaved={(renamedFrom, renamedTo) => onChanged({ renamedFrom, renamedTo })}
+                  onMoveUp={i > 0 ? () => moveProduct(i, -1) : undefined}
+                  onMoveDown={i < products.length - 1 ? () => moveProduct(i, 1) : undefined}
                 />
               ))}
               {products.length === 0 && (
@@ -135,6 +147,10 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
                   <Plus size={14} className="mr-1" /> Shto
                 </Button>
               </div>
+              <label className="flex items-center gap-2 text-sm text-slate-300">
+                <Checkbox checked={newTrackDaily} onCheckedChange={(v) => setNewTrackDaily(!!v)} />
+                Përfshi në regjistrimin ditor
+              </label>
               <MenuMultiSelect
                 menuItems={menuItems}
                 selected={newIds}
