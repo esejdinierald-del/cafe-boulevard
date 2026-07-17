@@ -51,6 +51,7 @@ const POS = () => {
   const [pendingPrints, setPendingPrints] = useState(0);
   
   const [mobileView, setMobileView] = useState<"tables" | "menu">("tables");
+  const [hasServiceAlert, setHasServiceAlert] = useState(false);
 
   // Track our pending print jobs (waiting for the arka PC)
   useEffect(() => {
@@ -120,17 +121,6 @@ const POS = () => {
     };
   }, [checking]);
 
-  if (checking) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-300">
-        Duke verifikuar turnin...
-      </div>
-    );
-  }
-
-  const activeTableNumber = currentOrder?.tableNumber ?? null;
-  const [hasServiceAlert, setHasServiceAlert] = useState(false);
-
   // Load + subscribe to service_requests (mirror StaffShift.tsx)
   useEffect(() => {
     if (checking) return;
@@ -170,6 +160,16 @@ const POS = () => {
       supabase.removeChannel(ch);
     };
   }, [checking]);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-300">
+        Duke verifikuar turnin...
+      </div>
+    );
+  }
+
+  const activeTableNumber = currentOrder?.tableNumber ?? null;
 
   const currentStaffName =
     (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
