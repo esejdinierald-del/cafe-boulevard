@@ -418,6 +418,7 @@ const Menu = () => {
                               <>
                                 <button type="button"
                                   onClick={() => removeFromCart(item.id)}
+                                  aria-label="Decrease quantity"
                                   className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                                   style={{
                                     background: 'hsl(0 0% 100% / 0.08)',
@@ -430,6 +431,7 @@ const Menu = () => {
                                 <span className="font-bold text-sm w-6 text-center" style={{ color: 'hsl(0 0% 90%)' }}>{cart[item.id]}</span>
                                 <button type="button"
                                   onClick={() => addToCart(item.id)}
+                                  aria-label="Increase quantity"
                                   className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                                   style={{
                                     background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
@@ -443,6 +445,7 @@ const Menu = () => {
                             ) : (
                               <button type="button"
                                 onClick={() => addToCart(item.id)}
+                                aria-label="Add to cart"
                                 className="h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110"
                                 style={{
                                   background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
@@ -497,6 +500,7 @@ const Menu = () => {
                           <span className="font-bold whitespace-nowrap gradient-text-gold">{price * qty} {t.currency}</span>
                           <button type="button"
                             onClick={() => removeFromCart(itemId)}
+                            aria-label="Remove from cart"
                             className="h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                             style={{
                               background: 'hsl(0 70% 50% / 0.15)',
