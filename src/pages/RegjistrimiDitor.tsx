@@ -391,6 +391,23 @@ const RegjistrimiDitor = () => {
       await ShiftTurnApi.updateTurnData(selectedTurn.id, updated);
       setTurns((prev) => prev.map((t) => (t.id === selectedTurn.id ? { ...t, turn_data: updated } : t)));
       toast.success("Gjendja u konfirmua.");
+
+      // Sync raw_materials.quantity from confirmed physical count so /inventory reflects reality.
+      try {
+        const items = Object.entries(updated.products || {}).map(([name, p]) => ({
+          name,
+          gjendje: Number((p as InventoryProductData)?.gjendje) || 0,
+        }));
+        const shiftToken = localStorage.getItem("staff_shift_token") || undefined;
+        const { data, error } = await mainSupabase.functions.invoke("pos-get-inventory", {
+          body: { action: "syncFromGjendje", items, shiftToken },
+          headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
+        });
+        if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message);
+      } catch (syncErr: any) {
+        toast.warning("Gjendja u konfirmua, por sinkronizimi i inventarit dështoi — kontrollo manualisht");
+        console.warn("syncFromGjendje failed:", syncErr?.message || syncErr);
+      }
     } catch (e: any) {
       toast.error("Dështoi: " + (e.message || e));
     } finally {

@@ -63,6 +63,47 @@ serve(async (req) => {
         if (error) return jsonResponse({ error: error.message }, 500);
         return jsonResponse({ material: data });
       }
+      if (body.action === "syncFromGjendje") {
+        const items = Array.isArray(body.items) ? body.items : [];
+        const norm = (s: string) => String(s || "").trim().toLowerCase();
+        const clean = items
+          .map((it: any) => ({ name: String(it?.name || "").trim(), gjendje: Number(it?.gjendje) }))
+          .filter((it) => it.name.length > 0 && Number.isFinite(it.gjendje) && it.gjendje >= 0);
+        if (clean.length === 0) return jsonResponse({ updated: 0, created: 0 });
+
+        const { data: existing, error: exErr } = await supabase
+          .from("raw_materials")
+          .select("id, name")
+          .in("name", clean.map((c) => c.name));
+        if (exErr) return jsonResponse({ error: exErr.message }, 500);
+
+        const byNorm = new Map<string, { id: string; name: string }>();
+        (existing ?? []).forEach((r: any) => byNorm.set(norm(r.name), r));
+
+        let updated = 0;
+        let created = 0;
+        const toInsert: Array<{ name: string; quantity: number; unit: string; min_threshold: number }> = [];
+
+        for (const it of clean) {
+          const found = byNorm.get(norm(it.name));
+          if (found) {
+            const { error: uErr } = await supabase
+              .from("raw_materials")
+              .update({ quantity: it.gjendje, updated_at: new Date().toISOString() })
+              .eq("id", found.id);
+            if (uErr) return jsonResponse({ error: uErr.message }, 500);
+            updated += 1;
+          } else {
+            toInsert.push({ name: it.name, quantity: it.gjendje, unit: "cope", min_threshold: 0 });
+          }
+        }
+        if (toInsert.length > 0) {
+          const { error: insErr } = await supabase.from("raw_materials").insert(toInsert);
+          if (insErr) return jsonResponse({ error: insErr.message }, 500);
+          created = toInsert.length;
+        }
+        return jsonResponse({ updated, created });
+      }
       return jsonResponse({ error: "Veprim i panjohur" }, 400);
     }
 
