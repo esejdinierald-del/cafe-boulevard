@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { StaffChatDialog } from "@/components/StaffChatDialog";
 import { FeedbackDialog } from "@/components/FeedbackDialog";
 import { WelcomeGreeting } from "@/components/WelcomeGreeting";
@@ -257,6 +258,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      <Helmet>
+        <title>Boulevard Café Elbasan — Order, Call Waiter & Connect</title>
+        <meta name="description" content="Boulevard Café Elbasan: call the waiter, request your bill, order from the digital menu and request songs — premium café service in Elbasan, Albania." />
+        <link rel="canonical" href="https://boulevard-caffe.lovable.app/" />
+        <meta property="og:title" content="Boulevard Café Elbasan — Order, Call Waiter & Connect" />
+        <meta property="og:description" content="Premium café service in Elbasan: order, call the waiter and connect from your table." />
+        <meta property="og:url" content="https://boulevard-caffe.lovable.app/" />
+        <meta name="twitter:title" content="Boulevard Café Elbasan — Order, Call Waiter & Connect" />
+        <meta name="twitter:description" content="Premium café service in Elbasan: order, call the waiter and connect from your table." />
+      </Helmet>
       {/* Background layers */}
       <div className="blvd-ambient" />
       <div className="blvd-bokeh-blur" />
