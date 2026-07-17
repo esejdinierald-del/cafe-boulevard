@@ -131,6 +131,7 @@ export type Database = {
           name: string
           name_en: string | null
           parent_id: string | null
+          track_daily: boolean
         }
         Insert: {
           created_at?: string | null
@@ -143,6 +144,7 @@ export type Database = {
           name: string
           name_en?: string | null
           parent_id?: string | null
+          track_daily?: boolean
         }
         Update: {
           created_at?: string | null
@@ -155,6 +157,7 @@ export type Database = {
           name?: string
           name_en?: string | null
           parent_id?: string | null
+          track_daily?: boolean
         }
         Relationships: [
           {

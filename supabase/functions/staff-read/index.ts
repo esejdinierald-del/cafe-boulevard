@@ -105,6 +105,50 @@ serve(async (req) => {
           .order("sort_order")
           .order("name");
         if (error) return json({ error: error.message }, 500);
+
+        // Collect the union of linked menu_item_ids across products, then
+        // resolve their categories' track_daily flag so the client can hide
+        // products whose category has been opted out of daily registration.
+        const allMenuIds = Array.from(new Set(
+          (data ?? []).flatMap((p: any) => Array.isArray(p.menu_item_ids) ? p.menu_item_ids : []),
+        ));
+        let categoryDailyByMenuItem: Record<string, boolean> = {};
+        if (allMenuIds.length > 0) {
+          const { data: mis } = await supabase
+            .from("menu_items")
+            .select("id, category_id")
+            .in("id", allMenuIds);
+          const catIds = Array.from(new Set((mis ?? []).map((m: any) => m.category_id).filter(Boolean)));
+          let catFlag: Record<string, boolean> = {};
+          if (catIds.length > 0) {
+            const { data: cats } = await supabase
+              .from("categories")
+              .select("id, track_daily")
+              .in("id", catIds);
+            (cats ?? []).forEach((c: any) => { catFlag[c.id] = c.track_daily !== false; });
+          }
+          (mis ?? []).forEach((m: any) => {
+            categoryDailyByMenuItem[m.id] = m.category_id ? (catFlag[m.category_id] !== false) : true;
+          });
+        }
+        const enriched = (data ?? []).map((p: any) => {
+          const linked = Array.isArray(p.menu_item_ids) ? p.menu_item_ids : [];
+          // A product's category is considered "daily-tracked" if it has no
+          // linked menu items, or if at least one linked menu item belongs to
+          // a category with track_daily=true.
+          const category_track_daily = linked.length === 0
+            ? true
+            : linked.some((id: string) => categoryDailyByMenuItem[id] !== false);
+          return { ...p, category_track_daily };
+        });
+        return json({ data: enriched });
+      }
+      case "categories.list": {
+        const { data, error } = await supabase
+          .from("categories")
+          .select("id, name, display_order, track_daily")
+          .order("display_order");
+        if (error) return json({ error: error.message }, 500);
         return json({ data });
       }
       case "shift_turns.by_date": {

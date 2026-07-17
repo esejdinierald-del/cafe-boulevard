@@ -19,6 +19,7 @@ interface Category {
   name: string;
   name_en: string | null;
   display_order: number;
+  track_daily?: boolean;
 }
 
 interface MenuItem {
@@ -206,6 +207,24 @@ const ManagerDashboard = () => {
     } catch (error) {
       console.error('Error updating category:', error);
       toast.error("Gabim në përditësimin e kategorisë");
+    }
+  };
+
+  const handleToggleCategoryDaily = async (id: string, next: boolean) => {
+    // Optimistic update so the checkbox flips immediately.
+    setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, track_daily: next } : c)));
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({ track_daily: next })
+        .eq('id', id);
+      if (error) throw error;
+      toast.success(next ? "Kategoria u përfshi në regjistrimin ditor" : "Kategoria u përjashtua nga regjistrimi ditor");
+    } catch (error) {
+      console.error('Error toggling category track_daily:', error);
+      toast.error("Gabim në ndryshimin e cilësimit");
+      // Roll back on failure.
+      setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, track_daily: !next } : c)));
     }
   };
 
@@ -494,7 +513,19 @@ const ManagerDashboard = () => {
                       </>
                     ) : (
                       <>
-                        <span className="font-display font-bold text-lg">{category.name}</span>
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <span className="font-display font-bold text-lg truncate">{category.name}</span>
+                          <label className="flex items-center gap-2 text-sm text-muted-foreground shrink-0 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 accent-[hsl(var(--gold))] cursor-pointer"
+                              checked={category.track_daily !== false}
+                              onChange={(e) => handleToggleCategoryDaily(category.id, e.target.checked)}
+                              aria-label="Përfshi në regjistrimin ditor"
+                            />
+                            Përfshi në regjistrimin ditor
+                          </label>
+                        </div>
                         <div className="flex gap-2">
                           <Button
                             size="icon"
