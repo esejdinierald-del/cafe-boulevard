@@ -594,8 +594,8 @@
 .blvd-hero-slide:nth-child(2) .blvd-hero-img { animation-direction: alternate-reverse; }
 .blvd-hero-slide:nth-child(3) .blvd-hero-img { animation-duration: 14s; }
 @keyframes blvd-kenburns {
-  0%   { transform: scale(1.05) translate(0, 0); }
-  100% { transform: scale(1.18) translate(-2%, -2%); }
+  0%   { transform: scale(1.03) translate(0, 0); }
+  100% { transform: scale(1.08) translate(-1%, -1%); }
 }
 .blvd-hero-overlay {
   position: absolute;
@@ -908,10 +908,10 @@
 /* ===== STICKY GLASS HEADER (Priority 1) ===== */
 .blvd-header-sticky {
   position: sticky;
-  top: 0;
+  top: 12px;
   z-index: 30;
   width: 100%;
-  margin: -4px 0 20px;
+  margin: 0 0 18px;
   padding: 14px 14px 12px;
   border-radius: 20px;
   text-align: center;
@@ -1236,9 +1236,10 @@
 
 /* ── Hero carousel: fix CLS + smoother section transition ─────── */
 .blvd-hero-carousel {
-  margin: 16px 0 12px;
-  content-visibility: auto;
-  contain-intrinsic-size: 100% 220px;
+  margin: 6px 0 14px;
+  /* aspect-ratio already reserves the box → no CLS. Skip
+     content-visibility here; it can mis-size a hero whose slides
+     are absolutely positioned inside an aspect-ratio container. */
 }
 
 /* ── Mobile: safe area + touch targets + landscape ─────────────── */
