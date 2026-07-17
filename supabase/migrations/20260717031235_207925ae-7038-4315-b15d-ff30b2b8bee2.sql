@@ -1,0 +1,1 @@
+ALTER TABLE public.inv_products ADD COLUMN IF NOT EXISTS track_daily boolean NOT NULL DEFAULT true;

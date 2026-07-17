@@ -340,6 +340,7 @@ export type Database = {
           menu_item_ids: string[]
           name: string
           sort_order: number
+          track_daily: boolean
           units_per_sale: number
         }
         Insert: {
@@ -348,6 +349,7 @@ export type Database = {
           menu_item_ids?: string[]
           name: string
           sort_order?: number
+          track_daily?: boolean
           units_per_sale?: number
         }
         Update: {
@@ -356,6 +358,7 @@ export type Database = {
           menu_item_ids?: string[]
           name?: string
           sort_order?: number
+          track_daily?: boolean
           units_per_sale?: number
         }
         Relationships: []

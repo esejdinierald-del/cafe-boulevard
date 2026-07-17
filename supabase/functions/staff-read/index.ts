@@ -101,7 +101,7 @@ serve(async (req) => {
       case "inv_products.list": {
         const { data, error } = await supabase
           .from("inv_products")
-          .select("id, name, sort_order, menu_item_ids, units_per_sale")
+          .select("id, name, sort_order, menu_item_ids, units_per_sale, track_daily")
           .order("sort_order")
           .order("name");
         if (error) return json({ error: error.message }, 500);

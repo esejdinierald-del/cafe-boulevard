@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Plus, Trash2, Search, Loader2, Save } from "lucide-react";
+import { Plus, Trash2, Search, Loader2, Save, ArrowUp, ArrowDown } from "lucide-react";
 
 export interface InvProductRow {
   id: string;
@@ -20,6 +20,7 @@ export interface InvProductRow {
   sort_order: number;
   menu_item_ids: string[];
   units_per_sale: number;
+  track_daily?: boolean;
 }
 
 interface MenuItemLite {
@@ -30,7 +31,7 @@ interface MenuItemLite {
 interface Props {
   trigger?: React.ReactNode;
   products: InvProductRow[];
-  onChanged: (opts?: { renamedFrom?: string; renamedTo?: string; deletedName?: string; added?: InvProductRow }) => void;
+  onChanged: (opts?: { renamedFrom?: string; renamedTo?: string; deletedName?: string; added?: InvProductRow; reordered?: boolean }) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -47,6 +48,7 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
   const [newName, setNewName] = useState("");
   const [newIds, setNewIds] = useState<string[]>([]);
   const [newUnits, setNewUnits] = useState(1);
+  const [newTrackDaily, setNewTrackDaily] = useState(true);
 
   useEffect(() => {
     if (!open) return;
@@ -68,10 +70,10 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
     const nextOrder = (products[products.length - 1]?.sort_order ?? 0) + 10;
     let data: InvProductRow;
     try {
-      const res = await InvProductApi.insert({ name, sort_order: nextOrder, menu_item_ids: newIds, units_per_sale: newUnits });
+      const res = await InvProductApi.insert({ name, sort_order: nextOrder, menu_item_ids: newIds, units_per_sale: newUnits, track_daily: newTrackDaily });
       data = res.product as InvProductRow;
     } catch (e: any) { return toast.error(e.message); }
-    setNewName(""); setNewIds([]); setNewUnits(1);
+    setNewName(""); setNewIds([]); setNewUnits(1); setNewTrackDaily(true);
     onChanged({ added: data });
     toast.success("Produkti u shtua");
   };
@@ -81,6 +83,14 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
     try { await InvProductApi.delete(p.id); } catch (e: any) { return toast.error(e.message); }
     onChanged({ deletedName: p.name });
     toast.success("U fshi");
+  };
+
+  const moveProduct = async (idx: number, dir: -1 | 1) => {
+    const other = idx + dir;
+    if (other < 0 || other >= products.length) return;
+    const a = products[idx], b = products[other];
+    try { await InvProductApi.swapOrder(a.id, b.id); } catch (e: any) { return toast.error(e.message); }
+    onChanged({ reordered: true });
   };
 
   return (
@@ -99,13 +109,15 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
           <div className="space-y-6">
             {/* Existing products */}
             <div className="space-y-3">
-              {products.map((p) => (
+              {products.map((p, i) => (
                 <ProductRow
                   key={p.id}
                   product={p}
                   menuItems={menuItems}
                   onRemove={() => removeProduct(p)}
                   onSaved={(renamedFrom, renamedTo) => onChanged({ renamedFrom, renamedTo })}
+                  onMoveUp={i > 0 ? () => moveProduct(i, -1) : undefined}
+                  onMoveDown={i < products.length - 1 ? () => moveProduct(i, 1) : undefined}
                 />
               ))}
               {products.length === 0 && (
@@ -135,6 +147,10 @@ const ProductManagerDialog = ({ trigger, products, onChanged, open: openProp, on
                   <Plus size={14} className="mr-1" /> Shto
                 </Button>
               </div>
+              <label className="flex items-center gap-2 text-sm text-slate-300">
+                <Checkbox checked={newTrackDaily} onCheckedChange={(v) => setNewTrackDaily(!!v)} />
+                Përfshi në regjistrimin ditor
+              </label>
               <MenuMultiSelect
                 menuItems={menuItems}
                 selected={newIds}
@@ -154,20 +170,26 @@ const ProductRow = ({
   menuItems,
   onRemove,
   onSaved,
+  onMoveUp,
+  onMoveDown,
 }: {
   product: InvProductRow;
   menuItems: MenuItemLite[];
   onRemove: () => void;
   onSaved: (renamedFrom?: string, renamedTo?: string) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }) => {
   const [name, setName] = useState(product.name);
   const [ids, setIds] = useState<string[]>(product.menu_item_ids || []);
   const [units, setUnits] = useState<number>(Number(product.units_per_sale) || 1);
+  const [trackDaily, setTrackDaily] = useState<boolean>(product.track_daily ?? true);
   const [saving, setSaving] = useState(false);
 
   const dirty =
     name.trim() !== product.name ||
     units !== product.units_per_sale ||
+    trackDaily !== (product.track_daily ?? true) ||
     ids.join(",") !== (product.menu_item_ids || []).join(",");
 
   const save = async () => {
@@ -175,7 +197,7 @@ const ProductRow = ({
     if (!newName) return toast.error("Emri s'mund të jetë bosh");
     setSaving(true);
     try {
-      await InvProductApi.update({ id: product.id, name: newName, menu_item_ids: ids, units_per_sale: units });
+      await InvProductApi.update({ id: product.id, name: newName, menu_item_ids: ids, units_per_sale: units, track_daily: trackDaily });
     } catch (e: any) { setSaving(false); return toast.error(e.message); }
     setSaving(false);
     const renamed = newName !== product.name;
@@ -185,7 +207,15 @@ const ProductRow = ({
 
   return (
     <div className="border border-slate-800 rounded-lg p-3 bg-slate-900/60 space-y-2">
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_auto_auto] gap-2 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-[auto_2fr_1fr_auto_auto] gap-2 items-center">
+        <div className="flex flex-col gap-1">
+          <Button size="sm" variant="ghost" onClick={onMoveUp} disabled={!onMoveUp} className="h-6 w-8 p-0 text-slate-400 hover:text-white">
+            <ArrowUp size={12} />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={onMoveDown} disabled={!onMoveDown} className="h-6 w-8 p-0 text-slate-400 hover:text-white">
+            <ArrowDown size={12} />
+          </Button>
+        </div>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -217,6 +247,10 @@ const ProductRow = ({
           <Trash2 size={14} />
         </Button>
       </div>
+      <label className="flex items-center gap-2 text-xs text-slate-300">
+        <Checkbox checked={trackDaily} onCheckedChange={(v) => setTrackDaily(!!v)} />
+        Përfshi në regjistrimin ditor
+      </label>
       <MenuMultiSelect menuItems={menuItems} selected={ids} onChange={setIds} />
     </div>
   );
