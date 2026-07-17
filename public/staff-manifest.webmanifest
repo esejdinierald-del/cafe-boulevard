@@ -2,7 +2,7 @@
   "name": "Boulevard Café - Stafi",
   "short_name": "Boulevard Staff",
   "description": "Njoftimet e thirrjeve live për stafin e Boulevard Café",
-  "start_url": "/staff?app=ios",
+  "start_url": "/staff-app.html",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0a0a10",
