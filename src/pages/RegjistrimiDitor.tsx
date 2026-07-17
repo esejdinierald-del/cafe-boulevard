@@ -517,6 +517,44 @@ const RegjistrimiDitor = () => {
   const kafeKryesorDif =
     coffeeSalesAuto + (currentTurn.mulliriFillim || 0) - (currentTurn.mulliriPerfund || 0);
 
+  // ---------- Xhiro auto: sum of POS sale transactions in the shift window ----------
+  const [xhiroAuto, setXhiroAuto] = useState<number>(0);
+  useEffect(() => {
+    if (!selectedTurn) { setXhiroAuto(0); return; }
+    let cancelled = false;
+    const compute = async () => {
+      try {
+        const fromISO = selectedTurn.started_at;
+        const toISO = selectedTurn.locked_at ?? new Date().toISOString();
+        const { staffRead } = await import("@/lib/staff-read");
+        const { data } = await staffRead<any[]>("transactions.range", {
+          fromISO, toISO, type: "sale",
+        });
+        if (cancelled) return;
+        const total = (data || []).reduce((s: number, r: any) => s + (Number(r.amount) || 0), 0);
+        setXhiroAuto(Math.round(total));
+      } catch { /* silent */ }
+    };
+    compute();
+    if (selectedTurn.is_locked) return () => { cancelled = true; };
+    const ch = mainSupabase
+      .channel(`xhiro-auto-${selectedTurn.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, compute)
+      .subscribe();
+    const iv = window.setInterval(compute, 20000);
+    return () => { cancelled = true; window.clearInterval(iv); mainSupabase.removeChannel(ch); };
+  }, [selectedTurn?.id, selectedTurn?.is_locked, selectedTurn?.started_at, selectedTurn?.locked_at]);
+
+  // Sync auto value into turn_data.xhiro (autosave picks it up) when it changes.
+  useEffect(() => {
+    if (!selectedTurn || !isMine) return;
+    if ((currentTurn.xhiro || 0) === xhiroAuto) return;
+    setCurrentTurn((prev) => ({ ...prev, xhiro: xhiroAuto }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [xhiroAuto, selectedTurn?.id, isMine]);
+
+  const vleraDorezuar = xhiroAuto - (totalShpenzime || 0);
+
   // ---------- OCR mulliri perfund from photo ----------
   const [scanning, setScanning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
