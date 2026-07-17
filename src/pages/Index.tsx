@@ -276,7 +276,7 @@ const Index = () => {
 
       {/* Language toggle */}
       <div className="absolute top-4 right-4 z-20">
-        <button type="button" onClick={toggleLanguage} className="blvd-lang-btn">
+        <button type="button" onClick={toggleLanguage} className="blvd-lang-btn" aria-label="Toggle language">
           <Languages className="h-5 w-5" />
         </button>
       </div>
@@ -314,7 +314,10 @@ const Index = () => {
                     filter: 'drop-shadow(0 0 16px rgba(232, 199, 109, 0.35)) drop-shadow(0 0 35px rgba(255, 180, 50, 0.15))',
                   }}
                 />
-                <h1 className="blvd-title">BOULEVARD</h1>
+                <h1 className="blvd-title">
+                  BOULEVARD
+                  <span className="sr-only"> Café Elbasan — Order & Connect</span>
+                </h1>
                 <div className="blvd-title-underline" />
                 <p className="blvd-subtitle">{t.subtitle}</p>
               </div>
