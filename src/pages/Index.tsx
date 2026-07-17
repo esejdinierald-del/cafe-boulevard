@@ -12,6 +12,7 @@ import { Languages, Wifi } from "lucide-react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
 import HeroCarousel from "@/components/HeroCarousel";
 import PremiumBackground from "@/components/PremiumBackground";
+import { FadeUp, Stagger, StaggerItem } from "@/components/Motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -296,7 +297,8 @@ const Index = () => {
             <div className="blvd-inner-vignette" />
 
             {/* ═══ STICKY GLASS HEADER ═══ */}
-            <header className="blvd-header-sticky" role="banner">
+            <FadeUp as="header" className="blvd-header-sticky">
+            <div role="banner" className="contents">
               <div className="blvd-header-glass" aria-hidden="true" />
               <div className="blvd-header-sweep" aria-hidden="true" />
               <div className="blvd-header-line-top" aria-hidden="true" />
@@ -339,15 +341,21 @@ const Index = () => {
               </div>
 
               <p className="blvd-subtitle">{t.subtitle}</p>
-            </header>
+            </div>
+            </FadeUp>
 
             {/* ═══ BUTTONS ═══ */}
-            <div className="w-full flex flex-col gap-3 relative z-10">
+            <nav
+              className="w-full flex flex-col gap-3 relative z-10"
+              aria-label={language === "sq" ? "Veprime kryesore" : "Main actions"}
+            >
               {/* Hero Carousel */}
               <HeroCarousel />
 
               {/* Welcome text */}
-              <p className="blvd-welcome">{t.chooseService}</p>
+              <FadeUp delay={0.1}>
+                <p className="blvd-welcome">{t.chooseService}</p>
+              </FadeUp>
 
               {pendingAction && (
                 <div className="blvd-table-row">
@@ -361,6 +369,8 @@ const Index = () => {
                     onChange={(e) => setTableInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && confirmTableAndRun()}
                     autoFocus
+                    aria-label={t.tableLabel}
+                    inputMode="numeric"
                     className="blvd-table-input"
                   />
                   <div className="pr-3 flex-shrink-0 relative z-10">
@@ -371,44 +381,47 @@ const Index = () => {
                 </div>
               )}
 
-              {/* 2. Call Waiter — Dark */}
-              <button type="button" onClick={handleCallWaiter} disabled={checking} className="blvd-btn-dark">
-                <span className="blvd-icon-gold"><BellIcon /></span>
-                <span>{t.callWaiter}</span>
-              </button>
-
-              {/* 3. Request Bill — GOLD */}
-              <button type="button" onClick={handleRequestBill} disabled={checking} className="blvd-btn-gold">
-                <span className="blvd-shimmer" />
-                <span className="blvd-icon-dark"><ReceiptIcon /></span>
-                <span className="relative z-10">{t.requestBill}</span>
-              </button>
-
-              {/* 4. Order from Menu — Dark */}
-              <button type="button" onClick={() => navigate(`/menu?tabela=${tableNumber.trim() || ""}`)} className="blvd-btn-dark">
-                <span className="blvd-icon-gold"><UtensilsIcon /></span>
-                <span>{t.orderMenu}</span>
-              </button>
-
-              {/* 5. Ask Staff — GOLD */}
-              <button type="button" onClick={() => setChatOpen(true)} className="blvd-btn-gold">
-                <span className="blvd-shimmer" style={{ animationDelay: '2s' }} />
-                <span className="blvd-icon-dark"><ChatIcon /></span>
-                <span className="relative z-10">{t.askStaff}</span>
-              </button>
-
-              {/* Request Song — Dark */}
-              <button type="button" onClick={() => setSongDialogOpen(true)} className="blvd-btn-dark">
-                <span className="blvd-icon-gold text-xl">🎵</span>
-                <span>{t.requestSong}</span>
-              </button>
-
-              {/* 6. Rate Us — Dark */}
-              <button type="button" onClick={() => setFeedbackOpen(true)} className="blvd-btn-dark">
-                <span className="blvd-icon-gold"><StarIcon /></span>
-                <span>{t.rateUs}</span>
-              </button>
-            </div>
+              <Stagger className="flex flex-col gap-3">
+                <StaggerItem>
+                  <button type="button" onClick={handleCallWaiter} disabled={checking} className="blvd-btn-dark w-full" aria-label={t.callWaiter}>
+                    <span className="blvd-icon-gold"><BellIcon /></span>
+                    <span>{t.callWaiter}</span>
+                  </button>
+                </StaggerItem>
+                <StaggerItem>
+                  <button type="button" onClick={handleRequestBill} disabled={checking} className="blvd-btn-gold w-full" aria-label={t.requestBill}>
+                    <span className="blvd-shimmer" aria-hidden="true" />
+                    <span className="blvd-icon-dark"><ReceiptIcon /></span>
+                    <span className="relative z-10">{t.requestBill}</span>
+                  </button>
+                </StaggerItem>
+                <StaggerItem>
+                  <button type="button" onClick={() => navigate(`/menu?tabela=${tableNumber.trim() || ""}`)} className="blvd-btn-dark w-full" aria-label={t.orderMenu}>
+                    <span className="blvd-icon-gold"><UtensilsIcon /></span>
+                    <span>{t.orderMenu}</span>
+                  </button>
+                </StaggerItem>
+                <StaggerItem>
+                  <button type="button" onClick={() => setChatOpen(true)} className="blvd-btn-gold w-full" aria-label={t.askStaff}>
+                    <span className="blvd-shimmer" style={{ animationDelay: '2s' }} aria-hidden="true" />
+                    <span className="blvd-icon-dark"><ChatIcon /></span>
+                    <span className="relative z-10">{t.askStaff}</span>
+                  </button>
+                </StaggerItem>
+                <StaggerItem>
+                  <button type="button" onClick={() => setSongDialogOpen(true)} className="blvd-btn-dark w-full" aria-label={t.requestSong}>
+                    <span className="blvd-icon-gold text-xl" aria-hidden="true">🎵</span>
+                    <span>{t.requestSong}</span>
+                  </button>
+                </StaggerItem>
+                <StaggerItem>
+                  <button type="button" onClick={() => setFeedbackOpen(true)} className="blvd-btn-dark w-full" aria-label={t.rateUs}>
+                    <span className="blvd-icon-gold"><StarIcon /></span>
+                    <span>{t.rateUs}</span>
+                  </button>
+                </StaggerItem>
+              </Stagger>
+            </nav>
 
             {/* Hidden manager link */}
             <button type="button" onClick={() => navigate("/manager-login")} className="blvd-manager-dot" aria-label="Manager login">•</button>
