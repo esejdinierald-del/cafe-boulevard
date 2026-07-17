@@ -548,6 +548,12 @@ const RegjistrimiDitor = () => {
   const productNames = useMemo(() => products.map((p) => p.name), [products]);
   const difStartMap = useDifStartDates(productNames, date);
 
+  // Products that should appear in the daily-registration table (respects track_daily flag).
+  const displayProducts = useMemo(
+    () => products.filter((p: any) => p.track_daily !== false),
+    [products],
+  );
+
   // Furnizime handler: shto/zbrit delta te stokFillim
   const setFurnizime = (productName: string, newVal: number) => {
     setCurrentTurn((prev) => {
@@ -683,7 +689,7 @@ const RegjistrimiDitor = () => {
                   <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
                     <h2 className="font-semibold flex items-center gap-2 text-sm sm:text-base"><Package2 size={14}/> Produktet</h2>
                     <div className="flex items-center gap-2 flex-wrap">
-                      {editable && (
+                      {editable && adminUnlocked && (
                         <>
                           <Button size="sm" onClick={copyToNextTurn} className="bg-slate-800 hover:bg-slate-700 h-8">
                             Kopjo në turnin pasardhës →
