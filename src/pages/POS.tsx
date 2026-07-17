@@ -20,6 +20,8 @@ interface TableRow {
   number: number | string;
   name: string | null;
   status: string | null;
+  locked_by_name: string | null;
+  locked_by_color: string | null;
 }
 
 interface OpenOrderRow {
@@ -89,7 +91,10 @@ const POS = () => {
     if (checking) return;
     const load = async () => {
       const [tblRes, ordersRes] = await Promise.all([
-        supabase.from("tables").select("id, number, name, status").order("number"),
+        supabase
+          .from("tables")
+          .select("id, number, name, status, locked_by_name, locked_by_color")
+          .order("number"),
         staffRead<OpenOrderRow[]>("pos_orders.open_all"),
       ]);
       if (tblRes.error) toast.error("Gabim tavolina: " + tblRes.error.message);
@@ -125,6 +130,21 @@ const POS = () => {
 
   const activeTableNumber = currentOrder?.tableNumber ?? null;
   const hasServiceAlert = false; // TODO: connect to real service requests
+
+  const currentStaffName =
+    (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
+
+  const openTableOrder = (t: TableRow) => {
+    if (
+      t.status === "occupied" &&
+      t.locked_by_name &&
+      currentStaffName &&
+      t.locked_by_name.trim() !== currentStaffName.trim()
+    ) {
+      toast.warning(`Kjo tavolinë po shërbehet nga ${t.locked_by_name}`);
+    }
+    startOrder("table", t.number as number);
+  };
 
   const viewTableOrders = async (tableNumber: number | string) => {
     const { data, error } = await staffRead<TableOrderDetail[]>("pos_orders.by_table", {
@@ -297,25 +317,37 @@ const POS = () => {
                 const isActive = String(activeTableNumber) === String(t.number);
                 const total = tableTotals[String(t.number)] || 0;
                 const hasOrders = total > 0;
+                const lockColor = t.locked_by_color || null;
+                const lockedByOther =
+                  occupied && t.locked_by_name && currentStaffName &&
+                  t.locked_by_name.trim() !== currentStaffName.trim();
                 return (
                   <div
                     key={t.id}
                     className={`relative aspect-[4/3] rounded-lg border-2 transition ${
                       isActive
                         ? "border-amber-400 bg-amber-500/20"
+                        : lockColor
+                        ? ""
                         : occupied || hasOrders
                         ? "border-red-500/50 bg-red-500/20 text-red-200"
                         : "border-green-500/50 bg-green-500/10 text-green-200"
                     }`}
+                    style={lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
                   >
                     <button type="button"
-                      onClick={() => { startOrder("table", t.number as number); setMobileView("menu"); }}
+                      onClick={() => { openTableOrder(t); setMobileView("menu"); }}
                       className="absolute inset-0 flex flex-col items-center justify-center text-xs font-semibold hover:bg-white/5 rounded-lg"
                     >
                       <span>#{t.number}</span>
                       {hasOrders && (
                         <span className="text-[10px] font-bold text-amber-300 mt-0.5">
                           {total.toFixed(0)} L
+                        </span>
+                      )}
+                      {t.locked_by_name && (
+                        <span className="text-[9px] mt-0.5 opacity-90 truncate max-w-full px-1">
+                          {t.locked_by_name}{lockedByOther ? " ⚠" : ""}
                         </span>
                       )}
                     </button>
@@ -377,19 +409,26 @@ const POS = () => {
               const isActive = String(activeTableNumber) === String(t.number);
               const total = tableTotals[String(t.number)] || 0;
               const hasOrders = total > 0;
+              const lockColor = t.locked_by_color || null;
+              const lockedByOther =
+                occupied && t.locked_by_name && currentStaffName &&
+                t.locked_by_name.trim() !== currentStaffName.trim();
               return (
                 <div
                   key={t.id}
                   className={`relative aspect-square rounded-lg border-2 transition ${
                     isActive
                       ? "border-amber-400 bg-amber-500/20"
+                      : lockColor
+                      ? ""
                       : occupied || hasOrders
                       ? "border-red-500/50 bg-red-500/20 text-red-200"
                       : "border-green-500/50 bg-green-500/10 text-green-200"
                   }`}
+                  style={lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
                 >
                   <button type="button"
-                    onClick={() => startOrder("table", t.number as number)}
+                    onClick={() => openTableOrder(t)}
                     className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold hover:bg-white/5 rounded-lg"
                   >
                     <span>#{t.number}</span>
@@ -400,6 +439,11 @@ const POS = () => {
                     ) : (
                       <span className="text-[10px] opacity-70 mt-1">
                         e lirë
+                      </span>
+                    )}
+                    {t.locked_by_name && (
+                      <span className="text-[10px] mt-0.5 opacity-90 truncate max-w-full px-1">
+                        {t.locked_by_name}{lockedByOther ? " ⚠" : ""}
                       </span>
                     )}
                   </button>

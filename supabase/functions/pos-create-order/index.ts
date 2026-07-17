@@ -5,6 +5,18 @@ import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
 import { z } from "npm:zod@3.23.8";
 
+const STAFF_COLOR_PALETTE = [
+  "#ef4444", "#f59e0b", "#10b981", "#3b82f6",
+  "#8b5cf6", "#ec4899", "#14b8a6", "#f97316",
+];
+function colorForStaff(name: string | null | undefined): string {
+  const s = (name || "").trim();
+  if (!s) return STAFF_COLOR_PALETTE[0];
+  let sum = 0;
+  for (let i = 0; i < s.length; i++) sum += s.charCodeAt(i);
+  return STAFF_COLOR_PALETTE[sum % STAFF_COLOR_PALETTE.length];
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-shift-token",
@@ -70,8 +82,20 @@ serve(async (req) => {
     if (mode === "table") {
       if (!tableNumber) return jsonResponse({ error: "Mungon numri i tavolinës" }, 400);
       const { data: table, error: tableErr } = await supabase
-        .from("tables").select("id, status").eq("number", tableNumber).single();
+        .from("tables").select("id, status, locked_by_name").eq("number", tableNumber).single();
       if (tableErr || !table) return jsonResponse({ error: "Tavolina nuk u gjet" }, 404);
+      const currentLock = (table as any).locked_by_name as string | null;
+      if (
+        table.status === "occupied" &&
+        currentLock &&
+        operatorName &&
+        currentLock.trim() !== String(operatorName).trim()
+      ) {
+        return jsonResponse(
+          { error: `Kjo tavolinë po shërbehet nga ${currentLock}` },
+          409,
+        );
+      }
       tableId = table.id;
     }
 
@@ -148,7 +172,16 @@ serve(async (req) => {
       }
     }
 
-    if (tableId) await supabase.from("tables").update({ status: "occupied" }).eq("id", tableId);
+    if (tableId) {
+      await supabase
+        .from("tables")
+        .update({
+          status: "occupied",
+          locked_by_name: operatorName ?? null,
+          locked_by_color: operatorName ? colorForStaff(operatorName) : null,
+        })
+        .eq("id", tableId);
+    }
 
     return jsonResponse({ order, splits: splits.length });
   } catch (error) {
