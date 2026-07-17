@@ -129,7 +129,47 @@ const POS = () => {
   }
 
   const activeTableNumber = currentOrder?.tableNumber ?? null;
-  const hasServiceAlert = false; // TODO: connect to real service requests
+  const [hasServiceAlert, setHasServiceAlert] = useState(false);
+
+  // Load + subscribe to service_requests (mirror StaffShift.tsx)
+  useEffect(() => {
+    if (checking) return;
+    let mounted = true;
+    const refresh = async () => {
+      const { data } = await supabase
+        .from("service_requests")
+        .select("id")
+        .eq("status", "pending")
+        .neq("request_type", "kitchen_ready")
+        .limit(1);
+      if (mounted) setHasServiceAlert((data?.length ?? 0) > 0);
+    };
+    refresh();
+    const ch = supabase
+      .channel("pos-service-requests")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "service_requests" },
+        (payload) => {
+          const r = payload.new as { status?: string; request_type?: string };
+          if (r.status === "pending" && r.request_type !== "kitchen_ready") {
+            setHasServiceAlert(true);
+            try {
+              const audio = new Audio("/notification-alarm.wav");
+              audio.volume = 1.0;
+              audio.play().catch(() => {});
+            } catch { /* ignore */ }
+          }
+        },
+      )
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_requests" }, refresh)
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "service_requests" }, refresh)
+      .subscribe();
+    return () => {
+      mounted = false;
+      supabase.removeChannel(ch);
+    };
+  }, [checking]);
 
   const currentStaffName =
     (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
