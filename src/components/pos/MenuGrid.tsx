@@ -34,10 +34,16 @@ export const MenuGrid = () => {
     const load = async () => {
       const [{ data: p }, { data: c }] = await Promise.all([
         supabase.from("menu_items").select("*").eq("available", true),
-        supabase.from("categories").select("*").order("display_order"),
+        supabase.from("categories").select("*").eq("enabled", true).order("display_order"),
       ]);
-      setProducts((p as Product[]) || []);
-      setCategories((c as Category[]) || []);
+      const enabledCats = (c as Category[]) || [];
+      const enabledIds = new Set(enabledCats.map((cc) => cc.id));
+      // Drop products whose category has been disabled by the admin.
+      const enabledProducts = ((p as Product[]) || []).filter(
+        (pp) => !pp.category_id || enabledIds.has(pp.category_id),
+      );
+      setProducts(enabledProducts);
+      setCategories(enabledCats);
     };
     load();
     const poll = setInterval(load, 15000);

@@ -20,6 +20,7 @@ interface Category {
   name_en: string | null;
   display_order: number;
   track_daily?: boolean;
+  enabled?: boolean;
 }
 
 interface MenuItem {
@@ -225,6 +226,23 @@ const ManagerDashboard = () => {
       toast.error("Gabim në ndryshimin e cilësimit");
       // Roll back on failure.
       setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, track_daily: !next } : c)));
+    }
+  };
+
+  const handleToggleCategoryEnabled = async (id: string, next: boolean) => {
+    // Optimistic — hides/shows the category in menu, POS, and daily reg.
+    setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, enabled: next } : c)));
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({ enabled: next })
+        .eq('id', id);
+      if (error) throw error;
+      toast.success(next ? "Kategoria u aktivizua" : "Kategoria u çaktivizua — produktet e saj fshihen kudo");
+    } catch (error) {
+      console.error('Error toggling category enabled:', error);
+      toast.error("Gabim në ndryshimin e statusit");
+      setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, enabled: !next } : c)));
     }
   };
 
@@ -515,6 +533,16 @@ const ManagerDashboard = () => {
                       <>
                         <div className="flex items-center gap-4 flex-1 min-w-0">
                           <span className="font-display font-bold text-lg truncate">{category.name}</span>
+                          <label className="flex items-center gap-2 text-sm text-muted-foreground shrink-0 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 accent-[hsl(var(--gold))] cursor-pointer"
+                              checked={category.enabled !== false}
+                              onChange={(e) => handleToggleCategoryEnabled(category.id, e.target.checked)}
+                              aria-label="Aktive"
+                            />
+                            Aktive
+                          </label>
                           <label className="flex items-center gap-2 text-sm text-muted-foreground shrink-0 cursor-pointer select-none">
                             <input
                               type="checkbox"

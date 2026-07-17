@@ -123,9 +123,13 @@ serve(async (req) => {
           if (catIds.length > 0) {
             const { data: cats } = await supabase
               .from("categories")
-              .select("id, track_daily")
+              .select("id, track_daily, enabled")
               .in("id", catIds);
-            (cats ?? []).forEach((c: any) => { catFlag[c.id] = c.track_daily !== false; });
+            (cats ?? []).forEach((c: any) => {
+              // Category counts as "daily-tracked" only when it is both
+              // enabled and has the track_daily flag on.
+              catFlag[c.id] = c.enabled !== false && c.track_daily !== false;
+            });
           }
           (mis ?? []).forEach((m: any) => {
             categoryDailyByMenuItem[m.id] = m.category_id ? (catFlag[m.category_id] !== false) : true;
@@ -135,7 +139,7 @@ serve(async (req) => {
           const linked = Array.isArray(p.menu_item_ids) ? p.menu_item_ids : [];
           // A product's category is considered "daily-tracked" if it has no
           // linked menu items, or if at least one linked menu item belongs to
-          // a category with track_daily=true.
+          // a category that is enabled AND has track_daily=true.
           const category_track_daily = linked.length === 0
             ? true
             : linked.some((id: string) => categoryDailyByMenuItem[id] !== false);
@@ -146,7 +150,8 @@ serve(async (req) => {
       case "categories.list": {
         const { data, error } = await supabase
           .from("categories")
-          .select("id, name, display_order, track_daily")
+          .select("id, name, display_order, track_daily, enabled")
+          .eq("enabled", true)
           .order("display_order");
         if (error) return json({ error: error.message }, 500);
         return json({ data });

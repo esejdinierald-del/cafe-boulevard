@@ -117,6 +117,7 @@ const Menu = () => {
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
+        .eq('enabled', true)
         .order('display_order');
       if (categoriesError) throw categoriesError;
 
@@ -127,8 +128,14 @@ const Menu = () => {
         .order('display_order', { ascending: true });
       if (itemsError) throw itemsError;
 
-      setCategories(categoriesData || []);
-      setMenuItems((itemsData as unknown as MenuItem[]) || []);
+      const enabledCats = categoriesData || [];
+      const enabledIds = new Set(enabledCats.map((c: any) => c.id));
+      // Hide items whose category has been disabled by the admin.
+      const filteredItems = ((itemsData as unknown as MenuItem[]) || []).filter(
+        (it) => !it.category_id || enabledIds.has(it.category_id),
+      );
+      setCategories(enabledCats);
+      setMenuItems(filteredItems);
       if (categoriesData && categoriesData.length > 0) {
         const firstInGroup = categoriesData.find((c: Category) => c.group_name === 'BANAKU') || categoriesData[0];
         setSelectedCategoryId(firstInGroup.id);
