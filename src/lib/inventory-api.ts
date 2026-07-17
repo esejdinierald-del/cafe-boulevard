@@ -28,9 +28,11 @@ export const ShiftTurnApi = {
 };
 
 export const InvProductApi = {
-  insert: (p: { name: string; sort_order: number; menu_item_ids: string[]; units_per_sale: number }) =>
+  insert: (p: { name: string; sort_order: number; menu_item_ids: string[]; units_per_sale: number; track_daily?: boolean }) =>
     invoke<{ product: any }>("manage-inv-product", { action: "insert", ...p }),
-  update: (p: { id: string; name?: string; menu_item_ids?: string[]; units_per_sale?: number; sort_order?: number }) =>
+  update: (p: { id: string; name?: string; menu_item_ids?: string[]; units_per_sale?: number; sort_order?: number; track_daily?: boolean }) =>
     invoke("manage-inv-product", { action: "update", ...p }),
+  swapOrder: (id_a: string, id_b: string) =>
+    invoke("manage-inv-product", { action: "swap_order", id_a, id_b }),
   delete: (id: string) => invoke("manage-inv-product", { action: "delete", id }),
 };
