@@ -8,11 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/use-language";
 import { useGeolocation } from "@/hooks/use-geolocation";
-import { Languages, Wifi } from "lucide-react";
+import { Languages } from "lucide-react";
 import boulevardLogo from "@/assets/boulevard-logo.png";
-import HeroCarousel from "@/components/HeroCarousel";
-import PremiumBackground from "@/components/PremiumBackground";
-import { FadeUp, Stagger, StaggerItem } from "@/components/Motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -64,8 +61,6 @@ const translations = {
     errorWaiter: "Gabim në dërgimin e thirrjes",
     tableRequired: "Shkruani numrin e tavolinës",
     subtitle: "Café Elbasan · Eat · Drink · Connect",
-    wifiCopied: "Fjalëkalimi i Wi-Fi u kopjua",
-    wifiLabel: "Wi-Fi",
   },
   en: {
     table: "Table",
@@ -93,13 +88,8 @@ const translations = {
     errorWaiter: "Error sending call",
     tableRequired: "Enter the table number",
     subtitle: "Café Elbasan · Eat · Drink · Connect",
-    wifiCopied: "Wi-Fi password copied",
-    wifiLabel: "Wi-Fi",
   },
 };
-
-const WIFI_SSID = "Boulevard-Guest";
-const WIFI_PASSWORD = "boulevard2025";
 
 const Index = () => {
   const [searchParams] = useSearchParams();
@@ -278,8 +268,18 @@ const Index = () => {
         <meta name="twitter:title" content="Boulevard Café Elbasan — Order, Call Waiter & Connect" />
         <meta name="twitter:description" content="Premium café service in Elbasan: order, call the waiter and connect from your table." />
       </Helmet>
-      {/* Background layers (reusable ambient scene) */}
-      <PremiumBackground />
+      {/* Background layers */}
+      <div className="blvd-ambient" />
+      <div className="blvd-bokeh-blur" />
+      <div className="blvd-sparkles" />
+      <div className="blvd-vignette" />
+
+      {/* Language toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <button type="button" onClick={toggleLanguage} className="blvd-lang-btn" aria-label="Toggle language">
+          <Languages className="h-5 w-5" />
+        </button>
+      </div>
 
       {/* ═══ PHONE MOCKUP ═══ */}
       <div className="blvd-phone">
@@ -296,20 +296,46 @@ const Index = () => {
             <div className="blvd-light-ray" />
             <div className="blvd-inner-vignette" />
 
-            <h1 className="sr-only">Boulevard Café Elbasan — Order & Connect</h1>
+            {/* ═══ HEADER ═══ */}
+            <div className="blvd-header">
+              <div className="blvd-header-vignette" />
+              <div className="blvd-header-line-top" />
+              <div className="blvd-header-line-bottom" />
+
+              <div className="relative z-10">
+                <img
+                  src={boulevardLogo}
+                  alt="Boulevard Café"
+                  className="w-48 h-auto mx-auto mb-4 rounded-xl object-contain"
+                  style={{
+                    border: '1.5px solid rgba(232, 199, 109, 0.35)',
+                    padding: '6px',
+                    background: 'linear-gradient(135deg, rgba(10,12,16,0.9), rgba(5,5,8,0.95))',
+                    filter: 'drop-shadow(0 0 16px rgba(232, 199, 109, 0.35)) drop-shadow(0 0 35px rgba(255, 180, 50, 0.15))',
+                  }}
+                />
+                <h1 className="blvd-title">
+                  BOULEVARD
+                  <span className="sr-only"> Café Elbasan — Order & Connect</span>
+                </h1>
+                <div className="blvd-title-underline" />
+                <p className="blvd-subtitle">{t.subtitle}</p>
+              </div>
+            </div>
+
+            {/* Golden flare separator */}
+            <div className="w-full h-[2px] my-2" style={{
+              background: 'linear-gradient(90deg, transparent, rgba(255,200,80,0.8) 30%, rgba(255,240,180,1) 50%, rgba(255,200,80,0.8) 70%, transparent)',
+              boxShadow: '0 0 15px rgba(255,180,50,0.6), 0 0 40px rgba(255,150,30,0.3), 0 0 80px rgba(255,130,20,0.15)',
+            }} />
+
+            {/* Section title */}
+            <h2 className="blvd-section-title">BOULEVARD CAFÉ ELBASAN</h2>
 
             {/* ═══ BUTTONS ═══ */}
-            <nav
-              className="w-full flex flex-col gap-3 relative z-10"
-              aria-label={language === "sq" ? "Veprime kryesore" : "Main actions"}
-            >
-              {/* Hero Carousel */}
-              <HeroCarousel />
-
+            <div className="w-full flex flex-col gap-3 relative z-10">
               {/* Welcome text */}
-              <FadeUp delay={0.1}>
-                <p className="blvd-welcome">{t.chooseService}</p>
-              </FadeUp>
+              <p className="blvd-welcome">{t.chooseService}</p>
 
               {pendingAction && (
                 <div className="blvd-table-row">
@@ -323,8 +349,6 @@ const Index = () => {
                     onChange={(e) => setTableInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && confirmTableAndRun()}
                     autoFocus
-                    aria-label={t.tableLabel}
-                    inputMode="numeric"
                     className="blvd-table-input"
                   />
                   <div className="pr-3 flex-shrink-0 relative z-10">
@@ -335,47 +359,44 @@ const Index = () => {
                 </div>
               )}
 
-              <Stagger className="flex flex-col gap-3">
-                <StaggerItem>
-                  <button type="button" onClick={handleCallWaiter} disabled={checking} className="blvd-btn-dark w-full" aria-label={t.callWaiter}>
-                    <span className="blvd-icon-gold"><BellIcon /></span>
-                    <span>{t.callWaiter}</span>
-                  </button>
-                </StaggerItem>
-                <StaggerItem>
-                  <button type="button" onClick={handleRequestBill} disabled={checking} className="blvd-btn-gold w-full" aria-label={t.requestBill}>
-                    <span className="blvd-shimmer" aria-hidden="true" />
-                    <span className="blvd-icon-dark"><ReceiptIcon /></span>
-                    <span className="relative z-10">{t.requestBill}</span>
-                  </button>
-                </StaggerItem>
-                <StaggerItem>
-                  <button type="button" onClick={() => navigate(`/menu?tabela=${tableNumber.trim() || ""}`)} className="blvd-btn-dark w-full" aria-label={t.orderMenu}>
-                    <span className="blvd-icon-gold"><UtensilsIcon /></span>
-                    <span>{t.orderMenu}</span>
-                  </button>
-                </StaggerItem>
-                <StaggerItem>
-                  <button type="button" onClick={() => setChatOpen(true)} className="blvd-btn-gold w-full" aria-label={t.askStaff}>
-                    <span className="blvd-shimmer" style={{ animationDelay: '2s' }} aria-hidden="true" />
-                    <span className="blvd-icon-dark"><ChatIcon /></span>
-                    <span className="relative z-10">{t.askStaff}</span>
-                  </button>
-                </StaggerItem>
-                <StaggerItem>
-                  <button type="button" onClick={() => setSongDialogOpen(true)} className="blvd-btn-dark w-full" aria-label={t.requestSong}>
-                    <span className="blvd-icon-gold text-xl" aria-hidden="true">🎵</span>
-                    <span>{t.requestSong}</span>
-                  </button>
-                </StaggerItem>
-                <StaggerItem>
-                  <button type="button" onClick={() => setFeedbackOpen(true)} className="blvd-btn-dark w-full" aria-label={t.rateUs}>
-                    <span className="blvd-icon-gold"><StarIcon /></span>
-                    <span>{t.rateUs}</span>
-                  </button>
-                </StaggerItem>
-              </Stagger>
-            </nav>
+              {/* 2. Call Waiter — Dark */}
+              <button type="button" onClick={handleCallWaiter} disabled={checking} className="blvd-btn-dark">
+                <span className="blvd-icon-gold"><BellIcon /></span>
+                <span>{t.callWaiter}</span>
+              </button>
+
+              {/* 3. Request Bill — GOLD */}
+              <button type="button" onClick={handleRequestBill} disabled={checking} className="blvd-btn-gold">
+                <span className="blvd-shimmer" />
+                <span className="blvd-icon-dark"><ReceiptIcon /></span>
+                <span className="relative z-10">{t.requestBill}</span>
+              </button>
+
+              {/* 4. Order from Menu — Dark */}
+              <button type="button" onClick={() => navigate(`/menu?tabela=${tableNumber.trim() || ""}`)} className="blvd-btn-dark">
+                <span className="blvd-icon-gold"><UtensilsIcon /></span>
+                <span>{t.orderMenu}</span>
+              </button>
+
+              {/* 5. Ask Staff — GOLD */}
+              <button type="button" onClick={() => setChatOpen(true)} className="blvd-btn-gold">
+                <span className="blvd-shimmer" style={{ animationDelay: '2s' }} />
+                <span className="blvd-icon-dark"><ChatIcon /></span>
+                <span className="relative z-10">{t.askStaff}</span>
+              </button>
+
+              {/* Request Song — Dark */}
+              <button type="button" onClick={() => setSongDialogOpen(true)} className="blvd-btn-dark">
+                <span className="blvd-icon-gold text-xl">🎵</span>
+                <span>{t.requestSong}</span>
+              </button>
+
+              {/* 6. Rate Us — Dark */}
+              <button type="button" onClick={() => setFeedbackOpen(true)} className="blvd-btn-dark">
+                <span className="blvd-icon-gold"><StarIcon /></span>
+                <span>{t.rateUs}</span>
+              </button>
+            </div>
 
             {/* Hidden manager link */}
             <button type="button" onClick={() => navigate("/manager-login")} className="blvd-manager-dot" aria-label="Manager login">•</button>
