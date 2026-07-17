@@ -23,6 +23,7 @@ const SupplierOrders = lazy(() => import("./pages/SupplierOrders"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const AdminTools = lazy(() => import("./pages/AdminTools"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+const Documentation = lazy(() => import("./pages/Documentation"));
 
 const RouteFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
@@ -55,6 +56,7 @@ const RoutedContent = () => {
           <Route path="/porosi-furnitor" element={<SupplierOrders />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/admin-tools" element={<AdminTools />} />
+          <Route path="/documentation" element={<Documentation />} />
           <Route path=".lovable/oauth/consent" element={<OAuthConsent />} />
           <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
