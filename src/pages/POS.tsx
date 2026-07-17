@@ -20,6 +20,8 @@ interface TableRow {
   number: number | string;
   name: string | null;
   status: string | null;
+  locked_by_name: string | null;
+  locked_by_color: string | null;
 }
 
 interface OpenOrderRow {
@@ -89,7 +91,10 @@ const POS = () => {
     if (checking) return;
     const load = async () => {
       const [tblRes, ordersRes] = await Promise.all([
-        supabase.from("tables").select("id, number, name, status").order("number"),
+        supabase
+          .from("tables")
+          .select("id, number, name, status, locked_by_name, locked_by_color")
+          .order("number"),
         staffRead<OpenOrderRow[]>("pos_orders.open_all"),
       ]);
       if (tblRes.error) toast.error("Gabim tavolina: " + tblRes.error.message);
