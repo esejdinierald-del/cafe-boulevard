@@ -485,6 +485,92 @@
   margin: 4px 0 8px;
 }
 
+/* ═══ HERO CAROUSEL ═══ */
+.blvd-hero-carousel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+  margin: 14px 0 10px;
+  isolation: isolate;
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(232, 199, 109, 0.22),
+    inset 0 0 40px rgba(0, 0, 0, 0.35);
+  background: #06070a;
+  contain: paint;
+}
+.blvd-hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.4s ease-in-out;
+  will-change: opacity;
+}
+.blvd-hero-slide.is-active {
+  opacity: 1;
+  z-index: 1;
+}
+.blvd-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center center;
+  animation: blvd-kenburns 12s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.blvd-hero-slide:nth-child(2) .blvd-hero-img { animation-direction: alternate-reverse; }
+.blvd-hero-slide:nth-child(3) .blvd-hero-img { animation-duration: 14s; }
+@keyframes blvd-kenburns {
+  0%   { transform: scale(1.05) translate(0, 0); }
+  100% { transform: scale(1.18) translate(-2%, -2%); }
+}
+.blvd-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(6,8,12,0.05) 0%, rgba(6,8,12,0.55) 78%, rgba(6,8,12,0.85) 100%),
+    radial-gradient(120% 80% at 50% 0%, rgba(232,199,109,0.10), transparent 60%);
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
+  box-shadow: inset 0 -1px 0 rgba(232,199,109,0.28);
+}
+.blvd-hero-dots {
+  position: absolute;
+  z-index: 3;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+.blvd-hero-dot {
+  width: 18px;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.28);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.3s ease, width 0.3s ease;
+}
+.blvd-hero-dot.is-active {
+  background: linear-gradient(90deg, var(--gold-1), var(--gold-3));
+  width: 26px;
+  box-shadow: 0 0 8px rgba(232,199,109,0.55);
+}
+@media (prefers-reduced-motion: reduce) {
+  .blvd-hero-img { animation: none; transform: scale(1.05); }
+  .blvd-hero-slide { transition: opacity 0.3s ease; }
+}
+
 /* ===== TABLE INPUT ===== */
 .blvd-table-row {
   position: relative;
