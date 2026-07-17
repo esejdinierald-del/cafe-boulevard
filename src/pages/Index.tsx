@@ -296,51 +296,7 @@ const Index = () => {
             <div className="blvd-light-ray" />
             <div className="blvd-inner-vignette" />
 
-            {/* ═══ STICKY GLASS HEADER ═══ */}
-            <FadeUp as="header" className="blvd-header-sticky">
-              <div className="blvd-header-glass" aria-hidden="true" />
-              <div className="blvd-header-sweep" aria-hidden="true" />
-              <div className="blvd-header-line-top" aria-hidden="true" />
-              <div className="blvd-header-line-bottom" aria-hidden="true" />
-
-              <div className="blvd-header-row">
-                <button
-                  type="button"
-                  className="blvd-wifi-chip"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(WIFI_PASSWORD);
-                      toast.success(t.wifiCopied, { duration: 2500 });
-                    } catch {
-                      toast.success(`${t.wifiLabel}: ${WIFI_SSID} — ${WIFI_PASSWORD}`);
-                    }
-                  }}
-                  aria-label={`${t.wifiLabel} ${WIFI_SSID}`}
-                >
-                  <Wifi className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  <span className="blvd-wifi-chip-text">{WIFI_SSID}</span>
-                </button>
-
-                <img
-                  src={boulevardLogo}
-                  alt="Boulevard Café Elbasan"
-                  className="blvd-header-logo"
-                />
-                <h1 className="sr-only">Boulevard Café Elbasan — Order & Connect</h1>
-
-                <button
-                  type="button"
-                  onClick={toggleLanguage}
-                  className="blvd-lang-pill"
-                  aria-label={`Language: ${language.toUpperCase()}`}
-                >
-                  <Languages className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  <span className="blvd-lang-pill-text">{language.toUpperCase()}</span>
-                </button>
-              </div>
-
-              <p className="blvd-subtitle">{t.subtitle}</p>
-            </FadeUp>
+            <h1 className="sr-only">Boulevard Café Elbasan — Order & Connect</h1>
 
             {/* ═══ BUTTONS ═══ */}
             <nav
