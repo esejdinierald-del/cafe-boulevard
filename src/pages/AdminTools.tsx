@@ -6,7 +6,7 @@ import { buildBackupJson, downloadBackup } from "@/lib/admin-backup";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Download, FileText, AlertTriangle } from "lucide-react";
 
-type Tab = "health" | "errors" | "fiscal" | "backup" | "reopen";
+type Tab = "health" | "errors" | "fiscal" | "backup" | "reopen" | "telegram";
 
 interface AppLog {
   id: string;
@@ -96,6 +96,7 @@ const AdminTools = () => {
             { id: "fiscal", label: "🧾 Regjistri Fiskal" },
             { id: "backup", label: "💾 Backup" },
             { id: "reopen", label: "🔓 Rihap Turnin" },
+            { id: "telegram", label: "✈️ Telegram" },
           ] as const
         ).map((t) => (
           <button type="button"
@@ -116,6 +117,7 @@ const AdminTools = () => {
         {tab === "fiscal" && <FiscalTab passcode={passcode} />}
         {tab === "backup" && <BackupTab passcode={passcode} />}
         {tab === "reopen" && <ReopenTurnTab />}
+        {tab === "telegram" && <TelegramTab passcode={passcode} />}
       </main>
     </div>
   );
@@ -589,3 +591,185 @@ function ReopenTurnTab() {
 }
 
 export default AdminTools;
+
+interface TelegramChat {
+  chat_id: number;
+  title: string;
+  type: string;
+  last_text: string;
+  last_date: number;
+}
+
+function TelegramTab({ passcode }: { passcode: string }) {
+  const [chats, setChats] = useState<TelegramChat[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [savedChatId, setSavedChatId] = useState<string>("");
+  const [manualChatId, setManualChatId] = useState<string>("");
+  const [testText, setTestText] = useState<string>("✅ Test nga Boulevard Café");
+  const [sending, setSending] = useState(false);
+
+  const loadSaved = async () => {
+    const { data } = await supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "telegram_chat_id")
+      .maybeSingle();
+    if (data?.value) {
+      setSavedChatId(data.value);
+      setManualChatId(data.value);
+    }
+  };
+
+  useEffect(() => {
+    loadSaved();
+  }, []);
+
+  const findChats = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.functions.invoke("telegram-find-chat", {
+      body: { passcode },
+    });
+    setLoading(false);
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim");
+      return;
+    }
+    const list = ((data as any)?.chats || []) as TelegramChat[];
+    setChats(list);
+    if (list.length === 0) {
+      toast.info("Asnjë chat i gjetur. Dërgo një mesazh nga grupi te bot-i dhe provo përsëri.");
+    } else {
+      toast.success(`U gjetën ${list.length} chat(e)`);
+    }
+  };
+
+  const saveChatId = async (id: string) => {
+    const cleaned = id.trim();
+    if (!cleaned) {
+      toast.error("Vendos një chat_id");
+      return;
+    }
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert({ key: "telegram_chat_id", value: cleaned, updated_at: new Date().toISOString() });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setSavedChatId(cleaned);
+    toast.success("chat_id u ruajt");
+  };
+
+  const sendTest = async () => {
+    if (!savedChatId) {
+      toast.error("Ruaj fillimisht një chat_id");
+      return;
+    }
+    setSending(true);
+    const { data, error } = await supabase.functions.invoke("notify-telegram", {
+      body: { passcode, text: testText || "Test" },
+    });
+    setSending(false);
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim");
+      return;
+    }
+    toast.success("Mesazhi u dërgua ✓");
+  };
+
+  return (
+    <div className="space-y-4 max-w-2xl">
+      <div className="p-4 rounded-lg bg-slate-800 border border-slate-700 space-y-3">
+        <h2 className="font-semibold text-amber-300">1. Gjej grupin e stafit</h2>
+        <p className="text-xs text-slate-400">
+          Shto bot-in në grupin e stafit dhe dërgo së paku 1 mesazh në grup. Pastaj kliko butonin më poshtë
+          për të parë chat_id-të e disponueshme.
+        </p>
+        <button
+          type="button"
+          onClick={findChats}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 rounded bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold disabled:opacity-50"
+        >
+          <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+          {loading ? "Duke kërkuar..." : "Gjej Grupin"}
+        </button>
+        {chats.length > 0 && (
+          <ul className="space-y-2 mt-2">
+            {chats.map((c) => (
+              <li
+                key={c.chat_id}
+                className="flex items-center justify-between gap-3 p-3 rounded bg-slate-900 border border-slate-700"
+              >
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{c.title}</div>
+                  <div className="text-xs text-slate-400">
+                    <span className="font-mono">{c.chat_id}</span> · {c.type}
+                  </div>
+                  {c.last_text && (
+                    <div className="text-xs text-slate-500 truncate mt-1">« {c.last_text} »</div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => saveChatId(String(c.chat_id))}
+                  className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-sm shrink-0"
+                >
+                  Zgjidh
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="p-4 rounded-lg bg-slate-800 border border-slate-700 space-y-3">
+        <h2 className="font-semibold text-amber-300">2. chat_id aktual</h2>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={manualChatId}
+            onChange={(e) => setManualChatId(e.target.value)}
+            placeholder="p.sh. -1001234567890"
+            className="flex-1 px-3 py-2 rounded bg-slate-900 border border-slate-700 text-white font-mono text-sm"
+          />
+          <button
+            type="button"
+            onClick={() => saveChatId(manualChatId)}
+            className="px-3 py-2 rounded bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold text-sm"
+          >
+            Ruaj
+          </button>
+        </div>
+        {savedChatId && (
+          <div className="text-xs text-slate-400">
+            Ruajtur: <span className="font-mono text-green-300">{savedChatId}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-4 rounded-lg bg-slate-800 border border-slate-700 space-y-3">
+        <h2 className="font-semibold text-amber-300">3. Testo dërgimin</h2>
+        <input
+          type="text"
+          value={testText}
+          onChange={(e) => setTestText(e.target.value)}
+          className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-white text-sm"
+        />
+        <button
+          type="button"
+          onClick={sendTest}
+          disabled={sending || !savedChatId}
+          className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm disabled:opacity-50"
+        >
+          {sending ? "Duke dërguar..." : "Dërgo mesazh test"}
+        </button>
+      </div>
+
+      <div className="p-3 rounded bg-blue-500/10 border border-blue-500/30 text-xs text-blue-200">
+        ℹ️ Njoftimet për <b>service_requests</b> dërgohen automatikisht nga server-i (trigger Postgres +
+        pg_net) — funksionojnë edhe kur asnjë browser nuk është hapur.
+      </div>
+    </div>
+  );
+}
