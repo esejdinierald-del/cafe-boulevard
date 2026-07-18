@@ -434,6 +434,24 @@ const StaffShift = () => {
   }, [activeToken]);
 
   const handleDecideOrder = useCallback(async (id: string, tableNumber: string, decision: "accepted" | "rejected") => {
+    if (decision === "rejected") {
+      const adminName = window.prompt("Refuzimi kërkon admin.\nEmri i adminit:");
+      if (!adminName || !adminName.trim()) return;
+      const adminPassword = window.prompt(`Fjalëkalimi personal i adminit (${adminName.trim()}):`);
+      if (!adminPassword) return;
+      try {
+        const { data, error } = await supabase.functions.invoke("verify-staff-admin", {
+          body: { staffName: adminName.trim(), password: adminPassword },
+        });
+        if (error || !(data as any)?.valid) {
+          toast.error((data as any)?.error || "Fjalëkalim i pasaktë ose nuk je admin");
+          return;
+        }
+      } catch {
+        toast.error("Gabim gjatë verifikimit të adminit");
+        return;
+      }
+    }
     setCompletingIds(prev => new Set(prev).add(id));
     const token = activeToken || localStorage.getItem("staff_shift_token") || "";
     try {
