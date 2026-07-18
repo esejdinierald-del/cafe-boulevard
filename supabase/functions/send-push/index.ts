@@ -5,7 +5,7 @@ import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.t
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-shift-token",
+    "authorization, x-client-info, apikey, content-type, x-shift-token, x-internal-secret",
 };
 
 function base64urlToUint8Array(base64url: string): Uint8Array {
@@ -214,8 +214,15 @@ Deno.serve(async (req) => {
 
   try {
     const parsedBody = await req.json();
-    const auth = await requireShiftToken(req, parsedBody);
-    if (!auth.ok) return auth.response;
+    // Allow trigger-based invocation via shared internal secret (no shift token).
+    const internal = req.headers.get("x-internal-secret");
+    const expectedInternal = Deno.env.get("INTERNAL_WEBHOOK_SECRET") || "";
+    const internalAuthorized =
+      !!internal && !!expectedInternal && internal === expectedInternal;
+    if (!internalAuthorized) {
+      const auth = await requireShiftToken(req, parsedBody);
+      if (!auth.ok) return auth.response;
+    }
     const { title, body, type } = parsedBody ?? {};
 
     if (!title || !body) {
@@ -230,9 +237,35 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Only send to devices whose shift token is currently active + unlocked.
+    const nowIso = new Date().toISOString();
+    const { data: activeTokens, error: tokErr } = await supabase
+      .from("shift_tokens")
+      .select("token")
+      .eq("unlocked", true)
+      .lte("shift_start", nowIso)
+      .gte("shift_end", nowIso);
+
+    if (tokErr) {
+      console.error("Shift tokens fetch error:", tokErr);
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch active shifts" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const tokens = (activeTokens ?? []).map((t) => t.token).filter(Boolean);
+    if (tokens.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, sent: 0, message: "No active shifts" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { data: subscriptions, error } = await supabase
       .from("push_subscriptions")
-      .select("endpoint, p256dh, auth");
+      .select("endpoint, p256dh, auth")
+      .in("shift_token", tokens);
 
     if (error) {
       console.error("DB error:", error);
