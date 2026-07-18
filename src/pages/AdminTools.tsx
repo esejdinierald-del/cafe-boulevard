@@ -6,7 +6,7 @@ import { buildBackupJson, downloadBackup } from "@/lib/admin-backup";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Download, FileText, AlertTriangle } from "lucide-react";
 
-type Tab = "health" | "errors" | "fiscal" | "backup" | "reopen";
+type Tab = "health" | "errors" | "fiscal" | "backup" | "reopen" | "telegram";
 
 interface AppLog {
   id: string;
@@ -96,6 +96,7 @@ const AdminTools = () => {
             { id: "fiscal", label: "🧾 Regjistri Fiskal" },
             { id: "backup", label: "💾 Backup" },
             { id: "reopen", label: "🔓 Rihap Turnin" },
+            { id: "telegram", label: "✈️ Telegram" },
           ] as const
         ).map((t) => (
           <button type="button"
@@ -116,6 +117,7 @@ const AdminTools = () => {
         {tab === "fiscal" && <FiscalTab passcode={passcode} />}
         {tab === "backup" && <BackupTab passcode={passcode} />}
         {tab === "reopen" && <ReopenTurnTab />}
+        {tab === "telegram" && <TelegramTab passcode={passcode} />}
       </main>
     </div>
   );
