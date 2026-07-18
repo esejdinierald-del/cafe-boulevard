@@ -28,9 +28,9 @@ export function useCoffeeSalesTotal(fromISO: string | null, toISO: string | null
         if (!matRec?.materials?.length) { if (!cancelled) setTotal(0); return; }
         const dosePerItem: Record<string, number> = {};
         (recs || []).forEach((r: any) => {
-          // Assume 0.007 kg = 1 dose; fall back to 1 if quantity_needed missing.
+          // quantity_needed is already the number of units (cope/doza) per serving.
           const qty = Number(r.quantity_needed) || 0;
-          const doses = qty > 0 ? Math.max(1, Math.round(qty / 0.007)) : 1;
+          const doses = qty > 0 ? qty : 1;
           dosePerItem[r.menu_item_id] = Math.max(dosePerItem[r.menu_item_id] || 0, doses);
         });
         const itemIds = Object.keys(dosePerItem);
