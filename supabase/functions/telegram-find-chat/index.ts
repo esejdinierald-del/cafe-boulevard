@@ -9,7 +9,8 @@ serve(async (req) => {
     new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
-    const { passcode } = await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => ({}));
+    const { passcode, action, chatId } = body || {};
     if (!passcode) return json({ error: "Mungon fjalëkalimi" }, 400);
 
     const supabase = createClient(
@@ -23,6 +24,16 @@ serve(async (req) => {
     const providedHash = await sha256(String(passcode));
     if (!timingSafeEqualHex(providedHash, String(expectedHash))) {
       return json({ error: "Fjalëkalim i pasaktë" }, 403);
+    }
+
+    if (action === "save_chat_id") {
+      const cleaned = String(chatId || "").trim();
+      if (!cleaned) return json({ error: "Mungon chatId" }, 400);
+      const { error: upErr } = await supabase
+        .from("app_settings")
+        .upsert({ key: "telegram_chat_id", value: cleaned, updated_at: new Date().toISOString() });
+      if (upErr) return json({ error: upErr.message }, 500);
+      return json({ ok: true, chatId: cleaned });
     }
 
     const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
