@@ -649,11 +649,11 @@ function TelegramTab({ passcode }: { passcode: string }) {
       toast.error("Vendos një chat_id");
       return;
     }
-    const { error } = await supabase
-      .from("app_settings")
-      .upsert({ key: "telegram_chat_id", value: cleaned, updated_at: new Date().toISOString() });
-    if (error) {
-      toast.error(error.message);
+    const { data, error } = await supabase.functions.invoke("telegram-find-chat", {
+      body: { action: "save_chat_id", passcode, chatId: cleaned },
+    });
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim");
       return;
     }
     setSavedChatId(cleaned);
