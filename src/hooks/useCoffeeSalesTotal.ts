@@ -6,9 +6,8 @@ import { staffRead } from "@/lib/staff-read";
  * A "coffee menu item" = any menu_item that has a recipe row linked to a raw_material
  * whose name contains "kaf" (case-insensitive), e.g. "Kafe e zezë".
  *
- * Returns total number of coffee drinks sold. Each drink = 1 dose (default),
- * unless recipes.quantity_needed encodes multi-dose (doppio = 2). We derive doses
- * as: sold_qty_of_item * dosesPerServing, where dosesPerServing = round(quantity_needed / SINGLE_DOSE_G).
+ * recipes.quantity_needed is the exact number of units (cope/doza) consumed per item sold.
+ * Total = sum of (sold_qty * quantity_needed) for each coffee-linked menu item.
  */
 export function useCoffeeSalesTotal(fromISO: string | null, toISO: string | null, refreshKey = 0) {
   const [total, setTotal] = useState<number>(0);
@@ -29,9 +28,9 @@ export function useCoffeeSalesTotal(fromISO: string | null, toISO: string | null
         if (!matRec?.materials?.length) { if (!cancelled) setTotal(0); return; }
         const dosePerItem: Record<string, number> = {};
         (recs || []).forEach((r: any) => {
-          // Assume 0.007 kg = 1 dose; fall back to 1 if quantity_needed missing.
+          // quantity_needed is already the number of units (cope/doza) per serving.
           const qty = Number(r.quantity_needed) || 0;
-          const doses = qty > 0 ? Math.max(1, Math.round(qty / 0.007)) : 1;
+          const doses = qty > 0 ? qty : 1;
           dosePerItem[r.menu_item_id] = Math.max(dosePerItem[r.menu_item_id] || 0, doses);
         });
         const itemIds = Object.keys(dosePerItem);
