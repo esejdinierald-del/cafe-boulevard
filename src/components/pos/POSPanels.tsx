@@ -169,10 +169,9 @@ export const CashierPanel = () => {
   );
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState<"active" | "history">("active");
-  // Admin-lock the whole Cashier panel.
-  const [unlocked, setUnlocked] = useState<boolean>(
-    () => sessionStorage.getItem("cashier_unlocked") === "1",
-  );
+  // Admin lock ONLY guards the "Historiku (Admin)" tab (financial data + purge).
+  // The "Aktive" tab and normal close/print are open to all staff.
+  const [historyUnlocked, setHistoryUnlocked] = useState<boolean>(false);
   const [pwInput, setPwInput] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [unlocking, setUnlocking] = useState(false);
@@ -194,18 +193,17 @@ export const CashierPanel = () => {
     setAdminPw(pwInput.trim());
     setAdminName(nameInput.trim());
     sessionStorage.setItem("cashier_admin_name", nameInput.trim());
-    setUnlocked(true);
-    sessionStorage.setItem("cashier_unlocked", "1");
+    setHistoryUnlocked(true);
     setPwInput("");
     setNameInput("");
   };
 
   const lockNow = () => {
-    setUnlocked(false);
+    setHistoryUnlocked(false);
     setAdminPw(null);
     setAdminName(null);
-    sessionStorage.removeItem("cashier_unlocked");
     sessionStorage.removeItem("cashier_admin_name");
+    setTab("active");
   };
 
   const requireAdmin = (): string | null => {
@@ -344,39 +342,6 @@ export const CashierPanel = () => {
 
   return (
     <div className="space-y-3">
-      {!unlocked && (
-        <Card className="max-w-md mx-auto p-6 space-y-4 border-amber-500/40">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className="rounded-full bg-amber-500/10 p-3">
-              <Lock className="h-6 w-6 text-amber-500" />
-            </div>
-            <h2 className="text-lg font-bold">Arka është e mbyllur</h2>
-            <p className="text-sm text-muted-foreground">
-              Fut emrin tënd dhe fjalëkalimin personal të adminit për të hapur Arkën.
-            </p>
-          </div>
-          <Input
-            placeholder="Emri i stafit (p.sh. Erald)"
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }}
-            autoFocus
-          />
-          <Input
-            type="password"
-            placeholder="Fjalëkalimi personal"
-            value={pwInput}
-            onChange={(e) => setPwInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }}
-          />
-          <Button className="w-full" onClick={tryUnlock} disabled={unlocking}>
-            {unlocking ? "Duke verifikuar..." : "Hap Arkën"}
-          </Button>
-        </Card>
-      )}
-
-      {unlocked && (
-        <>
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border pb-2">
         <Button
@@ -393,15 +358,17 @@ export const CashierPanel = () => {
         >
           <History className="h-4 w-4 mr-1" /> Historiku (Admin)
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={lockNow}
-          className="ml-auto text-muted-foreground"
-          title="Mbyll Arkën"
-        >
-          <Lock className="h-4 w-4" />
-        </Button>
+        {historyUnlocked && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={lockNow}
+            className="ml-auto text-muted-foreground"
+            title="Mbyll Historikun"
+          >
+            <Lock className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {tab === "active" && (
@@ -519,7 +486,40 @@ export const CashierPanel = () => {
         </>
       )}
 
-      {tab === "history" && <CashierHistoryPanel />}
+      {tab === "history" && (
+        historyUnlocked ? (
+          <CashierHistoryPanel />
+        ) : (
+          <Card className="max-w-md mx-auto p-6 space-y-4 border-amber-500/40">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="rounded-full bg-amber-500/10 p-3">
+                <Lock className="h-6 w-6 text-amber-500" />
+              </div>
+              <h2 className="text-lg font-bold">Historiku është i mbyllur</h2>
+              <p className="text-sm text-muted-foreground">
+                Fut emrin dhe fjalëkalimin personal të adminit për të parë historikun financiar.
+              </p>
+            </div>
+            <Input
+              placeholder="Emri i stafit (p.sh. Erald)"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }}
+              autoFocus
+            />
+            <Input
+              type="password"
+              placeholder="Fjalëkalimi personal"
+              value={pwInput}
+              onChange={(e) => setPwInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }}
+            />
+            <Button className="w-full" onClick={tryUnlock} disabled={unlocking}>
+              {unlocking ? "Duke verifikuar..." : "Hap Historikun"}
+            </Button>
+          </Card>
+        )
+      )}
 
       {receipt && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setReceipt(null)}>
@@ -548,8 +548,6 @@ export const CashierPanel = () => {
             </Button>
           </Card>
         </div>
-      )}
-        </>
       )}
     </div>
   );
