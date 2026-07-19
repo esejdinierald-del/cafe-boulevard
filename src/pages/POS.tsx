@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { MenuGrid } from "@/components/pos/MenuGrid";
@@ -52,6 +52,43 @@ const POS = () => {
   
   const [mobileView, setMobileView] = useState<"tables" | "menu">("tables");
   const [hasServiceAlert, setHasServiceAlert] = useState(false);
+  const alertAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUnlockedRef = useRef(false);
+  const prevPendingCountRef = useRef(0);
+
+  // Prepare audio + unlock on first user gesture (required on iOS/Safari/PWA)
+  useEffect(() => {
+    const a = new Audio("/notification-alarm.wav");
+    a.preload = "auto";
+    a.volume = 1.0;
+    alertAudioRef.current = a;
+    const unlock = () => {
+      if (audioUnlockedRef.current) return;
+      const el = alertAudioRef.current;
+      if (!el) return;
+      el.muted = true;
+      el.play().then(() => {
+        el.pause();
+        el.currentTime = 0;
+        el.muted = false;
+        audioUnlockedRef.current = true;
+      }).catch(() => { /* will retry on next gesture */ });
+    };
+    const events: Array<keyof WindowEventMap> = ["pointerdown", "touchstart", "keydown", "click"];
+    events.forEach((ev) => window.addEventListener(ev, unlock, { once: false, passive: true } as AddEventListenerOptions));
+    return () => {
+      events.forEach((ev) => window.removeEventListener(ev, unlock));
+    };
+  }, []);
+
+  const playAlert = () => {
+    const el = alertAudioRef.current;
+    if (!el) return;
+    try {
+      el.currentTime = 0;
+      el.play().catch(() => {});
+    } catch { /* ignore */ }
+  };
 
   // Track our pending print jobs (waiting for the arka PC)
   useEffect(() => {
@@ -131,10 +168,16 @@ const POS = () => {
         .select("id")
         .eq("status", "pending")
         .neq("request_type", "kitchen_ready")
-        .limit(1);
-      if (mounted) setHasServiceAlert((data?.length ?? 0) > 0);
+        .limit(10);
+      if (!mounted) return;
+      const count = data?.length ?? 0;
+      // If new pending requests appeared since last poll, play sound (fallback if realtime misses)
+      if (count > prevPendingCountRef.current) playAlert();
+      prevPendingCountRef.current = count;
+      setHasServiceAlert(count > 0);
     };
     refresh();
+    const poll = setInterval(refresh, 4000);
     const ch = supabase
       .channel("pos-service-requests")
       .on(
@@ -144,11 +187,7 @@ const POS = () => {
           const r = payload.new as { status?: string; request_type?: string };
           if (r.status === "pending" && r.request_type !== "kitchen_ready") {
             setHasServiceAlert(true);
-            try {
-              const audio = new Audio("/notification-alarm.wav");
-              audio.volume = 1.0;
-              audio.play().catch(() => {});
-            } catch { /* ignore */ }
+            playAlert();
           }
         },
       )
@@ -157,6 +196,7 @@ const POS = () => {
       .subscribe();
     return () => {
       mounted = false;
+      clearInterval(poll);
       supabase.removeChannel(ch);
     };
   }, [checking]);
