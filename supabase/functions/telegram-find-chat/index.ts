@@ -62,6 +62,29 @@ serve(async (req) => {
       return json(d);
     }
 
+    if (action === "set_bot_profile") {
+      const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
+      if (!token) return json({ error: "TELEGRAM_BOT_TOKEN mungon" }, 500);
+      const description =
+        "Bot i njoftimeve për stafin e Boulevard Café — thirrje shërbimi dhe porosi të reja në kohë reale.";
+      const shortDescription = "Njoftime stafi Boulevard Café";
+      const r1 = await fetch(`https://api.telegram.org/bot${token}/setMyDescription`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description }),
+      });
+      const d1 = await r1.json();
+      if (!d1.ok) return json({ error: "setMyDescription: " + (d1.description || "gabim"), raw: d1 }, 502);
+      const r2 = await fetch(`https://api.telegram.org/bot${token}/setMyShortDescription`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ short_description: shortDescription }),
+      });
+      const d2 = await r2.json();
+      if (!d2.ok) return json({ error: "setMyShortDescription: " + (d2.description || "gabim"), raw: d2 }, 502);
+      return json({ ok: true, description, short_description: shortDescription });
+    }
+
     const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!token) return json({ error: "TELEGRAM_BOT_TOKEN mungon" }, 500);
 
