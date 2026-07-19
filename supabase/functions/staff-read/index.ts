@@ -145,7 +145,23 @@ serve(async (req) => {
             : linked.some((id: string) => categoryDailyByMenuItem[id] !== false);
           return { ...p, category_track_daily };
         });
-        return json({ data: enriched });
+        // Seed Stok Fillim fallback: attach current raw_materials.quantity
+        // matched by normalized (trim+lowercase) product name. This is
+        // READ-ONLY seeding — raw_materials remains the source of truth and
+        // is never written from daily registration.
+        const norm = (s: string) => String(s || "").trim().toLowerCase();
+        const { data: rms } = await supabase
+          .from("raw_materials")
+          .select("name, quantity");
+        const rmMap: Record<string, number> = {};
+        (rms ?? []).forEach((r: any) => {
+          rmMap[norm(r.name)] = Number(r.quantity) || 0;
+        });
+        const finalEnriched = enriched.map((p: any) => ({
+          ...p,
+          raw_material_qty: rmMap[norm(p.name)] ?? 0,
+        }));
+        return json({ data: finalEnriched });
       }
       case "categories.list": {
         const { data, error } = await supabase

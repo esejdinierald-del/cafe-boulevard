@@ -164,6 +164,15 @@ const RegjistrimiDitor = () => {
         const productList = (prods || []) as InvProduct[];
         setProducts(productList);
 
+        // Map product name → current raw_materials.quantity, used as a
+        // fallback seed for Stok Fillim when there is no prior daily data.
+        const rawMaterialQty: Record<string, number> = {};
+        productList.forEach((p: any) => {
+          if (typeof p.raw_material_qty === "number") {
+            rawMaterialQty[p.name] = p.raw_material_qty;
+          }
+        });
+
         const existing: ShiftTurn[] = ((existingTurns || []) as any[]).map((r) => ({
           ...r,
           turn_data: { ...emptyTurn(), ...(r.turn_data || {}) },
@@ -174,10 +183,10 @@ const RegjistrimiDitor = () => {
           productList.forEach((p) => {
             if (!t.turn_data.products[p.name]) {
               const prevPrev = idx === 0
-                ? emptyProduct(seed?.stock?.[p.name] ?? 0)
+                ? emptyProduct(seed?.stock?.[p.name] ?? rawMaterialQty[p.name] ?? 0)
                 : existing[idx - 1].turn_data.products[p.name] || emptyProduct();
               const stokFillim = idx === 0
-                ? (seed?.stock?.[p.name] ?? 0)
+                ? (seed?.stock?.[p.name] ?? rawMaterialQty[p.name] ?? 0)
                 : Calc.calculateStockForNextTurn(prevPrev);
               t.turn_data.products[p.name] = emptyProduct(stokFillim);
             }
@@ -200,7 +209,7 @@ const RegjistrimiDitor = () => {
             const prev = last?.turn_data.products[p.name];
             const stokFillim = prev
               ? Calc.calculateStockForNextTurn(prev)
-              : (seed?.stock?.[p.name] ?? 0);
+              : (seed?.stock?.[p.name] ?? rawMaterialQty[p.name] ?? 0);
             seedTurn.products[p.name] = emptyProduct(stokFillim);
           });
           seedTurn.mulliriFillim = last ? last.turn_data.mulliriPerfund : (seed?.mulliriFillim ?? 0);
