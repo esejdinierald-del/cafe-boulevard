@@ -688,6 +688,17 @@ function TelegramTab({ passcode }: { passcode: string }) {
     toast.success("Webhook u regjistrua ✓");
   };
 
+  const setBotProfile = async () => {
+    const { data, error } = await supabase.functions.invoke("telegram-find-chat", {
+      body: { action: "set_bot_profile", passcode },
+    });
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim");
+      return;
+    }
+    toast.success("Përshkrimi i bot-it u vendos ✓");
+  };
+
   return (
     <div className="space-y-4 max-w-2xl">
       <div className="p-4 rounded-lg bg-slate-800 border border-slate-700 space-y-3">
@@ -795,6 +806,25 @@ function TelegramTab({ passcode }: { passcode: string }) {
         >
           Regjistro Webhook
         </button>
+      </div>
+
+      <div className="p-4 rounded-lg bg-slate-800 border border-slate-700 space-y-3">
+        <h2 className="font-semibold text-amber-300">5. Profili i bot-it</h2>
+        <p className="text-xs text-slate-400">
+          Vendos automatikisht përshkrimin e bot-it (të gjatë dhe të shkurtër) që shfaqet te Telegram
+          kur përdoruesit hapin bot-in.
+        </p>
+        <button
+          type="button"
+          onClick={setBotProfile}
+          className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm"
+        >
+          Vendos Përshkrimin
+        </button>
+        <p className="text-[11px] text-slate-500 italic">
+          Shënim: foto e profilit të bot-it nuk mund të vendoset via API — bëje manualisht te{" "}
+          <span className="font-mono">@BotFather</span> me komandën <span className="font-mono">/setuserpic</span>.
+        </p>
       </div>
     </div>
   );
