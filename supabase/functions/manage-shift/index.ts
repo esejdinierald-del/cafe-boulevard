@@ -14,7 +14,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { action, id, token, shift_start, shift_end, adminPassword } = await req.json();
+    const requestBody = await req.json().catch(() => ({}));
+    const { action, id, token, shift_start, shift_end, adminPassword } = requestBody;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -135,6 +136,11 @@ Deno.serve(async (req) => {
 
     // ACTION: get_or_create — fetch active shift token or create one
     if (action === "get_or_create") {
+      console.log("manage-shift get_or_create:start", {
+        hasShiftStart: Boolean(shift_start),
+        hasShiftEnd: Boolean(shift_end),
+      });
+
       const resolveShiftWindow = () => {
         if (shift_start && shift_end) {
           return { start: String(shift_start), end: String(shift_end) };
@@ -175,18 +181,54 @@ Deno.serve(async (req) => {
       };
 
       const shiftWindow = resolveShiftWindow();
+      const startDate = new Date(shiftWindow.start);
+      const endDate = new Date(shiftWindow.end);
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate <= startDate) {
+        console.error("manage-shift get_or_create:invalid_window", shiftWindow);
+        return new Response(
+          JSON.stringify({ error: "Invalid shift window" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
-      // Check existing active token
-      const { data: existing } = await supabase
+      // Check existing active token. Use limit(1) instead of maybeSingle() so
+      // overlapping active rows never throw PGRST116 and leave the dashboard
+      // waiting for a QR code.
+      const { data: existingRows, error: existingError } = await supabase
         .from("shift_tokens")
-        .select("token, unlocked")
+        .select("token, unlocked, shift_start, shift_end, created_at")
         .gte("shift_end", now)
         .lte("shift_start", now)
-        .maybeSingle();
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (existingError) {
+        console.error("manage-shift get_or_create:select_error", {
+          code: existingError.code,
+          message: existingError.message,
+          details: existingError.details,
+        });
+        return new Response(
+          JSON.stringify({ error: "Failed to read active shift token" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const existing = existingRows?.[0];
 
       if (existing) {
+        console.log("manage-shift get_or_create:existing", {
+          unlocked: existing.unlocked,
+          shift_start: existing.shift_start,
+          shift_end: existing.shift_end,
+        });
         return new Response(
-          JSON.stringify({ token: existing.token, unlocked: existing.unlocked }),
+          JSON.stringify({
+            token: existing.token,
+            unlocked: existing.unlocked,
+            shift_start: existing.shift_start,
+            shift_end: existing.shift_end,
+          }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -201,14 +243,29 @@ Deno.serve(async (req) => {
       });
 
       if (error) {
+        console.error("manage-shift get_or_create:insert_error", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+        });
         return new Response(
-          JSON.stringify({ error: "Failed to create token" }),
+          JSON.stringify({ error: "Failed to create shift token" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
+      console.log("manage-shift get_or_create:created", {
+        shift_start: shiftWindow.start,
+        shift_end: shiftWindow.end,
+      });
+
       return new Response(
-        JSON.stringify({ token: newToken, unlocked: true }),
+        JSON.stringify({
+          token: newToken,
+          unlocked: true,
+          shift_start: shiftWindow.start,
+          shift_end: shiftWindow.end,
+        }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -259,7 +316,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      const { type } = await req.json().catch(() => ({ type: null }));
+      const { type } = requestBody as { type?: string | null };
       // We already parsed the body above so use the original parsed values
     }
 
@@ -521,6 +578,7 @@ Deno.serve(async (req) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
+    console.error("manage-shift:unhandled_error", e instanceof Error ? e.message : String(e));
     return new Response(
       JSON.stringify({ error: "Invalid request" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
