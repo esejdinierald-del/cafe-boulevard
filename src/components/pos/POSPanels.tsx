@@ -19,7 +19,7 @@ interface Split {
   items: Array<{ name: string; quantity: number; notes?: string }>;
   confirmed_at: string | null;
   created_at: string;
-  pos_orders?: { table_number: number | null; mode: string } | null;
+  pos_orders?: { table_number: number | null; mode: string; notes?: string | null; operator_name?: string | null } | null;
 }
 
 interface POSOrder {
