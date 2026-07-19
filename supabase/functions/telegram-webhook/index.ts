@@ -92,6 +92,57 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ ok: true }));
       }
 
+      if (data.startsWith("accept_request:")) {
+        const reqId = data.slice("accept_request:".length).trim();
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const internalSecret = Deno.env.get("INTERNAL_WEBHOOK_SECRET") || "";
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+
+        let ok = false;
+        try {
+          const res = await fetch(`${supabaseUrl}/functions/v1/complete-request`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-internal-secret": internalSecret,
+              "apikey": anonKey,
+              "Authorization": `Bearer ${anonKey}`,
+            },
+            body: JSON.stringify({ id: reqId, type: "service_request" }),
+          });
+          ok = res.ok;
+        } catch (_) {
+          ok = false;
+        }
+
+        if (ok) {
+          await tg("answerCallbackQuery", { callback_query_id: cqId, text: "✅ U pranua!" });
+          if (cqChatId && cqMsgId) {
+            await tg("editMessageText", {
+              chat_id: cqChatId,
+              message_id: cqMsgId,
+              text: origText + "\n\n✅ Pranuar nga " + fromName,
+              parse_mode: "HTML",
+              disable_web_page_preview: true,
+            });
+          }
+        } else {
+          await tg("answerCallbackQuery", {
+            callback_query_id: cqId,
+            text: "⚠️ Kjo thirrje është trajtuar tashmë",
+            show_alert: true,
+          });
+          if (cqChatId && cqMsgId) {
+            await tg("editMessageReplyMarkup", {
+              chat_id: cqChatId,
+              message_id: cqMsgId,
+              reply_markup: { inline_keyboard: [] },
+            });
+          }
+        }
+        return new Response(JSON.stringify({ ok: true }));
+      }
+
       await tg("answerCallbackQuery", { callback_query_id: cqId });
       return new Response(JSON.stringify({ ok: true }));
     }
