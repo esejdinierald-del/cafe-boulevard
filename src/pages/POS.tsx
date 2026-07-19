@@ -175,6 +175,11 @@ const POS = () => {
     (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
 
   const openTableOrder = (t: TableRow) => {
+    // Virtual "Porosi Online" table (#0): view-only, per-order printing
+    if (Number(t.number) === 0) {
+      viewTableOrders(t.number);
+      return;
+    }
     if (
       t.status === "occupied" &&
       t.locked_by_name &&
@@ -242,6 +247,40 @@ const POS = () => {
           printReceipt(combined, `Tavolina #${tableNumber}`);
         }
       }
+    } catch (e) {
+      toast.error("Gabim: " + (e as Error).message);
+    } finally {
+      setClosing(false);
+    }
+  };
+
+  // Per-order close+print (used by the "Porosi Online" virtual table)
+  const closeSingleOrder = async (orderId: string, tableNumber: number | string) => {
+    if (!confirm("Të printojmë & mbyllim këtë porosi?")) return;
+    setClosing(true);
+    try {
+      const operatorName = localStorage.getItem("staff_name") || "Kamarier";
+      const shiftToken = localStorage.getItem("staff_shift_token") || undefined;
+      const { data, error } = await supabase.functions.invoke("pos-print-ticket", {
+        body: { orderId, closeOrder: true, operatorName, shiftToken },
+        headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
+      });
+      const err = (data as any)?.error || error?.message;
+      if (err) throw new Error(err);
+      const receiptText = (data as any)?.receiptText ? String((data as any).receiptText) : "";
+      if (receiptText) {
+        const jobId = await queuePrintJob({
+          receiptText,
+          title: `Porosi Online`,
+          kind: "close_table",
+          station: "arka",
+          tableCode: tableNumber,
+        });
+        if (jobId) toast.success("Bileta u dërgua tek arka për printim ✓");
+        else printReceipt(receiptText, `Porosi Online`);
+      }
+      // Refresh modal contents
+      viewTableOrders(tableNumber);
     } catch (e) {
       toast.error("Gabim: " + (e as Error).message);
     } finally {
