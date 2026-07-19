@@ -1231,6 +1231,7 @@ export type Database = {
         Args: { amount: number; material_id: string }
         Returns: undefined
       }
+      is_order_turn_locked: { Args: { p_order_id: string }; Returns: boolean }
       set_staff_admin_password: {
         Args: { p_id: string; p_password: string }
         Returns: undefined
