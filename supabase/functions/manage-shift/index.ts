@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
       }
 
       return new Response(
-        JSON.stringify({ token: newToken, unlocked: false }),
+        JSON.stringify({ token: newToken, unlocked: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
