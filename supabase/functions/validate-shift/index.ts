@@ -47,6 +47,8 @@ Deno.serve(async (req) => {
       .eq("token", token)
       .gte("shift_end", now)
       .lte("shift_start", now)
+      // Legacy tokens may have `unlocked = null`; only explicit false means closed/locked.
+      .not("unlocked", "is", false)
       .maybeSingle();
 
     if (error || !shift) {
