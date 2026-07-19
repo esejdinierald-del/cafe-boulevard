@@ -45,7 +45,7 @@ serve(async (req) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           url: webhookUrl,
-          allowed_updates: ["message", "edited_message"],
+          allowed_updates: ["message", "edited_message", "callback_query"],
           drop_pending_updates: true,
         }),
       });
@@ -99,7 +99,7 @@ serve(async (req) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         url: webhookUrl,
-        allowed_updates: ["message", "edited_message"],
+        allowed_updates: ["message", "edited_message", "callback_query"],
       }),
     }).catch(() => {});
     if (!tgData.ok) return json({ error: "Telegram: " + (tgData.description || "gabim"), raw: tgData }, 502);
