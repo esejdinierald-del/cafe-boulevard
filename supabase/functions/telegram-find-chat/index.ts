@@ -88,8 +88,20 @@ serve(async (req) => {
     const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!token) return json({ error: "TELEGRAM_BOT_TOKEN mungon" }, 500);
 
+    // Temporarily disable webhook so getUpdates can work, then restore it after
+    const webhookUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/telegram-webhook`;
+    await fetch(`https://api.telegram.org/bot${token}/deleteWebhook`, { method: "POST" }).catch(() => {});
     const tgRes = await fetch(`https://api.telegram.org/bot${token}/getUpdates`);
     const tgData = await tgRes.json();
+    // Restore webhook regardless of outcome
+    await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: webhookUrl,
+        allowed_updates: ["message", "edited_message"],
+      }),
+    }).catch(() => {});
     if (!tgData.ok) return json({ error: "Telegram: " + (tgData.description || "gabim"), raw: tgData }, 502);
 
     // Collect unique chats
