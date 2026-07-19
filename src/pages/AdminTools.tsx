@@ -677,6 +677,17 @@ function TelegramTab({ passcode }: { passcode: string }) {
     toast.success("Mesazhi u dërgua ✓");
   };
 
+  const registerWebhook = async () => {
+    const { data, error } = await supabase.functions.invoke("telegram-find-chat", {
+      body: { action: "set_webhook", passcode },
+    });
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim");
+      return;
+    }
+    toast.success("Webhook u regjistrua ✓");
+  };
+
   return (
     <div className="space-y-4 max-w-2xl">
       <div className="p-4 rounded-lg bg-slate-800 border border-slate-700 space-y-3">
@@ -769,6 +780,21 @@ function TelegramTab({ passcode }: { passcode: string }) {
       <div className="p-3 rounded bg-blue-500/10 border border-blue-500/30 text-xs text-blue-200">
         ℹ️ Njoftimet për <b>service_requests</b> dërgohen automatikisht nga server-i (trigger Postgres +
         pg_net) — funksionojnë edhe kur asnjë browser nuk është hapur.
+      </div>
+
+      <div className="p-4 rounded-lg bg-slate-800 border border-slate-700 space-y-3">
+        <h2 className="font-semibold text-amber-300">4. Lidhje individuale Staf → Telegram</h2>
+        <p className="text-xs text-slate-400">
+          Regjistro webhook-un një herë. Pastaj çdo staf i shkruan bot-it privatisht <code className="font-mono">/start</code>{" "}
+          dhe ndan numrin — sistemi lidh automatikisht chat_id me numrin e telefonit të stafit (te tab Stafi).
+        </p>
+        <button
+          type="button"
+          onClick={registerWebhook}
+          className="px-4 py-2 rounded bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm"
+        >
+          Regjistro Webhook
+        </button>
       </div>
     </div>
   );

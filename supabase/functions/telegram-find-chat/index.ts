@@ -36,6 +36,32 @@ serve(async (req) => {
       return json({ ok: true, chatId: cleaned });
     }
 
+    if (action === "set_webhook") {
+      const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
+      if (!token) return json({ error: "TELEGRAM_BOT_TOKEN mungon" }, 500);
+      const webhookUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/telegram-webhook`;
+      const r = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: webhookUrl,
+          allowed_updates: ["message", "edited_message"],
+          drop_pending_updates: true,
+        }),
+      });
+      const d = await r.json();
+      if (!d.ok) return json({ error: "Telegram: " + (d.description || "gabim"), raw: d }, 502);
+      return json({ ok: true, webhookUrl, result: d.result });
+    }
+
+    if (action === "webhook_info") {
+      const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
+      if (!token) return json({ error: "TELEGRAM_BOT_TOKEN mungon" }, 500);
+      const r = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`);
+      const d = await r.json();
+      return json(d);
+    }
+
     const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!token) return json({ error: "TELEGRAM_BOT_TOKEN mungon" }, 500);
 

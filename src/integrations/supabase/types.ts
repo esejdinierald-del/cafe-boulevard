@@ -908,8 +908,10 @@ export type Database = {
           is_admin: boolean
           location_id: string | null
           name: string
+          phone: string | null
           pin_hash: string | null
           role: string
+          telegram_chat_id: string | null
         }
         Insert: {
           admin_password_hash?: string | null
@@ -920,8 +922,10 @@ export type Database = {
           is_admin?: boolean
           location_id?: string | null
           name: string
+          phone?: string | null
           pin_hash?: string | null
           role: string
+          telegram_chat_id?: string | null
         }
         Update: {
           admin_password_hash?: string | null
@@ -932,8 +936,10 @@ export type Database = {
           is_admin?: boolean
           location_id?: string | null
           name?: string
+          phone?: string | null
           pin_hash?: string | null
           role?: string
+          telegram_chat_id?: string | null
         }
         Relationships: []
       }

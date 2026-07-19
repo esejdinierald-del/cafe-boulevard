@@ -11,6 +11,19 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
+function normalizePhone(raw: string): string | null {
+  if (raw == null) return null;
+  let p = String(raw).replace(/[\s\-()]/g, "").trim();
+  if (!p) return null;
+  if (!p.startsWith("+")) {
+    if (p.startsWith("00")) p = "+" + p.slice(2);
+    else if (p.startsWith("355")) p = "+" + p;
+    else if (p.startsWith("0")) p = "+355" + p.slice(1);
+    else p = "+" + p;
+  }
+  return p;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -41,7 +54,7 @@ Deno.serve(async (req) => {
     if (action === "list") {
       const { data, error } = await supabase
         .from("staff_members")
-        .select("id, name, role, is_active, is_admin, admin_password_hash, created_at")
+        .select("id, name, role, is_active, is_admin, admin_password_hash, phone, telegram_chat_id, created_at")
         .order("name");
       if (error) return json({ error: error.message }, 500);
       const staff = (data ?? []).map((s: any) => ({
@@ -51,19 +64,22 @@ Deno.serve(async (req) => {
         active: s.is_active,
         is_admin: !!s.is_admin,
         has_admin_password: !!s.admin_password_hash,
+        phone: s.phone ?? "",
+        telegram_linked: !!s.telegram_chat_id,
         created_at: s.created_at,
       }));
       return json({ staff });
     }
 
     if (action === "create") {
-      const { name, pin, role } = body;
+      const { name, pin, role, phone } = body;
       if (!name || !pin || !role) return json({ error: "Mungon emri, PIN-i ose roli" }, 400);
       if (!/^\d{4}$/.test(String(pin))) return json({ error: "PIN duhet të jetë 4 shifra" }, 400);
       if (!["waiter", "kitchen", "manager", "admin"].includes(role)) return json({ error: "Rol i pavlefshëm" }, 400);
+      const normPhone = phone ? normalizePhone(String(phone)) : null;
       const { data, error } = await supabase
         .from("staff_members")
-        .insert({ name: String(name).trim(), role, is_active: true })
+        .insert({ name: String(name).trim(), role, is_active: true, phone: normPhone })
         .select("id, name, role, is_active")
         .single();
       if (error) {
@@ -80,7 +96,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "update") {
-      const { id, name, role, active, pin, is_admin, admin_password } = body;
+      const { id, name, role, active, pin, is_admin, admin_password, phone, unlink_telegram } = body;
       if (!id) return json({ error: "Mungon id" }, 400);
       const patch: Record<string, unknown> = {};
       if (typeof name === "string") patch.name = name.trim();
@@ -90,6 +106,8 @@ Deno.serve(async (req) => {
       }
       if (typeof active === "boolean") patch.is_active = active;
       if (typeof is_admin === "boolean") patch.is_admin = is_admin;
+      if (typeof phone === "string") patch.phone = normalizePhone(phone);
+      if (unlink_telegram === true) patch.telegram_chat_id = null;
       if (Object.keys(patch).length > 0) {
         const { error } = await supabase.from("staff_members").update(patch).eq("id", id);
         if (error) return json({ error: error.message }, 500);
