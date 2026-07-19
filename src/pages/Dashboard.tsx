@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw, Move, X, ExternalLink } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw, Move, X, ExternalLink, LogOut } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
@@ -48,7 +48,7 @@ const Dashboard = () => {
   // Drag & drop button ordering for top control bar
   // NOTE: bump the storage key suffix when changing this list to force clients
   // onto the new default order (users can still re-arrange via "Rendit").
-  const DEFAULT_BTN_ORDER = ["voice", "sound", "test", "mute", "qr", "arka", "ready"];
+  const DEFAULT_BTN_ORDER = ["voice", "sound", "test", "mute", "qr", "arka", "ready", "endshift"];
   const [btnOrder, setBtnOrder] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem("dashboard-btn-order-v3");
