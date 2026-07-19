@@ -169,6 +169,48 @@ export default function Documentation() {
                 pandryshueshme (Europe/Rome).
               </p>
             </Section>
+
+            <Section title="POS — Ngjyra & Kyçje Tavolinash">
+              <p>
+                Çdo staf ka një ngjyrë të vetën (deterministike nga emri). Kur hap
+                një tavolinë, ajo <strong>kyçet</strong> automatikisht me emrin dhe
+                ngjyrën e tij — asnjë staf tjetër nuk mund të shkruajë njëkohësisht
+                në atë tavolinë, duke parandaluar konflikte.
+              </p>
+              <Bullets
+                items={[
+                  "Kyçja tregohet me buzë me ngjyrën e stafit.",
+                  "Sapo tavolina mbyllet, kyçja lirohet automatikisht.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Butoni Shërbim + Tingull">
+              <p>
+                Në POS, butoni <strong>Shërbim</strong> shfaqet automatikisht kur klientët
+                thërrasin kamarier ose faturë, me <strong>tingull</strong> dhe pulsim
+                derisa stafi ta pranojë.
+              </p>
+            </Section>
+
+            <Section title="Arka — E Hapur për Shikim">
+              <p>
+                Panelet <em>Aktive</em> dhe <em>Printo & Mbyll</em> janë të hapura për
+                të gjithë stafin. Vetëm <strong>anulimi</strong> i artikujve/porosive
+                dhe tabi <strong>Historiku</strong> kërkojnë fjalëkalim admin.
+              </p>
+            </Section>
+
+            <Section title="Njoftime — Telegram & Web Push">
+              <Bullets
+                items={[
+                  "Telegram grup: mesazhe automatike për thirrjet e shërbimit dhe porositë e reja (trigger server-side + pg_net) — funksionojnë pa asnjë browser hapur.",
+                  "Telegram individual: staf lidh numrin e telefonit me chat_id-në duke i shkruar bot-it /start dhe duke ndarë numrin.",
+                  "Web Push (VAPID + Service Worker): njoftime edhe kur PWA është mbyllur, KUFIZUAR vetëm te pajisjet me turn aktual aktiv.",
+                  "Të dy kanalet janë aktive paralelisht për redundancë.",
+                ]}
+              />
+            </Section>
           </TabsContent>
 
           {/* MENAXHERËT */}
@@ -237,6 +279,50 @@ export default function Documentation() {
                   "Testoni aplikacionin para ndryshimeve të mëdha.",
                 ]}
               />
+            </Section>
+
+            <Section title="Inventari — Burim i Vetëm i së Vërtetës">
+              <p>
+                Sasia reale ruhet vetëm te <code className="text-gold-light">raw_materials</code>.
+                Zbritjet bëhen automatikisht nga POS kur konfirmohet porosia (nga recetat).
+                Rritjet bëhen përmes <strong>Furnizimeve</strong> ose <strong>Rregullimit Admin</strong>.
+              </p>
+              <Bullets
+                items={[
+                  "Regjistrimi Ditor tregon Gjendjen për audit, por NUK e prek më raw_materials.",
+                  "syncFromGjendje është hequr plotësisht.",
+                  "Rregullim negativ kërkon fjalëkalim admin dhe regjistrohet te supplies.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Kategori & Produkte — Aktive / Regjistrim Ditor">
+              <Bullets
+                items={[
+                  "Flag enabled: kategori/produkt të fshehur nga meny dhe POS pa i fshirë.",
+                  "Flag track_daily: përfshihet automatikisht te Regjistrimi Ditor (produkt ose kategori).",
+                  "Renditja e produkteve me display_order (drag & drop për admin).",
+                ]}
+              />
+            </Section>
+
+            <Section title="Telegram Bot — Konfigurim">
+              <Bullets
+                items={[
+                  "/admin-tools → tab Telegram: Gjej Grupin, Ruaj chat_id, Test, Regjistro Webhook, Vendos Përshkrimin.",
+                  "Foto e profilit: bëhet manualisht te @BotFather me /setuserpic (nuk ka API).",
+                  "Numri i telefonit të stafit ruhet te staff_members.phone — bot-i e matchon automatikisht me /start.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Fix i llogaritjes së Shitjeve të Kafes">
+              <p>
+                Më parë, <code>useCoffeeSalesTotal</code> pjesëtonte gabimisht{" "}
+                <code>quantity_needed</code> me 0.007 (duke supozuar kilogramë), duke dhënë
+                gabim ~<strong>143×</strong> për çdo kafe. Tani <code>quantity_needed</code>{" "}
+                përdoret direkt si numër copësh/dozash për shërbim.
+              </p>
             </Section>
           </TabsContent>
 
@@ -353,6 +439,37 @@ export default function Documentation() {
                   "Sigurohuni që /print-station është hapur në PC-në e printerit.",
                   "Kontrolloni radhën te print_jobs.",
                   "Rifreskoni Print Station për të tërhequr punët e reja.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Telegram — mesazhet nuk vijnë">
+              <Bullets
+                items={[
+                  "Verifiko që bot-i është shtuar në grup dhe dërgo së paku 1 mesazh para se të klikosh Gjej Grupin.",
+                  "Kontrollo që chat_id është ruajtur te app_settings (telegram_chat_id).",
+                  "Ri-regjistro webhook-un nga /admin-tools nëse getWebhookInfo tregon URL të gabuar.",
+                  "TELEGRAM_BOT_TOKEN duhet të jetë i vlefshëm te secrets.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Web Push nuk vjen kur browser-i është mbyllur">
+              <Bullets
+                items={[
+                  "Push shkon VETËM te pajisjet me turn aktual aktiv (shift_tokens.unlocked=true dhe now() brenda intervalit).",
+                  "Verifiko që abonimi është regjistruar te push_subscriptions me shift_token të vlefshëm.",
+                  "iOS: PWA duhet të jetë instaluar në Home Screen për Web Push.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Inventari duket i pasaktë">
+              <Bullets
+                items={[
+                  "Gjendja te Regjistrimi Ditor është vetëm për audit — NUK e ndryshon raw_materials.",
+                  "Ndrysho sasinë vetëm përmes Furnizimeve ose Rregullimit Admin (me passcode).",
+                  "Kontrollo recetat: quantity_needed = numri i copëve/dozave per shërbim.",
                 ]}
               />
             </Section>
