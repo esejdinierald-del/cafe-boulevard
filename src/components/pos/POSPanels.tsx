@@ -69,6 +69,10 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
       rows.push(`${it.name}  x${it.quantity}`);
       if (it.notes) rows.push(`  (${it.notes})`);
     }
+    if (s.pos_orders?.notes) {
+      rows.push(line);
+      rows.push("Shënime: " + s.pos_orders.notes);
+    }
     rows.push(line);
     rows.push(center("GATI ✓"));
     return rows.join("\n");
