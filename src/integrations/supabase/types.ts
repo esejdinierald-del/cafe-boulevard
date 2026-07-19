@@ -440,6 +440,7 @@ export type Database = {
       order_items_split: {
         Row: {
           confirmed_at: string | null
+          confirmed_by: string | null
           created_at: string | null
           id: string
           items: Json
@@ -449,6 +450,7 @@ export type Database = {
         }
         Insert: {
           confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string | null
           id?: string
           items: Json
@@ -458,6 +460,7 @@ export type Database = {
         }
         Update: {
           confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string | null
           id?: string
           items?: Json
@@ -1182,6 +1185,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      apply_shiriti_delta: {
+        Args: { p_at: string; p_direction: number; p_items: Json }
+        Returns: undefined
+      }
       close_pos_order: {
         Args: { p_operator_name: string; p_order_id: string }
         Returns: {
@@ -1203,7 +1210,12 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      confirm_pos_split: { Args: { p_split_id: string }; Returns: Json }
+      confirm_pos_split:
+        | { Args: { p_split_id: string }; Returns: Json }
+        | {
+            Args: { p_confirmed_by?: string; p_split_id: string }
+            Returns: Json
+          }
       decrement_material: {
         Args: { amount: number; material_id: string }
         Returns: undefined
@@ -1260,6 +1272,16 @@ export type Database = {
           name: string
           role: string
         }[]
+      }
+      void_pos_item: {
+        Args: {
+          p_operator: string
+          p_order_id: string
+          p_price: number
+          p_product_id: string
+          p_qty: number
+        }
+        Returns: undefined
       }
     }
     Enums: {
