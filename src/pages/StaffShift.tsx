@@ -605,7 +605,7 @@ const StaffShift = () => {
   // No active shift — show scan home screen
   if (!isValid || !activeToken) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6 pt-14">
         <div className="max-w-sm w-full text-center space-y-8">
            {/* Logo */}
            <div className="space-y-2 relative">
@@ -618,7 +618,7 @@ const StaffShift = () => {
           <Button
             size="lg"
             onClick={() => setShowScanner(true)}
-            className="w-full h-16 text-lg gap-3 bg-primary hover:bg-primary/90"
+            className="w-full h-16 text-lg gap-3 bg-primary hover:bg-primary/90 touch-manipulation"
           >
             <QrCode className="h-6 w-6" />
             Skano QR-në e Turnit
@@ -627,9 +627,9 @@ const StaffShift = () => {
           {/* Admin bypass — visible button */}
           <Button
             variant="outline"
-            size="sm"
+            size="default"
             onClick={handleAdminBypass}
-            className="w-full border-dashed"
+            className="w-full h-12 border-dashed touch-manipulation"
           >
             🔑 Hyrje me fjalëkalim admin
           </Button>
@@ -667,7 +667,7 @@ const StaffShift = () => {
 
   return (
     <div
-      className="min-h-screen bg-background p-3 pb-8"
+      className="min-h-screen bg-background px-3 pb-8 touch-manipulation"
       onClick={enableAudio}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -679,9 +679,9 @@ const StaffShift = () => {
           </div>
         )}
 
-        {/* Header */}
-        <div className="text-center space-y-1.5">
-          <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
+        {/* Header — ule 1.5 cm (~56px) për ta bërë më të arritshëm në mobile */}
+        <div className="text-center space-y-1 pt-14">
+          <h1 className="text-lg font-bold text-foreground flex items-center justify-center gap-2">
             <Bell className="h-5 w-5 text-primary" />
             Thirrjet Live
             {totalPending > 0 && (
@@ -694,7 +694,7 @@ const StaffShift = () => {
             <RomeClock />
           </div>
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            <Badge variant="outline" className="gap-1">
+            <Badge variant="outline" className="gap-1 h-8 text-xs">
               <Clock className="h-3 w-3" />
               {timeLeft}
             </Badge>
@@ -702,18 +702,18 @@ const StaffShift = () => {
               size="sm"
               variant="default"
               onClick={() => navigate("/pos")}
-              className="gap-1 h-7 text-xs bg-primary hover:bg-primary/90"
+              className="gap-1 h-8 text-xs bg-primary hover:bg-primary/90"
             >
               <Receipt className="h-3 w-3" />
               POS
             </Button>
             {!audioEnabled ? (
-              <Button size="sm" variant="outline" onClick={enableAudio} className="gap-1 h-7 text-xs">
+              <Button size="sm" variant="outline" onClick={enableAudio} className="gap-1 h-8 text-xs">
                 <Volume2 className="h-3 w-3" />
                 Aktivizo zërin
               </Button>
             ) : (
-              <Badge className="bg-success/20 text-success border-success/30 gap-1">
+              <Badge className="bg-success/20 text-success border-success/30 gap-1 h-8 text-xs">
                 <Volume2 className="h-3 w-3" />
                 Aktiv
               </Badge>
@@ -722,7 +722,7 @@ const StaffShift = () => {
               size="sm"
               variant="ghost"
               onClick={handleEndShift}
-              className="gap-1 h-7 text-xs text-muted-foreground hover:text-destructive"
+              className="gap-1 h-8 text-xs text-muted-foreground hover:text-destructive"
             >
               <LogOut className="h-3 w-3" />
               Dil
@@ -780,10 +780,10 @@ const StaffShift = () => {
                       size="sm"
                       onClick={(e) => { e.stopPropagation(); handleCompleteRequest(r.id, r.table_number); }}
                       disabled={isCompleting}
-                      className="bg-success hover:bg-success/90 text-success-foreground h-10 px-3 flex-shrink-0"
+                      className="bg-success hover:bg-success/90 text-success-foreground h-12 px-4 flex-shrink-0 touch-manipulation"
                     >
                       {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                      <span className="ml-1 text-xs">U krye</span>
+                      <span className="ml-1 text-sm">U krye</span>
                     </Button>
                   </div>
                 </Card>
@@ -834,19 +834,19 @@ const StaffShift = () => {
                           onClick={(e) => { e.stopPropagation(); handleDecideOrder(o.id, o.table_number, "rejected"); }}
                           disabled={isCompleting}
                           variant="outline"
-                          className="h-10 px-3 border-destructive/40 text-destructive hover:bg-destructive/10"
+                          className="h-12 px-4 border-destructive/40 text-destructive hover:bg-destructive/10 touch-manipulation"
                         >
                           {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
-                          <span className="ml-1 text-xs">Refuzo</span>
+                          <span className="ml-1 text-sm">Refuzo</span>
                         </Button>
                         <Button
                           size="sm"
                           onClick={(e) => { e.stopPropagation(); handleDecideOrder(o.id, o.table_number, "accepted"); }}
                           disabled={isCompleting}
-                          className="bg-success hover:bg-success/90 text-success-foreground h-10 px-3"
+                          className="bg-success hover:bg-success/90 text-success-foreground h-12 px-4 touch-manipulation"
                         >
                           {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                          <span className="ml-1 text-xs">Prano</span>
+                          <span className="ml-1 text-sm">Prano</span>
                         </Button>
                       </div>
                     </div>
