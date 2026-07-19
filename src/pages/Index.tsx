@@ -118,7 +118,7 @@ const Index = () => {
   const [songUrl, setSongUrl] = useState("");
   const [submittingSong, setSubmittingSong] = useState(false);
   const [tableDisplayName, setTableDisplayName] = useState("");
-  const { checking } = useGeolocation();
+  const { checkLocation, checking } = useGeolocation();
 
   useEffect(() => {
     if (tableParam) setTableNumber(tableParam);
@@ -158,6 +158,11 @@ const Index = () => {
         toast.error(t.tableRequired);
         return;
       }
+      const geo = await checkLocation(language);
+      if (!geo.allowed) {
+        toast.error(geo.error || "");
+        return;
+      }
       const { error } = await supabase.from("service_requests").insert({
         table_number: val,
         request_type: "waiter",
@@ -176,6 +181,11 @@ const Index = () => {
       const val = tableNumber.trim();
       if (!val) {
         toast.error(t.tableRequired);
+        return;
+      }
+      const geo = await checkLocation(language);
+      if (!geo.allowed) {
+        toast.error(geo.error || "");
         return;
       }
       const { error } = await supabase.from("service_requests").insert({
@@ -216,6 +226,11 @@ const Index = () => {
     }
     if (!songUrl.trim()) {
       toast.error(t.songUrlRequired);
+      return;
+    }
+    const geo = await checkLocation(language);
+    if (!geo.allowed) {
+      toast.error(geo.error || "");
       return;
     }
     setSubmittingSong(true);
