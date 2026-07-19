@@ -667,7 +667,7 @@ const StaffShift = () => {
 
   return (
     <div
-      className="min-h-screen bg-background p-3 pb-8"
+      className="min-h-screen bg-background px-3 pb-8 touch-manipulation"
       onClick={enableAudio}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -679,9 +679,9 @@ const StaffShift = () => {
           </div>
         )}
 
-        {/* Header */}
-        <div className="text-center space-y-1.5">
-          <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
+        {/* Header — ule 1.5 cm (~56px) për ta bërë më të arritshëm në mobile */}
+        <div className="text-center space-y-1 pt-14">
+          <h1 className="text-lg font-bold text-foreground flex items-center justify-center gap-2">
             <Bell className="h-5 w-5 text-primary" />
             Thirrjet Live
             {totalPending > 0 && (
@@ -694,7 +694,7 @@ const StaffShift = () => {
             <RomeClock />
           </div>
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            <Badge variant="outline" className="gap-1">
+            <Badge variant="outline" className="gap-1 h-8 text-xs">
               <Clock className="h-3 w-3" />
               {timeLeft}
             </Badge>
@@ -702,18 +702,18 @@ const StaffShift = () => {
               size="sm"
               variant="default"
               onClick={() => navigate("/pos")}
-              className="gap-1 h-7 text-xs bg-primary hover:bg-primary/90"
+              className="gap-1 h-8 text-xs bg-primary hover:bg-primary/90"
             >
               <Receipt className="h-3 w-3" />
               POS
             </Button>
             {!audioEnabled ? (
-              <Button size="sm" variant="outline" onClick={enableAudio} className="gap-1 h-7 text-xs">
+              <Button size="sm" variant="outline" onClick={enableAudio} className="gap-1 h-8 text-xs">
                 <Volume2 className="h-3 w-3" />
                 Aktivizo zërin
               </Button>
             ) : (
-              <Badge className="bg-success/20 text-success border-success/30 gap-1">
+              <Badge className="bg-success/20 text-success border-success/30 gap-1 h-8 text-xs">
                 <Volume2 className="h-3 w-3" />
                 Aktiv
               </Badge>
@@ -722,7 +722,7 @@ const StaffShift = () => {
               size="sm"
               variant="ghost"
               onClick={handleEndShift}
-              className="gap-1 h-7 text-xs text-muted-foreground hover:text-destructive"
+              className="gap-1 h-8 text-xs text-muted-foreground hover:text-destructive"
             >
               <LogOut className="h-3 w-3" />
               Dil
