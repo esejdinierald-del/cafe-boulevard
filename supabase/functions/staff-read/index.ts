@@ -42,7 +42,7 @@ serve(async (req) => {
       }
       case "pos_orders.by_table": {
         const tableNumber = Number(body.tableNumber);
-        if (!tableNumber) return json({ error: "tableNumber i pavlefshëm" }, 400);
+        if (Number.isNaN(tableNumber)) return json({ error: "tableNumber i pavlefshëm" }, 400);
         const { data, error } = await supabase
           .from("pos_orders")
           .select("id, status, total_amount, created_at, operator_name, items")
@@ -54,7 +54,7 @@ serve(async (req) => {
       }
       case "pos_orders.by_table_ids": {
         const tableNumber = Number(body.tableNumber);
-        if (!tableNumber) return json({ error: "tableNumber i pavlefshëm" }, 400);
+        if (Number.isNaN(tableNumber)) return json({ error: "tableNumber i pavlefshëm" }, 400);
         const { data, error } = await supabase
           .from("pos_orders")
           .select("id")

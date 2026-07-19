@@ -98,26 +98,29 @@ serve(async (req) => {
 
           if (enriched.length > 0) {
             const totalAmount = enriched.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
-            const tableNumber = orderRow.table_number ? Number(orderRow.table_number) : null;
-            let tableId: string | null = null;
-            if (tableNumber) {
-              const { data: t } = await supabase
-                .from("tables").select("id").eq("number", tableNumber).maybeSingle();
-              tableId = (t as any)?.id ?? null;
-            }
+            // Route ALL accepted client orders to the virtual "Porosi Online" table (#0)
+            // so they show up individually in POS and are exempt from normal table rules.
+            const originalTableNumber = orderRow.table_number ? Number(orderRow.table_number) : null;
+            const { data: onlineT } = await supabase
+              .from("tables").select("id").eq("number", 0).maybeSingle();
+            const onlineTableId: string | null = (onlineT as any)?.id ?? null;
+
+            const clientLabel = originalTableNumber
+              ? `Klient · Tavolina #${originalTableNumber}`
+              : `Klient · Takeaway`;
 
             const { data: posOrder, error: posErr } = await supabase
               .from("pos_orders")
               .insert({
-                table_id: tableId,
-                table_number: tableNumber,
-                mode: tableNumber ? "table" : "takeaway",
+                table_id: onlineTableId,
+                table_number: 0,
+                mode: "table",
                 items: enriched,
                 status: "open",
                 total_amount: totalAmount,
                 operator_name: null,
-                notes: `Nga klienti (Ref: ${orderRow.id})`,
-                source: "pos",
+                notes: `${clientLabel} (Ref: ${orderRow.id})`,
+                source: "client",
               })
               .select()
               .single();
@@ -129,9 +132,6 @@ serve(async (req) => {
               if (barItems.length > 0) splits.push({ order_id: posOrder.id, type: "bar", items: barItems, status: "pending" });
               if (kitchenItems.length > 0) splits.push({ order_id: posOrder.id, type: "kitchen", items: kitchenItems, status: "pending" });
               if (splits.length > 0) await supabase.from("order_items_split").insert(splits);
-              if (tableId) {
-                await supabase.from("tables").update({ status: "occupied" }).eq("id", tableId);
-              }
             } else if (posErr) {
               console.error("pos_orders insert failed:", posErr);
             }

@@ -175,6 +175,11 @@ const POS = () => {
     (typeof window !== "undefined" ? localStorage.getItem("staff_name") : null) || "";
 
   const openTableOrder = (t: TableRow) => {
+    // Virtual "Porosi Online" table (#0): view-only, per-order printing
+    if (Number(t.number) === 0) {
+      viewTableOrders(t.number);
+      return;
+    }
     if (
       t.status === "occupied" &&
       t.locked_by_name &&
@@ -242,6 +247,40 @@ const POS = () => {
           printReceipt(combined, `Tavolina #${tableNumber}`);
         }
       }
+    } catch (e) {
+      toast.error("Gabim: " + (e as Error).message);
+    } finally {
+      setClosing(false);
+    }
+  };
+
+  // Per-order close+print (used by the "Porosi Online" virtual table)
+  const closeSingleOrder = async (orderId: string, tableNumber: number | string) => {
+    if (!confirm("Të printojmë & mbyllim këtë porosi?")) return;
+    setClosing(true);
+    try {
+      const operatorName = localStorage.getItem("staff_name") || "Kamarier";
+      const shiftToken = localStorage.getItem("staff_shift_token") || undefined;
+      const { data, error } = await supabase.functions.invoke("pos-print-ticket", {
+        body: { orderId, closeOrder: true, operatorName, shiftToken },
+        headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
+      });
+      const err = (data as any)?.error || error?.message;
+      if (err) throw new Error(err);
+      const receiptText = (data as any)?.receiptText ? String((data as any).receiptText) : "";
+      if (receiptText) {
+        const jobId = await queuePrintJob({
+          receiptText,
+          title: `Porosi Online`,
+          kind: "close_table",
+          station: "arka",
+          tableCode: tableNumber,
+        });
+        if (jobId) toast.success("Bileta u dërgua tek arka për printim ✓");
+        else printReceipt(receiptText, `Porosi Online`);
+      }
+      // Refresh modal contents
+      viewTableOrders(tableNumber);
     } catch (e) {
       toast.error("Gabim: " + (e as Error).message);
     } finally {
@@ -361,11 +400,14 @@ const POS = () => {
                 const lockedByOther =
                   occupied && t.locked_by_name && currentStaffName &&
                   t.locked_by_name.trim() !== currentStaffName.trim();
+                const isOnline = Number(t.number) === 0;
                 return (
                   <div
                     key={t.id}
                     className={`relative aspect-[4/3] rounded-lg border-2 transition ${
-                      isActive
+                      isOnline
+                        ? "border-sky-400 bg-sky-500/20 text-sky-100"
+                        : isActive
                         ? "border-amber-400 bg-amber-500/20"
                         : lockColor
                         ? ""
@@ -373,19 +415,19 @@ const POS = () => {
                         ? "border-red-500/50 bg-red-500/20 text-red-200"
                         : "border-green-500/50 bg-green-500/10 text-green-200"
                     }`}
-                    style={lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
+                    style={!isOnline && lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
                   >
                     <button type="button"
                       onClick={() => { openTableOrder(t); setMobileView("menu"); }}
                       className="absolute inset-0 flex flex-col items-center justify-center text-xs font-semibold hover:bg-white/5 rounded-lg"
                     >
-                      <span>#{t.number}</span>
+                      <span>{isOnline ? "Online" : `#${t.number}`}</span>
                       {hasOrders && (
                         <span className="text-[10px] font-bold text-amber-300 mt-0.5">
                           {total.toFixed(0)} L
                         </span>
                       )}
-                      {t.locked_by_name && (
+                      {!isOnline && t.locked_by_name && (
                         <span className="text-[9px] mt-0.5 opacity-90 truncate max-w-full px-1">
                           {t.locked_by_name}{lockedByOther ? " ⚠" : ""}
                         </span>
@@ -400,14 +442,14 @@ const POS = () => {
                         >
                           <Eye size={14} />
                         </button>
-                        <button type="button"
+                        {!isOnline && <button type="button"
                           onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
                           disabled={closing}
                           title="Mbyll & printo tavolinën"
                           className="absolute bottom-0.5 right-0.5 p-0.5 rounded bg-amber-600 hover:bg-amber-500 text-white z-10 disabled:opacity-50"
                         >
                           <Printer size={10} />
-                        </button>
+                        </button>}
                       </>
                     )}
                   </div>
@@ -453,11 +495,14 @@ const POS = () => {
               const lockedByOther =
                 occupied && t.locked_by_name && currentStaffName &&
                 t.locked_by_name.trim() !== currentStaffName.trim();
+              const isOnline = Number(t.number) === 0;
               return (
                 <div
                   key={t.id}
                   className={`relative aspect-square rounded-lg border-2 transition ${
-                    isActive
+                    isOnline
+                      ? "border-sky-400 bg-sky-500/20 text-sky-100"
+                      : isActive
                       ? "border-amber-400 bg-amber-500/20"
                       : lockColor
                       ? ""
@@ -465,23 +510,23 @@ const POS = () => {
                       ? "border-red-500/50 bg-red-500/20 text-red-200"
                       : "border-green-500/50 bg-green-500/10 text-green-200"
                   }`}
-                  style={lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
+                  style={!isOnline && lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
                 >
                   <button type="button"
                     onClick={() => openTableOrder(t)}
                     className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold hover:bg-white/5 rounded-lg"
                   >
-                    <span>#{t.number}</span>
+                    <span>{isOnline ? "Online" : `#${t.number}`}</span>
                     {hasOrders ? (
                       <span className="text-[11px] font-bold text-amber-300 mt-1">
                         {total.toFixed(0)} L
                       </span>
                     ) : (
                       <span className="text-[10px] opacity-70 mt-1">
-                        e lirë
+                        {isOnline ? "porosi klientësh" : "e lirë"}
                       </span>
                     )}
-                    {t.locked_by_name && (
+                    {!isOnline && t.locked_by_name && (
                       <span className="text-[10px] mt-0.5 opacity-90 truncate max-w-full px-1">
                         {t.locked_by_name}{lockedByOther ? " ⚠" : ""}
                       </span>
@@ -496,14 +541,14 @@ const POS = () => {
                       >
                         <Eye size={20} />
                       </button>
-                      <button type="button"
+                      {!isOnline && <button type="button"
                         onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
                         disabled={closing}
                         title="Mbyll & printo tavolinën"
                         className="absolute bottom-1 right-1 p-1 rounded bg-amber-600 hover:bg-amber-500 text-white z-10 disabled:opacity-50"
                       >
                         <Printer size={12} />
-                      </button>
+                      </button>}
                     </>
                   )}
                 </div>
@@ -551,7 +596,9 @@ const POS = () => {
                 {/* Full receipt-style header */}
                 <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 font-mono text-[11px] leading-tight text-slate-100">
                   <div className="text-center font-bold text-sm">BOULEVARD CAFÉ</div>
-                  <div className="text-center text-slate-400">Tavolina #{viewTable.number}</div>
+                  <div className="text-center text-slate-400">
+                    {Number(viewTable.number) === 0 ? "Porosi Online" : `Tavolina #${viewTable.number}`}
+                  </div>
                   <div className="text-center text-slate-500">
                     {new Date().toLocaleString("sq-AL")}
                   </div>
@@ -586,23 +633,37 @@ const POS = () => {
                       <span>Totali</span>
                       <span className="text-amber-300">{Number(o.total_amount).toFixed(0)} Lekë</span>
                     </div>
+                    {Number(viewTable.number) === 0 && (
+                      <button
+                        type="button"
+                        onClick={() => closeSingleOrder(o.id, viewTable.number)}
+                        disabled={closing}
+                        className="w-full mt-3 flex items-center justify-center gap-2 py-2 rounded bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold disabled:opacity-50"
+                      >
+                        <Printer size={14} /> Printo & Mbyll këtë porosi
+                      </button>
+                    )}
                   </div>
                 ))}
-                <div className="flex justify-between font-bold pt-3 border-t border-slate-700 text-amber-300">
-                  <span>TOTALI I TAVOLINËS</span>
-                  <span>{viewTable.orders.reduce((s, o) => s + Number(o.total_amount), 0).toFixed(0)} Lekë</span>
-                </div>
-                <button type="button"
-                  onClick={() => {
-                    const num = viewTable.number;
-                    setViewTable(null);
-                    closeTable(num);
-                  }}
-                  disabled={closing}
-                  className="w-full flex items-center justify-center gap-2 mt-2 py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold disabled:opacity-50"
-                >
-                  <Printer size={18} /> Mbyll & Printo Tavolinën
-                </button>
+                {Number(viewTable.number) !== 0 && (
+                  <>
+                    <div className="flex justify-between font-bold pt-3 border-t border-slate-700 text-amber-300">
+                      <span>TOTALI I TAVOLINËS</span>
+                      <span>{viewTable.orders.reduce((s, o) => s + Number(o.total_amount), 0).toFixed(0)} Lekë</span>
+                    </div>
+                    <button type="button"
+                      onClick={() => {
+                        const num = viewTable.number;
+                        setViewTable(null);
+                        closeTable(num);
+                      }}
+                      disabled={closing}
+                      className="w-full flex items-center justify-center gap-2 mt-2 py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold disabled:opacity-50"
+                    >
+                      <Printer size={18} /> Mbyll & Printo Tavolinën
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
