@@ -153,6 +153,12 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
               </li>
             ))}
           </ul>
+          {s.pos_orders?.notes && (
+            <div className="mt-1 rounded-md border border-amber-500/40 bg-amber-500/10 p-2">
+              <p className="text-xs font-semibold text-amber-400 mb-0.5">Shënime porosie:</p>
+              <p className="text-sm italic text-amber-100">{s.pos_orders.notes}</p>
+            </div>
+          )}
           <Button onClick={() => confirm(s)} disabled={confirmingIds.has(s.id)} className="w-full h-12 text-base font-bold">
             <CheckCircle2 className="h-5 w-5 mr-2" /> {confirmingIds.has(s.id) ? "Duke konfirmuar..." : "Gati & Printo"}
           </Button>
