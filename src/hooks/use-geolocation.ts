@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 
 // Boulevard Café Elbasan approximate coordinates
-const CAFE_LAT = 41.114871;
-const CAFE_LNG = 20.088804;
-const MAX_DISTANCE_METERS = 75;
+const CAFE_LAT = 41.114882;
+const CAFE_LNG = 20.088757;
+const MAX_DISTANCE_METERS = 70;
 
 function getDistanceInMeters(
   lat1: number, lon1: number,
@@ -46,10 +46,6 @@ export function useGeolocation() {
   const checkLocation = useCallback((language: "sq" | "en"): Promise<GeoResult> => {
     const t = translations[language];
     setChecking(true);
-
-    // GPS geofencing temporarily disabled for all users (until further notice)
-    setChecking(false);
-    return Promise.resolve({ allowed: true });
 
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
