@@ -36,9 +36,16 @@ serve(async (req) => {
     if (!orderId) return json({ error: "Mungon orderId" }, 400);
 
     const { data: order, error: orderErr } = await supabase
-      .from("pos_orders").select("id, items, table_id, status").eq("id", orderId).single();
+      .from("pos_orders").select("id, items, table_id, status, created_at").eq("id", orderId).single();
     if (orderErr || !order) return json({ error: "Porosia nuk u gjet" }, 404);
     if (order.status === "closed") return json({ error: "Porosia është mbyllur" }, 400);
+
+    // Block cancellations when the ORIGINAL shift turn of the order is locked
+    const { data: lockedFlag, error: lockErr } = await supabase.rpc("is_order_turn_locked", { p_order_id: orderId });
+    if (lockErr) return json({ error: lockErr.message }, 500);
+    if (lockedFlag === true) {
+      return json({ error: "Turni origjinal i porosisë është i mbyllur — anullimi nuk lejohet. Kontakto adminin për ripërhapje." }, 409);
+    }
 
     const items: any[] = Array.isArray(order.items) ? order.items : [];
 
