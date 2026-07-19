@@ -357,6 +357,37 @@ export default function Documentation() {
               />
             </Section>
 
+            <Section title="Telegram — mesazhet nuk vijnë">
+              <Bullets
+                items={[
+                  "Verifiko që bot-i është shtuar në grup dhe dërgo së paku 1 mesazh para se të klikosh Gjej Grupin.",
+                  "Kontrollo që chat_id është ruajtur te app_settings (telegram_chat_id).",
+                  "Ri-regjistro webhook-un nga /admin-tools nëse getWebhookInfo tregon URL të gabuar.",
+                  "TELEGRAM_BOT_TOKEN duhet të jetë i vlefshëm te secrets.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Web Push nuk vjen kur browser-i është mbyllur">
+              <Bullets
+                items={[
+                  "Push shkon VETËM te pajisjet me turn aktual aktiv (shift_tokens.unlocked=true dhe now() brenda intervalit).",
+                  "Verifiko që abonimi është regjistruar te push_subscriptions me shift_token të vlefshëm.",
+                  "iOS: PWA duhet të jetë instaluar në Home Screen për Web Push.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Inventari duket i pasaktë">
+              <Bullets
+                items={[
+                  "Gjendja te Regjistrimi Ditor është vetëm për audit — NUK e ndryshon raw_materials.",
+                  "Ndrysho sasinë vetëm përmes Furnizimeve ose Rregullimit Admin (me passcode).",
+                  "Kontrollo recetat: quantity_needed = numri i copëve/dozave per shërbim.",
+                ]}
+              />
+            </Section>
+
             <Section title="Kontakti">
               <Bullets
                 items={[
