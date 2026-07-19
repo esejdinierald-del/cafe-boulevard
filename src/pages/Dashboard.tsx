@@ -41,7 +41,7 @@ const Dashboard = () => {
   const ordersPrimedRef = useRef(false);
 
   // Curtain / shift token — handled by dedicated hook.
-  const { curtainActive, setCurtainActive, shiftToken, staffUrl } = useShiftCurtain();
+  const { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken } = useShiftCurtain();
 
   // Music tab state
   const [activeTab, setActiveTab] = useState<"requests" | "songs" | "bar" | "kitchen" | "cashier">("requests");
@@ -764,6 +764,7 @@ const Dashboard = () => {
             try { localStorage.removeItem('staff_shift_token'); } catch {}
             toast.success('🔒 Turni u mbyll');
             setCurtainActive(true);
+            await ensureShiftToken();
           } catch (e) {
             toast.error('Gabim gjatë mbylljes së turnit');
           }
