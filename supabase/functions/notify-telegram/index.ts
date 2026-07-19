@@ -35,24 +35,57 @@ serve(async (req) => {
     }
     if (!authorized) return json({ error: "I paautorizuar" }, 403);
 
-    const { data: chatSetting } = await supabase
-      .from("app_settings").select("value").eq("key", "telegram_chat_id").maybeSingle();
-    const chatId = chatSetting?.value;
-    if (!chatId) return json({ error: "telegram_chat_id nuk është konfiguruar" }, 400);
-
     const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!token) return json({ error: "TELEGRAM_BOT_TOKEN mungon" }, 500);
 
-    const tgPayload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true };
-    if (reply_markup && typeof reply_markup === "object") tgPayload.reply_markup = reply_markup;
-    const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(tgPayload),
-    });
-    const tgData = await tgRes.json();
-    if (!tgData.ok) return json({ error: "Telegram: " + (tgData.description || "gabim"), raw: tgData }, 502);
-    return json({ ok: true, message_id: tgData.result?.message_id });
+    // Recipients = staff on active shift with linked telegram_chat_id
+    const nowIso = new Date().toISOString();
+    const { data: activeTokens } = await supabase
+      .from("shift_tokens").select("token")
+      .eq("unlocked", true).lte("shift_start", nowIso).gte("shift_end", nowIso);
+    const activeTokenSet = new Set((activeTokens ?? []).map(t => t.token).filter(Boolean));
+
+    const recipients = new Set<string>();
+    if (activeTokenSet.size > 0) {
+      const { data: staffList } = await supabase
+        .from("staff_members")
+        .select("telegram_chat_id, active_shift_token")
+        .not("telegram_chat_id", "is", null);
+      for (const s of staffList ?? []) {
+        if (s.active_shift_token && activeTokenSet.has(s.active_shift_token) && s.telegram_chat_id) {
+          recipients.add(String(s.telegram_chat_id));
+        }
+      }
+    }
+
+    // Fallback: admin chat if configured and no active-shift recipients
+    if (recipients.size === 0) {
+      const { data: chatSetting } = await supabase
+        .from("app_settings").select("value").eq("key", "telegram_chat_id").maybeSingle();
+      if (chatSetting?.value) recipients.add(String(chatSetting.value));
+    }
+
+    if (recipients.size === 0) return json({ error: "Asnjë marrës Telegram" }, 400);
+
+    const results: Array<{ chat_id: string; ok: boolean; message_id?: number; error?: string }> = [];
+    for (const chatId of recipients) {
+      const tgPayload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true };
+      if (reply_markup && typeof reply_markup === "object") tgPayload.reply_markup = reply_markup;
+      try {
+        const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(tgPayload),
+        });
+        const tgData = await tgRes.json();
+        if (tgData.ok) results.push({ chat_id: chatId, ok: true, message_id: tgData.result?.message_id });
+        else results.push({ chat_id: chatId, ok: false, error: tgData.description || "gabim" });
+      } catch (e) {
+        results.push({ chat_id: chatId, ok: false, error: (e as Error).message });
+      }
+    }
+    const sent = results.filter(r => r.ok).length;
+    return json({ ok: sent > 0, sent, total: recipients.size, results });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
