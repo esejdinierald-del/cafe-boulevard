@@ -903,6 +903,7 @@ export type Database = {
       }
       staff_members: {
         Row: {
+          active_shift_token: string | null
           admin_password_hash: string | null
           created_at: string | null
           email: string | null
@@ -917,6 +918,7 @@ export type Database = {
           telegram_chat_id: string | null
         }
         Insert: {
+          active_shift_token?: string | null
           admin_password_hash?: string | null
           created_at?: string | null
           email?: string | null
@@ -931,6 +933,7 @@ export type Database = {
           telegram_chat_id?: string | null
         }
         Update: {
+          active_shift_token?: string | null
           admin_password_hash?: string | null
           created_at?: string | null
           email?: string | null
