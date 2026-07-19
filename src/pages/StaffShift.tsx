@@ -605,7 +605,7 @@ const StaffShift = () => {
   // No active shift — show scan home screen
   if (!isValid || !activeToken) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6 pt-14">
         <div className="max-w-sm w-full text-center space-y-8">
            {/* Logo */}
            <div className="space-y-2 relative">
@@ -618,7 +618,7 @@ const StaffShift = () => {
           <Button
             size="lg"
             onClick={() => setShowScanner(true)}
-            className="w-full h-16 text-lg gap-3 bg-primary hover:bg-primary/90"
+            className="w-full h-16 text-lg gap-3 bg-primary hover:bg-primary/90 touch-manipulation"
           >
             <QrCode className="h-6 w-6" />
             Skano QR-në e Turnit
@@ -627,9 +627,9 @@ const StaffShift = () => {
           {/* Admin bypass — visible button */}
           <Button
             variant="outline"
-            size="sm"
+            size="default"
             onClick={handleAdminBypass}
-            className="w-full border-dashed"
+            className="w-full h-12 border-dashed touch-manipulation"
           >
             🔑 Hyrje me fjalëkalim admin
           </Button>
