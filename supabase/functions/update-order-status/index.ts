@@ -52,6 +52,96 @@ serve(async (req) => {
 
     if (error) return json({ error: error.message }, 500);
     if (!data) return json({ error: "Porosia nuk u gjet ose nuk është pending" }, 404);
+
+    // Nëse porosia u pranua → dërgo në Bar KDS (kërko konfirmim banakieri),
+    // njësoj si porositë e krijuara nga POS. Kjo NUK duhet anashkaluar.
+    if (status === "accepted") {
+      try {
+        const orderRow: any = data;
+        const rawItems: any[] = Array.isArray(orderRow.items) ? orderRow.items : [];
+        const productIds = rawItems
+          .map((i: any) => i?.productId || i?.id)
+          .filter((x: any) => typeof x === "string");
+
+        if (productIds.length > 0) {
+          const { data: menuItems } = await supabase
+            .from("menu_items")
+            .select("id, name, price, for_bar, for_kitchen, offer_price, offer_start_time, offer_end_time")
+            .in("id", productIds);
+          const menuMap = new Map((menuItems ?? []).map((m: any) => [m.id, m]));
+
+          const nowRome = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit", hour12: false });
+          const activePrice = (m: any): number => {
+            if (!m.offer_price || !m.offer_start_time || !m.offer_end_time) return Number(m.price);
+            const s = String(m.offer_start_time).slice(0, 5);
+            const e = String(m.offer_end_time).slice(0, 5);
+            const active = s > e ? (nowRome >= s || nowRome <= e) : (nowRome >= s && nowRome <= e);
+            return active ? Number(m.offer_price) : Number(m.price);
+          };
+
+          const enriched = rawItems
+            .map((ci: any) => {
+              const pid = ci?.productId || ci?.id;
+              const m: any = menuMap.get(pid);
+              if (!m) return null;
+              return {
+                productId: pid,
+                name: m.name,
+                price: activePrice(m),
+                quantity: Number(ci?.quantity || 1),
+                notes: ci?.notes || "",
+                forBar: m.for_bar ?? true,
+                forKitchen: m.for_kitchen ?? false,
+              };
+            })
+            .filter(Boolean) as any[];
+
+          if (enriched.length > 0) {
+            const totalAmount = enriched.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
+            const tableNumber = orderRow.table_number ? Number(orderRow.table_number) : null;
+            let tableId: string | null = null;
+            if (tableNumber) {
+              const { data: t } = await supabase
+                .from("tables").select("id").eq("number", tableNumber).maybeSingle();
+              tableId = (t as any)?.id ?? null;
+            }
+
+            const { data: posOrder, error: posErr } = await supabase
+              .from("pos_orders")
+              .insert({
+                table_id: tableId,
+                table_number: tableNumber,
+                mode: tableNumber ? "table" : "takeaway",
+                items: enriched,
+                status: "open",
+                total_amount: totalAmount,
+                operator_name: null,
+                notes: `Nga klienti (Ref: ${orderRow.id})`,
+                source: "pos",
+              })
+              .select()
+              .single();
+
+            if (!posErr && posOrder) {
+              const barItems = enriched.filter((i) => i.forBar);
+              const kitchenItems = enriched.filter((i) => i.forKitchen);
+              const splits: any[] = [];
+              if (barItems.length > 0) splits.push({ order_id: posOrder.id, type: "bar", items: barItems, status: "pending" });
+              if (kitchenItems.length > 0) splits.push({ order_id: posOrder.id, type: "kitchen", items: kitchenItems, status: "pending" });
+              if (splits.length > 0) await supabase.from("order_items_split").insert(splits);
+              if (tableId) {
+                await supabase.from("tables").update({ status: "occupied" }).eq("id", tableId);
+              }
+            } else if (posErr) {
+              console.error("pos_orders insert failed:", posErr);
+            }
+          }
+        }
+      } catch (routeErr) {
+        console.error("Route to Bar KDS failed:", routeErr);
+      }
+    }
+
     return json({ success: true, order: data });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
