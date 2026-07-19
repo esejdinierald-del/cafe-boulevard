@@ -590,7 +590,9 @@ const POS = () => {
                 {/* Full receipt-style header */}
                 <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 font-mono text-[11px] leading-tight text-slate-100">
                   <div className="text-center font-bold text-sm">BOULEVARD CAFÉ</div>
-                  <div className="text-center text-slate-400">Tavolina #{viewTable.number}</div>
+                  <div className="text-center text-slate-400">
+                    {Number(viewTable.number) === 0 ? "Porosi Online" : `Tavolina #${viewTable.number}`}
+                  </div>
                   <div className="text-center text-slate-500">
                     {new Date().toLocaleString("sq-AL")}
                   </div>
@@ -625,23 +627,37 @@ const POS = () => {
                       <span>Totali</span>
                       <span className="text-amber-300">{Number(o.total_amount).toFixed(0)} Lekë</span>
                     </div>
+                    {Number(viewTable.number) === 0 && (
+                      <button
+                        type="button"
+                        onClick={() => closeSingleOrder(o.id, viewTable.number)}
+                        disabled={closing}
+                        className="w-full mt-3 flex items-center justify-center gap-2 py-2 rounded bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold disabled:opacity-50"
+                      >
+                        <Printer size={14} /> Printo & Mbyll këtë porosi
+                      </button>
+                    )}
                   </div>
                 ))}
-                <div className="flex justify-between font-bold pt-3 border-t border-slate-700 text-amber-300">
-                  <span>TOTALI I TAVOLINËS</span>
-                  <span>{viewTable.orders.reduce((s, o) => s + Number(o.total_amount), 0).toFixed(0)} Lekë</span>
-                </div>
-                <button type="button"
-                  onClick={() => {
-                    const num = viewTable.number;
-                    setViewTable(null);
-                    closeTable(num);
-                  }}
-                  disabled={closing}
-                  className="w-full flex items-center justify-center gap-2 mt-2 py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold disabled:opacity-50"
-                >
-                  <Printer size={18} /> Mbyll & Printo Tavolinën
-                </button>
+                {Number(viewTable.number) !== 0 && (
+                  <>
+                    <div className="flex justify-between font-bold pt-3 border-t border-slate-700 text-amber-300">
+                      <span>TOTALI I TAVOLINËS</span>
+                      <span>{viewTable.orders.reduce((s, o) => s + Number(o.total_amount), 0).toFixed(0)} Lekë</span>
+                    </div>
+                    <button type="button"
+                      onClick={() => {
+                        const num = viewTable.number;
+                        setViewTable(null);
+                        closeTable(num);
+                      }}
+                      disabled={closing}
+                      className="w-full flex items-center justify-center gap-2 mt-2 py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold disabled:opacity-50"
+                    >
+                      <Printer size={18} /> Mbyll & Printo Tavolinën
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
