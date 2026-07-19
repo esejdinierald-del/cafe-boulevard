@@ -45,7 +45,6 @@ Deno.serve(async (req) => {
       .from("shift_tokens")
       .select("shift_end, unlocked")
       .eq("token", token)
-      .eq("unlocked", true)
       .gte("shift_end", now)
       .lte("shift_start", now)
       .maybeSingle();
