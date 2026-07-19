@@ -38,23 +38,32 @@ serve(async (req) => {
     const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!token) return json({ error: "TELEGRAM_BOT_TOKEN mungon" }, 500);
 
-    // Recipients = staff on active shift with linked telegram_chat_id
+    // Recipients = staff on active shift with linked telegram_chat_id.
+    // Legacy/already-open staff sessions may not have active_shift_token backfilled yet,
+    // so if an active shift exists but no exact staff-token match is found, send to
+    // all linked active staff instead of silently falling back only to the admin group.
     const nowIso = new Date().toISOString();
     const { data: activeTokens } = await supabase
       .from("shift_tokens").select("token")
-      .eq("unlocked", true).lte("shift_start", nowIso).gte("shift_end", nowIso);
+      .not("unlocked", "is", false).lte("shift_start", nowIso).gte("shift_end", nowIso);
     const activeTokenSet = new Set((activeTokens ?? []).map(t => t.token).filter(Boolean));
 
     const recipients = new Set<string>();
+    let linkedStaffChats: string[] = [];
     if (activeTokenSet.size > 0) {
       const { data: staffList } = await supabase
         .from("staff_members")
         .select("telegram_chat_id, active_shift_token")
+        .eq("is_active", true)
         .not("telegram_chat_id", "is", null);
+      linkedStaffChats = (staffList ?? []).map(s => String(s.telegram_chat_id)).filter(Boolean);
       for (const s of staffList ?? []) {
         if (s.active_shift_token && activeTokenSet.has(s.active_shift_token) && s.telegram_chat_id) {
           recipients.add(String(s.telegram_chat_id));
         }
+      }
+      if (recipients.size === 0) {
+        for (const chatId of linkedStaffChats) recipients.add(chatId);
       }
     }
 
