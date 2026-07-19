@@ -780,10 +780,10 @@ const StaffShift = () => {
                       size="sm"
                       onClick={(e) => { e.stopPropagation(); handleCompleteRequest(r.id, r.table_number); }}
                       disabled={isCompleting}
-                      className="bg-success hover:bg-success/90 text-success-foreground h-10 px-3 flex-shrink-0"
+                      className="bg-success hover:bg-success/90 text-success-foreground h-12 px-4 flex-shrink-0 touch-manipulation"
                     >
                       {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                      <span className="ml-1 text-xs">U krye</span>
+                      <span className="ml-1 text-sm">U krye</span>
                     </Button>
                   </div>
                 </Card>
