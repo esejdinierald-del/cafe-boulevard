@@ -280,6 +280,50 @@ export default function Documentation() {
                 ]}
               />
             </Section>
+
+            <Section title="Inventari — Burim i Vetëm i së Vërtetës">
+              <p>
+                Sasia reale ruhet vetëm te <code className="text-gold-light">raw_materials</code>.
+                Zbritjet bëhen automatikisht nga POS kur konfirmohet porosia (nga recetat).
+                Rritjet bëhen përmes <strong>Furnizimeve</strong> ose <strong>Rregullimit Admin</strong>.
+              </p>
+              <Bullets
+                items={[
+                  "Regjistrimi Ditor tregon Gjendjen për audit, por NUK e prek më raw_materials.",
+                  "syncFromGjendje është hequr plotësisht.",
+                  "Rregullim negativ kërkon fjalëkalim admin dhe regjistrohet te supplies.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Kategori & Produkte — Aktive / Regjistrim Ditor">
+              <Bullets
+                items={[
+                  "Flag enabled: kategori/produkt të fshehur nga meny dhe POS pa i fshirë.",
+                  "Flag track_daily: përfshihet automatikisht te Regjistrimi Ditor (produkt ose kategori).",
+                  "Renditja e produkteve me display_order (drag & drop për admin).",
+                ]}
+              />
+            </Section>
+
+            <Section title="Telegram Bot — Konfigurim">
+              <Bullets
+                items={[
+                  "/admin-tools → tab Telegram: Gjej Grupin, Ruaj chat_id, Test, Regjistro Webhook, Vendos Përshkrimin.",
+                  "Foto e profilit: bëhet manualisht te @BotFather me /setuserpic (nuk ka API).",
+                  "Numri i telefonit të stafit ruhet te staff_members.phone — bot-i e matchon automatikisht me /start.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Fix i llogaritjes së Shitjeve të Kafes">
+              <p>
+                Më parë, <code>useCoffeeSalesTotal</code> pjesëtonte gabimisht{" "}
+                <code>quantity_needed</code> me 0.007 (duke supozuar kilogramë), duke dhënë
+                gabim ~<strong>143×</strong> për çdo kafe. Tani <code>quantity_needed</code>{" "}
+                përdoret direkt si numër copësh/dozash për shërbim.
+              </p>
+            </Section>
           </TabsContent>
 
           {/* DATABASE */}
