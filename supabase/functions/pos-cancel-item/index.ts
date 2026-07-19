@@ -101,7 +101,7 @@ serve(async (req) => {
         p_product_id: target.productId,
         p_qty: qty,
         p_price: Number(target.price) || 0,
-        p_operator: va.staff?.name ?? "admin",
+        p_operator: va.admin?.name ?? "admin",
       });
       if (voidErr) console.error("void_pos_item failed:", voidErr);
     }
