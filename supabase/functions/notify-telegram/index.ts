@@ -12,6 +12,7 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const text = String(body?.text || "").trim();
     if (!text) return json({ error: "Mungon 'text'" }, 400);
+    const reply_markup = body?.reply_markup;
 
     // Auth: internal shared secret OR admin passcode
     const internal = req.headers.get("x-internal-secret");
@@ -42,10 +43,12 @@ serve(async (req) => {
     const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!token) return json({ error: "TELEGRAM_BOT_TOKEN mungon" }, 500);
 
+    const tgPayload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true };
+    if (reply_markup && typeof reply_markup === "object") tgPayload.reply_markup = reply_markup;
     const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true }),
+      body: JSON.stringify(tgPayload),
     });
     const tgData = await tgRes.json();
     if (!tgData.ok) return json({ error: "Telegram: " + (tgData.description || "gabim"), raw: tgData }, 502);
