@@ -242,7 +242,7 @@ Deno.serve(async (req) => {
     const { data: activeTokens, error: tokErr } = await supabase
       .from("shift_tokens")
       .select("token")
-      .eq("unlocked", true)
+      .not("unlocked", "is", false)
       .lte("shift_start", nowIso)
       .gte("shift_end", nowIso);
 
@@ -255,17 +255,26 @@ Deno.serve(async (req) => {
     }
 
     const tokens = (activeTokens ?? []).map((t) => t.token).filter(Boolean);
-    if (tokens.length === 0) {
-      return new Response(
-        JSON.stringify({ success: true, sent: 0, message: "No active shifts" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Prefer subs tied to an active shift. If none match (legacy NULL shift_token,
+    // stale token from a prior shift), fall back to ALL subs seen in the last 24h
+    // so notifications don't silently disappear between shifts.
+    let subscriptions: Array<{ endpoint: string; p256dh: string; auth: string }> | null = null;
+    let error: any = null;
+    if (tokens.length > 0) {
+      const r = await supabase
+        .from("push_subscriptions")
+        .select("endpoint, p256dh, auth")
+        .in("shift_token", tokens);
+      subscriptions = r.data as any; error = r.error;
     }
-
-    const { data: subscriptions, error } = await supabase
-      .from("push_subscriptions")
-      .select("endpoint, p256dh, auth")
-      .in("shift_token", tokens);
+    if (!error && (!subscriptions || subscriptions.length === 0)) {
+      const sinceIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const r2 = await supabase
+        .from("push_subscriptions")
+        .select("endpoint, p256dh, auth")
+        .gte("created_at", sinceIso);
+      subscriptions = r2.data as any; error = r2.error;
+    }
 
     if (error) {
       console.error("DB error:", error);

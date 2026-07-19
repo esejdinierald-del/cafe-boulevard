@@ -377,6 +377,11 @@ const StaffShift = () => {
       // Wait for SW to be ready
       const ready = await navigator.serviceWorker.ready;
 
+      // Only subscribe if notification permission was actually granted.
+      if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
+        return;
+      }
+
       // Check for existing subscription
       let subscription = await ready.pushManager.getSubscription();
       
@@ -387,7 +392,8 @@ const StaffShift = () => {
         });
       }
 
-      // Send subscription to backend
+      // Send subscription to backend — always upsert so shift_token stays fresh
+      // across new shifts / re-logins (otherwise push silently stops for staff).
       const subJSON = subscription.toJSON();
       await supabase.functions.invoke('push-subscribe', {
         body: {
@@ -401,6 +407,13 @@ const StaffShift = () => {
       console.error('Push subscription failed:', err);
     }
   }, [activeToken]);
+
+  // Auto-refresh push subscription whenever the active shift token changes
+  // (new turn, re-login, QR rescan) so send-push always finds a fresh row.
+  useEffect(() => {
+    if (!isValid || !activeToken) return;
+    registerPushSubscription();
+  }, [isValid, activeToken, registerPushSubscription]);
 
   const fetchData = useCallback(async (showIndicator = false) => {
     if (showIndicator) setIsRefreshing(true);
