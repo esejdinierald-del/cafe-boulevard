@@ -1,0 +1,1 @@
+ALTER TABLE public.staff_members ADD COLUMN IF NOT EXISTS active_shift_token TEXT;

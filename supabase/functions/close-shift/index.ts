@@ -38,6 +38,9 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Clear active_shift_token for staff logged into this shift so Telegram alerts stop
+    await supabase.from("staff_members").update({ active_shift_token: null }).eq("active_shift_token", token);
+
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

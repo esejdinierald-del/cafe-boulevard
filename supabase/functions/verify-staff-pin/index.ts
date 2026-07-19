@@ -41,6 +41,11 @@ Deno.serve(async (req) => {
     const row = Array.isArray(staff) ? staff[0] : staff;
     if (!row) return json({ error: "PIN i pasaktë ose kamarier i pavlefshëm" }, 403);
 
+    // Track which shift this staff member is currently on, for targeted Telegram alerts
+    try {
+      await supabase.from("staff_members").update({ active_shift_token: shiftToken }).eq("id", row.id);
+    } catch (_) { /* non-fatal */ }
+
     return json({
       ok: true,
       id: row.id,
