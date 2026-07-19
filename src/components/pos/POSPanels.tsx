@@ -87,8 +87,9 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
       return n;
     });
     const shiftToken = localStorage.getItem("staff_shift_token") || undefined;
+    const confirmedBy = localStorage.getItem("staff_name") || null;
     const { error } = await supabase.functions.invoke("pos-confirm-order", {
-      body: { splitId: split.id, shiftToken },
+      body: { splitId: split.id, shiftToken, confirmedBy },
       headers: shiftToken ? { "x-shift-token": shiftToken } : undefined,
     });
     if (error) {

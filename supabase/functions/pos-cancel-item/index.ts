@@ -93,8 +93,18 @@ serve(async (req) => {
       .eq("id", orderId);
     if (updErr) return json({ error: updErr.message }, 500);
 
-    // Splits (bar/kitchen) are NOT modified — the physical items were already prepared/served.
-    // The adjustment is a financial correction visible on the customer's receipt.
+    // Fiscal reversal: restore raw_materials via recipes, decrement shirit,
+    // and register a `void` transaction so daily sales tape stays accurate.
+    if (target?.productId) {
+      const { error: voidErr } = await supabase.rpc("void_pos_item", {
+        p_order_id: orderId,
+        p_product_id: target.productId,
+        p_qty: qty,
+        p_price: Number(target.price) || 0,
+        p_operator: va.staff?.name ?? "admin",
+      });
+      if (voidErr) console.error("void_pos_item failed:", voidErr);
+    }
 
     return json({ success: true, cancelledOrder: false, qty, newTotal });
   } catch (e) {

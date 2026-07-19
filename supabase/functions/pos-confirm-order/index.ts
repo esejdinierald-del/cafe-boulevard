@@ -22,11 +22,14 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const auth = await requireShiftToken(req, body);
     if (!auth.ok) return auth.response;
-    const { splitId } = body;
+    const { splitId, confirmedBy } = body;
     if (!splitId) return jsonResponse({ error: "Mungon splitId" }, 400);
 
     // Atomic: confirm split, mark order ready, record sale, decrement inventory — all in one DB transaction.
-    const { data, error } = await supabase.rpc("confirm_pos_split", { p_split_id: splitId });
+    const { data, error } = await supabase.rpc("confirm_pos_split", {
+      p_split_id: splitId,
+      p_confirmed_by: confirmedBy ?? null,
+    });
     if (error) {
       const msg = error.message || "Gabim gjatë konfirmimit";
       if (msg.includes("konfirmuar tashmë")) {
