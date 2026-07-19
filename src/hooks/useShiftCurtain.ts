@@ -14,7 +14,7 @@ export function useShiftCurtain() {
   const inFlightRef = useRef(false);
 
   const ensureShiftToken = useCallback(async () => {
-    if (inFlightRef.current) return shiftToken;
+    if (inFlightRef.current) return null;
     inFlightRef.current = true;
 
     // Clear any stale token from a previous shift so components using
@@ -57,6 +57,7 @@ export function useShiftCurtain() {
       const { data, error } = result;
       if (error || !data?.token) {
         console.error("Failed to get shift token:", error);
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
         retryTimerRef.current = setTimeout(() => { void ensureShiftToken(); }, 5000);
         return null;
       }
@@ -67,12 +68,13 @@ export function useShiftCurtain() {
       return data.token as string;
     } catch (e) {
       console.error("Failed to get shift token:", e);
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
       retryTimerRef.current = setTimeout(() => { void ensureShiftToken(); }, 5000);
       return null;
     } finally {
       inFlightRef.current = false;
     }
-  }, [shiftToken]);
+  }, []);
 
   useEffect(() => {
     void ensureShiftToken();
