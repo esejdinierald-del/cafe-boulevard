@@ -135,12 +135,46 @@ Deno.serve(async (req) => {
 
     // ACTION: get_or_create — fetch active shift token or create one
     if (action === "get_or_create") {
-      if (!shift_start || !shift_end) {
-        return new Response(
-          JSON.stringify({ error: "Missing shift_start or shift_end" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      const resolveShiftWindow = () => {
+        if (shift_start && shift_end) {
+          return { start: String(shift_start), end: String(shift_end) };
+        }
+
+        // Backward-compatible fallback: older/cached dashboards may call
+        // get_or_create without explicit times. Compute the active café shift
+        // server-side so QR generation never gets stuck on a 400 response.
+        const current = new Date();
+        const romeParts = new Intl.DateTimeFormat("en-CA", {
+          timeZone: "Europe/Rome",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          hour12: false,
+        }).formatToParts(current);
+        const part = (type: string) => romeParts.find((p) => p.type === type)?.value ?? "00";
+        const year = Number(part("year"));
+        const month = Number(part("month"));
+        const day = Number(part("day"));
+        const hour = Number(part("hour"));
+
+        const makeRomeDate = (baseDayOffset: number, shiftHour: number) => {
+          // Build from a UTC noon anchor to avoid month/year rollover pitfalls,
+          // then use an ISO string. Existing client code already sends ISO UTC.
+          const date = new Date(Date.UTC(year, month - 1, day + baseDayOffset, shiftHour - 1, 0, 0, 0));
+          return date.toISOString();
+        };
+
+        if (hour >= 3 && hour < 15) {
+          return { start: makeRomeDate(0, 3), end: makeRomeDate(0, 15) };
+        }
+        if (hour >= 15) {
+          return { start: makeRomeDate(0, 15), end: makeRomeDate(1, 3) };
+        }
+        return { start: makeRomeDate(-1, 15), end: makeRomeDate(0, 3) };
+      };
+
+      const shiftWindow = resolveShiftWindow();
 
       // Check existing active token
       const { data: existing } = await supabase
@@ -161,8 +195,8 @@ Deno.serve(async (req) => {
       const newToken = crypto.randomUUID().replace(/-/g, "").substring(0, 12);
       const { error } = await supabase.from("shift_tokens").insert({
         token: newToken,
-        shift_start,
-        shift_end,
+        shift_start: shiftWindow.start,
+        shift_end: shiftWindow.end,
         unlocked: true,
       });
 
