@@ -43,8 +43,9 @@ Deno.serve(async (req) => {
 
     const { data: shift, error } = await supabase
       .from("shift_tokens")
-      .select("shift_end")
+      .select("shift_end, unlocked")
       .eq("token", token)
+      .eq("unlocked", true)
       .gte("shift_end", now)
       .lte("shift_start", now)
       .maybeSingle();

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw, Move, X, ExternalLink } from "lucide-react";
+import { Bell, UtensilsCrossed, Volume2, Clock, QrCode, VolumeX, Receipt, GripVertical, Lock, Settings2, RotateCcw, Move, X, ExternalLink, LogOut } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
@@ -41,14 +41,14 @@ const Dashboard = () => {
   const ordersPrimedRef = useRef(false);
 
   // Curtain / shift token — handled by dedicated hook.
-  const { curtainActive, setCurtainActive, shiftToken, staffUrl } = useShiftCurtain();
+  const { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken } = useShiftCurtain();
 
   // Music tab state
   const [activeTab, setActiveTab] = useState<"requests" | "songs" | "bar" | "kitchen" | "cashier">("requests");
   // Drag & drop button ordering for top control bar
   // NOTE: bump the storage key suffix when changing this list to force clients
   // onto the new default order (users can still re-arrange via "Rendit").
-  const DEFAULT_BTN_ORDER = ["voice", "sound", "test", "mute", "qr", "arka", "ready"];
+  const DEFAULT_BTN_ORDER = ["voice", "sound", "test", "mute", "qr", "arka", "ready", "endshift"];
   const [btnOrder, setBtnOrder] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem("dashboard-btn-order-v3");
@@ -751,6 +751,27 @@ const Dashboard = () => {
           : 'bg-muted/40 border-border hover:bg-muted/60'}`}>
         {muteNotifications ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
         <span>{muteNotifications ? 'MUTE' : 'Mute'}</span>
+      </Button>
+    ),
+    endshift: (
+      <Button variant="outline" size="sm"
+        onClick={async () => {
+          if (!shiftToken) { toast.error('Nuk ka turn aktiv'); return; }
+          if (!window.confirm('Të mbyllet turni/sesioni? Të gjithë do të dalin dhe njoftimet do të ndalojnë.')) return;
+          try {
+            const { error } = await supabase.functions.invoke('close-shift', { body: { token: shiftToken } });
+            if (error) throw error;
+            try { localStorage.removeItem('staff_shift_token'); } catch {}
+            toast.success('🔒 Turni u mbyll');
+            setCurtainActive(true);
+            await ensureShiftToken();
+          } catch (e) {
+            toast.error('Gabim gjatë mbylljes së turnit');
+          }
+        }}
+        style={btnStyle}
+        className={`${chip} bg-destructive/15 border-destructive/50 text-destructive hover:bg-destructive/25`}>
+        <LogOut className="h-4 w-4" /><span>Mbyll Turnin</span>
       </Button>
     ),
   };
