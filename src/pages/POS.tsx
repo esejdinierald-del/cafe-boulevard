@@ -400,11 +400,14 @@ const POS = () => {
                 const lockedByOther =
                   occupied && t.locked_by_name && currentStaffName &&
                   t.locked_by_name.trim() !== currentStaffName.trim();
+                const isOnline = Number(t.number) === 0;
                 return (
                   <div
                     key={t.id}
                     className={`relative aspect-[4/3] rounded-lg border-2 transition ${
-                      isActive
+                      isOnline
+                        ? "border-sky-400 bg-sky-500/20 text-sky-100"
+                        : isActive
                         ? "border-amber-400 bg-amber-500/20"
                         : lockColor
                         ? ""
@@ -412,19 +415,19 @@ const POS = () => {
                         ? "border-red-500/50 bg-red-500/20 text-red-200"
                         : "border-green-500/50 bg-green-500/10 text-green-200"
                     }`}
-                    style={lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
+                    style={!isOnline && lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
                   >
                     <button type="button"
                       onClick={() => { openTableOrder(t); setMobileView("menu"); }}
                       className="absolute inset-0 flex flex-col items-center justify-center text-xs font-semibold hover:bg-white/5 rounded-lg"
                     >
-                      <span>#{t.number}</span>
+                      <span>{isOnline ? "Online" : `#${t.number}`}</span>
                       {hasOrders && (
                         <span className="text-[10px] font-bold text-amber-300 mt-0.5">
                           {total.toFixed(0)} L
                         </span>
                       )}
-                      {t.locked_by_name && (
+                      {!isOnline && t.locked_by_name && (
                         <span className="text-[9px] mt-0.5 opacity-90 truncate max-w-full px-1">
                           {t.locked_by_name}{lockedByOther ? " ⚠" : ""}
                         </span>
@@ -439,14 +442,14 @@ const POS = () => {
                         >
                           <Eye size={14} />
                         </button>
-                        <button type="button"
+                        {!isOnline && <button type="button"
                           onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
                           disabled={closing}
                           title="Mbyll & printo tavolinën"
                           className="absolute bottom-0.5 right-0.5 p-0.5 rounded bg-amber-600 hover:bg-amber-500 text-white z-10 disabled:opacity-50"
                         >
                           <Printer size={10} />
-                        </button>
+                        </button>}
                       </>
                     )}
                   </div>
@@ -492,11 +495,14 @@ const POS = () => {
               const lockedByOther =
                 occupied && t.locked_by_name && currentStaffName &&
                 t.locked_by_name.trim() !== currentStaffName.trim();
+              const isOnline = Number(t.number) === 0;
               return (
                 <div
                   key={t.id}
                   className={`relative aspect-square rounded-lg border-2 transition ${
-                    isActive
+                    isOnline
+                      ? "border-sky-400 bg-sky-500/20 text-sky-100"
+                      : isActive
                       ? "border-amber-400 bg-amber-500/20"
                       : lockColor
                       ? ""
@@ -504,23 +510,23 @@ const POS = () => {
                       ? "border-red-500/50 bg-red-500/20 text-red-200"
                       : "border-green-500/50 bg-green-500/10 text-green-200"
                   }`}
-                  style={lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
+                  style={!isOnline && lockColor && !isActive ? { borderColor: lockColor, backgroundColor: `${lockColor}22`, color: lockColor } : undefined}
                 >
                   <button type="button"
                     onClick={() => openTableOrder(t)}
                     className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold hover:bg-white/5 rounded-lg"
                   >
-                    <span>#{t.number}</span>
+                    <span>{isOnline ? "Online" : `#${t.number}`}</span>
                     {hasOrders ? (
                       <span className="text-[11px] font-bold text-amber-300 mt-1">
                         {total.toFixed(0)} L
                       </span>
                     ) : (
                       <span className="text-[10px] opacity-70 mt-1">
-                        e lirë
+                        {isOnline ? "porosi klientësh" : "e lirë"}
                       </span>
                     )}
-                    {t.locked_by_name && (
+                    {!isOnline && t.locked_by_name && (
                       <span className="text-[10px] mt-0.5 opacity-90 truncate max-w-full px-1">
                         {t.locked_by_name}{lockedByOther ? " ⚠" : ""}
                       </span>
@@ -535,14 +541,14 @@ const POS = () => {
                       >
                         <Eye size={20} />
                       </button>
-                      <button type="button"
+                      {!isOnline && <button type="button"
                         onClick={(e) => { e.stopPropagation(); closeTable(t.number); }}
                         disabled={closing}
                         title="Mbyll & printo tavolinën"
                         className="absolute bottom-1 right-1 p-1 rounded bg-amber-600 hover:bg-amber-500 text-white z-10 disabled:opacity-50"
                       >
                         <Printer size={12} />
-                      </button>
+                      </button>}
                     </>
                   )}
                 </div>
