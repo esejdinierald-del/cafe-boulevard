@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, KeyRound, Trash2, Power, ShieldCheck, ShieldOff, Lock } from "lucide-react";
+import { Plus, KeyRound, Trash2, Power, ShieldCheck, ShieldOff, Lock, Phone, Send } from "lucide-react";
 
 interface Staff {
   id: string;
@@ -17,6 +17,8 @@ interface Staff {
   active: boolean;
   is_admin?: boolean;
   has_admin_password?: boolean;
+  phone?: string;
+  telegram_linked?: boolean;
 }
 
 const ROLES: Array<{ value: Staff["role"]; label: string }> = [
@@ -33,7 +35,9 @@ export const StaffManagerCard = () => {
   const [newPin, setNewPin] = useState("");
   const [pwDialog, setPwDialog] = useState<Staff | null>(null);
   const [newAdminPw, setNewAdminPw] = useState("");
-  const [form, setForm] = useState({ name: "", pin: "", role: "waiter" as Staff["role"] });
+  const [form, setForm] = useState({ name: "", pin: "", role: "waiter" as Staff["role"], phone: "" });
+  const [phoneDialog, setPhoneDialog] = useState<Staff | null>(null);
+  const [newPhone, setNewPhone] = useState("");
 
   const call = async (body: Record<string, unknown>) => {
     const { data, error } = await supabase.functions.invoke("manage-staff", { body });
@@ -58,10 +62,10 @@ export const StaffManagerCard = () => {
       toast.error("Vendos emër dhe PIN 4 shifror");
       return;
     }
-    const data = await call({ action: "create", name: form.name, pin: form.pin, role: form.role });
+    const data = await call({ action: "create", name: form.name, pin: form.pin, role: form.role, phone: form.phone });
     if (data) {
       toast.success(`Kamarieri "${form.name}" u shtua`);
-      setForm({ name: "", pin: "", role: "waiter" });
+      setForm({ name: "", pin: "", role: "waiter", phone: "" });
       setCreating(false);
       load();
     }
@@ -100,6 +104,18 @@ export const StaffManagerCard = () => {
     if (data) { toast.success("Fjalëkalimi admin u ruajt"); setPwDialog(null); setNewAdminPw(""); load(); }
   };
 
+  const savePhone = async () => {
+    if (!phoneDialog) return;
+    const data = await call({ action: "update", id: phoneDialog.id, phone: newPhone });
+    if (data) { toast.success("Nr. i telefonit u ruajt"); setPhoneDialog(null); setNewPhone(""); load(); }
+  };
+
+  const unlinkTelegram = async (s: Staff) => {
+    if (!confirm(`Shkëput Telegram-in për "${s.name}"?`)) return;
+    const data = await call({ action: "update", id: s.id, unlink_telegram: true });
+    if (data) { toast.success("U shkëput Telegram"); load(); }
+  };
+
   return (
     <Card className="glass-premium p-6 rounded-3xl shadow-[var(--shadow-elegant)]">
       <div className="flex items-center justify-between mb-5">
@@ -131,8 +147,27 @@ export const StaffManagerCard = () => {
                 <Badge variant={s.active ? "default" : "secondary"} className="text-[10px]">
                   {s.active ? "Aktiv" : "Joaktiv"}
                 </Badge>
+                {s.phone && (
+                  <Badge variant="outline" className="text-[10px]">{s.phone}</Badge>
+                )}
+                {s.telegram_linked && (
+                  <Badge variant="outline" className="text-[10px] border-sky-500/50 text-sky-400">TG ✓</Badge>
+                )}
               </div>
             </div>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => { setPhoneDialog(s); setNewPhone(s.phone || ""); }}
+              title="Nr. Telefoni (Telegram)"
+            >
+              <Phone className="h-4 w-4" />
+            </Button>
+            {s.telegram_linked && (
+              <Button size="icon" variant="ghost" onClick={() => unlinkTelegram(s)} title="Shkëput Telegram">
+                <Send className="h-4 w-4 text-sky-400" />
+              </Button>
+            )}
             <Button size="icon" variant="ghost" onClick={() => setPinDialog(s)} title="Reset PIN">
               <KeyRound className="h-4 w-4" />
             </Button>
@@ -175,6 +210,12 @@ export const StaffManagerCard = () => {
               value={form.pin}
               onChange={(e) => setForm({ ...form, pin: e.target.value.replace(/\D/g, "").slice(0, 4) })}
             />
+          <Input
+            placeholder="Nr. Telefoni (Telegram) — p.sh. 0691234567"
+            inputMode="tel"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          />
             <select
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value as Staff["role"] })}
@@ -224,6 +265,26 @@ export const StaffManagerCard = () => {
           <DialogFooter>
             <Button variant="ghost" onClick={() => { setPwDialog(null); setNewAdminPw(""); }}>Anulo</Button>
             <Button onClick={setAdminPassword}>Ruaj</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Phone dialog */}
+      <Dialog open={!!phoneDialog} onOpenChange={(o) => { if (!o) { setPhoneDialog(null); setNewPhone(""); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Nr. Telefoni — {phoneDialog?.name}</DialogTitle></DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            Ky numër përdoret për lidhjen individuale me Telegram. Stafi i dërgon /start bot-it dhe ndan numrin e vet — sistemi e lidh automatikisht.
+          </p>
+          <Input
+            placeholder="p.sh. 0691234567 ose +355691234567"
+            inputMode="tel"
+            value={newPhone}
+            onChange={(e) => setNewPhone(e.target.value)}
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setPhoneDialog(null); setNewPhone(""); }}>Anulo</Button>
+            <Button onClick={savePhone}>Ruaj</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
