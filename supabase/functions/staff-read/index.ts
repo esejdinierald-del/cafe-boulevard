@@ -77,7 +77,7 @@ serve(async (req) => {
         if (!["bar", "kitchen"].includes(kind)) return json({ error: "kind i pavlefshëm" }, 400);
         const { data, error } = await supabase
           .from("order_items_split")
-          .select("*, pos_orders(table_number, mode)")
+          .select("*, pos_orders(table_number, mode, notes, operator_name)")
           .eq("type", kind)
           .eq("status", "pending")
           .order("created_at", { ascending: true });
