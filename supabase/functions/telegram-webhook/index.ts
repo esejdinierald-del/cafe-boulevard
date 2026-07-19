@@ -92,6 +92,24 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ ok: true }));
       }
 
+      if (data.startsWith("review_order:")) {
+        await tg("answerCallbackQuery", {
+          callback_query_id: cqId,
+          text: "🔍 Kontrollo me klientin nëse artikujt janë të saktë.",
+          show_alert: true,
+        });
+        if (cqChatId && cqMsgId) {
+          await tg("editMessageText", {
+            chat_id: cqChatId,
+            message_id: cqMsgId,
+            text: origText + "\n\n🔍 Në rishikim nga " + fromName,
+            parse_mode: "HTML",
+            disable_web_page_preview: true,
+          });
+        }
+        return new Response(JSON.stringify({ ok: true }));
+      }
+
       if (data.startsWith("accept_request:")) {
         const reqId = data.slice("accept_request:".length).trim();
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
