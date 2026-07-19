@@ -30,6 +30,72 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("ok");
   try {
     const update = await req.json().catch(() => ({}));
+
+    // Handle inline button clicks (callback_query)
+    if (update?.callback_query) {
+      const cq = update.callback_query;
+      const data: string = cq.data || "";
+      const cqId: string = cq.id;
+      const fromName: string = cq.from?.first_name || "staf";
+      const cqChatId = cq.message?.chat?.id;
+      const cqMsgId = cq.message?.message_id;
+      const origText: string = cq.message?.text || "";
+
+      if (data.startsWith("accept_order:")) {
+        const orderId = data.slice("accept_order:".length).trim();
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const internalSecret = Deno.env.get("INTERNAL_WEBHOOK_SECRET") || "";
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+
+        let ok = false;
+        try {
+          const res = await fetch(`${supabaseUrl}/functions/v1/update-order-status`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-internal-secret": internalSecret,
+              "apikey": anonKey,
+              "Authorization": `Bearer ${anonKey}`,
+            },
+            body: JSON.stringify({ id: orderId, status: "accepted" }),
+          });
+          ok = res.ok;
+        } catch (_) {
+          ok = false;
+        }
+
+        if (ok) {
+          await tg("answerCallbackQuery", { callback_query_id: cqId, text: "✅ U pranua!" });
+          if (cqChatId && cqMsgId) {
+            await tg("editMessageText", {
+              chat_id: cqChatId,
+              message_id: cqMsgId,
+              text: origText + "\n\n✅ Pranuar nga " + fromName,
+              parse_mode: "HTML",
+              disable_web_page_preview: true,
+            });
+          }
+        } else {
+          await tg("answerCallbackQuery", {
+            callback_query_id: cqId,
+            text: "⚠️ Kjo porosi është trajtuar tashmë",
+            show_alert: true,
+          });
+          if (cqChatId && cqMsgId) {
+            await tg("editMessageReplyMarkup", {
+              chat_id: cqChatId,
+              message_id: cqMsgId,
+              reply_markup: { inline_keyboard: [] },
+            });
+          }
+        }
+        return new Response(JSON.stringify({ ok: true }));
+      }
+
+      await tg("answerCallbackQuery", { callback_query_id: cqId });
+      return new Response(JSON.stringify({ ok: true }));
+    }
+
     const msg = update?.message ?? update?.edited_message;
     if (!msg?.chat?.id) return new Response(JSON.stringify({ ok: true }));
 

@@ -20,8 +20,16 @@ serve(async (req) => {
   if (!rl.ok) return json({ error: "Shumë kërkesa. Provo më vonë.", retryAfterSec: rl.retryAfterSec }, 429);
   try {
     const body = await req.json().catch(() => null) as Record<string, unknown> | null;
-    const auth = await requireShiftToken(req, body);
-    if (!auth.ok) return auth.response;
+
+    // Alternative auth: internal shared secret (used by Telegram callback flow)
+    const internal = req.headers.get("x-internal-secret");
+    const expectedInternal = Deno.env.get("INTERNAL_WEBHOOK_SECRET") || "";
+    const internalAuthorized = !!internal && !!expectedInternal && internal === expectedInternal;
+
+    if (!internalAuthorized) {
+      const auth = await requireShiftToken(req, body);
+      if (!auth.ok) return auth.response;
+    }
 
     const parsed = BodySchema.safeParse(body);
     if (!parsed.success) {
