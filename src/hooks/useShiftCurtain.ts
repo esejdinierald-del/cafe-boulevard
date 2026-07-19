@@ -79,5 +79,5 @@ export function useShiftCurtain() {
     return () => clearInterval(poll);
   }, [curtainActive, shiftToken]);
 
-  return { curtainActive, setCurtainActive, shiftToken, staffUrl };
+  return { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken };
 }
