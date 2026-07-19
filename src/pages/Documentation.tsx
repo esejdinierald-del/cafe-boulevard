@@ -169,6 +169,48 @@ export default function Documentation() {
                 pandryshueshme (Europe/Rome).
               </p>
             </Section>
+
+            <Section title="POS — Ngjyra & Kyçje Tavolinash">
+              <p>
+                Çdo staf ka një ngjyrë të vetën (deterministike nga emri). Kur hap
+                një tavolinë, ajo <strong>kyçet</strong> automatikisht me emrin dhe
+                ngjyrën e tij — asnjë staf tjetër nuk mund të shkruajë njëkohësisht
+                në atë tavolinë, duke parandaluar konflikte.
+              </p>
+              <Bullets
+                items={[
+                  "Kyçja tregohet me buzë me ngjyrën e stafit.",
+                  "Sapo tavolina mbyllet, kyçja lirohet automatikisht.",
+                ]}
+              />
+            </Section>
+
+            <Section title="Butoni Shërbim + Tingull">
+              <p>
+                Në POS, butoni <strong>Shërbim</strong> shfaqet automatikisht kur klientët
+                thërrasin kamarier ose faturë, me <strong>tingull</strong> dhe pulsim
+                derisa stafi ta pranojë.
+              </p>
+            </Section>
+
+            <Section title="Arka — E Hapur për Shikim">
+              <p>
+                Panelet <em>Aktive</em> dhe <em>Printo & Mbyll</em> janë të hapura për
+                të gjithë stafin. Vetëm <strong>anulimi</strong> i artikujve/porosive
+                dhe tabi <strong>Historiku</strong> kërkojnë fjalëkalim admin.
+              </p>
+            </Section>
+
+            <Section title="Njoftime — Telegram & Web Push">
+              <Bullets
+                items={[
+                  "Telegram grup: mesazhe automatike për thirrjet e shërbimit dhe porositë e reja (trigger server-side + pg_net) — funksionojnë pa asnjë browser hapur.",
+                  "Telegram individual: staf lidh numrin e telefonit me chat_id-në duke i shkruar bot-it /start dhe duke ndarë numrin.",
+                  "Web Push (VAPID + Service Worker): njoftime edhe kur PWA është mbyllur, KUFIZUAR vetëm te pajisjet me turn aktual aktiv.",
+                  "Të dy kanalet janë aktive paralelisht për redundancë.",
+                ]}
+              />
+            </Section>
           </TabsContent>
 
           {/* MENAXHERËT */}
