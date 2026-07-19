@@ -163,6 +163,7 @@ Deno.serve(async (req) => {
         token: newToken,
         shift_start,
         shift_end,
+        unlocked: true,
       });
 
       if (error) {
