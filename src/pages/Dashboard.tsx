@@ -753,6 +753,26 @@ const Dashboard = () => {
         <span>{muteNotifications ? 'MUTE' : 'Mute'}</span>
       </Button>
     ),
+    endshift: (
+      <Button variant="outline" size="sm"
+        onClick={async () => {
+          if (!shiftToken) { toast.error('Nuk ka turn aktiv'); return; }
+          if (!window.confirm('Të mbyllet turni/sesioni? Të gjithë do të dalin dhe njoftimet do të ndalojnë.')) return;
+          try {
+            const { error } = await supabase.functions.invoke('close-shift', { body: { token: shiftToken } });
+            if (error) throw error;
+            try { localStorage.removeItem('staff_shift_token'); } catch {}
+            toast.success('🔒 Turni u mbyll');
+            setCurtainActive(true);
+          } catch (e) {
+            toast.error('Gabim gjatë mbylljes së turnit');
+          }
+        }}
+        style={btnStyle}
+        className={`${chip} bg-destructive/15 border-destructive/50 text-destructive hover:bg-destructive/25`}>
+        <LogOut className="h-4 w-4" /><span>Mbyll Turnin</span>
+      </Button>
+    ),
   };
 
   return (
