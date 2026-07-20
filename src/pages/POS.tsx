@@ -106,7 +106,7 @@ const POS = () => {
         refresh,
       )
       .subscribe();
-    const poll = setInterval(refresh, 5000);
+    const poll = setInterval(refresh, 12000);
     return () => {
       mounted = false;
       supabase.removeChannel(ch);
@@ -151,7 +151,7 @@ const POS = () => {
       .channel("pos-tables")
       .on("postgres_changes", { event: "*", schema: "public", table: "tables" }, load)
       .subscribe();
-    const poll = setInterval(load, 5000);
+    const poll = setInterval(load, 12000);
     return () => {
       supabase.removeChannel(channel);
       clearInterval(poll);
@@ -177,7 +177,7 @@ const POS = () => {
       setHasServiceAlert(count > 0);
     };
     refresh();
-    const poll = setInterval(refresh, 4000);
+    const poll = setInterval(refresh, 12000);
     const ch = supabase
       .channel("pos-service-requests")
       .on(

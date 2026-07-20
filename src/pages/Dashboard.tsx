@@ -175,7 +175,7 @@ const Dashboard = () => {
       } catch {}
     };
     pull();
-    const t = setInterval(pull, 4000);
+    const t = setInterval(pull, 12000);
     return () => { cancelled = true; clearInterval(t); };
   }, []);
 
@@ -473,7 +473,7 @@ const Dashboard = () => {
     const poll = setInterval(() => {
       fetchRequests();
       fetchOrders();
-    }, 3000);
+    }, 12000);
     return () => clearInterval(poll);
   }, [curtainActive]);
 
