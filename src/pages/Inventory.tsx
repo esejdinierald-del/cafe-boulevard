@@ -163,7 +163,7 @@ const Inventory = () => {
     }
     load();
     loadBlurFlag();
-    const poll = setInterval(load, 8000);
+    const poll = setInterval(load, 12000);
     const pollFlag = setInterval(loadBlurFlag, 15000);
     return () => {
       clearInterval(poll);

@@ -45,7 +45,7 @@ export const KDSPanel = ({ kind }: { kind: "bar" | "kitchen" }) => {
 
   useEffect(() => {
     load();
-    const poll = setInterval(load, 4000);
+    const poll = setInterval(load, 12000);
     return () => {
       clearInterval(poll);
     };
@@ -240,7 +240,7 @@ export const CashierPanel = () => {
       .channel("cashier-orders")
       .on("postgres_changes", { event: "*", schema: "public", table: "pos_orders" }, load)
       .subscribe();
-    const poll = setInterval(load, 4000);
+    const poll = setInterval(load, 12000);
     return () => {
       supabase.removeChannel(ch);
       clearInterval(poll);

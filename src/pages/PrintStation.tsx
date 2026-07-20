@@ -94,7 +94,7 @@ const PrintStation = () => {
   // Poll pending queue every 2.5s.
   useEffect(() => {
     loadRecent();
-    const poll = setInterval(loadRecent, 2500);
+    const poll = setInterval(loadRecent, 10000);
     return () => clearInterval(poll);
   }, [loadRecent]);
 

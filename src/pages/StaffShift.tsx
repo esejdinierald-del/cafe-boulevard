@@ -486,7 +486,7 @@ const StaffShift = () => {
   useEffect(() => {
     if (!isValid) return;
     fetchData();
-    const pollId = setInterval(() => fetchData(), 4000);
+    const pollId = setInterval(() => fetchData(), 12000);
     const channel = supabase
       .channel("staff-shift-realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "service_requests" }, (payload) => {

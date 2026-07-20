@@ -26,7 +26,7 @@ export default function LowStockCard() {
 
   useEffect(() => {
     load();
-    const poll = setInterval(load, 8000);
+    const poll = setInterval(load, 12000);
     return () => clearInterval(poll);
   }, []);
 
