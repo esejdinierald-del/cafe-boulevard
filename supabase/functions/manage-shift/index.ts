@@ -318,8 +318,8 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Generate new token
-      const newToken = crypto.randomUUID().replace(/-/g, "").substring(0, 12);
+      // Generate new token — full random UUID, not a time-derived formula.
+      const newToken = crypto.randomUUID();
       const { error } = await supabase.from("shift_tokens").insert({
         token: newToken,
         shift_start: shiftWindow.start,
