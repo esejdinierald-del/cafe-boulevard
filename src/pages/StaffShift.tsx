@@ -66,6 +66,7 @@ const StaffShift = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const urlToken = searchParams.get("token");
+  const urlQrSecret = searchParams.get("qr");
 
   // Try saved token from localStorage, fallback to URL token
   const [activeToken, setActiveToken] = useState<string | null>(() => {
@@ -188,6 +189,49 @@ const StaffShift = () => {
       setSearchParams({}, { replace: true });
     }
   }, [urlToken, setSearchParams]);
+
+  // When URL has ?qr=<venue_secret>, mint (or fetch) a shift token via the
+  // server. This is the ONLY way to obtain a fresh token now; the previous
+  // silent auto-create has been removed.
+  useEffect(() => {
+    if (!urlQrSecret) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("manage-shift", {
+          body: { action: "get_or_create", qrSecret: urlQrSecret },
+        });
+        if (cancelled) return;
+        if ((data as any)?.needsQr) {
+          toast.error("QR-ja e lokalit është e pavlefshme ose e vjetër");
+        } else if (error || !(data as any)?.token) {
+          toast.error((data as any)?.error || error?.message || "Gabim në aktivizim");
+        } else {
+          const t = (data as any).token as string;
+          localStorage.setItem("staff_shift_token", t);
+          if (!localStorage.getItem("staff_shift_started_date")) {
+            localStorage.setItem("staff_shift_started_date", romeDateISO());
+          }
+          setActiveToken(t);
+          setValidateTrigger((x) => x + 1);
+          if (showSplash) {
+            setShowSplash(false);
+            sessionStorage.setItem("staff_splash_shown", "1");
+          }
+          toast.success("✅ Turni u aktivizua");
+        }
+      } finally {
+        // Always strip the qr param from the URL so it doesn't leak.
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("qr");
+          window.history.replaceState({}, "", url.toString());
+        } catch { /* noop */ }
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlQrSecret]);
 
   // Validate token via edge function (shift_tokens no longer publicly readable)
   useEffect(() => {

@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { adminRead } from "@/lib/staff-read";
 import { buildBackupJson, downloadBackup } from "@/lib/admin-backup";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Download, FileText, AlertTriangle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Download, FileText, AlertTriangle, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
-type Tab = "health" | "errors" | "fiscal" | "backup" | "reopen" | "telegram";
+type Tab = "health" | "errors" | "fiscal" | "backup" | "reopen" | "telegram" | "venueqr";
 
 interface AppLog {
   id: string;
@@ -97,6 +98,7 @@ const AdminTools = () => {
             { id: "backup", label: "💾 Backup" },
             { id: "reopen", label: "🔓 Rihap Turnin" },
             { id: "telegram", label: "✈️ Telegram" },
+            { id: "venueqr", label: "📱 QR i Lokalit" },
           ] as const
         ).map((t) => (
           <button type="button"
@@ -118,6 +120,7 @@ const AdminTools = () => {
         {tab === "backup" && <BackupTab passcode={passcode} />}
         {tab === "reopen" && <ReopenTurnTab />}
         {tab === "telegram" && <TelegramTab passcode={passcode} />}
+        {tab === "venueqr" && <VenueQrTab passcode={passcode} />}
       </main>
     </div>
   );
@@ -591,6 +594,105 @@ function ReopenTurnTab() {
 }
 
 export default AdminTools;
+
+function VenueQrTab({ passcode }: { passcode: string }) {
+  const [secret, setSecret] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [rotating, setRotating] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.functions.invoke("manage-shift", {
+      body: { action: "get_qr_secret", adminPassword: passcode },
+    });
+    setLoading(false);
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim");
+      return;
+    }
+    setSecret(((data as any)?.qrSecret as string) || null);
+  };
+
+  useEffect(() => {
+    load();
+  }, [passcode]);
+
+  const rotate = async () => {
+    const confirmMsg =
+      "Rigjeneron sekretin e QR-së së lokalit.\n\n" +
+      "⚠️ Çdo QR i printuar/shfaqur më parë NUK do të funksionojë më. " +
+      "Turnet AKTIVE aktualisht vazhdojnë deri në skadim natyror.\n\nVazhdo?";
+    if (!confirm(confirmMsg)) return;
+    setRotating(true);
+    const { data, error } = await supabase.functions.invoke("manage-shift", {
+      body: { action: "rotate_qr_secret", adminPassword: passcode },
+    });
+    setRotating(false);
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Gabim");
+      return;
+    }
+    setSecret(((data as any)?.qrSecret as string) || null);
+    toast.success("QR-ja u rigjenerua ✓");
+  };
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const qrUrl = secret ? `${origin}/staff?qr=${encodeURIComponent(secret)}` : "";
+
+  return (
+    <div className="space-y-4 max-w-xl">
+      <div className="p-4 rounded-lg bg-slate-800 border border-slate-700 space-y-3">
+        <div className="flex items-center gap-2 font-semibold text-amber-300">
+          <QrCode size={18} /> QR i Lokalit (venue QR)
+        </div>
+        <p className="text-sm text-slate-400">
+          Prit këtë QR dhe vendose fizikisht në lokal (jo në zonën e klientit). Vetëm dikush që skanon këtë QR
+          mund të hapë turn të ri të stafit. Turnet aktive nuk preken kur rigjenerohet.
+        </p>
+
+        {loading && <div className="text-xs text-slate-500">Duke ngarkuar…</div>}
+
+        {secret && (
+          <div className="flex flex-col items-center gap-3 py-2">
+            <div className="bg-white p-4 rounded-xl">
+              <QRCodeSVG value={qrUrl} size={220} />
+            </div>
+            <div className="w-full">
+              <div className="text-xs text-slate-400 mb-1">URL:</div>
+              <div className="text-[11px] font-mono break-all bg-slate-900 border border-slate-700 rounded p-2">
+                {qrUrl}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 pt-2">
+          <button
+            type="button"
+            onClick={load}
+            disabled={loading}
+            className="px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={`inline mr-1 ${loading ? "animate-spin" : ""}`} /> Rifresko
+          </button>
+          <button
+            type="button"
+            onClick={rotate}
+            disabled={rotating}
+            className="px-3 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-semibold disabled:opacity-50 ml-auto"
+          >
+            {rotating ? "Duke rigjeneruar…" : "🔄 Rigjenero QR-në"}
+          </button>
+        </div>
+      </div>
+
+      <div className="p-3 rounded bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200">
+        ⚠️ Pas rigjenerimit, çdo QR i vjetër i printuar do të bëhet i pavlefshëm menjëherë. Printo/shpërnda
+        atë të riun para se ta rigjenerosh sërish.
+      </div>
+    </div>
+  );
+}
 
 interface TelegramChat {
   chat_id: number;

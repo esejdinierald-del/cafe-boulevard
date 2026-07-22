@@ -4,9 +4,10 @@ import boulevardLogo from "@/assets/boulevard-logo.png";
 
 interface Props {
   staffUrl: string;
+  needsQr?: boolean;
 }
 
-export function QRCurtain({ staffUrl }: Props) {
+export function QRCurtain({ staffUrl, needsQr }: Props) {
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-6">
@@ -15,7 +16,7 @@ export function QRCurtain({ staffUrl }: Props) {
           <h1 className="text-2xl font-bold text-foreground">Boulevard Café</h1>
           <p className="text-muted-foreground text-sm mt-1">Dashboard i Stafit</p>
         </div>
-        {staffUrl ? (
+        {staffUrl && !needsQr ? (
           <div className="space-y-4">
             <div className="bg-white p-5 rounded-2xl inline-block shadow-lg">
               <QRCodeSVG value={staffUrl} size={220} />
@@ -27,6 +28,14 @@ export function QRCurtain({ staffUrl }: Props) {
               <QrCode className="h-4 w-4" />
               <span>Njoftimet zanore janë aktive edhe tani</span>
             </div>
+          </div>
+        ) : needsQr ? (
+          <div className="space-y-3">
+            <p className="text-sm text-foreground font-semibold">Skano QR-në e lokalit</p>
+            <p className="text-xs text-muted-foreground">
+              Për siguri, hapja e këtij dashboard-i tashmë kërkon skanim të QR-së së lokalit
+              (të vendosur në zonën e stafit) ose një hapje të mëparshme aktive në këtë pajisje.
+            </p>
           </div>
         ) : (
           <p className="text-muted-foreground animate-pulse">Duke gjeneruar QR kodin...</p>

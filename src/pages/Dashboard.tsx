@@ -41,7 +41,7 @@ const Dashboard = () => {
   const ordersPrimedRef = useRef(false);
 
   // Curtain / shift token — handled by dedicated hook.
-  const { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken } = useShiftCurtain();
+  const { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken, needsQr } = useShiftCurtain();
 
   // Music tab state
   const [activeTab, setActiveTab] = useState<"requests" | "songs" | "bar" | "kitchen" | "cashier">("requests");
@@ -785,7 +785,7 @@ const Dashboard = () => {
       <audio ref={audioRef} />
 
       {/* ===== QR CURTAIN OVERLAY ===== */}
-      {curtainActive && <QRCurtain staffUrl={staffUrl} />}
+      {curtainActive && <QRCurtain staffUrl={staffUrl} needsQr={needsQr} />}
 
       {/* ===== DASHBOARD CONTENT (always rendered) ===== */}
       <div className="mx-auto space-y-3 flex-1 w-full" style={{ maxWidth: `${layout.maxWidth}px` }}>
