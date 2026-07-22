@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { adminRead } from "@/lib/staff-read";
 import { buildBackupJson, downloadBackup } from "@/lib/admin-backup";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Download, FileText, AlertTriangle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, RefreshCw, Download, FileText, AlertTriangle, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
-type Tab = "health" | "errors" | "fiscal" | "backup" | "reopen" | "telegram";
+type Tab = "health" | "errors" | "fiscal" | "backup" | "reopen" | "telegram" | "venueqr";
 
 interface AppLog {
   id: string;
@@ -97,6 +98,7 @@ const AdminTools = () => {
             { id: "backup", label: "💾 Backup" },
             { id: "reopen", label: "🔓 Rihap Turnin" },
             { id: "telegram", label: "✈️ Telegram" },
+            { id: "venueqr", label: "📱 QR i Lokalit" },
           ] as const
         ).map((t) => (
           <button type="button"
@@ -118,6 +120,7 @@ const AdminTools = () => {
         {tab === "backup" && <BackupTab passcode={passcode} />}
         {tab === "reopen" && <ReopenTurnTab />}
         {tab === "telegram" && <TelegramTab passcode={passcode} />}
+        {tab === "venueqr" && <VenueQrTab passcode={passcode} />}
       </main>
     </div>
   );
