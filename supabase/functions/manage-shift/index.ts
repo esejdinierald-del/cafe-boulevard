@@ -15,13 +15,87 @@ Deno.serve(async (req) => {
 
   try {
     const requestBody = await req.json().catch(() => ({}));
-    const { action, id, token, shift_start, shift_end, adminPassword } = requestBody;
+    const { action, id, token, shift_start, shift_end, adminPassword, qrSecret } = requestBody;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const now = new Date().toISOString();
+
+    // Helper: check current venue QR secret against provided value.
+    const readVenueQrSecret = async (): Promise<string | null> => {
+      const { data } = await supabase
+        .from("app_settings").select("value").eq("key", "venue_qr_secret").maybeSingle();
+      return (data?.value as string | undefined) ?? null;
+    };
+
+    // ACTION: get_qr_secret — admin-only, returns current venue QR secret
+    if (action === "get_qr_secret") {
+      if (!adminPassword) {
+        return new Response(JSON.stringify({ error: "Mungon fjalëkalimi" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      const { data: setting } = await supabase
+        .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
+      const expectedHash = setting?.value;
+      if (!expectedHash) {
+        return new Response(JSON.stringify({ error: "Admin passcode nuk është konfiguruar" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      const providedHash = await sha256(String(adminPassword));
+      if (providedHash !== expectedHash) {
+        return new Response(JSON.stringify({ error: "Fjalëkalim i pasaktë" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      const secret = await readVenueQrSecret();
+      return new Response(
+        JSON.stringify({ qrSecret: secret }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ACTION: rotate_qr_secret — admin-only, replaces venue QR secret.
+    // Existing already-issued shift_tokens keep working until natural expiry.
+    if (action === "rotate_qr_secret") {
+      if (!adminPassword) {
+        return new Response(JSON.stringify({ error: "Mungon fjalëkalimi" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      const { data: setting } = await supabase
+        .from("app_settings").select("value").eq("key", "admin_passcode").maybeSingle();
+      const expectedHash = setting?.value;
+      if (!expectedHash) {
+        return new Response(JSON.stringify({ error: "Admin passcode nuk është konfiguruar" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      const providedHash = await sha256(String(adminPassword));
+      if (providedHash !== expectedHash) {
+        return new Response(JSON.stringify({ error: "Fjalëkalim i pasaktë" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      const newSecret = crypto.randomUUID();
+      const { error: upErr } = await supabase.from("app_settings").upsert({
+        key: "venue_qr_secret",
+        value: newSecret,
+        updated_at: new Date().toISOString(),
+      });
+      if (upErr) {
+        return new Response(JSON.stringify({ error: upErr.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      return new Response(
+        JSON.stringify({ qrSecret: newSecret }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // ACTION: admin_bypass — verify admin passcode and return an active
     // shift token (creates one covering the next 12h if none is active).
@@ -136,6 +210,17 @@ Deno.serve(async (req) => {
 
     // ACTION: get_or_create — fetch active shift token or create one
     if (action === "get_or_create") {
+      // Require the venue QR secret to prevent anonymous callers from
+      // silently minting a valid shift token. Existing tokens issued before
+      // this change keep working via `check_unlock` in the client.
+      const currentSecret = await readVenueQrSecret();
+      if (!currentSecret || !qrSecret || String(qrSecret) !== currentSecret) {
+        return new Response(
+          JSON.stringify({ needsQr: true }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       console.log("manage-shift get_or_create:start", {
         hasShiftStart: Boolean(shift_start),
         hasShiftEnd: Boolean(shift_end),
