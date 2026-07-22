@@ -10,15 +10,57 @@ export function useShiftCurtain() {
   const [curtainActive, setCurtainActive] = useState(true);
   const [shiftToken, setShiftToken] = useState<string | null>(null);
   const [staffUrl, setStaffUrl] = useState<string>("");
+  const [needsQr, setNeedsQr] = useState(false);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inFlightRef = useRef(false);
 
-  const ensureShiftToken = useCallback(async () => {
+  // Read (and immediately strip) the `?qr=<secret>` param, if any.
+  const readAndStripQrParam = useCallback((): string | null => {
+    if (typeof window === "undefined") return null;
+    try {
+      const url = new URL(window.location.href);
+      const qr = url.searchParams.get("qr");
+      if (!qr) return null;
+      url.searchParams.delete("qr");
+      window.history.replaceState({}, "", url.toString());
+      return qr;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const ensureShiftToken = useCallback(async (qrOverride?: string | null) => {
     if (inFlightRef.current) return null;
     inFlightRef.current = true;
 
-    // Clear any stale token from a previous shift so components using
-    // staffRead() don't fire requests with an expired token and 401.
+    // Prefer an explicit qrSecret (from URL) over any stored token. Without a
+    // qrSecret we do NOT clear an existing token — legitimate shifts already
+    // in progress must keep working across page reloads.
+    const qrSecret = qrOverride ?? readAndStripQrParam();
+    let storedToken: string | null = null;
+    try { storedToken = localStorage.getItem("staff_shift_token"); } catch {}
+
+    // No qrSecret AND no stored token → don't create anything. Show curtain
+    // asking the operator to scan the venue QR.
+    if (!qrSecret && !storedToken) {
+      setNeedsQr(true);
+      setCurtainActive(true);
+      inFlightRef.current = false;
+      return null;
+    }
+
+    // No qrSecret but we DO have a stored token → trust it, let check_unlock
+    // poll validate. This preserves already-active shifts.
+    if (!qrSecret && storedToken) {
+      setShiftToken(storedToken);
+      setStaffUrl(`${window.location.origin}/staff?token=${storedToken}`);
+      setNeedsQr(false);
+      inFlightRef.current = false;
+      return storedToken;
+    }
+
+    // qrSecret present → (re)mint via server. Clear stale token first so we
+    // don't accidentally reuse an expired one.
     try { localStorage.removeItem("staff_shift_token"); } catch {}
     setShiftToken(null);
     const now = new Date();
@@ -47,6 +89,7 @@ export function useShiftCurtain() {
             action: "get_or_create",
             shift_start: shiftStart.toISOString(),
             shift_end: shiftEnd.toISOString(),
+            qrSecret,
           },
         }),
         new Promise<never>((_, reject) =>
@@ -55,12 +98,18 @@ export function useShiftCurtain() {
       ]);
 
       const { data, error } = result;
+      if (data?.needsQr) {
+        setNeedsQr(true);
+        setCurtainActive(true);
+        return null;
+      }
       if (error || !data?.token) {
         console.error("Failed to get shift token:", error);
         if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
         retryTimerRef.current = setTimeout(() => { void ensureShiftToken(); }, 5000);
         return null;
       }
+      setNeedsQr(false);
       setShiftToken(data.token);
       try { localStorage.setItem("staff_shift_token", data.token); } catch {}
       setStaffUrl(`${window.location.origin}/staff?token=${data.token}`);
@@ -74,7 +123,7 @@ export function useShiftCurtain() {
     } finally {
       inFlightRef.current = false;
     }
-  }, []);
+  }, [readAndStripQrParam]);
 
   useEffect(() => {
     void ensureShiftToken();
@@ -100,5 +149,5 @@ export function useShiftCurtain() {
     return () => clearInterval(poll);
   }, [curtainActive, shiftToken]);
 
-  return { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken };
+  return { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken, needsQr };
 }
