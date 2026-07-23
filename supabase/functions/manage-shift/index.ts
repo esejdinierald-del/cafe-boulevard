@@ -533,129 +533,98 @@ Deno.serve(async (req) => {
         );
       }
 
-      // 2) Ndërto items të pasuruar nga menu_items (çmimi real, jo nga klienti)
+      // 2) Map items → format pos-create-order (vetëm productId + quantity;
+      //    çmimin dhe emrin i rimerr pos-create-order nga menu_items).
       const rawItems: any[] = Array.isArray((orderRow as any).items) ? (orderRow as any).items : [];
-      const productIds = rawItems
-        .map((i: any) => i?.productId || i?.id)
-        .filter((x: any) => typeof x === "string");
+      const mappedItems = rawItems
+        .map((i: any) => ({
+          productId: (i?.productId || i?.id) as string,
+          quantity: Number(i?.quantity || 1),
+          notes: typeof i?.notes === "string" ? i.notes : undefined,
+        }))
+        .filter((i) => typeof i.productId === "string" && i.productId.length > 0 && i.quantity > 0);
 
-      if (productIds.length === 0) {
+      if (mappedItems.length === 0) {
         return new Response(
           JSON.stringify({ error: "Porosia s'ka artikuj të vlefshëm" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      const { data: menuItems } = await supabase
-        .from("menu_items")
-        .select("id, name, price, for_bar, for_kitchen, is_active, offer_price, offer_start_time, offer_end_time")
-        .in("id", productIds);
-      const menuMap = new Map((menuItems ?? []).map((m: any) => [m.id, m]));
-
-      // Verifiko çdo produkt aktiv
-      for (const pid of productIds) {
-        const m: any = menuMap.get(pid);
-        if (!m || m.is_active === false) {
-          return new Response(
-            JSON.stringify({ error: `Produkti ${pid} s'është i disponueshëm` }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+      // 3) Verifiko formatin e tavolinës kundrejt tables.number (integer).
+      //    orders.table_number është TEXT te DB → e konvertojmë me kujdes.
+      const rawTable = (orderRow as any).table_number;
+      let tableNumber: number | null = null;
+      let mode: "table" | "takeaway" = "table";
+      if (rawTable !== null && rawTable !== undefined && String(rawTable).trim() !== "") {
+        const parsed = parseInt(String(rawTable).trim(), 10);
+        if (Number.isFinite(parsed) && String(parsed) === String(rawTable).trim()) {
+          const { data: tableRow } = await supabase
+            .from("tables").select("id").eq("number", parsed).maybeSingle();
+          if (tableRow) {
+            tableNumber = parsed;
+          } else {
+            return new Response(
+              JSON.stringify({ error: `Tavolina #${parsed} nuk ekziston` }),
+              { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        } else {
+          // Vlerë jo numerike → trajtoje si takeaway (s'ka tavolinë reale).
+          mode = "takeaway";
         }
+      } else {
+        mode = "takeaway";
       }
 
-      const nowRome = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit", hour12: false });
-      const activePrice = (m: any): number => {
-        if (!m.offer_price || !m.offer_start_time || !m.offer_end_time) return Number(m.price);
-        const s = String(m.offer_start_time).slice(0, 5);
-        const e = String(m.offer_end_time).slice(0, 5);
-        const active = s > e ? (nowRome >= s || nowRome <= e) : (nowRome >= s && nowRome <= e);
-        return active ? Number(m.offer_price) : Number(m.price);
-      };
-
-      const enriched = rawItems
-        .map((ci: any) => {
-          const pid = ci?.productId || ci?.id;
-          const m: any = menuMap.get(pid);
-          if (!m) return null;
-          return {
-            productId: pid,
-            name: m.name,
-            price: activePrice(m),
-            quantity: Number(ci?.quantity || 1),
-            notes: ci?.notes || "",
-            forBar: m.for_bar ?? true,
-            forKitchen: m.for_kitchen ?? false,
-          };
-        })
-        .filter(Boolean) as any[];
-
-      if (enriched.length === 0) {
-        return new Response(
-          JSON.stringify({ error: "S'u gjetën produkte të vlefshme në menu" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const totalAmount = enriched.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
-
-      // Rrugëzo në tavolinën virtuale "Porosi Online" (#0) — porositë e klientit
-      // shfaqen individualisht dhe s'bien në rregullat normale të kyçjes.
-      const originalTableNumber = (orderRow as any).table_number ? Number((orderRow as any).table_number) : null;
-      const { data: onlineT } = await supabase
-        .from("tables").select("id").eq("number", 0).maybeSingle();
-      const onlineTableId: string | null = (onlineT as any)?.id ?? null;
-
-      const clientLabel = originalTableNumber
-        ? `Klient · Tavolina #${originalTableNumber}`
-        : `Klient · Takeaway`;
+      // 4) Thirr pos-create-order (HTTP internal) me të njëjtin shift token.
+      const clientNotes = (orderRow as any).notes ? String((orderRow as any).notes) : null;
       const combinedNotes = [
-        `${clientLabel} (Ref: ${(orderRow as any).id})`,
-        (orderRow as any).notes ? String((orderRow as any).notes) : null,
+        `Klient (Menu) · Ref: ${(orderRow as any).id}`,
+        clientNotes,
       ].filter(Boolean).join(" | ");
 
-      const { data: posOrder, error: posErr } = await supabase
-        .from("pos_orders")
-        .insert({
-          table_id: onlineTableId,
-          table_number: 0,
-          mode: "table",
-          items: enriched,
-          status: "open",
-          total_amount: totalAmount,
-          operator_name: "Klient (Menu)",
-          notes: combinedNotes,
-          source: "client",
-        })
-        .select()
-        .single();
-
-      if (posErr || !posOrder) {
-        console.error("complete_order: pos_orders insert failed:", posErr);
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+      const posUrl = `${supabaseUrl}/functions/v1/pos-create-order`;
+      let posResp: Response;
+      try {
+        posResp = await fetch(posUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": anonKey,
+            "Authorization": `Bearer ${anonKey}`,
+            "x-shift-token": token,
+          },
+          body: JSON.stringify({
+            tableNumber: mode === "table" ? tableNumber : null,
+            mode,
+            items: mappedItems,
+            operatorName: "Klient (Menu)",
+            notes: combinedNotes,
+            source: "pos",
+            shiftToken: token,
+          }),
+        });
+      } catch (netErr) {
+        console.error("complete_order: pos-create-order fetch failed:", netErr);
         return new Response(
-          JSON.stringify({ error: `Krijimi i porosisë POS dështoi: ${posErr?.message || "unknown"}` }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: `Thirrja e pos-create-order dështoi: ${(netErr as Error).message}` }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      const barItems = enriched.filter((i) => i.forBar);
-      const kitchenItems = enriched.filter((i) => i.forKitchen);
-      const splits: any[] = [];
-      if (barItems.length > 0) splits.push({ order_id: posOrder.id, type: "bar", items: barItems, status: "pending" });
-      if (kitchenItems.length > 0) splits.push({ order_id: posOrder.id, type: "kitchen", items: kitchenItems, status: "pending" });
-      if (splits.length > 0) {
-        const { error: splitErr } = await supabase.from("order_items_split").insert(splits);
-        if (splitErr) {
-          // Rollback pos_orders që të mos mbetet porosi "e varur"
-          await supabase.from("pos_orders").delete().eq("id", posOrder.id);
-          console.error("complete_order: splits insert failed:", splitErr);
-          return new Response(
-            JSON.stringify({ error: `Dërgimi te Bar/Kuzhinë dështoi: ${splitErr.message}` }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
+      const posData = await posResp.json().catch(() => ({} as any));
+      if (!posResp.ok || (posData as any)?.error) {
+        const msg = (posData as any)?.error || `pos-create-order kthej ${posResp.status}`;
+        console.error("complete_order: pos-create-order rejected:", msg, posData);
+        return new Response(
+          JSON.stringify({ error: typeof msg === "string" ? msg : "Krijimi i porosisë POS dështoi" }),
+          { status: posResp.status || 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      // 3) Vetëm tani shëno klient orders si të përmbyllur
+      // 5) Vetëm tani shëno klient orders si të përmbyllur
       const { error: updErr } = await supabase
         .from("orders")
         .update({ status: "completed", completed_at: new Date().toISOString() })
@@ -666,7 +635,7 @@ Deno.serve(async (req) => {
       }
 
       return new Response(
-        JSON.stringify({ success: true, posOrderId: posOrder.id }),
+        JSON.stringify({ success: true, posOrderId: (posData as any)?.order?.id ?? null }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
