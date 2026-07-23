@@ -514,20 +514,159 @@ Deno.serve(async (req) => {
         );
       }
 
-      const { error } = await supabase
+      // 1) Ngarko porosinë e klientit
+      const { data: orderRow, error: fetchErr } = await supabase
         .from("orders")
-        .update({ status: "completed", completed_at: new Date().toISOString() })
-        .eq("id", id);
-
-      if (error) {
+        .select("id, table_number, items, notes, status")
+        .eq("id", id)
+        .maybeSingle();
+      if (fetchErr || !orderRow) {
         return new Response(
-          JSON.stringify({ error: "Failed to complete order" }),
+          JSON.stringify({ error: "Porosia nuk u gjet" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if ((orderRow as any).status && (orderRow as any).status !== "pending") {
+        return new Response(
+          JSON.stringify({ error: "Porosia s'është më në pritje" }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // 2) Ndërto items të pasuruar nga menu_items (çmimi real, jo nga klienti)
+      const rawItems: any[] = Array.isArray((orderRow as any).items) ? (orderRow as any).items : [];
+      const productIds = rawItems
+        .map((i: any) => i?.productId || i?.id)
+        .filter((x: any) => typeof x === "string");
+
+      if (productIds.length === 0) {
+        return new Response(
+          JSON.stringify({ error: "Porosia s'ka artikuj të vlefshëm" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: menuItems } = await supabase
+        .from("menu_items")
+        .select("id, name, price, for_bar, for_kitchen, is_active, offer_price, offer_start_time, offer_end_time")
+        .in("id", productIds);
+      const menuMap = new Map((menuItems ?? []).map((m: any) => [m.id, m]));
+
+      // Verifiko çdo produkt aktiv
+      for (const pid of productIds) {
+        const m: any = menuMap.get(pid);
+        if (!m || m.is_active === false) {
+          return new Response(
+            JSON.stringify({ error: `Produkti ${pid} s'është i disponueshëm` }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+
+      const nowRome = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit", hour12: false });
+      const activePrice = (m: any): number => {
+        if (!m.offer_price || !m.offer_start_time || !m.offer_end_time) return Number(m.price);
+        const s = String(m.offer_start_time).slice(0, 5);
+        const e = String(m.offer_end_time).slice(0, 5);
+        const active = s > e ? (nowRome >= s || nowRome <= e) : (nowRome >= s && nowRome <= e);
+        return active ? Number(m.offer_price) : Number(m.price);
+      };
+
+      const enriched = rawItems
+        .map((ci: any) => {
+          const pid = ci?.productId || ci?.id;
+          const m: any = menuMap.get(pid);
+          if (!m) return null;
+          return {
+            productId: pid,
+            name: m.name,
+            price: activePrice(m),
+            quantity: Number(ci?.quantity || 1),
+            notes: ci?.notes || "",
+            forBar: m.for_bar ?? true,
+            forKitchen: m.for_kitchen ?? false,
+          };
+        })
+        .filter(Boolean) as any[];
+
+      if (enriched.length === 0) {
+        return new Response(
+          JSON.stringify({ error: "S'u gjetën produkte të vlefshme në menu" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const totalAmount = enriched.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
+
+      // Rrugëzo në tavolinën virtuale "Porosi Online" (#0) — porositë e klientit
+      // shfaqen individualisht dhe s'bien në rregullat normale të kyçjes.
+      const originalTableNumber = (orderRow as any).table_number ? Number((orderRow as any).table_number) : null;
+      const { data: onlineT } = await supabase
+        .from("tables").select("id").eq("number", 0).maybeSingle();
+      const onlineTableId: string | null = (onlineT as any)?.id ?? null;
+
+      const clientLabel = originalTableNumber
+        ? `Klient · Tavolina #${originalTableNumber}`
+        : `Klient · Takeaway`;
+      const combinedNotes = [
+        `${clientLabel} (Ref: ${(orderRow as any).id})`,
+        (orderRow as any).notes ? String((orderRow as any).notes) : null,
+      ].filter(Boolean).join(" | ");
+
+      const { data: posOrder, error: posErr } = await supabase
+        .from("pos_orders")
+        .insert({
+          table_id: onlineTableId,
+          table_number: 0,
+          mode: "table",
+          items: enriched,
+          status: "open",
+          total_amount: totalAmount,
+          operator_name: "Klient (Menu)",
+          notes: combinedNotes,
+          source: "client",
+        })
+        .select()
+        .single();
+
+      if (posErr || !posOrder) {
+        console.error("complete_order: pos_orders insert failed:", posErr);
+        return new Response(
+          JSON.stringify({ error: `Krijimi i porosisë POS dështoi: ${posErr?.message || "unknown"}` }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
+      const barItems = enriched.filter((i) => i.forBar);
+      const kitchenItems = enriched.filter((i) => i.forKitchen);
+      const splits: any[] = [];
+      if (barItems.length > 0) splits.push({ order_id: posOrder.id, type: "bar", items: barItems, status: "pending" });
+      if (kitchenItems.length > 0) splits.push({ order_id: posOrder.id, type: "kitchen", items: kitchenItems, status: "pending" });
+      if (splits.length > 0) {
+        const { error: splitErr } = await supabase.from("order_items_split").insert(splits);
+        if (splitErr) {
+          // Rollback pos_orders që të mos mbetet porosi "e varur"
+          await supabase.from("pos_orders").delete().eq("id", posOrder.id);
+          console.error("complete_order: splits insert failed:", splitErr);
+          return new Response(
+            JSON.stringify({ error: `Dërgimi te Bar/Kuzhinë dështoi: ${splitErr.message}` }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+
+      // 3) Vetëm tani shëno klient orders si të përmbyllur
+      const { error: updErr } = await supabase
+        .from("orders")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("id", id);
+      if (updErr) {
+        console.error("complete_order: orders update failed (POS u krijua):", updErr);
+        // POS u krijua me sukses — mos e rrëzo veprimin.
+      }
+
       return new Response(
-        JSON.stringify({ success: true }),
+        JSON.stringify({ success: true, posOrderId: posOrder.id }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
