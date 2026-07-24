@@ -470,6 +470,16 @@ const StaffShift = () => {
       }),
     ]);
     if (reqRes.data) setRequests(reqRes.data as ServiceRequest[]);
+    const ordErr = (ordRes as any)?.data?.error || (ordRes as any)?.error?.message;
+    if (ordErr && /skadu|pavlefsh|Turn/i.test(ordErr)) {
+      try { localStorage.removeItem("staff_shift_token"); } catch {}
+      if (!sessionStorage.getItem("shift_token_reload_guard")) {
+        sessionStorage.setItem("shift_token_reload_guard", "1");
+        setTimeout(() => window.location.reload(), 100);
+      }
+      if (showIndicator) setIsRefreshing(false);
+      return;
+    }
     const ordData = (ordRes as any)?.data?.orders;
     if (Array.isArray(ordData)) setOrders(ordData as unknown as Order[]);
     if (showIndicator) setTimeout(() => setIsRefreshing(false), 300);
