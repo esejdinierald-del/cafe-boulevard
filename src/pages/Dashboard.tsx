@@ -796,7 +796,13 @@ const Dashboard = () => {
       <audio ref={audioRef} />
 
       {/* ===== QR CURTAIN OVERLAY ===== */}
-      {curtainActive && <QRCurtain staffUrl={staffUrl} needsQr={needsQr} />}
+      {curtainActive && (
+        <QRCurtain
+          staffUrl={staffUrl}
+          needsQr={needsQr}
+          onUnlockWithSecret={(secret) => ensureShiftToken(secret)}
+        />
+      )}
 
       {/* ===== DASHBOARD CONTENT (always rendered) ===== */}
       <div className="mx-auto space-y-3 flex-1 w-full" style={{ maxWidth: `${layout.maxWidth}px` }}>
