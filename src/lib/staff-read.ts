@@ -19,6 +19,21 @@ export async function staffRead<T = unknown>(
     headers: { "x-shift-token": shiftToken },
   });
   const errMsg = (data as any)?.error || error?.message || null;
+  // Auto-recover from expired/invalid shift tokens: purge local token so the
+  // QR curtain re-appears and the operator can re-authenticate by scanning.
+  if (errMsg && /skadu|pavlefsh|Turn/i.test(errMsg)) {
+    try {
+      const stored = localStorage.getItem("staff_shift_token");
+      if (stored) {
+        localStorage.removeItem("staff_shift_token");
+        // Reload once so useShiftCurtain re-runs and prompts for QR.
+        if (!sessionStorage.getItem("shift_token_reload_guard")) {
+          sessionStorage.setItem("shift_token_reload_guard", "1");
+          setTimeout(() => window.location.reload(), 100);
+        }
+      }
+    } catch { /* ignore */ }
+  }
   return { data: ((data as any)?.data ?? null) as T, error: errMsg };
 }
 
