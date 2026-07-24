@@ -360,7 +360,18 @@ const Dashboard = () => {
       const { data, error } = await supabase.functions.invoke("list-orders", {
         body: { shiftToken, status: "all" },
       });
-      if (error) throw error;
+      const errMsg = (data as any)?.error || error?.message;
+      if (errMsg) {
+        if (/skadu|pavlefsh|Turn/i.test(errMsg)) {
+          try { localStorage.removeItem("staff_shift_token"); } catch {}
+          if (!sessionStorage.getItem("shift_token_reload_guard")) {
+            sessionStorage.setItem("shift_token_reload_guard", "1");
+            setTimeout(() => window.location.reload(), 100);
+          }
+          return;
+        }
+        throw new Error(errMsg);
+      }
       const list = ((data as any)?.orders ?? []) as Order[];
       // Newest first to match previous behaviour
       list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
