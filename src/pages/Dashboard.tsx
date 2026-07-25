@@ -162,6 +162,7 @@ const Dashboard = () => {
   // Poll pending KDS split counts so tab buttons can pulse when new orders arrive
   // and the operator is on a different tab.
   useEffect(() => {
+    if (curtainActive) return;
     let cancelled = false;
     const pull = async () => {
       try {
@@ -177,7 +178,7 @@ const Dashboard = () => {
     pull();
     const t = setInterval(pull, 12000);
     return () => { cancelled = true; clearInterval(t); };
-  }, []);
+  }, [curtainActive]);
 
   // Public counter dashboard — access is gated by the QR shift curtain, not by login.
   useEffect(() => {
