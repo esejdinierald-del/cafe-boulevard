@@ -41,7 +41,7 @@ const Dashboard = () => {
   const ordersPrimedRef = useRef(false);
 
   // Curtain / shift token — handled by dedicated hook.
-  const { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken, needsQr } = useShiftCurtain();
+  const { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken, needsQr, adminUnlock } = useShiftCurtain();
 
   // Music tab state
   const [activeTab, setActiveTab] = useState<"requests" | "songs" | "bar" | "kitchen" | "cashier">("requests");
@@ -800,7 +800,7 @@ const Dashboard = () => {
         <QRCurtain
           staffUrl={staffUrl}
           needsQr={needsQr}
-          onUnlockWithSecret={(secret) => ensureShiftToken(secret)}
+          onAdminUnlock={adminUnlock}
         />
       )}
 
