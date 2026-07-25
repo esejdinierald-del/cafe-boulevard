@@ -125,6 +125,44 @@ export function useShiftCurtain() {
     }
   }, [readAndStripQrParam]);
 
+  // Dashboard-specific unlock: authenticates via admin passcode (NOT qrSecret),
+  // mints a shift token via `admin_bypass`, and separately fetches the venue
+  // qrSecret so the on-screen QR can encode `/staff?qr=<secret>` for staff
+  // phones to scan. This breaks the vicious cycle where /dashboard itself
+  // would otherwise need a qrSecret it has no way to obtain.
+  const adminUnlock = useCallback(async (adminPassword: string) => {
+    const pwd = adminPassword.trim();
+    if (!pwd) return { ok: false, error: "Mungon fjalëkalimi" } as const;
+    try {
+      const [bypassRes, secretRes] = await Promise.all([
+        supabase.functions.invoke("manage-shift", {
+          body: { action: "admin_bypass", adminPassword: pwd },
+        }),
+        supabase.functions.invoke("manage-shift", {
+          body: { action: "get_qr_secret", adminPassword: pwd },
+        }),
+      ]);
+      const token = (bypassRes.data as any)?.token as string | undefined;
+      const qrSecret = (secretRes.data as any)?.qrSecret as string | undefined;
+      if (!token) {
+        return { ok: false, error: (bypassRes.data as any)?.error || "Fjalëkalim i pasaktë" } as const;
+      }
+      try { localStorage.setItem("staff_shift_token", token); } catch {}
+      setShiftToken(token);
+      setNeedsQr(false);
+      // Prefer venue qrSecret for the on-screen QR (staff phones use qrSecret
+      // path to mint their own tokens). Fall back to token-based URL if the
+      // secret fetch failed for any reason.
+      setStaffUrl(qrSecret
+        ? `${window.location.origin}/staff?qr=${encodeURIComponent(qrSecret)}`
+        : `${window.location.origin}/staff?token=${token}`);
+      setCurtainActive(false);
+      return { ok: true } as const;
+    } catch (e) {
+      return { ok: false, error: "Gabim rrjeti" } as const;
+    }
+  }, []);
+
   useEffect(() => {
     void ensureShiftToken();
     return () => {
@@ -149,5 +187,5 @@ export function useShiftCurtain() {
     return () => clearInterval(poll);
   }, [curtainActive, shiftToken]);
 
-  return { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken, needsQr };
+  return { curtainActive, setCurtainActive, shiftToken, staffUrl, ensureShiftToken, needsQr, adminUnlock };
 }
