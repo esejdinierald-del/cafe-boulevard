@@ -8,10 +8,10 @@ import { toast } from "sonner";
 interface Props {
   staffUrl: string;
   needsQr?: boolean;
-  onUnlockWithSecret?: (qrSecret: string) => Promise<unknown> | void;
+  onAdminUnlock?: (adminPassword: string) => Promise<{ ok: boolean; error?: string }>;
 }
 
-export function QRCurtain({ staffUrl, needsQr, onUnlockWithSecret }: Props) {
+export function QRCurtain({ staffUrl, needsQr, onAdminUnlock }: Props) {
   const [pw, setPw] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,15 +19,12 @@ export function QRCurtain({ staffUrl, needsQr, onUnlockWithSecret }: Props) {
     if (!pw.trim()) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("manage-shift", {
-        body: { action: "get_qr_secret", adminPassword: pw.trim() },
-      });
-      if (error || !data?.qrSecret) {
-        toast.error(data?.error || "Fjalëkalim i pasaktë");
+      const res = await onAdminUnlock?.(pw.trim());
+      if (!res?.ok) {
+        toast.error(res?.error || "Fjalëkalim i pasaktë");
         return;
       }
-      toast.success("QR i lokalit u mor. Duke krijuar turnin…");
-      await onUnlockWithSecret?.(data.qrSecret as string);
+      toast.success("Dashboard u hap");
       setPw("");
     } catch (e) {
       toast.error("Gabim rrjeti");
