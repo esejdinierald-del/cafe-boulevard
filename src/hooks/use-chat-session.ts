@@ -26,18 +26,12 @@ export function useChatSession(welcomeMessage: string) {
   useEffect(() => {
     async function load() {
       try {
-        const cutoff = new Date(Date.now() - SESSION_TTL_MS).toISOString();
-        const { data } = await supabase
-          .from("chat_sessions")
-          .select("messages, updated_at")
-          .eq("session_id", sessionId)
-          .gte("updated_at", cutoff)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
-          setMessages(data.messages as Message[]);
+        const { data } = await supabase.functions.invoke("get-chat-session", {
+          body: { session_id: sessionId },
+        });
+        const msgs = data?.session?.messages;
+        if (Array.isArray(msgs) && msgs.length > 0) {
+          setMessages(msgs as Message[]);
         }
       } catch {
         // No session found, use welcome message
