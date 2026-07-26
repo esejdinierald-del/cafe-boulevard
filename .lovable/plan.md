@@ -1,31 +1,65 @@
-# Fix: Staf nuk logohet dot (React error #310 te /pos)
+## Qëllimi
+Krijoj 4 file dokumentimi që inventarizojnë çdo burim real të projektit (kod, DB, funksione, storage, env), pa ndryshuar asnjë funksionalitet.
 
-## Shkaku
-Në `src/pages/POS.tsx`:
-- Rreshti **123**: `if (checking) return <...>;` (early return)
-- Rreshti **132**: `const [hasServiceAlert, setHasServiceAlert] = useState(false);`
-- Rreshti **135**: `useEffect(() => { ... }, [checking]);`
+## Hapat e eksplorimit (para shkrimit)
+1. Lexoj `src/integrations/supabase/types.ts` — nxjerr tabelat, kolonat, tipet, foreign keys, RPC-të dhe enum-et.
+2. Listoj `supabase/migrations/` dhe lexoj çdo file për një përmbledhje 1-rreshtore.
+3. Listoj `supabase/functions/` dhe lexoj `index.ts` të secilit për qëllimin.
+4. Lexoj `supabase/config.toml`.
+5. Kërkoj në gjithë kodin:
+   - `supabase.storage.from(` → buckets
+   - `import.meta.env.` → env vars
+   - `Deno.env.get(` → secrets serverside
+6. Lexoj `package.json`, `vite.config.ts`, `tailwind.config.ts`, README-t ekzistuese për kontekst.
 
-Këto dy hook-e janë **pas** early return. Në renderin e parë (`checking=true`) React sheh N hook-e; pas login-it (`checking=false`) sheh N+2 hook-e → React hedh **error #310** dhe ErrorBoundary shfaq "Diçka nuk shkoi mirë". Prandaj login-i i stafit "duket" i prishur — tokeni ruhet, por navigimi te `/pos` crash-on.
+## Skedarët që do të krijoj
 
-`/regjistrimi-ditor` ka të njëjtin simptomë sepse edhe atje kalohet pas login-it; nëse ndjek një pattern të ngjashëm do të verifikohet dhe rregullohet po ashtu.
+### 1. `docs/PROJECT_INVENTORY.md`
+- Seksioni **Tabelat** — për secilën: kolonat + tipet, FK, RLS status (nëse dihet nga migrations).
+- Seksioni **RPC / Database Functions** — emri, argumentet, return type nga `types.ts` + korrelim me migrations.
+- Seksioni **Enums** — lista (p.sh. `app_role`).
+- Seksioni **Migrations** — lista e file-ve `supabase/migrations/*.sql` me përmbledhje 1-rreshtore.
+- Seksioni **Edge Functions** — çdo folder në `supabase/functions/` me qëllimin nga kodi.
+- Seksioni **Storage buckets** — çdo bucket i referencuar në kod (path + skedarët ku përdoret).
+- Seksioni **Env variables** — çdo `import.meta.env.*` në frontend + `Deno.env.get(...)` në edge functions.
 
-## Ndryshimet
+### 2. `docs/ENV_TEMPLATE.md` + `.env.example`
+- `ENV_TEMPLATE.md` — tabelë me kolona: Variable | Përdoret te | Përshkrim | Ku merret.
+- `.env.example` — placeholders për çdo env frontend të gjetur (`VITE_SUPABASE_URL=your-project-url-here`, etj.). Pa vlera reale.
+- Përmend veçmas edge function secrets (nuk shkojnë në `.env` — konfigurohen te Supabase Secrets).
 
-### 1) `src/pages/POS.tsx` — zhvendos hook-et lart
-- Ngjit deklarimin `const [hasServiceAlert, setHasServiceAlert] = useState(false);` te blloku i state-eve në krye (afër rreshtit 51).
-- Zhvendos `useEffect`-in për `service_requests` (rreshti 135-172) **para** `if (checking) return`, pikërisht menjëherë pas `useEffect`-it që ngarkon tavolinat (rreshti 90-121). Mbaj të njëjtin dependency `[checking]` dhe early-return brenda `useEffect` me `if (checking) return;` — kjo është e ligjshme.
-- Rendi përfundimtar: të gjitha `useState`/`useEffect`/`useCallback` në krye → pastaj `if (checking) return ...` → pastaj JSX-i kryesor.
+### 3. `docs/MISSING_RESOURCES_REPORT.md`
+Tabelë e vetme me kolonat: **Burimi | Status | Si të rikrijohet**. Rreshtat:
+- Supabase Project lidhja
+- Database schema (tabela + kolona)
+- RLS policies
+- Database triggers
+- Database functions (RPC)
+- Edge Functions (kodi vs deployment)
+- Storage buckets + imazhet
+- Env vars frontend
+- Edge Function Secrets
+- Auth Providers (Google, email, etj.)
+- Realtime publications
+- Cron jobs (pg_cron nëse dihet)
+- Webhooks (Telegram, etj.)
+- Custom Domain
+- GitHub lidhja
+- Analytics
 
-### 2) Verifikim i `RegjistrimiDitor.tsx`
-- Kontroll i shpejtë që asnjë hook të mos jetë pas një `return` të kushtëzuar. Nëse ka, aplikohet i njëjti rregullim.
+Për secilën "✗" / "⚠" jap hapat konkretë manualë.
 
-### 3) Verifikim
-- Build + një lundrim: staff PIN login → `/pos` (nuk duhet të dalë ErrorBoundary) → `/regjistrimi-ditor`.
-- Kontrolli i console për "#310" duhet të mos dalë.
+### 4. `docs/RESTORE_GUIDE.md`
+- **Hapi 1**: Lidhja me Lovable Cloud ose Supabase Project ekzistues (nga UI e Lovable).
+- **Hapi 2**: Aplikimi i migrations (`supabase db push` ose manualisht një-nga-një nga Dashboard SQL editor).
+- **Hapi 3**: Deploy i Edge Functions (Lovable e bën automatikisht kur lidhet Cloud; ndryshe `supabase functions deploy`).
+- **Hapi 4**: Rikrijim i storage buckets + policies (lista e sakte nga file 1).
+- **Hapi 5**: Konfigurimi i Secrets për edge functions.
+- **Hapi 6**: Konfigurimi i Auth providers.
+- **Hapi 7**: Rilidhja GitHub (nga Lovable UI).
+- **Hapi 8**: Verifikim funksional (checklist).
 
-## Skedarë të prekur
-- `src/pages/POS.tsx` (rregullim i renditjes së hook-eve)
-- `src/pages/RegjistrimiDitor.tsx` (vetëm nëse verifikimi zbulon të njëjtin pattern)
-
-Asnjë ndryshim në logjikë, në DB apo në edge functions.
+## Rregulla që zbatoj
+- Pa vlera reale sekrete, pa URL projekti, pa tokena — vetëm placeholders.
+- Nëse një burim s'gjendet në kod, e shënoj shprehimisht si "nuk u gjet në repo — kërkon konfigurim manual".
+- Zero ndryshime në kod aplikacioni.
