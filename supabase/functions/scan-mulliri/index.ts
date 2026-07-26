@@ -1,6 +1,7 @@
 // Reads the "Totale:" number from a Fiorenzato grinder display photo.
 // Uses Lovable AI Gateway (Gemini 2.5 Flash) vision.
 import { checkRateLimit, clientKey, maybeCleanup } from "../_shared/rate-limit.ts";
+import { requireShiftToken } from "../_shared/verify-shift-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +22,8 @@ Deno.serve(async (req) => {
   if (!rl.ok) return json({ error: "Shumë tentativa. Provo më vonë.", retryAfterSec: rl.retryAfterSec }, 429);
   try {
     const { imageBase64, mimeType } = await req.json().catch(() => ({}));
+    const auth = await requireShiftToken(req, { imageBase64, mimeType });
+    if (!auth.ok) return auth.response;
     if (!imageBase64 || typeof imageBase64 !== "string") {
       return json({ error: "imageBase64 mungon" }, 400);
     }
