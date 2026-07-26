@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anyone can view chat sessions" ON public.chat_sessions;
