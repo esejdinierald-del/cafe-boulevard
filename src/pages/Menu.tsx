@@ -339,12 +339,12 @@ const Menu = () => {
                   </button>
                 ))}
               </div>
-              <div className="grid grid-cols-3 gap-1.5 pb-2">
+              <div className="grid grid-cols-3 gap-2 pb-2">
                 {categories.filter(c => c.group_name === selectedGroup).map(category => (
                   <button type="button"
                     key={category.id}
                     onClick={() => setSelectedCategoryId(category.id)}
-                    className="px-2 py-1.5 rounded-lg font-display font-bold text-[10px] leading-tight transition-all duration-300 text-center"
+                    className="px-3 py-2.5 rounded-lg font-display font-bold text-xs leading-tight transition-all duration-300 text-center"
                     style={selectedCategoryId === category.id ? {
                       background: 'linear-gradient(135deg, hsl(43 90% 55%), hsl(38 80% 45%))',
                       color: 'hsl(220 60% 10%)',
@@ -352,8 +352,8 @@ const Menu = () => {
                       transform: 'scale(1.05)',
                     } : {
                       background: 'hsl(0 0% 100% / 0.06)',
-                      color: 'hsl(0 0% 70%)',
-                      border: '1px solid hsl(0 0% 100% / 0.08)',
+                      color: 'hsl(43 85% 55%)',
+                      border: '1px solid hsl(43 85% 55% / 0.25)',
                     }}
                   >
                     {language === 'en' && category.name_en ? category.name_en : category.name}
