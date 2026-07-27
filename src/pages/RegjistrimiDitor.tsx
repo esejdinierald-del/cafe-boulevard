@@ -658,7 +658,10 @@ const RegjistrimiDitor = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <header className="sticky top-0 z-10 flex items-center justify-between px-2 sm:px-4 py-2 sm:py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+      <header
+        className="sticky top-0 z-10 flex items-center justify-between px-2 sm:px-4 py-2 sm:py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur"
+        style={{ paddingTop: 'calc(1cm + env(safe-area-inset-top))' }}
+      >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button type="button" onClick={() => navigate(-1)} className="p-1.5 rounded hover:bg-slate-800 shrink-0" aria-label="Kthehu">
             <ArrowLeft size={16} />
